@@ -1,0 +1,264 @@
+{
+	"system" : [{
+		"enabled" : 1,
+		"name" : "OTRS",
+		"DB" : {
+			"ip" : "172.17.0.199",
+			"port" : 5432,
+			"driver" : 1,
+			"driver_comment" : "Driver types: 1=PostgreSQL, 2=MySQL, 3=MSSQL",
+			"user" : "otrs",
+			"db" : "otrs",
+			"password" : "MTB4YzE2N2FmYjA5MzdiOGQyNzk5MzQ0"
+		},
+		"queries" : [{
+			"name" : "GET_ACCOUNTED_TIME",
+			"data_types" : [
+				"TIME_ACCOUNTING"
+			],
+			"change_data_capture" : {
+				"extract" : {
+					"comment#00" : "##################################################################################################",
+					"comment#01" : "# Sample config below works as \"SELECT id FROM secondary_db_sql WHERE id NOT IN (SELECT id FROM primary_db)\".",
+					"comment#01" : "# Another example is \"SELECT id FROM secondary_db_sql WHERE created > SELECT MAX(chaned) FROM primary_db\".",
+					"comment#02" : "# In Extract subprocess, only one field name (column) is allowed in \"SELECT ... FROM primary_db\" query.",
+					"comment#03" : "# In Extract subprocess, query may finish with 0, 1 or many result rows.",
+					"comment#04" : "# The \"%s\" format specifier is used by DCPAM to insert results from primary_db query into secondary_db query SQL.",
+					"comment#05" : "# Only SELECT queries are allowed in *_sql commands.",
+					"comment#10" : "##################################################################################################",
+					"inserted" : {
+						"primary_db" : "dcpam",
+						"primary_db_sql" : "SELECT system_worklog_id FROM accounted_time WHERE system = 'OTRS'",
+						"secondary_db" : "this",
+						"secondary_db_sql" : "SELECT t.id AS system_object_id, ta.id AS system_worklog_id, t.customer_id AS system_customer, ta.create_by AS system_agent_id, ta.time_unit AS system_accounted_time, ta.create_time AS system_created FROM time_accounting ta LEFT JOIN ticket t ON t.id = ta.ticket_id WHERE ta.id NOT IN (%s)"
+					},
+					"deleted" : {
+						"primary_db" : "this",
+						"primary_db_sql" : "SELECT id AS system_worklog_id FROM time_accounting",
+						"secondary_db" : "dcpam",
+						"secondary_db_sql" : "SELECT system_worklog_id FROM accounted_time WHERE is_valid = 1 AND system_worklog_id NOT IN (%s)"
+					},
+					"modified" : {
+						"primary_db" : "dcpam",
+						"primary_db_sql" : "SELECT MAX(changed) FROM accounted_time WHERE is_valid = 1 AND SYSTEM = 'OTRS'",
+						"secondary_db" : "this",
+						"secondary_db_sql" : "SELECT t.id AS system_object_id, ta.id AS system_worklog_id, t.customer_id AS system_customer, ta.create_by AS system_agent_id, ta.time_unit AS system_accounted_time, ta.create_time AS system_created FROM time_accounting ta LEFT JOIN ticket t ON t.id = ta.ticket_id WHERE ta.change_time > '%s'"
+					}
+				},
+				"transform" : {
+					"comment#00" : "##################################################################################################",
+					"comment#01" : "# Yet to be decided how to handle this.",
+					"comment#02" : "##################################################################################################",
+					"inserted" : [{
+						"column" : "accounted_time",
+						"expression" : "%f * 1"
+					}],
+					"deleted" : [],
+					"modified" : [{
+						"column" : "accounted_time",
+						"expression" : "%f * 1"
+					}]
+				},
+				"load" : {
+					"comment#00" : "##################################################################################################",
+					"comment#01" : "# Query executed with \"sql\" is fed by the records extracted and processed in previous steps.",
+					"comment#02" : "# It is possible to decide on which columns are to be loaded or updated.",
+					"comment#03" : "# There is no restriction on the query type in \"sql\" command.",
+					"comment#99" : "##################################################################################################",
+					"inserted" : {
+						"sql" : "INSERT INTO accounted_time (system_object_id, system_worklog_id, system_customer, system_agent_id, system_accounted_time, system_created, is_valid, system) VALUES ($1, $2, $3, $4, $5, $6, 1, 'OTRS')",
+						"sql_mysql" : "INSERT INTO accounted_time (system_object_id, system_worklog_id, system_customer, system_agent_id, system_accounted_time, system_created, is_valid, system) VALUES (?, ?, ?, ?, ?, ?, 1, 'OTRS')",
+						"extracted_values" : ["system_object_id", "system_worklog_id", "system_customer", "system_agent_id", "system_accounted_time", "system_created"]
+					},
+					"deleted" : {
+						"sql" : "UPDATE accounted_time SET is_valid = 0 WHERE system_worklog_id = $1",
+						"sql_mysql" : "UPDATE accounted_time SET is_valid = 0 WHERE system_worklog_id = ?",
+						"extracted_values" : ["system_worklog_id"]
+					},
+					"modified" : {
+						"sql" : "UPDATE accounted_time SET system_object_id = $1, system_worklog_id = $2, system_customer = $3, system_agent_id = $4, system_accounted_time = $5, system_created = $6 WHERE system_worklog_id = $7",
+						"extracted_values" : ["system_object_id", "system_worklog_id", "system_customer", "system_agent_id", "system_accounted_time", "system_created", "system_worklog_id"]
+					}
+				}
+			}
+		}]
+	}, {
+		"name" : "Redmine",
+		"enabled" : 0,
+		"DB" : {
+			"ip" : "172.17.0.121",
+			"port" : 3306,
+			"driver" : 2,
+			"driver_comment" : "Driver types: 1=PostgreSQL, 2=MySQL, 3=MSSQL",
+			"user" : "redmine",
+			"db" : "redmine",
+			"password" : "MTB4YzE2N2FmYjA5MzdiOGQyNzk5MzQ0"
+		},
+		"queries" : [{
+			"name" : "GET_ACCOUNTED_TIME",
+			"data_types" : [
+				"TIME_ACCOUNTING"
+			],
+			"change_data_capture" : {
+				"extract" : {
+					"inserted" : {
+						"primary_db" : "dcpam",
+						"primary_db_sql" : "SELECT system_worklog_id FROM accounted_time",
+						"secondary_db" : "this",
+						"secondary_db_sql" : "SELECT i.id AS system_object_id, te.id AS system_worklog_id, p.name AS system_customer, te.user_id AS system_agent_id, te.hours AS accounted_time, i.created_on AS created FROM issues i JOIN projects p ON i.project_id = p.id JOIN time_entries te ON te.issue_id = i.id WHERE te.id NOT IN (%s)"
+					},
+					"deleted" : {
+						"primary_db" : "this",
+						"primary_db_sql" : "SELECT id AS system_worklog_id FROM time_entries",
+						"secondary_db" : "dcpam",
+						"secondary_db_sql" : "SELECT system_worklog_id FROM accounted_time WHERE system_worklog_id NOT IN (%s)"
+					},
+					"modified" : {
+						"primary_db" : "dcpam",
+						"primary_db_sql" : "SELECT system_worklog_id, system_customer, system_agent_id, accounted_time FROM accounted_time WHERE is_valid = 1",
+						"secondary_db" : "this",
+						"secondary_db_sql" : "SELECT i.id AS system_object_id, te.id AS system_worklog_id, p.name AS system_customer, te.user_id AS system_agent_id, te.hours AS accounted_time, i.created_on AS created FROM issues i JOIN projects p ON i.project_id = p.id JOIN time_entries te ON te.issue_id = i.id"
+					}
+				},
+				"transform" : {
+					"inserted" : [],
+					"deleted" : [],
+					"modified" : []
+				},
+				"load" : {
+					"inserted" : {
+						"sql" : "INSERT INTO accounted_time (system_object_id, system_worklog_id, system_customer, system_agent_id, accounted_time, created, system) VALUES (%s, %s, '%s', %s, %s, '%s', 'Redmine')",
+						"extracted_values" : ["system_object_id", "system_worklog_id", "system_customer", "system_agent_id", "accounted_time", "created"]
+					},
+					"deleted" : {
+						"sql" : "UPDATE accounted_time SET is_valid = 0 WHERE system_worklog_id = %s",
+						"extracted_values" : ["system_worklog_id"]
+					},
+					"modified" : {
+						"sql" : "UPDATE accounted_time SET system_object_id = %s, system_worklog_id = %s, system_customer = '%s', system_agent_id = %s, accounted_time = %s, created = '%s' WHERE system_worklog_id = %s",
+						"extracted_values" : ["system_object_id", "system_worklog_id", "system_customer", "system_agent_id", "accounted_time", "created", "system_worklog_id"]
+					}
+				}
+			}
+		}]
+	}, {
+		"name" : "Jira",
+		"enabled" : 0,
+		"DB" : {
+			"ip" : "172.17.0.121",
+			"port" : 1433,
+			"driver" : 3,
+			"driver_comment" : "Driver types: 1=PostgreSQL, 2=MySQL, 3=MSSQL",
+			"user" : "jira",
+			"db" : "jira",
+			"password" : "MTB4YzE2N2FmYjA5MzdiOGQyNzk5MzQ0"
+		},
+		"queries" : [{
+			"name" : "GET_ACCOUNTED_TIME",
+			"data_types" : [
+				"TIME_ACCOUNTING"
+			],
+			"change_data_capture" : {
+				"extract" : {
+					"inserted" : {
+						"primary_db" : "dcpam",
+						"primary_db_sql" : "SELECT system_worklog_id FROM accounted_time",
+						"secondary_db" : "this",
+						"secondary_db_sql" : "SELECT i.id AS system_object_id, w.id AS system_worklog_id, p.pname AS system_customer, au.id AS system_agent_id, w.timeworked AS accounted_time, w.startdate AS created FROM worklog w JOIN jiraissue i ON i.ID = w.issueid JOIN project p ON p.id = i.project JOIN app_user au ON w.author = au.user_key WHERE w.id NOT IN (%s)"
+					},
+					"deleted" : {
+						"primary_db" : "this",
+						"primary_db_sql" : "SELECT id AS system_worklog_id FROM worklog",
+						"secondary_db" : "dcpam",
+						"secondary_db_sql" : "SELECT system_worklog_id FROM accounted_time WHERE system_worklog_id NOT IN (%s)"
+					},
+					"modified" : {
+						"primary_db" : "dcpam",
+						"primary_db_sql" : "SELECT system_worklog_id, system_customer, system_agent_id, accounted_time FROM accounted_time WHERE is_valid = 1",
+						"secondary_db" : "this",
+						"secondary_db_sql" : "SELECT i.id AS system_object_id, w.id AS system_worklog_id, p.pname AS system_customer, au.id AS system_agent_id, w.timeworked AS accounted_time, w.startdate AS created FROM worklog w JOIN jiraissue i ON i.ID = w.issueid JOIN project p ON p.id = i.project JOIN app_user au ON w.author = au.user_key"
+					}
+				},
+				"transform" : {
+					"inserted" : [],
+					"deleted" : [],
+					"modified" : []
+				},
+				"load" : {
+					"inserted" : {
+						"sql" : "INSERT INTO accounted_time (system_object_id, system_worklog_id, system_customer, system_agent_id, accounted_time, created, system) VALUES (%s, %s, '%s', %s, %s, '%s', 'JIRA')",
+						"extracted_values" : ["system_object_id", "system_worklog_id", "system_customer", "system_agent_id", "accounted_time", "created"]
+					},
+					"deleted" : {
+						"sql" : "UPDATE accounted_time SET is_valid = 0 WHERE system_worklog_id = %s",
+						"extracted_values" : ["system_worklog_id"]
+					},
+					"modified" : {
+						"sql" : "UPDATE accounted_time SET system_object_id = %s, system_worklog_id = %s, system_customer = '%s', system_agent_id = %s, accounted_time = %s, created = '%s' WHERE system_worklog_id = %s",
+						"extracted_values" : ["system_object_id", "system_worklog_id", "system_customer", "system_agent_id", "accounted_time", "created", "system_worklog_id"]
+					}
+				}
+			}
+		}]
+	}],
+	"app" : {
+		"name" : "DCPAM",
+		"version" : "0.1",
+		"DB_PGSQL" : {
+			"ip" : "127.0.0.1",
+			"port" : 5432,
+			"driver" : 1,
+			"driver_comment" : "Driver types: 1=PostgreSQL, 2=MySQL, 3=MSSQL",
+			"user" : "dcpam",
+			"password" : "tantive-4",
+			"db" : "dcpam"
+		},
+		"DB_MSSQL" : {
+			"ip" : "127.0.0.1",
+			"port" : 1433,
+			"driver" : 3,
+			"driver_comment" : "Driver types: 1=PostgreSQL, 2=MySQL, 3=MSSQL",
+			"user" : "dcpam",
+			"password" : "tantive-4",
+			"db" : "dcpam"
+		},
+		"DB" : {
+			"ip" : "127.0.0.1",
+			"port" : 3306,
+			"driver" : 2,
+			"driver_comment" : "Driver types: 1=PostgreSQL, 2=MySQL, 3=MSSQL",
+			"user" : "dcpam",
+			"password" : "tantive-4",
+			"db" : "dcpam"
+		},
+		"DATA" : [{
+			"id" : "TIME_ACCOUNTING",
+			"name" : "Accounted time data",
+			"db_table_name" : "accounted_time",
+			"columns" : ["system_object_id", "system_worklog_id", "system_customer", "system_agent_id", "accounted_time", "created", "system", "is_valid"],
+			"description" : "All accounted time data",
+			"actions" : [{
+				"name" : "GET_DATA",
+				"description" : "Get all data",
+				"type" : 1,
+				"internal" : false,
+				"condition" : "",
+				"sql" : "SELECT customer, accounted_time, created, system FROM accounted_time WHERE is_valid = 1"
+			}, {
+				"name" : "GET_SYSTEM_DATA",
+				"description" : "Get all data by system",
+				"type" : 1,
+				"internal" : false,
+				"condition" : "system",
+				"sql" : "SELECT customer, accounted_time, created, system FROM accounted_time WHERE system = '%s' WHERE is_valid = 1"
+			}, {
+				"name" : "GET_CUSTOMER_DATA",
+				"description" : "Get all data by customer",
+				"type" : 1,
+				"internal" : false,
+				"condition" : "system_customer",
+				"sql" : "SELECT customer, accounted_time, created, system FROM accounted_time WHERE customer = '%s' WHERE is_valid = 1"
+			}]
+		}]
+	}
+}

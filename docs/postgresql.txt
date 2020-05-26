@@ -1,0 +1,33 @@
+CREATE DATABASE dcpam;
+CREATE USER dcpam WITH PASSWORD 'tantive-4';
+GRANT ALL PRIVILEGES ON DATABASE dcpam TO dcpam;
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA dcpam TO dcpam;
+
+CREATE TABLE accounted_time (
+	id serial PRIMARY KEY,
+	system_object_id INTEGER NOT NULL,
+	system_worklog_id INTEGER NOT NULL,
+	system_customer VARCHAR(255) NOT NULL,
+	system_agent_id VARCHAR(64) NOT NULL,
+	system_accounted_time NUMERIC(10,2) NOT NULL,
+	system_created TIMESTAMP NOT NULL,
+	system VARCHAR(64) NOT NULL,
+	is_valid SMALLINT NOT NULL,
+	changed TIMESTAMP NOT NULL
+);
+
+INSERT INTO accounted_time(system_object_id, system_worklog_id, system_customer, system_agent_id, system_accounted_time, system_created, system, is_valid, changed) VALUES (345, 1274, 'Company Ltd.', 'm.kelar', 35.00, '2020-05-14 13:22:41.653766', 'OTRS', 1, '2020-05-19 13:50:54.434662');
+INSERT INTO accounted_time(system_object_id, system_worklog_id, system_customer, system_agent_id, system_accounted_time, system_created, system, is_valid, changed) VALUES (3145, 13274, 'Company Ltd.', 'm.kelar', 135.00, '2020-05-14 13:53:39.981845', 'OTRS', 1, '2020-05-19 13:50:54.434662');
+INSERT INTO accounted_time(system_object_id, system_worklog_id, system_customer, system_agent_id, system_accounted_time, system_created, system, is_valid, changed) VALUES (46, 5270, 'Company Ltd.', 'm.kelar', 125.00, '2020-05-14 13:53:40.007996', 'OTRS', 1, '2020-05-19 13:50:54.434662');
+INSERT INTO accounted_time(system_object_id, system_worklog_id, system_customer, system_agent_id, system_accounted_time, system_created, system, is_valid, changed) VALUES (47, 5271, 'Company Ltd.', 'm.kelar', 225.00, '2020-05-14 13:53:40.015575', 'OTRS', 1, '2020-05-19 13:50:54.434662');
+INSERT INTO accounted_time(system_object_id, system_worklog_id, system_customer, system_agent_id, system_accounted_time, system_created, system, is_valid, changed) VALUES (48, 5272, 'Company Ltd.', 'm.kelar', 245.00, '2020-05-14 13:53:40.024933', 'OTRS', 1, '2020-05-19 13:50:54.434662');
+INSERT INTO accounted_time(system_object_id, system_worklog_id, system_customer, system_agent_id, system_accounted_time, system_created, system, is_valid, changed) VALUES (49, 5273, 'Company Ltd.', 'm.kelar', 255.00, '2020-05-14 13:53:40.034793', 'OTRS', 1, '2020-05-19 13:50:54.434662');
+INSERT INTO accounted_time(system_object_id, system_worklog_id, system_customer, system_agent_id, system_accounted_time, system_created, system, is_valid, changed) VALUES (50, 5274, 'Company Ltd.', 'm.kelar', 255.00, '2020-05-14 13:53:40.045789', 'OTRS', 1, '2020-05-19 13:50:54.434662');
+INSERT INTO accounted_time(system_object_id, system_worklog_id, system_customer, system_agent_id, system_accounted_time, system_created, system, is_valid, changed) VALUES (51, 5275, 'Company Ltd.', 'm.kelar', 275.00, '2020-05-14 13:53:40.055523', 'OTRS', 1, '2020-05-19 13:50:54.434662');
+INSERT INTO accounted_time(system_object_id, system_worklog_id, system_customer, system_agent_id, system_accounted_time, system_created, system, is_valid, changed) VALUES (52, 5276, 'Company Ltd.', 'm.kelar', 15.00, '2020-05-14 13:53:40.065403', 'OTRS', 1, '2020-05-19 13:50:54.434662');
+INSERT INTO accounted_time(system_object_id, system_worklog_id, system_customer, system_agent_id, system_accounted_time, system_created, system, is_valid, changed) VALUES (53, 5277, 'Company Ltd.', 'm.kelar', 55.00, '2020-05-14 13:53:40.075456', 'OTRS', 1, '2020-05-19 13:50:54.434662');
+INSERT INTO accounted_time(system_object_id, system_worklog_id, system_customer, system_agent_id, system_accounted_time, system_created, system, is_valid, changed) VALUES (54, 5278, 'Company Ltd.', 'm.kelar', 115.00, '2020-05-14 13:53:40.085107', 'OTRS', 1, '2020-05-19 13:50:54.434662');
+INSERT INTO accounted_time(system_object_id, system_worklog_id, system_customer, system_agent_id, system_accounted_time, system_created, system, is_valid, changed) VALUES (55, 5279, 'Company Ltd.', 'm.kelar', 11.00, '2020-05-14 13:53:40.096151', 'OTRS', 1, '2020-05-19 13:50:54.434662');
+INSERT INTO accounted_time(system_object_id, system_worklog_id, system_customer, system_agent_id, system_accounted_time, system_created, system, is_valid, changed) VALUES (56, 5280, 'Company Ltd.', 'm.kelar', 5.00, '2020-05-14 13:53:40.106161', 'OTRS', 1, '2020-05-19 13:50:54.434662');
+INSERT INTO accounted_time(system_object_id, system_worklog_id, system_customer, system_agent_id, system_accounted_time, system_created, system, is_valid, changed) VALUES (57, 5281, 'Company Ltd.', 'm.kelar', 0.00, '2020-05-14 13:53:40.11521', 'OTRS', 1, '2020-05-19 13:50:54.434662');
+INSERT INTO accounted_time(system_object_id, system_worklog_id, system_customer, system_agent_id, system_accounted_time, system_created, system, is_valid, changed) VALUES (58, 5282, 'Company Ltd.', 'm.kelar', 5.00, '2020-05-14 13:53:41.486921', 'OTRS', 1, '2020-05-19 13:52:13.355415');

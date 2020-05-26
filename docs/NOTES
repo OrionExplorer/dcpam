@@ -1,0 +1,34 @@
+Notatki o hurtowni danych
+
+* http://www.cs.put.poznan.pl/pboinski/files/HD_ETL/pentaho_di_slajdy5_8.pdf
+
+* Różne możliwe źródła danych:
+	* DB (MySQL, PostgreSQL, MSSQL, Oracle etc.)
+	* XML (SOAP)
+	* JSON
+	* REST
+	* FTP
+	* zasób sieciowy
+	* plik lokalny (XLS, CSV etc.)
+
+* Kilka możliwości agregacji danych z źródłowych systemów tranzakcyjnych:
+	* oparte na źródłach danych (selecty na DB, inwazyjne)
+	* oparte na triggerach DB (inwazyjne)
+	* oparte na porównaniu snapshotów DB (inwazyjne)
+	* oparte na dziennikach logów DB (nieinwazyjne, najtrudniejsze w implementacji)
+
+* Przechowują cały zakres danych - po transformacji - wszystkie tabele ze wszystkich systemów
+
+* Nieodłącznym elementem jest proces ETL/ELT
+	ETL: Traditionally, ETL refers to the process of moving data from source systems into a data warehouse. The data is:
+		- Extracted – copied from the source system to a staging area
+		- Transformed – reformatted for the warehouse with business calculations applied
+		- Loaded – copied from the staging area into the warehouse
+	ELT: Instead of transforming the data before it’s written, ELT leverages the target system to do the transformation.
+		The data is copied to the target and then transformed in place. ELT makes sense when the target is a high-end data engine, such as a data appliance, Hadoop cluster, or cloud installation to name three examples. If this power is there, why not use it?
+
+* DATA MART: Focuses exclusively on one subject area and it is not designed in an enterprise context. Ex. Manufacturing, Finance, Sales. "Data warehouse. There is only one". "Every data mart for itself".
+	- dwa typy: stand alone data mart (dane zbierane bezpośrednio ze źródeł) i dependent data mart (dane zbierane z hurtowni)
+	- Source Data Systems -> Data Staging Area (ETL) -> Data & Metadata Storage Area -> End-User Presentation Tools
+	- Benefits: performance, KPI tracking
+	- https://www.slideshare.net/prachi091/data-mart-33156883
