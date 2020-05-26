@@ -11,6 +11,9 @@ It is ETL-based([2]) system with CDC([3]) solutions depending on the data source
 | SQL query for diffs (eg. IN, NOT IN)    | Database      |
 
 
+![Architecture overview](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/architecture.png)
+
+
 ### Data sources
 DCPAM is still work in progress, with following data sources already available:
 * PostgreSQL

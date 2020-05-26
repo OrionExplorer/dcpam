@@ -15,7 +15,7 @@ int CDC_ExtractQueryTypeValid( const char *sql ) {
     if(
         strstr( sql, "DELETE" ) ||
         strstr( sql, "INSERT" ) ||
-        strstr( sql, "DELETE" )
+        strstr( sql, "UPDATE" )
     ) {
         return 0;
     }
