@@ -1,5 +1,5 @@
 # DCPAM [![Build Status](https://travis-ci.org/OrionExplorer/dcpam.svg?branch=master)](https://travis-ci.org/OrionExplorer/dcpam)
-### _Data - Construct - Populate - Access - Manage_
+### _Data Construct - Populate - Access - Manage_
 Data warehouse or data mart.
 DCPAM helps to create central repositories of integrated data from one or disparate sources([1]).
 
