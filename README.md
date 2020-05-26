@@ -1,9 +1,9 @@
 # DCPAM [![Build Status](https://travis-ci.org/OrionExplorer/dcpam.svg?branch=master)](https://travis-ci.org/OrionExplorer/dcpam)
 ### _Data - Construct - Populate - Access - Manage_
 Data warehouse or data mart.
-DCPAM helps to create central repositories of integrated data from one or disparate sources[1].
+DCPAM helps to create central repositories of integrated data from one or disparate sources([1]).
 
-It is ETL[2]-based system with CDC[3] solutions depending on the data sources (currently it's database only):
+It is ETL-based([2]) system with CDC([3]) solutions depending on the data sources (currently it's database only):
 
 | CDC solution                            | Source        |
 |-----------------------------------------|:-------------:| 
