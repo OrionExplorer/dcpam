@@ -1,5 +1,5 @@
 # DCPAM [![Build Status](https://travis-ci.org/OrionExplorer/dcpam.svg?branch=master)](https://travis-ci.org/OrionExplorer/dcpam)
-### _Data Construct - Populate - Access - Manage_
+### _Data Construct-Populate-Access-Manage_
 Data warehouse or data mart.
 DCPAM helps to create central repositories of integrated data from one or disparate sources([1]).
 
@@ -9,6 +9,13 @@ It is ETL-based([2]) system with CDC([3]) solutions depending on the data source
 |-----------------------------------------|:-------------:| 
 | SQL query for timestamps (eg. MIN, MAX) | Database      |
 | SQL query for diffs (eg. IN, NOT IN)    | Database      |
+
+
+### Data sources
+DCPAM is still work in progress, with following data sources already available:
+* PostgreSQL
+* MySQL/MariaDB
+* MSSQL
 
 ### Configuration
 File `config.json` is DCPAM foundation. It defines:
