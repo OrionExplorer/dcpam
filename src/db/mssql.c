@@ -134,20 +134,15 @@ int MSSQL_exec(
     char            name[128];
     char            columns[256][64];
     DB_RECORD       *tmp_records = NULL;
-    wchar_t         *w_sql = NULL;
-    int             sql_len = ( int )strlen( sql );
 
     if( db_connection->active == 0 || db_connection->id == NULL ) {
         return 0;
     }
 
-    LOG_print( "\n[%s]\tMSSQL_exec( [%d] <'%s'>, \"%s\", ... ).\n", TIME_get_gmt(), sql_len, db_connection->id, sql );
+    LOG_print( "[%s]\tMSSQL_exec( <'%s'>, \"%s\", ... ).\n", TIME_get_gmt(), db_connection->id, sql );
 
-    dst_result->sql = ( char* )SAFECALLOC( sql_len + 1, sizeof( char ) );
-
-    w_sql = ( wchar_t* )SAFECALLOC( sql_len + 1, sizeof( wchar_t ) );
-    strncpy( dst_result->sql, sql, sql_len );
-    swprintf( w_sql, sql_len + 1, L"%hs", sql );
+    dst_result->sql = ( char* )SAFECALLOC( sql_length + 1, sizeof( char ) );
+    strncpy( dst_result->sql, sql, sql_length );
 
     memset( name, '\0', 128 );
 
@@ -158,7 +153,7 @@ int MSSQL_exec(
             return 0;
         }
 
-        SQLBindCol( stmt, 4, SQL_C_CHAR, name, 128, &indicator );
+        SQLBindCol( stmt, 4, SQL_C_CHAR, name, 127, &indicator );
 
         while( SQLFetch( stmt ) == SQL_SUCCESS ) {
             strncpy( columns[field_count], name, 64 );
@@ -172,11 +167,11 @@ int MSSQL_exec(
             LOG_print( "[%s][ERROR#2]\tMSSQL_exec.\n", TIME_get_gmt() );
             return 0;
         }
-        ret = SQLExecDirect( stmt, ( SQLWCHAR* )w_sql, SQL_NTS );
+        ret = SQLExecDirect( stmt, ( SQLWCHAR* )sql, SQL_NTS );
         if( ret != SQL_SUCCESS && ret != SQL_SUCCESS_WITH_INFO ) {
             if( SQL_SUCCESS == SQLGetDiagRec( SQL_HANDLE_STMT, stmt, 1, sqlstate, NULL, message, 1024, NULL ) ) {
                 wprintf( L"\nERROR. Message: \"%s\". SQLSTATE: \"%s\".\n", message, sqlstate );
-                wprintf( L"\nSQL:\n=========\n%s\n=========\n", w_sql );
+                wprintf( L"\nSQL:\n=========\n%hs\n=========\n", sql );
                 LOG_print("ERROR. Message: \"%s\"", message );
                 return 0;
             }

@@ -35,7 +35,7 @@ int DB_exec(
         } break;
 
         case D_MSSQL : {
-            q_ret = 0;//MSSQL_exec( &db->db_conn.mssql_conn, sql, sql_length, dst_result, param_values, params_count, param_lengths, param_formats, NULL/*(MYSQL_BIND*)param_types*/ );
+            q_ret = MSSQL_exec( &db->db_conn.mssql_conn, sql, sql_length, dst_result, param_values, params_count, param_lengths, param_formats, NULL/*(MYSQL_BIND*)param_types*/ );
         } break;
     }
 
