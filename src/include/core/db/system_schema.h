@@ -8,7 +8,7 @@
 typedef union {
     PG_CONNECTION           pgsql_conn;
     MYSQL_CONNECTION        mysql_conn;
-    ODBC_CONNECTION        mssql_conn;
+    ODBC_CONNECTION        odbc_conn;
 } DB_CONN;
 
 typedef enum {

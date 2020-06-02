@@ -8,7 +8,7 @@
 #include <sqlext.h>
 
 void ODBC_disconnect( ODBC_CONNECTION* db_connection ) {
-    printf( "[%s]\tMSSQL_disconnect( <'%s'> ).\n", TIME_get_gmt(), db_connection->id ? db_connection->id : "" );
+    printf( "[%s]\tODBC_disconnect( <'%s'> ).\n", TIME_get_gmt(), db_connection->id ? db_connection->id : "" );
 
     if( db_connection->connection != SQL_NULL_HDBC ) {
         SQLDisconnect( db_connection->connection );
@@ -25,7 +25,7 @@ void ODBC_disconnect( ODBC_CONNECTION* db_connection ) {
         db_connection->id = NULL;
     }
 
-    printf( "[%s]\tMSSQL_disconnect.\n", TIME_get_gmt() );
+    printf( "[%s]\tODBC_disconnect.\n", TIME_get_gmt() );
 }
 
 
@@ -139,7 +139,7 @@ int ODBC_exec(
         return 0;
     }
 
-    LOG_print( "[%s]\tMSSQL_exec( <'%s'>, \"%s\", ... ).\n", TIME_get_gmt(), db_connection->id, sql );
+    LOG_print( "[%s]\tODBC_exec( <'%s'>, \"%s\", ... ).\n", TIME_get_gmt(), db_connection->id, sql );
 
     dst_result->sql = SAFECALLOC( sql_length + 1, sizeof( char ) );
     strncpy( dst_result->sql, sql, sql_length );
@@ -149,7 +149,7 @@ int ODBC_exec(
     if( db_connection->connection ) {
         if( SQL_SUCCESS != SQLAllocHandle( SQL_HANDLE_STMT, db_connection->connection, &stmt ) ) {
             LOG_print( "error. SQLAllocHandle(SQL_HANDLE_STMT, ... ) failed.\n" );
-            LOG_print( "[%s][ERROR#3]\tMSSQL_exec.\n", TIME_get_gmt() );
+            LOG_print( "[%s][ERROR#3]\tODBC_exec.\n", TIME_get_gmt() );
             return 0;
         }
 
@@ -164,7 +164,7 @@ int ODBC_exec(
         SQLFreeHandle( SQL_HANDLE_STMT, stmt );
         if( SQL_SUCCESS != SQLAllocHandle( SQL_HANDLE_STMT, db_connection->connection, &stmt ) ) {
             LOG_print( "error. SQLAllocHandle(SQL_HANDLE_STMT, ... ) failed.\n" );
-            LOG_print( "[%s][ERROR#2]\tMSSQL_exec.\n", TIME_get_gmt() );
+            LOG_print( "[%s][ERROR#2]\tODBC_exec.\n", TIME_get_gmt() );
             return 0;
         }
         ret = SQLExecDirect( stmt, ( SQLWCHAR* )sql, SQL_NTS );
@@ -175,7 +175,7 @@ int ODBC_exec(
                 LOG_print("ERROR. Message: \"%s\"", message );
                 return 0;
             }
-            LOG_print( "[%s][ERROR#1]\tMSSQL_exec.\n", TIME_get_gmt() );
+            LOG_print( "[%s][ERROR#1]\tODBC_exec.\n", TIME_get_gmt() );
             return 0;
         }
 
@@ -202,7 +202,7 @@ int ODBC_exec(
         dst_result->row_count = row_count;
         SQLFreeHandle( SQL_HANDLE_STMT, stmt );
     }
-    LOG_print( "[%s]\tMSSQL_exec.\n", TIME_get_gmt() );
+    LOG_print( "[%s]\tODBC_exec.\n", TIME_get_gmt() );
 
     return 1;
 }
