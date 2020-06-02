@@ -34,8 +34,8 @@ int DB_exec(
             q_ret = MYSQL_exec( &db->db_conn.mysql_conn, sql, sql_length, dst_result, param_values, params_count, param_lengths, param_formats, NULL/*(MYSQL_BIND*)param_types*/ );
         } break;
 
-        case D_MSSQL : {
-            q_ret = MSSQL_exec( &db->db_conn.mssql_conn, sql, sql_length, dst_result, param_values, params_count, param_lengths, param_formats, NULL/*(MYSQL_BIND*)param_types*/ );
+        case D_ODBC : {
+            q_ret = ODBC_exec( &db->db_conn.mssql_conn, sql, sql_length, dst_result, param_values, params_count, param_lengths, param_formats, NULL/*(MYSQL_BIND*)param_types*/ );
         } break;
     }
 
@@ -301,10 +301,10 @@ void DATABASE_SYSTEM_DB_free( DATABASE_SYSTEM_DB *db ) {
             LOG_print( "\t· Driver: \"MySQL\". Disconnecting...\n" );
             MYSQL_disconnect( &db->db_conn.mysql_conn );
         } break;
-        case D_MSSQL : {
+        case D_ODBC : {
             
             LOG_print( "\t· Driver: \"MSSQL\". Disconnecting...\n" );
-            MSSQL_disconnect( &db->db_conn.mssql_conn );
+            ODBC_disconnect( &db->db_conn.mssql_conn );
         }
         default : {
         }
@@ -326,9 +326,9 @@ int DATABASE_SYSTEM_DB_init( DATABASE_SYSTEM_DB *db ) {
             LOG_print( "\t· Driver: \"MySQL\". Connecting..." );
             ret = MYSQL_connect( &db->db_conn.mysql_conn, db->ip, db->port, db->db, db->user, db->password, db->connection_string );
         } break;
-        case D_MSSQL : {
+        case D_ODBC : {
             LOG_print( "\t· Driver: \"SQL Server\". Connecting (%s)...", db->connection_string );
-            ret = MSSQL_connect( &db->db_conn.mssql_conn, db->ip, db->port, db->db, db->user, db->password, db->connection_string );
+            ret = ODBC_connect( &db->db_conn.mssql_conn, db->ip, db->port, db->db, db->user, db->password, db->connection_string );
         } break;
         default : {
             LOG_print( "Error: unknown driver: \"%d\".\n", db->driver );

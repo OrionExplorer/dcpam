@@ -3,18 +3,18 @@
 
 #include "../../db/postgresql.h"
 #include "../../db/mysql.h"
-#include "../../db/mssql.h"
+#include "../../db/odbc.h"
 
 typedef union {
     PG_CONNECTION           pgsql_conn;
     MYSQL_CONNECTION        mysql_conn;
-    MSSQL_CONNECTION        mssql_conn;
+    ODBC_CONNECTION        mssql_conn;
 } DB_CONN;
 
 typedef enum {
     D_POSTGRESQL = 1,
     D_MYSQL,
-    D_MSSQL
+    D_ODBC
 } DB_DRIVER;
 
 typedef struct DATABASE_SYSTEM_DB {

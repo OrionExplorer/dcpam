@@ -7,7 +7,7 @@
 #include "include/core/schema.h"
 
 #include "include/db/mysql.h"
-#include "include/db/mssql.h"
+#include "include/db/odbc.h"
 #include "include/db/postgresql.h"
 #include "include/third-party/cJSON.h"
 #include "include/utils/memory.h"

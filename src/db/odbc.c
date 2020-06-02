@@ -1,4 +1,4 @@
-#include "../include/db/mssql.h"
+#include "../include/db/odbc.h"
 #include "../include/utils/time.h"
 #include "../include/utils/log.h"
 #include "../include/utils/memory.h"
@@ -7,7 +7,7 @@
 #include <sql.h>
 #include <sqlext.h>
 
-void MSSQL_disconnect( MSSQL_CONNECTION* db_connection ) {
+void ODBC_disconnect( ODBC_CONNECTION* db_connection ) {
     printf( "[%s]\tMSSQL_disconnect( <'%s'> ).\n", TIME_get_gmt(), db_connection->id ? db_connection->id : "" );
 
     if( db_connection->connection != SQL_NULL_HDBC ) {
@@ -29,8 +29,8 @@ void MSSQL_disconnect( MSSQL_CONNECTION* db_connection ) {
 }
 
 
-int MSSQL_connect(
-    MSSQL_CONNECTION*   db_connection,
+int ODBC_connect(
+    ODBC_CONNECTION*   db_connection,
     const char*         host,
     const int           port,
     const char*         dbname,
@@ -113,8 +113,8 @@ int MSSQL_connect(
 }
 
 
-int MSSQL_exec(
-    MSSQL_CONNECTION    *db_connection,
+int ODBC_exec(
+    ODBC_CONNECTION    *db_connection,
     const char          *sql,
     unsigned long       sql_length,
     DB_QUERY            *dst_result,
@@ -141,7 +141,7 @@ int MSSQL_exec(
 
     LOG_print( "[%s]\tMSSQL_exec( <'%s'>, \"%s\", ... ).\n", TIME_get_gmt(), db_connection->id, sql );
 
-    dst_result->sql = ( char* )SAFECALLOC( sql_length + 1, sizeof( char ) );
+    dst_result->sql = SAFECALLOC( sql_length + 1, sizeof( char ) );
     strncpy( dst_result->sql, sql, sql_length );
 
     memset( name, '\0', 128 );

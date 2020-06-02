@@ -20,8 +20,8 @@ postgresql.o: src/db/postgresql.c
 mysql.o: src/db/mysql.c
 	gcc -c src/db/mysql.c $(CFLAGS)
 
-mssql.o: src/db/mssql.c
-	gcc -c src/db/mssql.c $(CFLAGS)
+odbc.o: src/db/odbc.c
+	gcc -c src/db/odbc.c $(CFLAGS)
 
 dcpam.o: src/dcpam.c
 	gcc -c src/dcpam.c $(CFLAGS)
@@ -62,6 +62,6 @@ memory.o: src/utils/memory.c
 strings.o: src/utils/strings.c
 	gcc -c src/utils/strings.c $(CFLAGS)
 
-dcpam: dcpam.o mysql.o mssql.o postgresql.o log.o time.o filesystem.o cJSON.o memory.o db.o worker.o system.o extract.o transform.o load.o strings.o
-	gcc mysql.o mssql.o postgresql.o dcpam.o log.o time.o filesystem.o cJSON.o memory.o db.o worker.o system.o extract.o transform.o load.o strings.o -o dcpam $(LIBS)
+dcpam: dcpam.o mysql.o odbc.o postgresql.o log.o time.o filesystem.o cJSON.o memory.o db.o worker.o system.o extract.o transform.o load.o strings.o
+	gcc mysql.o odbc.o postgresql.o dcpam.o log.o time.o filesystem.o cJSON.o memory.o db.o worker.o system.o extract.o transform.o load.o strings.o -o dcpam $(LIBS)
 	rm *.o
