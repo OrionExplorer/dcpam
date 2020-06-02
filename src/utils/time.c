@@ -6,8 +6,8 @@
 
 
 char* TIME_get_gmt( void ) {
-    return NULL;
-    /*static char s[ TIME_BUFF_SIZE ];
+    /*return NULL;*/
+    static char s[ TIME_BUFF_SIZE ];
     struct tm tim;
     time_t now;
 
@@ -15,7 +15,7 @@ char* TIME_get_gmt( void ) {
     tim = *( localtime( &now ) );
     strftime( s, TIME_BUFF_SIZE, DATETIME, &tim );
 
-    return ( ( char* )&s );*/
+    return ( ( char* )&s );
 }
 
 

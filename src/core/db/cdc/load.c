@@ -3,16 +3,17 @@
 #include "../../../include/utils/time.h"
 #include "../../../include/utils/memory.h"
 #include "../../../include/core/schema.h"
+#include "../../../include/core/db/system.h"
+#include "../../../include/utils/log.h"
+#include "../../../include/core/db/cdc/load.h"
 
 extern DCPAM_APP           APP;
-
 
 void CDC_LoadGeneric( DB_SYSTEM_CDC_LOAD *load, DB_SYSTEM_CDC_LOAD_QUERY *load_element, DATABASE_SYSTEM_DB *db, DB_QUERY *data );
 
 
 void CDC_LoadGeneric( DB_SYSTEM_CDC_LOAD *load, DB_SYSTEM_CDC_LOAD_QUERY *load_element, DATABASE_SYSTEM_DB *db, DB_QUERY *data ) {
     DB_QUERY            sql_res;
-    size_t              str_len;
     int                 query_ret = 0;
     int                 i = 0, j = 0, k = 0;
     char                **q_values = NULL;
@@ -62,7 +63,7 @@ void CDC_LoadGeneric( DB_SYSTEM_CDC_LOAD *load, DB_SYSTEM_CDC_LOAD_QUERY *load_e
 
             DB_QUERY_init( &sql_res );
             /* Perform DB query and store result in *data */
-            query_ret = DB_exec( &APP.DB, load_element->sql, strlen( load_element->sql ), &sql_res, q_values, q_values_len, q_lengths, q_formats, q_types );
+            query_ret = DB_exec( &APP.DB, load_element->sql, strlen( load_element->sql ), &sql_res, q_values, q_values_len, q_lengths, q_formats, ( const char *)q_types );
 
             /* Free memory before next iteration */
             for( j = 0; j < load_element->extracted_values_len; j++ ) {
@@ -79,7 +80,7 @@ void CDC_LoadGeneric( DB_SYSTEM_CDC_LOAD *load, DB_SYSTEM_CDC_LOAD_QUERY *load_e
 
 }
 
-void DB_CDC_LoadInserted( DB_SYSTEM_CDC_LOAD *load, DATABASE_SYSTEM_DB *db, DB_QUERY *data ) {
+void DB_CDC_LoadInserted( DB_SYSTEM_CDC_LOAD* load, DATABASE_SYSTEM_DB* db, DB_QUERY* data ) {
     if( load && db && data ) {
         LOG_print( "\t· [CDC - LOAD::INSERTED (%d rows)]:\n", data->row_count );
         if( data->row_count == 0 ) {

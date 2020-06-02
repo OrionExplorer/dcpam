@@ -13,6 +13,7 @@
 #include "include/utils/memory.h"
 #include "include/utils/time.h"
 #include "include/utils/strings.h"
+#include "include/core/db/system.h"
 
 #pragma warning( disable : 6031 )
 
@@ -76,6 +77,7 @@ int DCPAM_load_configuration( void ) {
     cJSON           *cfg_app_db_driver = NULL;
     cJSON           *cfg_app_db_user = NULL;
     cJSON           *cfg_app_db_password = NULL;
+    cJSON           *cfg_app_db_connection_string = NULL;
     cJSON           *cfg_app_db_db = NULL;
     cJSON           *cfg_app_data = NULL;
     cJSON           *cfg_app_data_item = NULL;
@@ -104,6 +106,7 @@ int DCPAM_load_configuration( void ) {
     cJSON           *cfg_system_user = NULL;
     cJSON           *cfg_system_db = NULL;
     cJSON           *cfg_system_password = NULL;
+    cJSON           *cfg_system_connection_string = NULL;
     cJSON           *cfg_system_queries_array = NULL;
     cJSON           *cfg_system_query_item = NULL;
     cJSON           *cfg_system_query_item_name = NULL;
@@ -159,12 +162,7 @@ int DCPAM_load_configuration( void ) {
     DATABASE_SYSTEM_QUERY       tmp_queries[ MAX_SYSTEM_QUERIES ];
     DB_SYSTEM_CDC   tmp_cdc;
 
-    char                tmp_extracted_inserted_values[ MAX_CDC_COLUMNS ][ 32 ];
-    char                tmp_extracted_deleted_values[ MAX_CDC_COLUMNS ][ 32 ];
-    char                tmp_extracted_modified_values[ MAX_CDC_COLUMNS ][ 32 ];
-
     int                 tmp_queries_count = 0;
-    char                tmp_columns[SMALL_BUFF_SIZE][SMALL_BUFF_SIZE];
     int                 tmp_columns_len = 0;
     char                tmp_data_types[SMALL_BUFF_SIZE][SMALL_BUFF_SIZE];
     int                 tmp_data_types_len = 0;
@@ -190,6 +188,8 @@ int DCPAM_load_configuration( void ) {
                         LOG_print( "\t· %s", APP.name );
                     } else {
                         LOG_print( "ERROR: \"app.name\" key not found.\n" );
+                        cJSON_Delete( config_json );
+                        free( config_string ); config_string = NULL;
                         return FALSE;
                     }
 
@@ -202,6 +202,8 @@ int DCPAM_load_configuration( void ) {
                         LOG_print( " v%s.\n", APP.version );
                     } else {
                         LOG_print( "ERROR: \"app.version\" key not found.\n" );
+                        cJSON_Delete( config_json );
+                        free( config_string ); config_string = NULL;
                         return FALSE;
                     }
 
@@ -232,7 +234,12 @@ int DCPAM_load_configuration( void ) {
                         if( cfg_app_db_password == NULL ) {
                             LOG_print( "ERROR: \"app.DB.password\" key not found.\n" );
                         }
-                        
+
+                        cfg_app_db_connection_string = cJSON_GetObjectItem( cfg_app_db, "connection_string" );
+                        if( cfg_app_db_connection_string == NULL ) {
+                            LOG_print( "ERROR: \"app.DB.connection_string\" key not found.\n" );
+                        }
+
                         cfg_app_db_db = cJSON_GetObjectItem( cfg_app_db, "db" );
                         if( cfg_app_db_db == NULL ) {
                             LOG_print( "ERROR: \"app.DB.db\" key not found.\n" );
@@ -245,12 +252,15 @@ int DCPAM_load_configuration( void ) {
                             cfg_app_db_user->valuestring,
                             cfg_app_db_password->valuestring,
                             cfg_app_db_db->valuestring,
+                            cfg_app_db_connection_string->valuestring,
                             &APP.DB,
                             TRUE
                         );
                     }
                      else {
                         LOG_print( "ERROR: \"app.DB\" key not found.\n" );
+                        cJSON_Delete( config_json );
+                        free( config_string ); config_string = NULL;
                         return FALSE;
                     }
 
@@ -264,6 +274,8 @@ int DCPAM_load_configuration( void ) {
                             cfg_app_data_item_id = cJSON_GetObjectItem( cfg_app_data_item, "id" );
                             if( cfg_app_data_item_id == NULL ) {
                                 LOG_print( "ERROR: \"app.DATA[%d].id\" key not found.\n", i );
+                                cJSON_Delete( config_json );
+                                free( config_string ); config_string = NULL;
                                 return FALSE;
                             }
                             str_len = strlen( cfg_app_data_item_id->valuestring );
@@ -274,6 +286,8 @@ int DCPAM_load_configuration( void ) {
                             cfg_app_data_item_name = cJSON_GetObjectItem( cfg_app_data_item, "name" );
                             if( cfg_app_data_item_name == NULL ) {
                                 LOG_print( "ERROR: \"app.DATA[%d].name\" key not found.\n", i );
+                                cJSON_Delete( config_json );
+                                free( config_string ); config_string = NULL;
                                 return FALSE;
                             }
                             str_len = strlen( cfg_app_data_item_name->valuestring );
@@ -284,6 +298,8 @@ int DCPAM_load_configuration( void ) {
                             cfg_app_data_item_db_table_name = cJSON_GetObjectItem( cfg_app_data_item, "db_table_name" );
                             if( cfg_app_data_item_db_table_name == NULL ) {
                                 LOG_print( "ERROR: \"app.DATA[%d].db_table_name\" key not found.\n", i );
+                                cJSON_Delete( config_json );
+                                free( config_string ); config_string = NULL;
                                 return FALSE;
                             }
                             str_len = strlen( cfg_app_data_item_db_table_name->valuestring );
@@ -309,12 +325,16 @@ int DCPAM_load_configuration( void ) {
                                 LOG_print( "]\n" );
                             } else {
                                 LOG_print( "ERROR: \"app.DATA[%d].columns\" key not found.\n", i );
+                                cJSON_Delete( config_json );
+                                free( config_string ); config_string = NULL;
                                 return FALSE;
                             }
 
                             cfg_app_data_item_description = cJSON_GetObjectItem( cfg_app_data_item, "description" );
                             if( cfg_app_data_item_description == NULL ) {
                                 LOG_print( "ERROR: \"app.DATA[%d].description\" key not found.\n", i );
+                                cJSON_Delete( config_json );
+                                free( config_string ); config_string = NULL;
                                 return FALSE;
                             }
                             str_len = strlen( cfg_app_data_item_description->valuestring );
@@ -331,6 +351,7 @@ int DCPAM_load_configuration( void ) {
                                     cfg_app_data_actions_item_name = cJSON_GetObjectItem( cfg_app_data_actions_item, "name" );
                                     if( cfg_app_data_actions_item_name == NULL ) {
                                         LOG_print( "ERROR: \"app.DATA[%d].actions[%d].name\" key not found.\n", i, j );
+                                        cJSON_Delete( config_json );
                                         return FALSE;
                                     }
                                     str_len = strlen( cfg_app_data_actions_item_name->valuestring );
@@ -341,6 +362,7 @@ int DCPAM_load_configuration( void ) {
                                     cfg_app_data_actions_item_description = cJSON_GetObjectItem( cfg_app_data_actions_item, "description" );
                                     if( cfg_app_data_item_description == NULL ) {
                                         LOG_print( "ERROR: \"app.DATA[%d].actions[%d].description\" key not found.\n", i, j );
+                                        cJSON_Delete( config_json );
                                         return FALSE;
                                     }
                                     str_len = strlen( cfg_app_data_actions_item_description->valuestring );
@@ -351,6 +373,7 @@ int DCPAM_load_configuration( void ) {
                                     cfg_app_data_actions_item_type = cJSON_GetObjectItem( cfg_app_data_actions_item, "type" );
                                     if( cfg_app_data_actions_item_type == NULL ) {
                                         LOG_print( "ERROR: \"app.DATA[%d].actions[%d].type\" key not found.\n", i, j );
+                                        cJSON_Delete( config_json );
                                         return FALSE;
                                     }
                                     APP.DATA[ i ].actions[ j ].type = cfg_app_data_actions_item_type->valueint;
@@ -359,6 +382,7 @@ int DCPAM_load_configuration( void ) {
                                     cfg_app_data_actions_item_internal = cJSON_GetObjectItem( cfg_app_data_actions_item, "internal" );
                                     if( cfg_app_data_actions_item_internal == NULL ) {
                                         LOG_print( "ERROR: \"app.DATA[%d].actions[%d].internal\" key not found.\n", i, j );
+                                        cJSON_Delete( config_json );
                                         return FALSE;
                                     }
                                     APP.DATA[ i ].actions[ j ].internal = cfg_app_data_actions_item_internal->valueint;
@@ -367,6 +391,7 @@ int DCPAM_load_configuration( void ) {
                                     cfg_app_data_actions_item_condition = cJSON_GetObjectItem( cfg_app_data_actions_item, "condition" );
                                     if( cfg_app_data_actions_item_condition == NULL ) {
                                         LOG_print( "ERROR: \"app.DATA[%d].actions[%d].condition\" key not found.\n", i, j );
+                                        cJSON_Delete( config_json );
                                         return FALSE;
                                     }
                                     str_len = strlen( cfg_app_data_actions_item_condition->valuestring );
@@ -377,6 +402,7 @@ int DCPAM_load_configuration( void ) {
                                     cfg_app_data_actions_item_sql = cJSON_GetObjectItem( cfg_app_data_actions_item, "sql" );
                                     if( cfg_app_data_actions_item_sql == NULL ) {
                                         LOG_print( "ERROR: \"app.DATA[%d].actions[%d].sql\" key not found.\n", i, j );
+                                        cJSON_Delete( config_json );
                                         return FALSE;
                                     }
                                     str_len = strlen( cfg_app_data_actions_item_sql->valuestring );
@@ -386,15 +412,20 @@ int DCPAM_load_configuration( void ) {
                                 }
                             } else {
                                 LOG_print( "ERROR: \"app.DATA[%d].actions\" key not found.\n", i );
+                                cJSON_Delete( config_json );
+                                free( config_string ); config_string = NULL;
                                 return FALSE;
                             }
                         }
                     } else {
                         LOG_print( "ERROR: \"app.DATA\" key not found.\n " );
+                        cJSON_Delete( config_json );
+                        free( config_string ); config_string = NULL;
                         return FALSE;   
                     }
                 } else {
                     LOG_print( "ERROR: \"app\" key not found.\n " );
+                    cJSON_Delete( config_json );
                     return FALSE;
                 }
 
@@ -407,6 +438,8 @@ int DCPAM_load_configuration( void ) {
                         cfg_system_enabled = cJSON_GetObjectItem( array_value, "enabled" );
                         if( cfg_system_enabled == NULL ) {
                             LOG_print( "ERROR: \"system[%d].enabled\" key not found.\n", i );
+                            cJSON_Delete( config_json );
+                            free( config_string ); config_string = NULL;
                             return FALSE;
                         } else {
                             if( cfg_system_enabled->valueint == 0 ) {
@@ -417,6 +450,8 @@ int DCPAM_load_configuration( void ) {
                         cfg_system_name = cJSON_GetObjectItem( array_value, "name" );
                         if( cfg_system_name == NULL ) {
                             LOG_print( "ERROR: \"system[%d].name\" key not found.\n", i );
+                            cJSON_Delete( config_json );
+                            free( config_string ); config_string = NULL;
                             return FALSE;
                         }
                         LOG_print("\n[%s] Loading system data: %s.\n", TIME_get_gmt(), cfg_system_name->valuestring);
@@ -424,37 +459,58 @@ int DCPAM_load_configuration( void ) {
                         cfg_system_info = cJSON_GetObjectItem( array_value, "DB");
                         if( cfg_system_info == NULL ) {
                             LOG_print( "ERROR: \"system[%d].DB\" key not found.\n", i );
+                            cJSON_Delete( config_json );
+                            free( config_string ); config_string = NULL;
                             return FALSE;
                         }
                         
                         cfg_system_ip = cJSON_GetObjectItem( cfg_system_info, "ip");
                         if( cfg_system_ip == NULL ) {
                             LOG_print( "ERROR: \"system[%d].DB.ip\" key not found.\n", i );
+                            cJSON_Delete( config_json );
+                            free( config_string ); config_string = NULL;
                             return FALSE;
                         }
                         cfg_system_port = cJSON_GetObjectItem( cfg_system_info, "port");
                         if( cfg_system_port == NULL ) {
                             LOG_print( "ERROR: \"system[%d].DB.port\" key not found.\n", i );
+                            cJSON_Delete( config_json );
+                            free( config_string ); config_string = NULL;
                             return FALSE;
                         }
                         cfg_system_driver = cJSON_GetObjectItem( cfg_system_info, "driver");
                         if( cfg_system_driver == NULL ) {
                             LOG_print( "ERROR: \"system[%d].DB.driver\" key not found.\n", i );
+                            cJSON_Delete( config_json );
+                            free( config_string ); config_string = NULL;
                             return FALSE;
                         }
                         cfg_system_user = cJSON_GetObjectItem( cfg_system_info, "user");
                         if( cfg_system_user == NULL ) {
                             LOG_print( "ERROR: \"system[%d].DB.user\" key not found.\n", i );
+                            cJSON_Delete( config_json );
+                            free( config_string ); config_string = NULL;
                             return FALSE;
                         }
                         cfg_system_db = cJSON_GetObjectItem( cfg_system_info, "db");
                         if( cfg_system_db == NULL ) {
                             LOG_print( "ERROR: \"system[%d].DB.db\" key not found.\n", i );
+                            cJSON_Delete( config_json );
+                            free( config_string ); config_string = NULL;
                             return FALSE;
                         }
                         cfg_system_password = cJSON_GetObjectItem( cfg_system_info, "password");
                         if( cfg_system_password == NULL ) {
                             LOG_print( "ERROR: \"system[%d].DB.password\" key not found.\n", i );
+                            cJSON_Delete( config_json );
+                            free( config_string ); config_string = NULL;
+                            return FALSE;
+                        }
+                        cfg_system_connection_string = cJSON_GetObjectItem( cfg_system_info, "connection_string");
+                        if( cfg_system_connection_string == NULL ) {
+                            LOG_print( "ERROR: \"system[%d].DB.connection_string\" key not found.\n", i );
+                            cJSON_Delete( config_json );
+                            free( config_string ); config_string = NULL;
                             return FALSE;
                         }
 
@@ -464,6 +520,8 @@ int DCPAM_load_configuration( void ) {
                         cfg_system_queries_array = cJSON_GetObjectItem( array_value, "queries" );
                         if( cfg_system_queries_array == NULL ) {
                             LOG_print( "ERROR: \"system[%d].queries\" key not found.\n", i );
+                            cJSON_Delete( config_json );
+                            free( config_string ); config_string = NULL;
                             return FALSE;
                         }
                         for( j = 0; j < cJSON_GetArraySize( cfg_system_queries_array ); j++ ) {
@@ -472,12 +530,16 @@ int DCPAM_load_configuration( void ) {
                             cfg_system_query_item_name = cJSON_GetObjectItem( cfg_system_query_item, "name");
                             if( cfg_system_query_item_name == NULL ) {
                                 LOG_print( "ERROR: \"system[%d].queries[%d].name\" key not found.\n", i, j );
+                                cJSON_Delete( config_json );
+                                free( config_string ); config_string = NULL;
                                 return FALSE;
                             }
 
                             cfg_system_query_item_change_data_capture = cJSON_GetObjectItem( cfg_system_query_item, "change_data_capture" );
                             if( cfg_system_query_item_change_data_capture == NULL ) {
                                 LOG_print( "ERROR: \"system[%d].queries[%d].change_data_capture\" key not found.\n", i, j );
+                                cJSON_Delete( config_json );
+                                free( config_string ); config_string = NULL;
                                 return FALSE;
                             }
                             /*
@@ -486,6 +548,8 @@ int DCPAM_load_configuration( void ) {
                             cfg_system_query_item_change_data_capture_extract = cJSON_GetObjectItem( cfg_system_query_item_change_data_capture, "extract" );
                             if( cfg_system_query_item_change_data_capture_extract == NULL ) {
                                 LOG_print( "ERROR: \"system[%d].queries[%d].change_data_capture.extract\" key not found.\n", i, j );
+                                cJSON_Delete( config_json );
+                                free( config_string ); config_string = NULL;
                                 return FALSE;
                             }
                             /*
@@ -494,6 +558,8 @@ int DCPAM_load_configuration( void ) {
                             cfg_system_query_item_change_data_capture_extract_inserted = cJSON_GetObjectItem( cfg_system_query_item_change_data_capture_extract, "inserted" );
                             if( cfg_system_query_item_change_data_capture_extract_inserted == NULL ) {
                                 LOG_print( "ERROR: \"system[%d].queries[%d].change_data_capture.extract.inserted\" key not found.\n", i, j );
+                                cJSON_Delete( config_json );
+                                free( config_string ); config_string = NULL;
                                 return FALSE;
                             }
                             /*
@@ -502,6 +568,8 @@ int DCPAM_load_configuration( void ) {
                             cfg_system_query_item_change_data_capture_extract_inserted_primary_db = cJSON_GetObjectItem( cfg_system_query_item_change_data_capture_extract_inserted, "primary_db" );
                             if( cfg_system_query_item_change_data_capture_extract_inserted_primary_db == NULL ) {
                                 LOG_print( "ERROR: \"system[%d].queries[%d].change_data_capture.extract.inserted.primary_db\" key not found.\n", i, j );
+                                cJSON_Delete( config_json );
+                                free( config_string ); config_string = NULL;
                                 return FALSE;
                             }
                             str_len = strlen( cfg_system_query_item_change_data_capture_extract_inserted_primary_db->valuestring );
@@ -517,6 +585,8 @@ int DCPAM_load_configuration( void ) {
                             cfg_system_query_item_change_data_capture_extract_inserted_primary_db_sql = cJSON_GetObjectItem( cfg_system_query_item_change_data_capture_extract_inserted, "primary_db_sql" );
                             if( cfg_system_query_item_change_data_capture_extract_inserted_primary_db_sql == NULL ) {
                                 LOG_print( "ERROR: \"system[%d].queries[%d].change_data_capture.extract.inserted.primary_db_sql\" key not found.\n", i, j );
+                                cJSON_Delete( config_json );
+                                free( config_string ); config_string = NULL;
                                 return FALSE;
                             }
                             str_len = strlen( cfg_system_query_item_change_data_capture_extract_inserted_primary_db_sql->valuestring );
@@ -532,6 +602,8 @@ int DCPAM_load_configuration( void ) {
                             cfg_system_query_item_change_data_capture_extract_inserted_secondary_db = cJSON_GetObjectItem( cfg_system_query_item_change_data_capture_extract_inserted, "secondary_db" );
                             if( cfg_system_query_item_change_data_capture_extract_inserted_secondary_db == NULL ) {
                                 LOG_print( "ERROR: \"system[%d].queries[%d].change_data_capture.extract.inserted.secondary_db\" key not found.\n", i, j );
+                                cJSON_Delete( config_json );
+                                free( config_string ); config_string = NULL;
                                 return FALSE;
                             }
                             str_len = strlen( cfg_system_query_item_change_data_capture_extract_inserted_secondary_db->valuestring );
@@ -547,6 +619,8 @@ int DCPAM_load_configuration( void ) {
                             cfg_system_query_item_change_data_capture_extract_inserted_secondary_db_sql = cJSON_GetObjectItem( cfg_system_query_item_change_data_capture_extract_inserted, "secondary_db_sql" );
                             if( cfg_system_query_item_change_data_capture_extract_inserted_secondary_db_sql == NULL ) {
                                 LOG_print( "ERROR: \"system[%d].queries[%d].change_data_capture.extract.inserted.secondary_db_sql\" key not found.\n", i, j );
+                                cJSON_Delete( config_json );
+                                free( config_string ); config_string = NULL;
                                 return FALSE;
                             }
                             str_len = strlen( cfg_system_query_item_change_data_capture_extract_inserted_secondary_db_sql->valuestring );
@@ -562,6 +636,8 @@ int DCPAM_load_configuration( void ) {
                             cfg_system_query_item_change_data_capture_extract_modified = cJSON_GetObjectItem( cfg_system_query_item_change_data_capture_extract, "modified" );
                             if( cfg_system_query_item_change_data_capture_extract_modified == NULL ) {
                                 LOG_print( "ERROR: \"system[%d].queries[%d].change_data_capture.extract.modified\" key not found.\n", i, j );
+                                cJSON_Delete( config_json );
+                                free( config_string ); config_string = NULL;
                                 return FALSE;
                             }
                             /*
@@ -570,6 +646,8 @@ int DCPAM_load_configuration( void ) {
                             cfg_system_query_item_change_data_capture_extract_modified_primary_db = cJSON_GetObjectItem( cfg_system_query_item_change_data_capture_extract_modified, "primary_db" );
                             if( cfg_system_query_item_change_data_capture_extract_modified_primary_db == NULL ) {
                                 LOG_print( "ERROR: \"system[%d].queries[%d].change_data_capture.extract.modified.primary_db\" key not found.\n", i, j );
+                                cJSON_Delete( config_json );
+                                free( config_string ); config_string = NULL;
                                 return FALSE;
                             }
                             str_len = strlen( cfg_system_query_item_change_data_capture_extract_modified_primary_db->valuestring );
@@ -585,6 +663,8 @@ int DCPAM_load_configuration( void ) {
                             cfg_system_query_item_change_data_capture_extract_modified_primary_db_sql = cJSON_GetObjectItem( cfg_system_query_item_change_data_capture_extract_modified, "primary_db_sql" );
                             if( cfg_system_query_item_change_data_capture_extract_modified_primary_db_sql == NULL ) {
                                 LOG_print( "ERROR: \"system[%d].queries[%d].change_data_capture.extract.modified.primary_db_sql\" key not found.\n", i, j );
+                                cJSON_Delete( config_json );
+                                free( config_string ); config_string = NULL;
                                 return FALSE;
                             }
                             str_len = strlen( cfg_system_query_item_change_data_capture_extract_modified_primary_db_sql->valuestring );
@@ -600,6 +680,8 @@ int DCPAM_load_configuration( void ) {
                             cfg_system_query_item_change_data_capture_extract_modified_secondary_db = cJSON_GetObjectItem( cfg_system_query_item_change_data_capture_extract_modified, "secondary_db" );
                             if( cfg_system_query_item_change_data_capture_extract_modified_secondary_db == NULL ) {
                                 LOG_print( "ERROR: \"system[%d].queries[%d].change_data_capture.extract.modified.secondary_db\" key not found.\n", i, j );
+                                cJSON_Delete( config_json );
+                                free( config_string ); config_string = NULL;
                                 return FALSE;
                             }
                             str_len = strlen( cfg_system_query_item_change_data_capture_extract_modified_secondary_db->valuestring );
@@ -615,6 +697,8 @@ int DCPAM_load_configuration( void ) {
                             cfg_system_query_item_change_data_capture_extract_modified_secondary_db_sql = cJSON_GetObjectItem( cfg_system_query_item_change_data_capture_extract_modified, "secondary_db_sql" );
                             if( cfg_system_query_item_change_data_capture_extract_modified_secondary_db_sql == NULL ) {
                                 LOG_print( "ERROR: \"system[%d].queries[%d].change_data_capture.extract.modified.secondary_db_sql\" key not found.\n", i, j );
+                                cJSON_Delete( config_json );
+                                free( config_string ); config_string = NULL;
                                 return FALSE;
                             }
                             str_len = strlen( cfg_system_query_item_change_data_capture_extract_modified_secondary_db_sql->valuestring );
@@ -630,6 +714,8 @@ int DCPAM_load_configuration( void ) {
                             cfg_system_query_item_change_data_capture_extract_deleted = cJSON_GetObjectItem( cfg_system_query_item_change_data_capture_extract, "deleted" );
                             if( cfg_system_query_item_change_data_capture_extract_deleted == NULL ) {
                                 LOG_print( "ERROR: \"system[%d].queries[%d].change_data_capture.extract.deleted\" key not found.\n", i, j );
+                                cJSON_Delete( config_json );
+                                free( config_string ); config_string = NULL;
                                 return FALSE;
                             }
                             /*
@@ -638,6 +724,8 @@ int DCPAM_load_configuration( void ) {
                             cfg_system_query_item_change_data_capture_extract_deleted_primary_db = cJSON_GetObjectItem( cfg_system_query_item_change_data_capture_extract_deleted, "primary_db" );
                             if( cfg_system_query_item_change_data_capture_extract_deleted_primary_db == NULL ) {
                                 LOG_print( "ERROR: \"system[%d].queries[%d].change_data_capture.extract.deleted.primary_db\" key not found.\n", i, j );
+                                cJSON_Delete( config_json );
+                                free( config_string ); config_string = NULL;
                                 return FALSE;
                             }
                             str_len = strlen( cfg_system_query_item_change_data_capture_extract_deleted_primary_db->valuestring );
@@ -653,6 +741,8 @@ int DCPAM_load_configuration( void ) {
                             cfg_system_query_item_change_data_capture_extract_deleted_primary_db_sql = cJSON_GetObjectItem( cfg_system_query_item_change_data_capture_extract_deleted, "primary_db_sql" );
                             if( cfg_system_query_item_change_data_capture_extract_deleted_primary_db_sql == NULL ) {
                                 LOG_print( "ERROR: \"system[%d].queries[%d].change_data_capture.extract.deleted.primary_db_sql\" key not found.\n", i, j );
+                                cJSON_Delete( config_json );
+                                free( config_string ); config_string = NULL;
                                 return FALSE;
                             }
                             str_len = strlen( cfg_system_query_item_change_data_capture_extract_deleted_primary_db_sql->valuestring );
@@ -668,6 +758,8 @@ int DCPAM_load_configuration( void ) {
                             cfg_system_query_item_change_data_capture_extract_deleted_secondary_db = cJSON_GetObjectItem( cfg_system_query_item_change_data_capture_extract_deleted, "secondary_db" );
                             if( cfg_system_query_item_change_data_capture_extract_deleted_secondary_db == NULL ) {
                                 LOG_print( "ERROR: \"system[%d].queries[%d].change_data_capture.extract.deleted.secondary_db\" key not found.\n", i, j );
+                                cJSON_Delete( config_json );
+                                free( config_string ); config_string = NULL;
                                 return FALSE;
                             }
                             str_len = strlen( cfg_system_query_item_change_data_capture_extract_deleted_secondary_db->valuestring );
@@ -683,6 +775,8 @@ int DCPAM_load_configuration( void ) {
                             cfg_system_query_item_change_data_capture_extract_deleted_secondary_db_sql = cJSON_GetObjectItem( cfg_system_query_item_change_data_capture_extract_deleted, "secondary_db_sql" );
                             if( cfg_system_query_item_change_data_capture_extract_deleted_secondary_db_sql == NULL ) {
                                 LOG_print( "ERROR: \"system[%d].queries[%d].change_data_capture.extract.deleted.secondary_db_sql\" key not found.\n", i, j );
+                                cJSON_Delete( config_json );
+                                free( config_string ); config_string = NULL;
                                 return FALSE;
                             }
                             str_len = strlen( cfg_system_query_item_change_data_capture_extract_deleted_secondary_db_sql->valuestring );
@@ -699,6 +793,7 @@ int DCPAM_load_configuration( void ) {
                             /* TODO */cfg_system_query_item_change_data_capture_transform = cJSON_GetObjectItem( cfg_system_query_item_change_data_capture, "transform" );/* TODO */
                                 if( cfg_system_query_item_change_data_capture_transform == NULL ) {
                                     LOG_print( "ERROR: \"system[%d].queries[%d].change_data_capture.transform\" key not found.\n", i, j );
+                                    cJSON_Delete( config_json );
                                     return FALSE;
                                 }
                             /*
@@ -707,6 +802,8 @@ int DCPAM_load_configuration( void ) {
                             cfg_system_query_item_change_data_capture_load = cJSON_GetObjectItem( cfg_system_query_item_change_data_capture, "load" );
                             if( cfg_system_query_item_change_data_capture_load == NULL ) {
                                 LOG_print( "ERROR: \"system[%d].queries[%d].change_data_capture.load\" key not found.\n", i, j );
+                                cJSON_Delete( config_json );
+                                free( config_string ); config_string = NULL;
                                 return FALSE;
                             }
                             /*
@@ -715,6 +812,8 @@ int DCPAM_load_configuration( void ) {
                             cfg_system_query_item_change_data_capture_load_inserted = cJSON_GetObjectItem( cfg_system_query_item_change_data_capture_load, "inserted" );
                             if( cfg_system_query_item_change_data_capture_load_inserted == NULL ) {
                                 LOG_print( "ERROR: \"system[%d].queries[%d].change_data_capture.load.inserted\" key not found.\n", i, j );
+                                cJSON_Delete( config_json );
+                                free( config_string ); config_string = NULL;
                                 return FALSE;
                             }
                             /*
@@ -723,6 +822,8 @@ int DCPAM_load_configuration( void ) {
                             cfg_system_query_item_change_data_capture_load_inserted_sql = cJSON_GetObjectItem( cfg_system_query_item_change_data_capture_load_inserted, "sql" );
                             if( cfg_system_query_item_change_data_capture_load_inserted_sql == NULL ) {
                                 LOG_print( "ERROR: \"system[%d].queries[%d].change_data_capture.load.inserted.sql\" key not found.\n", i, j );
+                                cJSON_Delete( config_json );
+                                free( config_string ); config_string = NULL;
                                 return FALSE;
                             }
                             str_len = strlen( cfg_system_query_item_change_data_capture_load_inserted_sql->valuestring );
@@ -742,6 +843,8 @@ int DCPAM_load_configuration( void ) {
                             cfg_system_query_item_change_data_capture_load_inserted_extracted_values_array = cJSON_GetObjectItem( cfg_system_query_item_change_data_capture_load_inserted, "extracted_values" );
                             if( cfg_system_query_item_change_data_capture_load_inserted_extracted_values_array == NULL ) {
                                 LOG_print( "ERROR: \"system[%d].queries[%d].change_data_capture.load.inserted.extracted_values\" key not found.\n", i, j );
+                                cJSON_Delete( config_json );
+                                free( config_string ); config_string = NULL;
                                 return FALSE;
                             }
                             for( k = 0; k < cJSON_GetArraySize( cfg_system_query_item_change_data_capture_load_inserted_extracted_values_array ); k++ ) {
@@ -759,6 +862,8 @@ int DCPAM_load_configuration( void ) {
                             cfg_system_query_item_change_data_capture_load_deleted = cJSON_GetObjectItem( cfg_system_query_item_change_data_capture_load, "deleted" );
                             if( cfg_system_query_item_change_data_capture_load_deleted == NULL ) {
                                 LOG_print( "ERROR: \"system[%d].queries[%d].change_data_capture.load.deleted\" key not found.\n", i, j );
+                                cJSON_Delete( config_json );
+                                free( config_string ); config_string = NULL;
                                 return FALSE;
                             }
                             /*
@@ -767,6 +872,8 @@ int DCPAM_load_configuration( void ) {
                             cfg_system_query_item_change_data_capture_load_deleted_sql = cJSON_GetObjectItem( cfg_system_query_item_change_data_capture_load_deleted, "sql" );
                             if( cfg_system_query_item_change_data_capture_load_deleted_sql == NULL ) {
                                 LOG_print( "ERROR: \"system[%d].queries[%d].change_data_capture.load.deleted.sql\" key not found.\n", i, j );
+                                cJSON_Delete( config_json );
+                                free( config_string ); config_string = NULL;
                                 return FALSE;
                             }
                             str_len = strlen( cfg_system_query_item_change_data_capture_load_deleted_sql->valuestring );
@@ -782,6 +889,8 @@ int DCPAM_load_configuration( void ) {
                             cfg_system_query_item_change_data_capture_load_deleted_extracted_values_array = cJSON_GetObjectItem( cfg_system_query_item_change_data_capture_load_deleted, "extracted_values" );
                             if( cfg_system_query_item_change_data_capture_load_deleted_extracted_values_array == NULL ) {
                                 LOG_print( "ERROR: \"system[%d].queries[%d].change_data_capture.load.deleted.extracted_values\" key not found.\n", i, j );
+                                cJSON_Delete( config_json );
+                                free( config_string ); config_string = NULL;
                                 return FALSE;
                             }
                             for( k = 0; k < MAX_CDC_COLUMNS; k++ ) {
@@ -804,6 +913,8 @@ int DCPAM_load_configuration( void ) {
                             cfg_system_query_item_change_data_capture_load_modified = cJSON_GetObjectItem( cfg_system_query_item_change_data_capture_load, "modified" );
                             if( cfg_system_query_item_change_data_capture_load_modified == NULL ) {
                                 LOG_print( "ERROR: \"system[%d].queries[%d].change_data_capture.load.modified\" key not found.\n", i, j );
+                                cJSON_Delete( config_json );
+                                free( config_string ); config_string = NULL;
                                 return FALSE;
                             }
                             /*
@@ -812,6 +923,8 @@ int DCPAM_load_configuration( void ) {
                             cfg_system_query_item_change_data_capture_load_modified_sql = cJSON_GetObjectItem( cfg_system_query_item_change_data_capture_load_modified, "sql" );
                             if( cfg_system_query_item_change_data_capture_load_modified_sql == NULL ) {
                                 LOG_print( "ERROR: \"system[%d].queries[%d].change_data_capture.load.modified.sql\" key not found.\n", i, j );
+                                cJSON_Delete( config_json );
+                                free( config_string ); config_string = NULL;
                                 return FALSE;
                             }
                             str_len = strlen( cfg_system_query_item_change_data_capture_load_modified_sql->valuestring );
@@ -827,6 +940,8 @@ int DCPAM_load_configuration( void ) {
                             cfg_system_query_item_change_data_capture_load_modified_extracted_values_array = cJSON_GetObjectItem( cfg_system_query_item_change_data_capture_load_modified, "extracted_values" );
                             if( cfg_system_query_item_change_data_capture_load_modified_extracted_values_array == NULL ) {
                                 LOG_print( "ERROR: \"system[%d].queries[%d].change_data_capture.load.modified.extracted_values\" key not found.\n", i, j );
+                                cJSON_Delete( config_json );
+                                free( config_string ); config_string = NULL;
                                 return FALSE;
                             }
                             for( k = 0; k < MAX_CDC_COLUMNS; k++ ) {
@@ -847,6 +962,8 @@ int DCPAM_load_configuration( void ) {
                             cfg_system_query_item_data_types = cJSON_GetObjectItem( cfg_system_query_item, "data_types");
                             if( cfg_system_query_item_data_types == NULL ) {
                                 LOG_print( "ERROR: \"system[%d].queries[%d].data_types\" key not found.\n", i, j );
+                                cJSON_Delete( config_json );
+                                free( config_string ); config_string = NULL;
                                 return FALSE;
                             }
                             
@@ -878,6 +995,7 @@ int DCPAM_load_configuration( void ) {
                             cfg_system_user->valuestring,
                             cfg_system_password->valuestring,
                             cfg_system_db->valuestring,
+                            cfg_system_connection_string->valuestring,
                             &tmp_db,
                             TRUE
                         );
@@ -894,6 +1012,7 @@ int DCPAM_load_configuration( void ) {
                     }
                 } else {
                     LOG_print( "ERROR: \"system\" key not found.\n", i, j );
+                    cJSON_Delete( config_json );
                     return FALSE;
                 }
 

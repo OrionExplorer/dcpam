@@ -4,6 +4,8 @@
 #include "../../include/shared.h"
 #include "../../include/core/db/system.h"
 #include "../../include/utils/memory.h"
+#include "../../include/utils/log.h"
+#include "../../include/utils/time.h"
 
 DATABASE_SYSTEM     DATABASE_SYSTEMS[MAX_DATA_SYSTEMS];
 int                 DATABASE_SYSTEMS_COUNT;
@@ -190,14 +192,15 @@ void DATABASE_SYSTEM_QUERY_add(
 }
 
 void DATABASE_SYSTEM_DB_add(
-    const char      *ip,
-    const int       port,
-    const DB_DRIVER driver,
-    const char      *user,
-    const char      *password,
-    const char      *db,
+    const char              *ip,
+    const int               port,
+    const DB_DRIVER         driver,
+    const char              *user,
+    const char              *password,
+    const char              *db,
+    const char              *connection_string,
     DATABASE_SYSTEM_DB      *dst,
-    short           verbose
+    short                   verbose
 ) {
     size_t  str_len = 0;
 
@@ -252,6 +255,19 @@ void DATABASE_SYSTEM_DB_add(
             str_len
         );
     }
+
+    if( connection_string != NULL ) {
+        if( verbose > 0 ) LOG_print("\t· connection_string=\"%s\"\n", connection_string );
+        str_len = strlen( connection_string );
+        dst->connection_string = ( char* )SAFECALLOC( str_len + 1, sizeof( char ) );
+        if( dst->connection_string ) {
+            strncpy(
+                dst->connection_string,
+                connection_string,
+                str_len
+            );
+        }
+    }
 }
 
 
@@ -269,6 +285,9 @@ void DATABASE_SYSTEM_DB_free( DATABASE_SYSTEM_DB *db ) {
     }
     if( db->db != NULL ) {
         free( db->db ); db->db = NULL;
+    }
+    if( db->connection_string != NULL ) {
+        free( db->connection_string ); db->connection_string = NULL;
     }
 
     switch( db->driver ) {
@@ -301,15 +320,15 @@ int DATABASE_SYSTEM_DB_init( DATABASE_SYSTEM_DB *db ) {
     switch( db->driver ) {
         case D_POSTGRESQL : {
             LOG_print( "\t· Driver: \"PostgreSQL\". Connecting..." );
-            ret = PG_connect( &db->db_conn.pgsql_conn, db->ip, db->port, db->db, db->user, db->password );
+            ret = PG_connect( &db->db_conn.pgsql_conn, db->ip, db->port, db->db, db->user, db->password, db->connection_string );
         } break;
         case D_MYSQL : {
-            LOG_print( "\t· Driver: \"MySQL\". Connecting...", db->driver );
-            ret = MYSQL_connect( &db->db_conn.mysql_conn, db->ip, db->port, db->db, db->user, db->password );
+            LOG_print( "\t· Driver: \"MySQL\". Connecting..." );
+            ret = MYSQL_connect( &db->db_conn.mysql_conn, db->ip, db->port, db->db, db->user, db->password, db->connection_string );
         } break;
         case D_MSSQL : {
-            LOG_print( "\t· Driver: \"SQL Server\". Connecting..." );
-            ret = MSSQL_connect( &db->db_conn.mssql_conn, db->ip, db->port, db->db, db->user, db->password );
+            LOG_print( "\t· Driver: \"SQL Server\". Connecting (%s)...", db->connection_string );
+            ret = MSSQL_connect( &db->db_conn.mssql_conn, db->ip, db->port, db->db, db->user, db->password, db->connection_string );
         } break;
         default : {
             LOG_print( "Error: unknown driver: \"%d\".\n", db->driver );
@@ -344,7 +363,7 @@ void DATABASE_SYSTEM_add(
     short           verbose
 ) {
     int     i = 0, j = 0;
-    char    *name_len = 0;
+    int     name_len = 0;
 
     if( verbose > 0 ) LOG_print( "[%s] DATABASE_SYSTEM_add( \"%s\", ... ).\n", TIME_get_gmt(), name );
     if( DATABASE_SYSTEMS_COUNT < MAX_DATA_SYSTEMS ) {
@@ -383,6 +402,7 @@ void DATABASE_SYSTEM_add(
             db->user,
             db->password,
             db->db,
+            db->connection_string ? db->connection_string : NULL,
             &DATABASE_SYSTEMS[ DATABASE_SYSTEMS_COUNT ].DB,
             TRUE
         );
@@ -391,6 +411,10 @@ void DATABASE_SYSTEM_add(
         free( db->user ); db->user = NULL;
         free( db->password ); db->password = NULL;
         free( db->db ); db->db = NULL;
+
+        if( db->connection_string != NULL ) {
+            free( db->connection_string ); db->connection_string = NULL;
+        }
 
         DATABASE_SYSTEMS_COUNT++;
     } else {

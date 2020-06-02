@@ -4,16 +4,20 @@
 #include "../include/utils/memory.h"
 #include <stdlib.h>
 #include <string.h>
-
+#include <sql.h>
+#include <sqlext.h>
 
 void MSSQL_disconnect( MSSQL_CONNECTION* db_connection ) {
     printf( "[%s]\tMSSQL_disconnect( <'%s'> ).\n", TIME_get_gmt(), db_connection->id ? db_connection->id : "" );
 
-    if( db_connection->connection ) {
+    if( db_connection->connection != SQL_NULL_HDBC ) {
         SQLDisconnect( db_connection->connection );
         SQLFreeHandle( SQL_HANDLE_DBC, db_connection->connection );
-        SQLFreeHandle( SQL_HANDLE_ENV, db_connection->sqlenvhandle );
         db_connection->connection = NULL;
+    }
+
+    if( db_connection->sqlenvhandle != SQL_NULL_HENV ) {
+        SQLFreeHandle( SQL_HANDLE_ENV, db_connection->sqlenvhandle );
     }
 
     if( db_connection->id ) {
@@ -25,19 +29,20 @@ void MSSQL_disconnect( MSSQL_CONNECTION* db_connection ) {
 }
 
 
-int MSSQL_connect( MSSQL_CONNECTION* db_connection, const char* host, const int port, const char* dbname, const char* user, const char* password ) {
-    char        conn_str[512];
-    SQLWCHAR        retconstring[1024];
+int MSSQL_connect(
+    MSSQL_CONNECTION*   db_connection,
+    const char*         host,
+    const int           port,
+    const char*         dbname,
+    const char*         user,
+    const char*         password,
+    const char*         connection_string
+) {
     SQLWCHAR        sqlstate[1024];
     SQLWCHAR        message[1024];
-    SQLWCHAR        db_connection_str[1024];
-    SQLRETURN   retcode;
+    SQLWCHAR        w_connection_str[1024];
+    SQLRETURN       retcode;
 
-
-    db_connection->id = ( char * )SAFECALLOC( strlen( user ) + strlen( host ) + strlen( dbname ) + 7, sizeof( char ) );
-    sprintf( conn_str, "dbname=%s host=%s port=%d user=%s password=%s", dbname, host, port, user, password );
-    sprintf( db_connection->id, "%s@%s[db=%s]", user, host, dbname );
-    //printf( "ID: %s\n", db_connection->id );
 
     if( SQL_SUCCESS != SQLAllocHandle( SQL_HANDLE_ENV, SQL_NULL_HANDLE, &db_connection->sqlenvhandle ) ) {
         db_connection->active = 0;
@@ -45,7 +50,7 @@ int MSSQL_connect( MSSQL_CONNECTION* db_connection, const char* host, const int 
         db_connection->active = 1;
     }
 
-    if( SQL_SUCCESS != SQLSetEnvAttr( db_connection->sqlenvhandle, SQL_ATTR_ODBC_VERSION, ( SQLPOINTER )SQL_OV_ODBC3, 0 ) ) {
+    if( SQL_SUCCESS != SQLSetEnvAttr( db_connection->sqlenvhandle, SQL_ATTR_ODBC_VERSION, ( void* )SQL_OV_ODBC3, 0 ) ) {
         db_connection->active = 0;
     } else {
         db_connection->active = 1;
@@ -58,21 +63,30 @@ int MSSQL_connect( MSSQL_CONNECTION* db_connection, const char* host, const int 
     }
 
     if( db_connection->active == 0 ) {
-        if( SQL_SUCCESS == SQLGetDiagRec( SQL_HANDLE_DBC, db_connection->connection, 1, sqlstate, NULL, message, 1024, NULL ) ) {
-            free( db_connection->id ); db_connection->id = NULL;
+        if( SQL_SUCCESS == SQLGetDiagRec( SQL_HANDLE_DBC, db_connection->connection, 1, (SQLCHAR *)sqlstate, NULL, (SQLCHAR *)message, 1024, NULL ) ) {
             printf( "error. Message: \"%s\". SQLSTATE: \"%s\".\n", ( char * )message, ( char* )sqlstate );
             return 0;
         }
     }
 
-    swprintf( db_connection_str, 1024, L"DRIVER={SQL Server};SERVER=%s, %d;DATABASE=%s;UID=%s;PWD=%s;", host, port, dbname, user, password );
-    //swprintf( db_connection_str, 1024, L"DRIVER={SQL Server};SERVER=%hs, 1433;DATABASE=%hs;UID=%hs;PWD=%hs;charset=cp852", host, dbname, user, password );
-    //swprintf( db_connection_str, 1024, L"DRIVER={SQL Server};SERVER=%hs, 1433;DATABASE=%hs;UID=%hs;PWD=%hs;charset=latin1", host, dbname, user, password );
+    if( connection_string ) {
+        db_connection->id = SAFECALLOC( strlen( connection_string ) + 1, sizeof( char ) );
+        if( db_connection->id ) {
+            strncpy(
+                db_connection->id,
+                connection_string,
+                strlen( connection_string )
+            );
+        }
+    } else {
+        LOG_print( "error. Message: no \"connection_string\" provided in config.json\n" );
+        return 0;
+    }
 
     switch( SQLDriverConnect( db_connection->connection, NULL,
-        /*( SQLWCHAR* )L"DRIVER={SQL Server};SERVER=localhost, 1433;DATABASE=servicedesk;UID=otrs;PWD=otrs321;charset=cp1250",*/
-        db_connection_str,
-        SQL_NTS, retconstring, 1024, NULL, SQL_DRIVER_NOPROMPT ) ) {
+        /*( SQLCHAR* )TEXT("Driver={SQL Server};SERVER=dbserver;DATABASE=dbname;UID=user;PWD=password;"),*/
+        ( SQLCHAR* )connection_string,
+        SQL_NTS, NULL, 0, NULL, SQL_DRIVER_NOPROMPT ) ) {
     case SQL_SUCCESS_WITH_INFO:
         db_connection->active = 1;
         break;
@@ -87,12 +101,13 @@ int MSSQL_connect( MSSQL_CONNECTION* db_connection, const char* host, const int 
 
     if( db_connection->active == 0 ) {
         if( SQL_SUCCESS == SQLGetDiagRec( SQL_HANDLE_DBC, db_connection->connection, 1, sqlstate, NULL, message, 1024, NULL ) ) {
-            free( db_connection->id ); db_connection->id = NULL;
-            printf( "error. Message: \"%s\". SQLSTATE: \"%s\".\n", ( char * )message, ( char * )sqlstate );
+            LOG_print( "error. Message: \"%hs\". SQLSTATE: \"%s\".\n", ( char * )message, ( char * )sqlstate );
             return 0;
         }
     }
     db_connection->active = 1;
+
+    LOG_print("ok.\n");
 
     return 1;
 }
@@ -109,26 +124,24 @@ int MSSQL_exec(
     const int           *param_formats,
     const char* const   *param_types 
 ) {
-    /*SQLHANDLE   stmt;
-    SQLUSMALLINT i;
-    SQLLEN      indicator;
-    SQLRETURN   ret;
-    SQLWCHAR    sqlstate[1024];
-    SQLWCHAR    message[1024];
-    int         row_count = 0, field_count = 0;
-    char        name[128];
-    char        columns[256][64];
-    DB_RECORD   *tmp_records = NULL;
-    wchar_t     *w_sql = NULL;
-    int         sql_len = ( int )strlen( sql );
-    wchar_t     *w_table = NULL;
-    int         table_len = ( int )strlen( table );*/
+    SQLHSTMT        stmt;
+    SQLUSMALLINT    i;
+    SQLLEN          indicator;
+    SQLRETURN       ret;
+    SQLWCHAR        sqlstate[1024];
+    SQLWCHAR        message[1024];
+    int             row_count = 0, field_count = 0;
+    char            name[128];
+    char            columns[256][64];
+    DB_RECORD       *tmp_records = NULL;
+    wchar_t         *w_sql = NULL;
+    int             sql_len = ( int )strlen( sql );
 
     if( db_connection->active == 0 || db_connection->id == NULL ) {
         return 0;
     }
 
-    /*LOG_print( "\n[%s]\tMSSQL_exec( [%d] <'%s'>, \"%s\", ... ).\n", TIME_get_gmt(), sql_len, db_connection->id, sql );
+    LOG_print( "\n[%s]\tMSSQL_exec( [%d] <'%s'>, \"%s\", ... ).\n", TIME_get_gmt(), sql_len, db_connection->id, sql );
 
     dst_result->sql = ( char* )SAFECALLOC( sql_len + 1, sizeof( char ) );
 
@@ -136,8 +149,6 @@ int MSSQL_exec(
     strncpy( dst_result->sql, sql, sql_len );
     swprintf( w_sql, sql_len + 1, L"%hs", sql );
 
-    w_table = ( wchar_t* )SAFECALLOC( table_len + 1, sizeof( wchar_t ) );
-    swprintf( w_table, table_len + 1, L"%hs", table );
     memset( name, '\0', 128 );
 
     if( db_connection->connection ) {
@@ -147,7 +158,6 @@ int MSSQL_exec(
             return 0;
         }
 
-        SQLColumns( stmt, NULL, 0, NULL, 0, ( SQLWCHAR* )w_table, SQL_NTS, NULL, 0 );
         SQLBindCol( stmt, 4, SQL_C_CHAR, name, 128, &indicator );
 
         while( SQLFetch( stmt ) == SQL_SUCCESS ) {
@@ -196,7 +206,7 @@ int MSSQL_exec(
         tmp_records = NULL;
         dst_result->row_count = row_count;
         SQLFreeHandle( SQL_HANDLE_STMT, stmt );
-    }*/
+    }
     LOG_print( "[%s]\tMSSQL_exec.\n", TIME_get_gmt() );
 
     return 1;

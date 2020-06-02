@@ -1,6 +1,8 @@
 #ifndef APP_SCHEMA_H
 #define APP_SCHEMA_H
 
+#include "db/system_schema.h"
+
 /*
     config.json => app.DATA[ i ]
 */

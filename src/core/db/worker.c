@@ -5,7 +5,11 @@
 #include "../../include/core/db/worker.h"
 #include "../../include/utils/time.h"
 #include "../../include/core/schema.h"
-
+#include "../../include/utils/log.h"
+#include "../../include/core/db/system.h"
+#include "../../include/core/db/cdc/extract.h"
+#include "../../include/core/db/cdc/transform.h"
+#include "../../include/core/db/cdc/load.h"
 
 pthread_t                   w_watcher_thread[ MAX_DATA_SYSTEMS ];
 static pthread_mutex_t      watcher_mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -13,7 +17,7 @@ static pthread_mutex_t      watcher_mutex = PTHREAD_MUTEX_INITIALIZER;
 int                         worker_save_counter = 0;
 extern int                  app_terminated;
 
-int                         DATABASE_SYSTEMS_COUNT;
+extern int                  DATABASE_SYSTEMS_COUNT;
 extern DATABASE_SYSTEM      DATABASE_SYSTEMS[ MAX_DATA_SYSTEMS ];   /* Database-based systems | config.json => "system" */
 extern DCPAM_APP            APP;                                    /* Main application object | config.json => "app" */
 
@@ -136,7 +140,6 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
 
 int DB_WORKER_shutdown( void ) {
     int         i = 0;
-    int         thread_s[ MAX_DATA_SYSTEMS ];
 
     LOG_print( "[%s] WORKER_shutdown (app_terminated=%d):\n", TIME_get_gmt(), app_terminated );
     for( i = 0; i < DATABASE_SYSTEMS_COUNT; i++ ) {

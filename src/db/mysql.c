@@ -27,11 +27,17 @@ void MYSQL_disconnect( MYSQL_CONNECTION* db_connection ) {
 }
 
 
-int MYSQL_connect( MYSQL_CONNECTION* db_connection, const char* host, const int port, const char* dbname, const char* user, const char* password ) {
-    char        conn_str[512];
+int MYSQL_connect(
+    MYSQL_CONNECTION*   db_connection,
+    const char*         host,
+    const int           port,
+    const char*         dbname,
+    const char*         user,
+    const char*         password,
+    const char*         connection_string
+) {
 
     db_connection->id = ( char * )SAFECALLOC( strlen( user ) + strlen( host ) + strlen( dbname ) + 7, sizeof( char ) );
-    sprintf( conn_str, "dbname=%s host=%s port=%d user=%s password=%s", dbname, host, port, user, password );
     sprintf( db_connection->id, "%s@%s[db=%s]", user, host, dbname );
 
     db_connection->connection = mysql_init( NULL );
@@ -44,7 +50,6 @@ int MYSQL_connect( MYSQL_CONNECTION* db_connection, const char* host, const int 
         db_connection->active = 0;
         free( db_connection->id ); db_connection->id = NULL;
         printf( "error. Message: \"%s\".\n", mysql_error( db_connection->connection ) );
-        mysql_close( db_connection->connection );
         return 0;
     }
 

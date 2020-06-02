@@ -1,14 +1,16 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include "../../../include/core/db/system.h"
 #include "../../../include/utils/time.h"
 #include "../../../include/utils/memory.h"
 #include "../../../include/core/schema.h"
+#include "../../../include/utils/log.h"
+#include "../../../include/core/db/cdc/extract.h"
 
 
-extern DCPAM_APP           APP;
+//extern DCPAM_APP           APP;
 
-int CDC_ExtractQueryTypeValid( const char *sql );
-void CDC_ExtractGeneric( DB_SYSTEM_CDC_EXTRACT *extract, DB_SYSTEM_CDC_EXTRACT_QUERY *extract_element, DATABASE_SYSTEM_DB *db, DB_QUERY *data );
+//void CDC_ExtractGeneric( DB_SYSTEM_CDC_EXTRACT *extract, DB_SYSTEM_CDC_EXTRACT_QUERY *extract_element, DATABASE_SYSTEM_DB *db, DB_QUERY *data );
 
 
 int CDC_ExtractQueryTypeValid( const char *sql ) {
@@ -27,7 +29,6 @@ void CDC_ExtractGeneric( DB_SYSTEM_CDC_EXTRACT *extract, DB_SYSTEM_CDC_EXTRACT_Q
     DB_QUERY            primary_db_sql_res;
     DATABASE_SYSTEM_DB  *primary_db;
     DATABASE_SYSTEM_DB  *secondary_db;
-    size_t              str_len;
     int                 primary_ret = 0, secondary_ret = 0;
     int                 i = 0, j = 0;
     int                 ret_values_count = 0;
@@ -47,7 +48,7 @@ void CDC_ExtractGeneric( DB_SYSTEM_CDC_EXTRACT *extract, DB_SYSTEM_CDC_EXTRACT_Q
         LOG_print( "\t\t- Primary DB: %s\n", extract_element->primary_db );
         LOG_print( "\t\t- Secondary DB: %s\n", extract_element->secondary_db );
 
-        if( strncmp( extract_element->primary_db, "this" ) == 0 ) {
+        if( strcmp( extract_element->primary_db, "this" ) == 0 ) {
             primary_db = db;
             secondary_db = &APP.DB;
         } else {

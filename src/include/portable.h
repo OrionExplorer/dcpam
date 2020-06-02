@@ -26,4 +26,11 @@
     #define Sleep(x)        usleep(x*1000)
 #endif
 
+
+#ifdef _MSC_VER
+#pragma comment( lib, "pthreadVC2.lib" )
+#pragma comment( lib, "libmysql.lib" )
+#pragma comment( lib, "libpq.lib" )
+#endif // _MSC_VER
+
 #endif

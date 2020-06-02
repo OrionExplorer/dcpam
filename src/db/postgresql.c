@@ -29,11 +29,24 @@ void PG_disconnect( PG_CONNECTION* db_connection ) {
 }
 
 
-int PG_connect( PG_CONNECTION* db_connection, const char* host, const int port, const char* dbname, const char* user, const char* password ) {
-    char        conn_str[512];
+int PG_connect(
+    PG_CONNECTION*  db_connection,
+    const char*     host,
+    const int       port,
+    const char*     dbname,
+    const char*     user,
+    const char*     password,
+    const char*     connection_string
+) {
+    char        conn_str[ 1024 ];
 
     db_connection->id = ( char * )SAFECALLOC( strlen(user)+strlen(host)+strlen(dbname)+8, sizeof( char ) );
-    sprintf( conn_str, "dbname=%s host=%s port=%d user=%s password=%s", dbname, host, port, user, password );
+    if( connection_string ) {
+        snprintf( conn_str, 1024, connection_string, dbname, host, port, user, password );
+    } else {
+        snprintf( conn_str, 1024, "dbname=%s host=%s port=%d user=%s password=%s", dbname, host, port, user, password );
+    }
+    
     sprintf( db_connection->id, "%s@%s[db=%s]", user, host, dbname );
 
     db_connection->connection = PQconnectdb( conn_str );
@@ -64,7 +77,7 @@ int PG_exec(
     const int           *param_formats,
     Oid                 *param_types 
 ) {
-    PGresult        *pg_result;
+    PGresult        *pg_result = NULL;
     int             row_count = 0, field_count = 0;
     int             val_length = 0;
     int             i = 0, j = 0, k = 0;
@@ -97,7 +110,7 @@ int PG_exec(
         }
     } else {
         PQclear( pg_result );
-        pg_result = CONNECTION_BAD;
+        //pg_result = CONNECTION_BAD;
     }
 
     if ( PQresultStatus( pg_result ) != PGRES_TUPLES_OK && PQresultStatus( pg_result ) != PGRES_COMMAND_OK ) {

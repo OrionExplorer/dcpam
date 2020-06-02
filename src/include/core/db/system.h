@@ -20,12 +20,18 @@ void DATABASE_SYSTEM_DB_add(
             const char              *user,
             const char              *password,
             const char              *db,
+            const char              *connection_string,
             DATABASE_SYSTEM_DB      *dst,
             short                   verbose
 );
 
 
 int DATABASE_SYSTEM_DB_init (
+            DATABASE_SYSTEM_DB      *db
+);
+
+
+void DATABASE_SYSTEM_DB_free(
             DATABASE_SYSTEM_DB      *db
 );
 

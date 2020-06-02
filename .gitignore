@@ -1,2 +1,9 @@
 *.log
 log.txt
+.vs/
+.odbc.ini
+Debug/
+Release/
+x64/
+*.vcx*
+*.sln

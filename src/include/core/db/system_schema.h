@@ -23,6 +23,7 @@ typedef struct DATABASE_SYSTEM_DB {
     DB_DRIVER               driver;
     char                    *user;
     char                    *password;
+    char                    *connection_string;
     char                    *db;
     DB_CONN                 db_conn;
 } DATABASE_SYSTEM_DB;
