@@ -16,11 +16,12 @@ It is ETL-based([2]) system with CDC([3]) solutions depending on the data source
 
 ### Data sources
 DCPAM is still work in progress, with following data sources:
-| Data source   | Type            | Support |
-|:--------------|:---------------:|:-------:|
-| PostgreSQL    | Database        | Native  |
-| MySQL/MariaDB | Database        | Native  |
-| SQL Server    | Database        | ODBC    |
+| Data source     | Type            | Support | Status      |
+|:--------------  |:---------------:|:-------:|:-----------:|
+| PostgreSQL      | Database        | Native  | Done        |
+| MySQL/MariaDB   | Database        | Native  | Done        |
+| SQL Server      | Database        | ODBC    | In progress |
+| Oracle Database | Database        | Native  | Research    |
 
 
 ### Configuration
