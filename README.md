@@ -16,10 +16,12 @@ It is ETL-based([2]) system with CDC([3]) solutions depending on the data source
 
 ### Data sources
 DCPAM is still work in progress, with following data sources:
-* [x] PostgreSQL
-* [x] MySQL/MariaDB
-* [ ] ODBC (90% done)
-* [ ] Oracle Database
+| Data source   | Type            | Support |
+|:--------------|:---------------:|:-------:|
+| PostgreSQL    | Database        | Native  |
+| MySQL/MariaDB | Database        | Native  |
+| SQL Server    | Database        | ODBC    |
+
 
 ### Configuration
 File `config.json` is DCPAM foundation. It defines:
