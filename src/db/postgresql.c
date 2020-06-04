@@ -40,7 +40,7 @@ int PG_connect(
 ) {
     char        conn_str[ 1024 ];
 
-    db_connection->id = ( char * )SAFECALLOC( strlen(user)+strlen(host)+strlen(dbname)+8, sizeof( char ) );
+    db_connection->id = ( char * )SAFECALLOC( strlen(user)+strlen(host)+strlen(dbname)+8, sizeof( char ), __FILE__, __LINE__ );
     if( connection_string ) {
         snprintf( conn_str, 1024, connection_string, dbname, host, port, user, password );
     } else {
@@ -89,7 +89,7 @@ int PG_exec(
     dst_result->row_count = 0;
     dst_result->field_count = 0;
 
-    dst_result->sql = ( char* )SAFECALLOC( sql_length + 1, sizeof( char ) );
+    dst_result->sql = ( char* )SAFECALLOC( sql_length + 1, sizeof( char ), __FILE__, __LINE__ );
     for( l = 0; l < sql_length; l++ ) {
         *( dst_result->sql + l ) = sql[ l ];
     }
@@ -123,17 +123,17 @@ int PG_exec(
     row_count = PQntuples( pg_result );
     dst_result->row_count = row_count;
     if( row_count > 0 ) {
-        dst_result->records = ( DB_RECORD* )SAFEMALLOC( row_count * sizeof( DB_RECORD ) );
+        dst_result->records = ( DB_RECORD* )SAFEMALLOC( row_count * sizeof( DB_RECORD ), __FILE__, __LINE__ );
 
         field_count = PQnfields( pg_result );
         dst_result->field_count = field_count;
 
         for( i = 0; i < row_count; i++) {
-            dst_result->records[i].fields = ( DB_FIELD* )SAFEMALLOC( field_count * sizeof( DB_FIELD ) );
+            dst_result->records[i].fields = ( DB_FIELD* )SAFEMALLOC( field_count * sizeof( DB_FIELD ), __FILE__, __LINE__ );
             for( j = 0; j < field_count; j++ ) {
                 strncpy( dst_result->records[i].fields[j].label, PQfname( pg_result, j ), 64 );
                 val_length = PQgetlength( pg_result, i, j );
-                dst_result->records[i].fields[j].value = ( char* )SAFECALLOC( ( val_length+2 ), sizeof( char ) );
+                dst_result->records[i].fields[j].value = ( char* )SAFECALLOC( ( val_length+2 ), sizeof( char ), __FILE__, __LINE__ );
                 char *tmp_res = PQgetvalue( pg_result, i, j );
 
                 dst_result->records[ i ].fields[ j ].size = val_length;

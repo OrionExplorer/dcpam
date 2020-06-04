@@ -137,7 +137,7 @@ void DATABASE_SYSTEM_QUERY_add(
 
     if( verbose > 0 ) LOG_print( "[%s] SYSTEM_query_add(\"%s\", ... ).\n", TIME_get_gmt(), name );
     str_len = strlen( name );
-    dst->name = ( char * )SAFECALLOC( str_len+1, sizeof( char ) );
+    dst->name = ( char * )SAFECALLOC( str_len+1, sizeof( char ), __FILE__, __LINE__ );
     if( dst->name ) {
         if( verbose > 0 ) LOG_print("\t· name=\"%s\"\n", name );
         strncpy(
@@ -208,7 +208,7 @@ void DATABASE_SYSTEM_DB_add(
         LOG_print( "[%s] SYSTEM_db_add(\"%s\", %d, \"%s\", ... ).\n", TIME_get_gmt(), ip, port, user );
         LOG_print("\t· ip=\"%s\".\n", ip );
     }
-    dst->ip = ( char* )SAFECALLOC( TINY_BUFF_SIZE, sizeof( char ) );
+    dst->ip = ( char* )SAFECALLOC( TINY_BUFF_SIZE, sizeof( char ), __FILE__, __LINE__ );
     if( dst->ip ) {
         strncpy(
             dst->ip,
@@ -225,7 +225,7 @@ void DATABASE_SYSTEM_DB_add(
 
     if( verbose > 0 ) LOG_print("\t· user=\"%s\"\n", user );
     str_len = strlen(user);
-    dst->user = ( char* )SAFECALLOC( str_len + 1, sizeof( char ) );
+    dst->user = ( char* )SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
     if( dst->user ) {
         strncpy(
             dst->user,
@@ -236,7 +236,7 @@ void DATABASE_SYSTEM_DB_add(
 
     if( verbose > 0 ) LOG_print("\t· password=\"%.1s***\"\n", password );
     str_len = strlen(password);
-    dst->password = ( char* )SAFECALLOC( str_len + 1, sizeof( char ) );
+    dst->password = ( char* )SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
     if( dst->password ) {
         strncpy(
             dst->password,
@@ -247,7 +247,7 @@ void DATABASE_SYSTEM_DB_add(
 
     if( verbose > 0 ) LOG_print("\t· db=\"%s\"\n", db );
     str_len = strlen(db);
-    dst->db = ( char* )SAFECALLOC( str_len + 1, sizeof( char ) );
+    dst->db = ( char* )SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
     if( dst->db ) {
         strncpy(
             dst->db,
@@ -259,7 +259,7 @@ void DATABASE_SYSTEM_DB_add(
     if( connection_string != NULL ) {
         if( verbose > 0 ) LOG_print("\t· connection_string=\"%s\"\n", connection_string );
         str_len = strlen( connection_string );
-        dst->connection_string = ( char* )SAFECALLOC( str_len + 1, sizeof( char ) );
+        dst->connection_string = ( char* )SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
         if( dst->connection_string ) {
             strncpy(
                 dst->connection_string,
@@ -369,7 +369,7 @@ void DATABASE_SYSTEM_add(
     if( DATABASE_SYSTEMS_COUNT < MAX_DATA_SYSTEMS ) {
 
         name_len = strlen(name);
-        DATABASE_SYSTEMS[ DATABASE_SYSTEMS_COUNT ].name = ( char* )SAFECALLOC( name_len + 1, sizeof( char ) );
+        DATABASE_SYSTEMS[ DATABASE_SYSTEMS_COUNT ].name = ( char* )SAFECALLOC( name_len + 1, sizeof( char ), __FILE__, __LINE__ );
         if( DATABASE_SYSTEMS[ DATABASE_SYSTEMS_COUNT ].name ) {
             strncpy(
                 DATABASE_SYSTEMS[ DATABASE_SYSTEMS_COUNT ].name,

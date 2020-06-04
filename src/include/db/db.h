@@ -1,8 +1,10 @@
 #ifndef DB_H
 #define DB_H
 
+#include "../shared.h"
+
 typedef struct {
-    char            label[ 128 ];
+    char            label[ MAX_COLUMN_NAME_LEN ];
     char            *value;
     unsigned long   size;
     char            type[ 16 ];

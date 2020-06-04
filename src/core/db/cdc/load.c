@@ -28,19 +28,19 @@ void CDC_LoadGeneric( DB_SYSTEM_CDC_LOAD *load, DB_SYSTEM_CDC_LOAD_QUERY *load_e
         for( i = 0; i < data->row_count; i++ ) {
 
             /* Prepare query data. PostgreSQL compatibile for now only. */
-            q_values = SAFEMALLOC( (load_element->extracted_values_len+1) * sizeof *q_values );
+            q_values = SAFEMALLOC( (load_element->extracted_values_len+1) * sizeof *q_values, __FILE__, __LINE__ );
             q_values_len = 0;
 
-            q_lengths = SAFEMALLOC( (load_element->extracted_values_len+1) * sizeof( int ) );
-            q_formats = SAFEMALLOC( (load_element->extracted_values_len+1) * sizeof( int ) );
-            q_types = SAFEMALLOC( (load_element->extracted_values_len+1) * sizeof( int ) );
+            q_lengths = SAFEMALLOC( (load_element->extracted_values_len+1) * sizeof( int ), __FILE__, __LINE__ );
+            q_formats = SAFEMALLOC( (load_element->extracted_values_len+1) * sizeof( int ), __FILE__, __LINE__ );
+            q_types = SAFEMALLOC( (load_element->extracted_values_len+1) * sizeof( int ), __FILE__, __LINE__ );
     
             /* Get defined values only based on "extracted_values" in config.json */
             for( j = 0; j < data->field_count; j++ ) {
                 for( k = 0; k < load_element->extracted_values_len; k++ ) {
                     if( strcmp( load_element->extracted_values[ k ], data->records[ i ].fields[ j ].label ) == 0 ) {
                         if( data->records[ i ].fields[ j ].size > 0 ) {
-                            q_values[ q_values_len ] = SAFEMALLOC( (data->records[ i ].fields[ j ].size + 1) * sizeof **q_values );
+                            q_values[ q_values_len ] = SAFEMALLOC( (data->records[ i ].fields[ j ].size + 1) * sizeof **q_values, __FILE__, __LINE__ );
                             memcpy( q_values[ q_values_len ], data->records[ i ].fields[ j ].value, data->records[ i ].fields[ j ].size + 1 );
                             q_values[ q_values_len+1 ] = '\0';
 
@@ -48,7 +48,7 @@ void CDC_LoadGeneric( DB_SYSTEM_CDC_LOAD *load, DB_SYSTEM_CDC_LOAD_QUERY *load_e
                             q_formats[ q_values_len ] = 0;
                             q_types[ q_values_len ] = 0;
                         } else {
-                            q_values[ q_values_len ] = SAFEMALLOC( ( 5 + 1 ) * sizeof **q_values );
+                            q_values[ q_values_len ] = SAFEMALLOC( ( 5 + 1 ) * sizeof **q_values, __FILE__, __LINE__ );
                             strncpy( q_values[ q_values_len ], "NULL\0", 5 );
                             q_lengths[ q_values_len ] = 0;
                             q_formats[ q_values_len ] = 0;

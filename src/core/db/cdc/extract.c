@@ -68,11 +68,11 @@ void CDC_ExtractGeneric( DB_SYSTEM_CDC_EXTRACT *extract, DB_SYSTEM_CDC_EXTRACT_Q
                 if( primary_db_sql_res.field_count == 1 ) {
 
                     /* Allocate memory for query result values  */
-                    ret_values = SAFEMALLOC( (primary_db_sql_res.row_count + 1) *  sizeof *ret_values );
+                    ret_values = SAFEMALLOC( (primary_db_sql_res.row_count + 1) *  sizeof *ret_values, __FILE__, __LINE__ );
 
                     /* Allocate memory for each row value and copy data */
                     for( i = 0; i < primary_db_sql_res.row_count; i++ ) {
-                        ret_values[ i ] = SAFEMALLOC( (primary_db_sql_res.records[ i ].fields[ 0 ].size + 1 ) * sizeof **ret_values );
+                        ret_values[ i ] = SAFEMALLOC( (primary_db_sql_res.records[ i ].fields[ 0 ].size + 1 ) * sizeof **ret_values, __FILE__, __LINE__ );
                         memcpy( ret_values[ i ], primary_db_sql_res.records[ i ].fields[ 0 ].value, primary_db_sql_res.records[ i ].fields[ 0 ].size + 1 );
                         /* Track summary length for future memory allocation */
                         ret_values_len += primary_db_sql_res.records[ i ].fields[ 0 ].size;
@@ -81,7 +81,7 @@ void CDC_ExtractGeneric( DB_SYSTEM_CDC_EXTRACT *extract, DB_SYSTEM_CDC_EXTRACT_Q
 
                     /* Allocate enough memory for data and commas */
                     ret_values_len += primary_db_sql_res.row_count;
-                    ret_values_str = SAFEMALLOC( ret_values_len * sizeof( char ) );
+                    ret_values_str = SAFEMALLOC( ret_values_len * sizeof( char ), __FILE__, __LINE__ );
                     if( ret_values_str == NULL ) {
                         LOG_print( "Fatal error: unable to SAFEMALLOC( %d * sizeof( char ) ).\n", ret_values_len );
                         for( i = 0; i < primary_db_sql_res.row_count; i++ ) {
@@ -111,7 +111,7 @@ void CDC_ExtractGeneric( DB_SYSTEM_CDC_EXTRACT *extract, DB_SYSTEM_CDC_EXTRACT_Q
 
                     /* Allocate enough memory for SQL string and concatenated rev_values in ret_values_str */
                     size_t secondary_db_sql_len = strlen( extract_element->secondary_db_sql ) +  ret_values_len;
-                    secondary_db_sql_p = SAFECALLOC( secondary_db_sql_len, sizeof( char ) );
+                    secondary_db_sql_p = SAFECALLOC( secondary_db_sql_len, sizeof( char ), __FILE__, __LINE__ );
                     snprintf( secondary_db_sql_p, secondary_db_sql_len, extract_element->secondary_db_sql, ret_values_str );
 
                     /* Not needed anymore */
