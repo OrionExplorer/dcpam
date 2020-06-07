@@ -74,61 +74,75 @@ void CDC_ExtractGeneric( DB_SYSTEM_CDC_EXTRACT *extract, DB_SYSTEM_CDC_EXTRACT_Q
 
                     /* Allocate memory for each row value and copy data */
                     for( i = 0; i < primary_db_sql_res.row_count; i++ ) {
-                        ret_values[ i ] = SAFEMALLOC( (primary_db_sql_res.records[ i ].fields[ 0 ].size + 1 ) * sizeof **ret_values, __FILE__, __LINE__ );
-                        memcpy( ret_values[ i ], primary_db_sql_res.records[ i ].fields[ 0 ].value, primary_db_sql_res.records[ i ].fields[ 0 ].size + 1 );
-                        /* Track summary length for future memory allocation */
-                        ret_values_len += primary_db_sql_res.records[ i ].fields[ 0 ].size;
-
+                        if( primary_db_sql_res.records[ i ].fields[ 0 ].size > 0 ) {
+                            ret_values[ i ] = SAFEMALLOC( ( primary_db_sql_res.records[ i ].fields[ 0 ].size + 1 ) * sizeof * *ret_values, __FILE__, __LINE__ );
+                            memcpy( ret_values[ i ], primary_db_sql_res.records[ i ].fields[ 0 ].value, primary_db_sql_res.records[ i ].fields[ 0 ].size + 1 );
+                            /* Track summary length for future memory allocation */
+                            ret_values_len += primary_db_sql_res.records[ i ].fields[ 0 ].size;
+                        } else {
+                            ret_values[ i ] = NULL;
+                        }
                     }
 
-                    /* Allocate enough memory for data and commas */
-                    ret_values_len += primary_db_sql_res.row_count;
-                    ret_values_str = SAFEMALLOC( ret_values_len * sizeof( char ), __FILE__, __LINE__ );
-                    if( ret_values_str == NULL ) {
-                        LOG_print( "Fatal error: unable to SAFEMALLOC( %d * sizeof( char ) ).\n", ret_values_len );
+                    if( ret_values_len > 0 ) {
+                        /* Allocate enough memory for data and commas */
+                        ret_values_len += primary_db_sql_res.row_count;
+                        ret_values_str = SAFEMALLOC( ret_values_len * sizeof( char ), __FILE__, __LINE__ );
+                        if( ret_values_str == NULL ) {
+                            LOG_print( "Fatal error: unable to SAFEMALLOC( %d * sizeof( char ) ).\n", ret_values_len );
+                            for( i = 0; i < primary_db_sql_res.row_count; i++ ) {
+                                free( ret_values[ i ] );
+                            }
+                            free( ret_values );
+                            ret_values = NULL;
+                            return;
+                        }
+
+                        /* Join ret_values with commas */
                         for( i = 0; i < primary_db_sql_res.row_count; i++ ) {
-                            free( ret_values[ i ] );
+                            str_index += snprintf( &ret_values_str[ str_index ], ret_values_len - str_index, "%s,", ret_values[ i ] );
+                        }
+                        ret_values_str[ strlen( ret_values_str ) ] = '\0';
+
+                        /* Not needed anymore */
+                        for( i = 0; i < primary_db_sql_res.row_count; i++ ) {
+                            free( ret_values[ i ] ); ret_values[ i ] = NULL;
                         }
                         free( ret_values );
-                        ret_values = NULL;
-                        return;
+
+                        /* Query result from primary_db_sql is no longer needed */
+                        DB_QUERY_free( &primary_db_sql_res );
+
+                        LOG_print( "\t· [CDC - EXTRACT] new data:\n" );
+
+                        /* Allocate enough memory for SQL string and concatenated rev_values in ret_values_str */
+                        size_t secondary_db_sql_len = strlen( extract_element->secondary_db_sql ) + ret_values_len;
+                        secondary_db_sql_p = SAFECALLOC( secondary_db_sql_len, sizeof( char ), __FILE__, __LINE__ );
+                        snprintf( secondary_db_sql_p, secondary_db_sql_len, extract_element->secondary_db_sql, ret_values_str );
+
+                        /* Not needed anymore */
+                        free( ret_values_str );
+                        ret_values_str = NULL;
+
+                        /* Perform DB query and store result in *data */
+                        secondary_ret = DB_exec( secondary_db, secondary_db_sql_p, secondary_db_sql_len - 2 /* "%s" */, data, NULL, 0, NULL, NULL, NULL );
+
+                        if( secondary_ret == 1 ) {
+                            LOG_print( "\t· [CDC - EXTRACT] records found: %d\n", data->row_count );
+                        }
+
+                        free( secondary_db_sql_p );
+                        secondary_db_sql_p = NULL;
+                    } else {
+                        LOG_print( "[%s] Error: query completed, but no significant data returned.\n", TIME_get_gmt() );
+                        for( i = 0; i < primary_db_sql_res.row_count; i++ ) {
+                            free( ret_values[ i ] ); ret_values[ i ] = NULL;
+                        }
+                        free( ret_values );
+
+                        /* Query result from primary_db_sql is no longer needed */
+                        DB_QUERY_free( &primary_db_sql_res );
                     }
-
-                    /* Join ret_values with commas */
-                    for( i = 0; i < primary_db_sql_res.row_count; i++ ) {
-                        str_index += snprintf( &ret_values_str[ str_index ], ret_values_len - str_index, "%s,", ret_values[ i ]) ;
-                    }
-                    ret_values_str[ strlen( ret_values_str) ] = '\0';
-
-                    /* Not needed anymore */
-                    for( i = 0; i < primary_db_sql_res.row_count; i++ ) {
-                        free( ret_values[ i ] ); ret_values[ i ] = NULL;
-                    }
-                    free( ret_values );
-
-                    /* Query result from primary_db_sql is no longer needed */
-                    DB_QUERY_free( &primary_db_sql_res );
-
-                    LOG_print( "\t· [CDC - EXTRACT] new data:\n" );
-
-                    /* Allocate enough memory for SQL string and concatenated rev_values in ret_values_str */
-                    size_t secondary_db_sql_len = strlen( extract_element->secondary_db_sql ) +  ret_values_len;
-                    secondary_db_sql_p = SAFECALLOC( secondary_db_sql_len, sizeof( char ), __FILE__, __LINE__ );
-                    snprintf( secondary_db_sql_p, secondary_db_sql_len, extract_element->secondary_db_sql, ret_values_str );
-
-                    /* Not needed anymore */
-                    free( ret_values_str );
-                    ret_values_str = NULL;
-
-                    /* Perform DB query and store result in *data */
-                    secondary_ret = DB_exec( secondary_db, secondary_db_sql_p, secondary_db_sql_len-2 /* "%s" */, data, NULL, 0, NULL, NULL, NULL );
-
-                    if( secondary_ret == 1 ) {
-                        LOG_print("\t· [CDC - EXTRACT] records found: %d\n", data->row_count );
-                    }
-
-                    free( secondary_db_sql_p );
-                    secondary_db_sql_p = NULL;
                 } else {
                     DB_QUERY_free( &primary_db_sql_res );
                     DB_QUERY_free( data );

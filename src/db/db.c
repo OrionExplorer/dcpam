@@ -16,6 +16,15 @@ void DB_QUERY_init( DB_QUERY *db_query ) {
     }
 }
 
+char* concatenate( void* varA, int tamA, void* varB, int tamB ) {
+    char* result = malloc( tamA + tamB );
+
+    memcpy( result, varA, tamA );
+    memcpy( result + tamA, varB, tamB );
+
+    return result;
+}
+
 void DB_QUERY_free( DB_QUERY* db_query ) {
     int         i = 0, j = 0;
 
@@ -128,17 +137,17 @@ int DB_QUERY_format( const char* src, char **dst, unsigned long *dst_length, con
 
     /* Main checks */
     if( src == NULL ) {
-        printf( "Error: src pointer is NULL.\n" );
+        LOG_print( "Error: src pointer is NULL.\n" );
         return FALSE;
     }
 
     if( strstr( ptr_src, "?" ) == NULL ) {
-        printf( "Notice: SQL statement does not qualify to format.\n" );
+        LOG_print( "Notice: SQL statement does not qualify to format.\n" );
         return TRUE;
     }
 
     if( *dst != NULL ) {
-        printf( "Error: dst pointer is already initialized.\n" );
+        LOG_print( "Error: dst pointer is already initialized.\n" );
         return FALSE;
     }
 
@@ -163,7 +172,7 @@ int DB_QUERY_format( const char* src, char **dst, unsigned long *dst_length, con
 
     /* Check if "?" count is equal to params_count */
     if( src_params_count != params_count ) {
-        printf( "Error: params_count and SQL template variables does not match!\n" );
+        LOG_print( "Error: params_count and SQL template variables does not match!\n" );
     }
 
     /* Init dst buffer */

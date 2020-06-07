@@ -34,7 +34,7 @@ void ODBC_get_error( char* fn, SQLHANDLE handle, SQLSMALLINT type ) {
 }
 
 void ODBC_disconnect( ODBC_CONNECTION* db_connection ) {
-    printf( "[%s]\tODBC_disconnect( <'%s'> ).\n", TIME_get_gmt(), db_connection->id ? db_connection->id : "" );
+    LOG_print( "[%s]\tODBC_disconnect( <'%s'> ).\n", TIME_get_gmt(), db_connection->id ? db_connection->id : "" );
 
     if( db_connection->connection != SQL_NULL_HDBC ) {
         SQLDisconnect( db_connection->connection );
@@ -51,7 +51,7 @@ void ODBC_disconnect( ODBC_CONNECTION* db_connection ) {
         db_connection->id = NULL;
     }
 
-    printf( "[%s]\tODBC_disconnect.\n", TIME_get_gmt() );
+    LOG_print( "[%s]\tODBC_disconnect.\n", TIME_get_gmt() );
 }
 
 
@@ -158,9 +158,6 @@ int ODBC_exec(
         retcode = SQLAllocHandle( SQL_HANDLE_STMT, db_connection->connection, &stmt );
         CHECK_ERROR( retcode, "SQLAllocHandle()", stmt, SQL_HANDLE_STMT, TRUE );
 
-        /*retcode = SQLPrepare( stmt, sql, sql_length );
-        CHECK_ERROR( retcode, "SQLPrepare()", stmt, SQL_HANDLE_STMT );*/
-
         /* Simple query without binding parameters */
         if( param_values == NULL || params_count == 0 ) {
 
@@ -173,7 +170,14 @@ int ODBC_exec(
             CHECK_ERROR( retcode, "SQLPrepare()", stmt, SQL_HANDLE_STMT, TRUE );
 
             retcode = SQLNumResultCols( stmt, &num_columns );
-            CHECK_ERROR( retcode, "SQLNumResultCols()", stmt, SQL_HANDLE_STMT, TRUE );
+            if( ( retcode != SQL_SUCCESS ) && ( retcode != SQL_SUCCESS_WITH_INFO ) ) {
+                ODBC_get_error( "SQLNumResultCols()", stmt, SQL_HANDLE_STMT );
+                SQLFreeHandle( SQL_HANDLE_STMT, stmt );
+
+                LOG_print( "[%s]\tODBC_exec.\n", TIME_get_gmt() );
+                pthread_mutex_unlock( &db_exec_mutex );
+                return 0;
+            }
 
             for( i = 0; i < num_columns; i++ ) {
                 column_name[ i ] = SAFECALLOC( MAX_COLUMN_NAME_LEN + 1, sizeof( SQLCHAR ), __FILE__, __LINE__ );
@@ -204,12 +208,28 @@ int ODBC_exec(
             }
 
             retcode = SQLExecute( stmt );
-            CHECK_ERROR( retcode, "SQLExecute()", stmt, SQL_HANDLE_STMT, FALSE );
+            if( ( retcode != SQL_SUCCESS ) && ( retcode != SQL_SUCCESS_WITH_INFO ) ) {
+                ODBC_get_error( "SQLExecute()", stmt, SQL_HANDLE_STMT );
+                SQLFreeHandle( SQL_HANDLE_STMT, stmt );
 
-            if( DB_QUERY_get_type( dst_result->sql ) == DQT_SELECT ) {
+                for( i = 0; i < MAX_COLUMNS; i++ ) {
+                    free( column_name[ i ] ); column_name[ i ] = NULL;
+                    free( column_data[ i ] ); column_data[ i ] = NULL;
+                    column_data_len[ i ] = 0;
+                    column_data_size[ i ] = 0;
+                }
+
+                LOG_print( "[%s]\tODBC_exec.\n", TIME_get_gmt() );
+                pthread_mutex_unlock( &db_exec_mutex );
+                return 0;
+            }
+
+            if( DB_QUERY_get_type( dst_result->sql ) == DQT_SELECT && num_columns > 0 ) {
+                if( dst_result->records ) {
+                    free( dst_result->records ); dst_result->records = NULL;
+                }
                 while( TRUE ) {
                     retcode = SQLFetch( stmt );
-
                     if( retcode == SQL_NO_DATA ) {
                         break;
                     }
@@ -221,11 +241,16 @@ int ODBC_exec(
                         tmp_records = dst_result->records;
                         dst_result->records[ row_count ].fields = ( DB_FIELD* )SAFEMALLOC( num_columns * sizeof( DB_FIELD ), __FILE__, __LINE__ );
                         for( k = 0; k < num_columns; k++ ) {
-                            strncpy( dst_result->records[ row_count ].fields[ k ].label, column_name[ k ], MAX_COLUMN_NAME_LEN );
-
-                            dst_result->records[ row_count ].fields[ k ].size = ( int )column_data_len[ k ];
-                            dst_result->records[ row_count ].fields[ k ].value = SAFECALLOC( ( int )column_data_len[ k ] + 1, sizeof( char ), __FILE__, __LINE__ );
-                            memcpy( dst_result->records[ row_count ].fields[ k ].value, ( char* )column_data[ k ], ( int )column_data_len[ k ] );
+                            if( column_data_len[ k ] != SQL_NULL_DATA ) {
+                                strncpy( dst_result->records[ row_count ].fields[ k ].label, column_name[ k ], MAX_COLUMN_NAME_LEN );
+                                dst_result->records[ row_count ].fields[ k ].size = ( int )column_data_len[ k ];
+                                dst_result->records[ row_count ].fields[ k ].value = SAFECALLOC( ( int )column_data_len[ k ] + 1, sizeof( char ), __FILE__, __LINE__ );
+                                memcpy( dst_result->records[ row_count ].fields[ k ].value, ( char* )column_data[ k ], ( int )column_data_len[ k ] );
+                            } else {
+                                strncpy( dst_result->records[ row_count ].fields[ k ].label, "(No column name)", MAX_COLUMN_NAME_LEN );
+                                dst_result->records[ row_count ].fields[ k ].size = 0;
+                                dst_result->records[ row_count ].fields[ k ].value = NULL;
+                            }
                         }
                     }
 
@@ -241,6 +266,8 @@ int ODBC_exec(
                 for( i = 0; i < num_columns; i++ ) {
                     free( column_name[ i ] ); column_name[ i ] = NULL;
                     free( column_data[ i ] ); column_data[ i ] = NULL;
+                    column_data_len[ i ] = 0;
+                    column_data_size[ i ] = 0;
                 }
             }
         } else {

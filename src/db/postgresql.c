@@ -131,16 +131,20 @@ int PG_exec(
         for( i = 0; i < row_count; i++) {
             dst_result->records[i].fields = ( DB_FIELD* )SAFEMALLOC( field_count * sizeof( DB_FIELD ), __FILE__, __LINE__ );
             for( j = 0; j < field_count; j++ ) {
-                strncpy( dst_result->records[i].fields[j].label, PQfname( pg_result, j ), 64 );
+                strncpy( dst_result->records[i].fields[j].label, PQfname( pg_result, j ), MAX_COLUMN_NAME_LEN );
                 val_length = PQgetlength( pg_result, i, j );
-                dst_result->records[i].fields[j].value = ( char* )SAFECALLOC( ( val_length+2 ), sizeof( char ), __FILE__, __LINE__ );
-                char *tmp_res = PQgetvalue( pg_result, i, j );
+                if( val_length > 0 ) {
+                    dst_result->records[ i ].fields[ j ].value = SAFECALLOC( ( val_length + 1 ), sizeof( char ), __FILE__, __LINE__ );
+                    char* tmp_res = PQgetvalue( pg_result, i, j );
 
-                dst_result->records[ i ].fields[ j ].size = val_length;
-                for( k = 0; k < val_length; k++ ) {
-                    dst_result->records[ i ].fields[ j ].value[ k ] = tmp_res[ k ];
+                    dst_result->records[ i ].fields[ j ].size = val_length;
+                    for( k = 0; k < val_length; k++ ) {
+                        dst_result->records[ i ].fields[ j ].value[ k ] = tmp_res[ k ];
+                    }
+                } else {
+                    dst_result->records[ i ].fields[ j ].size = 0;
+                    dst_result->records[ i ].fields[ j ].value = NULL;
                 }
-                dst_result->records[ i ].fields[ j ].value[ k + 1 ] = '\0';
             }
         }
     }

@@ -41,7 +41,7 @@
 					},
 					"modified" : {
 						"primary_db" : "dcpam",
-						"primary_db_sql" : "SELECT MAX(changed) FROM accounted_time WHERE is_valid = 1 AND SYSTEM = 'OTRS'",
+						"primary_db_sql" : "SELECT MAX(changed) AS changed FROM accounted_time WHERE is_valid = 1 AND SYSTEM = 'OTRS'",
 						"secondary_db" : "this",
 						"secondary_db_sql" : "SELECT t.id AS system_object_id, ta.id AS system_worklog_id, t.customer_id AS system_customer, ta.create_by AS system_agent_id, ta.time_unit AS system_accounted_time, ta.create_time AS system_created FROM time_accounting ta LEFT JOIN ticket t ON t.id = ta.ticket_id WHERE ta.change_time > '%s'"
 					}
@@ -69,7 +69,7 @@
 					"inserted" : {
 						"pg_sql" : "INSERT INTO accounted_time (system_object_id, system_worklog_id, system_customer, system_agent_id, system_accounted_time, system_created, is_valid, system) VALUES ($1, $2, $3, $4, $5, $6, 1, 'OTRS')",
 						"mysql_sql" : "INSERT INTO accounted_time (system_object_id, system_worklog_id, system_customer, system_agent_id, system_accounted_time, system_created, is_valid, system) VALUES (?, ?, ?, ?, ?, ?, 1, 'OTRS')",
-						"sql" : "INSERT INTO accounted_time (system_object_id, system_worklog_id, system_customer, system_agent_id, system_accounted_time, system_created, is_valid, system) VALUES (?, ?, '?', '?', ?, '?', 1, 'OTRS')",
+						"sql" : "INSERT INTO accounted_time (system_object_id, system_worklog_id, system_customer, system_agent_id, system_accounted_time system_created, is_valid, system) VALUES (?, ?, '?', '?', ?, '?', 1, 'OTRS')",
 						"extracted_values" : ["system_object_id", "system_worklog_id", "system_customer", "system_agent_id", "system_accounted_time", "system_created"]
 					},
 					"deleted" : {

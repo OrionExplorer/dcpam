@@ -50,7 +50,6 @@ int DB_exec(
 
         case D_ODBC : {
             //q_ret = ODBC_exec( &db->db_conn.odbc_conn, sql, sql_len, dst_result, param_values, params_count, param_lengths, param_formats, NULL/*(MYSQL_BIND*)param_types*/ );
-            printf("====PASSING QUERY====\n%s\n=========\n", sql );
             q_ret = ODBC_exec( &db->db_conn.odbc_conn, sql, *sql_len, dst_result, NULL, 0, NULL, NULL, NULL/*(MYSQL_BIND*)param_types*/ );
         } break;
     }
@@ -182,15 +181,15 @@ void DATABASE_SYSTEM_QUERY_add(
     if( verbose > 0 ) LOG_print("\t· load\n\t\t·inserted\n\t\t\t·sql: \"%.70s(...)\"\n", cdc.load.inserted.sql );
     if( verbose > 0 ) LOG_print("\t\t\t·extracted_values: " );
     for( i = 0; i < cdc.load.inserted.extracted_values_len; i++ ) {
-        if( verbose > 0 ) printf("'%s', ", cdc.load.inserted.extracted_values[i]);
+        if( verbose > 0 ) LOG_print("'%s', ", cdc.load.inserted.extracted_values[i]);
     }
-    if( verbose > 0 ) printf("\n");
+    if( verbose > 0 ) LOG_print("\n");
     if( verbose > 0 ) LOG_print("\t\t·deleted\n\t\t\t·sql: \"%.70s(...)\"\n", cdc.load.deleted.sql );
     if( verbose > 0 ) LOG_print("\t\t\t·extracted_values: " );
     for( i = 0; i < cdc.load.deleted.extracted_values_len; i++ ) {
         if( verbose > 0 ) printf("'%s', ", cdc.load.deleted.extracted_values[i]);
     }
-    if( verbose > 0 ) printf("\n");
+    if( verbose > 0 ) LOG_print("\n");
     if( verbose > 0 ) LOG_print("\t\t·modified\n\t\t\t·sql: \"%.70s(...)\"\n", cdc.load.modified.sql );
     if( verbose > 0 ) LOG_print("\t\t\t·extracted_values: " );
     for( i = 0; i < cdc.load.modified.extracted_values_len; i++ ) {

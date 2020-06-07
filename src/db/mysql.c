@@ -10,7 +10,7 @@ static pthread_mutex_t      db_exec_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 
 void MYSQL_disconnect( MYSQL_CONNECTION* db_connection ) {
-	printf( "[%s]\tMYSQL_disconnect( <'%s'> ).\n", TIME_get_gmt(), db_connection->id ? db_connection->id : "" );
+	LOG_print( "[%s]\tMYSQL_disconnect( <'%s'> ).\n", TIME_get_gmt(), db_connection->id ? db_connection->id : "" );
 
 	if( db_connection->connection ) {
 		mysql_close( db_connection->connection );
@@ -22,7 +22,7 @@ void MYSQL_disconnect( MYSQL_CONNECTION* db_connection ) {
 		db_connection->id = NULL;
 	}
 
-	printf( "[%s]\tMYSQL_disconnect.\n", TIME_get_gmt() );
+	LOG_print( "[%s]\tMYSQL_disconnect.\n", TIME_get_gmt() );
 }
 
 
@@ -48,7 +48,7 @@ int MYSQL_connect(
 	if( mysql_real_connect( db_connection->connection, host, user, password, dbname, 0, NULL, 0 ) == NULL ) {
 		db_connection->active = 0;
 		free( db_connection->id ); db_connection->id = NULL;
-		printf( "error. Message: \"%s\".\n", mysql_error( db_connection->connection ) );
+		LOG_print( "error. Message: \"%s\".\n", mysql_error( db_connection->connection ) );
 		return 0;
 	}
 
@@ -127,13 +127,13 @@ int MYSQL_exec(
 						val_length = lengths[ j ];
 						if( val_length > 0 ) {
 							dst_result->records[ i ].fields[ j ].size = val_length;
-							dst_result->records[ i ].fields[ j ].value = ( char* )SAFECALLOC( val_length + 1, sizeof( char ), __FILE__, __LINE__ );
+							dst_result->records[ i ].fields[ j ].value = SAFECALLOC( val_length + 1, sizeof( char ), __FILE__, __LINE__ );
 							for( k = 0; k < val_length; k++ ) {
 								*( k + dst_result->records[ i ].fields[ j ].value ) = mysql_row[ j ][ k ];
 							}
 						} else {
-							dst_result->records[ i ].fields[ j ].value = ( char* )SAFECALLOC( 2, sizeof( char ), __FILE__, __LINE__ );
-							dst_result->records[ i ].fields[ j ].value[ 0 ] = 0;
+							dst_result->records[ i ].fields[ j ].value = NULL;
+							dst_result->records[ i ].fields[ j ].size = 0;
 						}
 					}
 				}
@@ -141,7 +141,7 @@ int MYSQL_exec(
 				for( i = 0; i < field_count; i++ ) {
 					mysql_field = mysql_fetch_field( mysql_result );
 					for( j = 0; j < row_count; j++ ) {
-						strncpy( dst_result->records[ j ].fields[ i ].label, mysql_field->name, 64 );
+						strncpy( dst_result->records[ j ].fields[ i ].label, mysql_field->name, MAX_COLUMN_NAME_LEN );
 					}
 				}
 			}
