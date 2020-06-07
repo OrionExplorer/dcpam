@@ -14,10 +14,12 @@
 
 
 int CDC_ExtractQueryTypeValid( const char *sql ) {
+
+    DB_QUERY_TYPE dqt = DB_QUERY_get_type( sql );
     if(
-        strstr( sql, "DELETE" ) ||
-        strstr( sql, "INSERT" ) ||
-        strstr( sql, "UPDATE" )
+        dqt == DQT_DELETE ||
+        dqt == DQT_INSERT ||
+        dqt == DQT_UPDATE
     ) {
         return 0;
     }

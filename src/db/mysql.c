@@ -150,9 +150,6 @@ int MYSQL_exec(
 
 		} else if( param_values != NULL && params_count > 0 ) {
 			/* Query with bind parameters */
-			/****
-			* TODO: mysql_stmt_fetch (eg. https://docs.oracle.com/cd/E17952_01/mysql-5.5-en/c-api-prepared-call-statements.html)
-			****/
 			stmt = mysql_stmt_init( db_connection->connection );
 			if( !stmt ) {
 				LOG_print( "[%s][ERROR]\tMYSQL_exec: mysql_stmt_init() out of memory.\n", TIME_get_gmt() );

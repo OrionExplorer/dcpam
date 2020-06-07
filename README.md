@@ -1,7 +1,8 @@
 # DCPAM [![Build Status](https://travis-ci.org/OrionExplorer/dcpam.svg?branch=master)](https://travis-ci.org/OrionExplorer/dcpam)
 ### _Data Construct-Populate-Access-Manage_
-Data warehouse or data mart.
-DCPAM helps to create central repositories of integrated data from one or disparate sources([1]).
+* Data warehouse or data mart.
+* DCPAM helps to create central repositories of integrated data from one or disparate sources([1]).
+* Cross-platform (Linux/Windows).
 
 It is ETL-based([2]) system with CDC([3]) solutions depending on the data sources (currently it's database only):
 
@@ -19,8 +20,9 @@ DCPAM is still work in progress, with following data sources:
 | Data source     | Type            | Support | Status      |
 |:--------------  |:---------------:|:-------:|:-----------:|
 | PostgreSQL      | Database        | Native  | Done        |
-| MySQL/MariaDB   | Database        | Native  | Done        |
-| SQL Server      | Database        | ODBC    | In progress |
+| MySQL           | Database        | Native  | Done        |
+| SQL Server      | Database        | ODBC    | Done        |
+| MariaDB         | Database        | Native  | Research    |
 | Oracle Database | Database        | Native  | Research    |
 
 

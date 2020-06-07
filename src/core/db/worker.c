@@ -135,6 +135,7 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
         DATABASE_SYSTEM_close( DATA_SYSTEM );
     }
     pthread_exit( NULL );
+    return FALSE;
 }
 
 
