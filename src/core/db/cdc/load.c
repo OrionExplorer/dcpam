@@ -48,9 +48,9 @@ void CDC_LoadGeneric( DB_SYSTEM_CDC_LOAD *load, DB_SYSTEM_CDC_LOAD_QUERY *load_e
                             q_formats[ q_values_len ] = 0;
                             q_types[ q_values_len ] = 0;
                         } else {
-                            q_values[ q_values_len ] = SAFEMALLOC( ( 5 + 1 ) * sizeof **q_values, __FILE__, __LINE__ );
-                            strncpy( q_values[ q_values_len ], "NULL\0", 5 );
-                            q_lengths[ q_values_len ] = 4;
+                            q_values[ q_values_len ] = SAFEMALLOC( ( 10 + 1 ) * sizeof **q_values, __FILE__, __LINE__ );
+                            strncpy( q_values[ q_values_len ], "dcpamNULL\0", 10 );
+                            q_lengths[ q_values_len ] = 9;
                             q_formats[ q_values_len ] = 0;
                             q_types[ q_values_len ] = 0;
                         }

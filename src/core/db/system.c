@@ -24,8 +24,8 @@ int DB_exec(
 ) {
     char            *sql_bound = NULL;
     unsigned long   sql_bound_len = 0;
-    char            *sql = sql_template;
-    unsigned long   *sql_len = sql_length;
+    char            *sql = ( char* )sql_template;
+    unsigned long   *sql_len = &sql_length;
     int             q_ret = 0;
 
     if( DB_QUERY_format( sql_template, &sql_bound, &sql_bound_len, param_values, params_count, param_lengths ) == FALSE ) {
@@ -34,23 +34,24 @@ int DB_exec(
     }
 
     sql = sql_bound ? sql_bound : sql_template;
-    sql_len = sql_bound ? sql_bound_len : sql_length;
+    sql_len = sql_bound ? &sql_bound_len : &sql_length;
 
 
     switch( db->driver ) {
         case D_POSTGRESQL : {
             //q_ret = PG_exec( &db->db_conn.pgsql_conn, sql, sql_len, dst_result, param_values, params_count, param_lengths, param_formats, NULL/*(Oid*)param_types*/ );
-            q_ret = PG_exec( &db->db_conn.pgsql_conn, sql, sql_len, dst_result, NULL, 0, NULL, NULL, NULL/*(Oid*)param_types*/ );
+            q_ret = PG_exec( &db->db_conn.pgsql_conn, sql, *sql_len, dst_result, NULL, 0, NULL, NULL, NULL/*(Oid*)param_types*/ );
         } break;
 
         case D_MYSQL : {
             //q_ret = MYSQL_exec( &db->db_conn.mysql_conn, sql, sql_len, dst_result, param_values, params_count, param_lengths, param_formats, NULL/*(MYSQL_BIND*)param_types*/ );
-            q_ret = MYSQL_exec( &db->db_conn.mysql_conn, sql, sql_len, dst_result, NULL, 0, NULL, NULL, NULL/*(MYSQL_BIND*)param_types*/ );
+            q_ret = MYSQL_exec( &db->db_conn.mysql_conn, sql, *sql_len, dst_result, NULL, 0, NULL, NULL, NULL/*(MYSQL_BIND*)param_types*/ );
         } break;
 
         case D_ODBC : {
             //q_ret = ODBC_exec( &db->db_conn.odbc_conn, sql, sql_len, dst_result, param_values, params_count, param_lengths, param_formats, NULL/*(MYSQL_BIND*)param_types*/ );
-            q_ret = ODBC_exec( &db->db_conn.odbc_conn, sql, sql_len, dst_result, NULL, 0, NULL, NULL, NULL/*(MYSQL_BIND*)param_types*/ );
+            printf("====PASSING QUERY====\n%s\n=========\n", sql );
+            q_ret = ODBC_exec( &db->db_conn.odbc_conn, sql, *sql_len, dst_result, NULL, 0, NULL, NULL, NULL/*(MYSQL_BIND*)param_types*/ );
         } break;
     }
 

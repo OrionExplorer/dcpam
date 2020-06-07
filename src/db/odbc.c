@@ -11,7 +11,7 @@
 static pthread_mutex_t      db_exec_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 
-#define CHECK_ERROR(e, s, h, t) {if (e!=SQL_SUCCESS && e != SQL_SUCCESS_WITH_INFO) { ODBC_get_error(s, h, t); return 0;} }
+#define CHECK_ERROR(e, s, h, t, r) {if (e!=SQL_SUCCESS && e != SQL_SUCCESS_WITH_INFO) { ODBC_get_error(s, h, t); if( r == TRUE ) { return 0; } } }
 
 void ODBC_get_error( char* fn, SQLHANDLE handle, SQLSMALLINT type ) {
     SQLINTEGER i = 0;
@@ -71,15 +71,15 @@ int ODBC_connect(
 
 
     retcode = SQLAllocHandle( SQL_HANDLE_ENV, SQL_NULL_HANDLE, &db_connection->sqlenvhandle );
-    CHECK_ERROR( retcode, "SQLAllocHandle( SQL_HANDLE_ENV, SQL_NULL_HANDLE, &db_connection->sqlenvhandle )", db_connection->sqlenvhandle, SQL_HANDLE_ENV );
+    CHECK_ERROR( retcode, "SQLAllocHandle( SQL_HANDLE_ENV, SQL_NULL_HANDLE, &db_connection->sqlenvhandle )", db_connection->sqlenvhandle, SQL_HANDLE_ENV, TRUE );
 
 
     retcode = SQLSetEnvAttr( db_connection->sqlenvhandle, SQL_ATTR_ODBC_VERSION, ( void* )SQL_OV_ODBC3, 0 );
-    CHECK_ERROR( retcode, "SQLSetEnvAttr( db_connection->sqlenvhandle, SQL_ATTR_ODBC_VERSION, ( void* )SQL_OV_ODBC3, 0 )", db_connection->sqlenvhandle, SQL_HANDLE_ENV );
+    CHECK_ERROR( retcode, "SQLSetEnvAttr( db_connection->sqlenvhandle, SQL_ATTR_ODBC_VERSION, ( void* )SQL_OV_ODBC3, 0 )", db_connection->sqlenvhandle, SQL_HANDLE_ENV, TRUE );
 
 
     retcode = SQLAllocHandle( SQL_HANDLE_DBC, db_connection->sqlenvhandle, &db_connection->connection );
-    CHECK_ERROR( retcode, "SQLAllocHandle( SQL_HANDLE_DBC, db_connection->sqlenvhandle, &db_connection->connection )", db_connection->connection, SQL_HANDLE_DBC );
+    CHECK_ERROR( retcode, "SQLAllocHandle( SQL_HANDLE_DBC, db_connection->sqlenvhandle, &db_connection->connection )", db_connection->connection, SQL_HANDLE_DBC, TRUE );
 
     if( connection_string ) {
         db_connection->id = SAFECALLOC( strlen( connection_string ) + 1, sizeof( char ), __FILE__, __LINE__ );
@@ -103,7 +103,7 @@ int ODBC_connect(
         NULL,
         SQL_DRIVER_NOPROMPT
     );
-    CHECK_ERROR( retcode, "SQLDriverConnect()", db_connection->connection, SQL_HANDLE_DBC );
+    CHECK_ERROR( retcode, "SQLDriverConnect()", db_connection->connection, SQL_HANDLE_DBC, TRUE );
 
     db_connection->active = 1;
 
@@ -156,7 +156,7 @@ int ODBC_exec(
 
     if( db_connection->connection ) {
         retcode = SQLAllocHandle( SQL_HANDLE_STMT, db_connection->connection, &stmt );
-        CHECK_ERROR( retcode, "SQLAllocHandle()", stmt, SQL_HANDLE_STMT );
+        CHECK_ERROR( retcode, "SQLAllocHandle()", stmt, SQL_HANDLE_STMT, TRUE );
 
         /*retcode = SQLPrepare( stmt, sql, sql_length );
         CHECK_ERROR( retcode, "SQLPrepare()", stmt, SQL_HANDLE_STMT );*/
@@ -170,10 +170,10 @@ int ODBC_exec(
             }
 
             retcode = SQLPrepare( stmt, ( SQLCHAR* )sql, sql_length );
-            CHECK_ERROR( retcode, "SQLPrepare()", stmt, SQL_HANDLE_STMT );
+            CHECK_ERROR( retcode, "SQLPrepare()", stmt, SQL_HANDLE_STMT, TRUE );
 
             retcode = SQLNumResultCols( stmt, &num_columns );
-            CHECK_ERROR( retcode, "SQLNumResultCols()", stmt, SQL_HANDLE_STMT );
+            CHECK_ERROR( retcode, "SQLNumResultCols()", stmt, SQL_HANDLE_STMT, TRUE );
 
             for( i = 0; i < num_columns; i++ ) {
                 column_name[ i ] = SAFECALLOC( MAX_COLUMN_NAME_LEN + 1, sizeof( SQLCHAR ), __FILE__, __LINE__ );
@@ -188,7 +188,7 @@ int ODBC_exec(
                     NULL,
                     &column_data_nullable[ i ]
                 );
-                CHECK_ERROR( retcode, "SQLDescribeCol()", stmt, SQL_HANDLE_STMT );
+                CHECK_ERROR( retcode, "SQLDescribeCol()", stmt, SQL_HANDLE_STMT, TRUE );
 
                 column_data[ i ] = SAFECALLOC( column_data_size[ i ] + 1, sizeof( SQLCHAR ), __FILE__, __LINE__ );
 
@@ -200,11 +200,11 @@ int ODBC_exec(
                     column_data_size[ i ],
                     &column_data_len[ i ]
                 );
-                CHECK_ERROR( retcode, "SQLBindCol()", stmt, SQL_HANDLE_STMT );
+                CHECK_ERROR( retcode, "SQLBindCol()", stmt, SQL_HANDLE_STMT, TRUE );
             }
 
             retcode = SQLExecute( stmt );
-            CHECK_ERROR( retcode, "SQLExecute()", stmt, SQL_HANDLE_STMT );
+            CHECK_ERROR( retcode, "SQLExecute()", stmt, SQL_HANDLE_STMT, FALSE );
 
             if( DB_QUERY_get_type( dst_result->sql ) == DQT_SELECT ) {
                 while( TRUE ) {
@@ -214,7 +214,7 @@ int ODBC_exec(
                         break;
                     }
 
-                    CHECK_ERROR( retcode, "SQLFetch()", stmt, SQL_HANDLE_STMT );
+                    CHECK_ERROR( retcode, "SQLFetch()", stmt, SQL_HANDLE_STMT, TRUE );
 
                     dst_result->records = ( DB_RECORD* )realloc( tmp_records, ( row_count + 1 ) * sizeof( DB_RECORD ) );
                     if( dst_result->records != NULL ) {
@@ -233,7 +233,7 @@ int ODBC_exec(
                 }
 
                 retcode = SQLCloseCursor( stmt );
-                CHECK_ERROR( retcode, "SQLCloseCursor()", stmt, SQL_HANDLE_DBC );
+                CHECK_ERROR( retcode, "SQLCloseCursor()", stmt, SQL_HANDLE_DBC, TRUE );
                 tmp_records = NULL;
                 dst_result->row_count = row_count;
                 dst_result->field_count = num_columns;
