@@ -37,6 +37,7 @@ File `config.json` is DCPAM foundation. It defines:
 ##### Dependencies
 - libpq-dev (PostgreSQL)
 - libmysqlclient-dev (MySQL)
+- libmariadbclient-dev (MariaDB)
 - unixodbc-dev (ODBC)
 - [cJSON](https://github.com/DaveGamble/cJSON "cJSON") (included)
 
