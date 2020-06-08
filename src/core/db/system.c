@@ -39,17 +39,18 @@ int DB_exec(
 
     switch( db->driver ) {
         case D_POSTGRESQL : {
-            //q_ret = PG_exec( &db->db_conn.pgsql_conn, sql, sql_len, dst_result, param_values, params_count, param_lengths, param_formats, NULL/*(Oid*)param_types*/ );
             q_ret = PG_exec( &db->db_conn.pgsql_conn, sql, *sql_len, dst_result, NULL, 0, NULL, NULL, NULL/*(Oid*)param_types*/ );
         } break;
 
         case D_MYSQL : {
-            //q_ret = MYSQL_exec( &db->db_conn.mysql_conn, sql, sql_len, dst_result, param_values, params_count, param_lengths, param_formats, NULL/*(MYSQL_BIND*)param_types*/ );
             q_ret = MYSQL_exec( &db->db_conn.mysql_conn, sql, *sql_len, dst_result, NULL, 0, NULL, NULL, NULL/*(MYSQL_BIND*)param_types*/ );
         } break;
 
+        case D_MARIADB : {
+            q_ret = MARIADB_exec( &db->db_conn.mariadb_conn, sql, *sql_len, dst_result, NULL, 0, NULL, NULL, NULL/*(MYSQL_BIND*)param_types*/ );
+        } break;
+
         case D_ODBC : {
-            //q_ret = ODBC_exec( &db->db_conn.odbc_conn, sql, sql_len, dst_result, param_values, params_count, param_lengths, param_formats, NULL/*(MYSQL_BIND*)param_types*/ );
             q_ret = ODBC_exec( &db->db_conn.odbc_conn, sql, *sql_len, dst_result, NULL, 0, NULL, NULL, NULL/*(MYSQL_BIND*)param_types*/ );
         } break;
     }
@@ -58,7 +59,6 @@ int DB_exec(
 
     return q_ret;
 }
-
 
 
 void SYSTEM_QUERY_free( DATABASE_SYSTEM_QUERY *dst ) {
@@ -237,7 +237,7 @@ void DATABASE_SYSTEM_DB_add(
     if( verbose > 0 ) LOG_print("\t· port=\"%d\"\n", port );
     dst->port = port;
 
-    if( verbose > 0 ) LOG_print("\t· driver=\"%s\"\n", driver == D_POSTGRESQL ? "PostgreSQL" : driver == D_MYSQL ? "MySQL" : "ODBC" );
+    if( verbose > 0 ) LOG_print("\t· driver=\"%s\"\n", driver == D_POSTGRESQL ? "PostgreSQL" : driver == D_MYSQL ? "MySQL" : driver == D_MARIADB ? "MariaDB" : "ODBC" );
     dst->driver = ( DB_DRIVER )driver;
 
     if( verbose > 0 ) LOG_print("\t· user=\"%s\"\n", user );
@@ -318,6 +318,11 @@ void DATABASE_SYSTEM_DB_free( DATABASE_SYSTEM_DB *db ) {
             LOG_print( "\t· Driver: \"MySQL\". Disconnecting...\n" );
             MYSQL_disconnect( &db->db_conn.mysql_conn );
         } break;
+         case D_MARIADB : {
+            
+            LOG_print( "\t· Driver: \"MariaDB\". Disconnecting...\n" );
+            MARIADB_disconnect( &db->db_conn.mariadb_conn );
+        } break;
         case D_ODBC : {
             
             LOG_print( "\t· Driver: \"ODBC\". Disconnecting...\n" );
@@ -342,6 +347,10 @@ int DATABASE_SYSTEM_DB_init( DATABASE_SYSTEM_DB *db ) {
         case D_MYSQL : {
             LOG_print( "\t· Driver: \"MySQL\". Connecting..." );
             ret = MYSQL_connect( &db->db_conn.mysql_conn, db->ip, db->port, db->db, db->user, db->password, db->connection_string );
+        } break;
+        case D_MARIADB : {
+            LOG_print( "\t· Driver: \"MariaDB\". Connecting..." );
+            ret = MARIADB_connect( &db->db_conn.mariadb_conn, db->ip, db->port, db->db, db->user, db->password, db->connection_string );
         } break;
         case D_ODBC : {
             LOG_print( "\t· Driver: \"SQL Server\". Connecting (%s)...", db->connection_string );

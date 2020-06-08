@@ -31,6 +31,7 @@
 #pragma comment( lib, "pthreadVC2.lib" )
 #pragma comment( lib, "libmysql.lib" )
 #pragma comment( lib, "libpq.lib" )
+#pragma comment( lib, "libmariadb.lib" )
 #endif // _MSC_VER
 
 #endif

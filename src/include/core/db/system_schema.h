@@ -3,17 +3,20 @@
 
 #include "../../db/postgresql.h"
 #include "../../db/mysql.h"
+#include "../../db/mariadb.h"
 #include "../../db/odbc.h"
 
 typedef union {
     PG_CONNECTION           pgsql_conn;
     MYSQL_CONNECTION        mysql_conn;
-    ODBC_CONNECTION        odbc_conn;
+    MARIADB_CONNECTION      mariadb_conn;
+    ODBC_CONNECTION         odbc_conn;
 } DB_CONN;
 
 typedef enum {
     D_POSTGRESQL = 1,
     D_MYSQL,
+    D_MARIADB,
     D_ODBC
 } DB_DRIVER;
 

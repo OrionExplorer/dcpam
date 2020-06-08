@@ -6,6 +6,7 @@
 #include "include/core/db/worker.h"
 #include "include/core/schema.h"
 
+#include "include/db/mariadb.h"
 #include "include/db/mysql.h"
 #include "include/db/odbc.h"
 #include "include/db/postgresql.h"

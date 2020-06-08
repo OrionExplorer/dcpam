@@ -3,9 +3,11 @@
 # libmysqlclient-dev
 CC=gcc 
 
-CFLAGS=-std=c11 -fexpensive-optimizations -Wshadow -Winit-self -Wredundant-decls -Wcast-align -Wundef -Wfloat-equal -Winline -Wunreachable-code -Wmissing-declarations -Wmissing-include-dirs -Wswitch-enum -Wswitch-default -Wmain -pedantic-errors -pedantic -w -Wfatal-errors -Wextra -Wall -g3 -O0
+
 #CFLAGS=-std=c11 -fexpensive-optimizations -Wshadow -Winit-self -Wredundant-decls -Wcast-align -Wundef -Wfloat-equal -Winline -Wunreachable-code -Wmissing-declarations -Wmissing-include-dirs -Wswitch-enum -Wswitch-default -Wmain -pedantic-errors -pedantic -w -Wfatal-errors -Wextra -Wall -Os -O3 -O2 -O1
-LIBS=-lm -lpthread -lpq -lmysqlclient -lodbc
+CFLAGS=-std=c11 -fexpensive-optimizations -Wshadow -Winit-self -Wredundant-decls -Wcast-align -Wundef -Wfloat-equal -Winline -Wunreachable-code -Wmissing-declarations -Wmissing-include-dirs -Wswitch-enum -Wswitch-default -Wmain -pedantic-errors -pedantic -w -Wfatal-errors -Wextra -Wall -g3 -O0
+
+LIBS=-lm -lpthread -lpq -lodbc -lmariadbclient
 
 
 all: dcpam
@@ -19,6 +21,9 @@ postgresql.o: src/db/postgresql.c
 
 mysql.o: src/db/mysql.c
 	gcc -c src/db/mysql.c $(CFLAGS)
+
+mariadb.o: src/db/mariadb.c
+	gcc -c src/db/mariadb.c $(CFLAGS)
 
 odbc.o: src/db/odbc.c
 	gcc -c src/db/odbc.c $(CFLAGS)
@@ -62,6 +67,6 @@ memory.o: src/utils/memory.c
 strings.o: src/utils/strings.c
 	gcc -c src/utils/strings.c $(CFLAGS)
 
-dcpam: dcpam.o mysql.o odbc.o postgresql.o log.o time.o filesystem.o cJSON.o memory.o db.o worker.o system.o extract.o transform.o load.o strings.o
-	gcc mysql.o odbc.o postgresql.o dcpam.o log.o time.o filesystem.o cJSON.o memory.o db.o worker.o system.o extract.o transform.o load.o strings.o -o dcpam $(LIBS)
+dcpam: dcpam.o mysql.o mariadb.o odbc.o postgresql.o log.o time.o filesystem.o cJSON.o memory.o db.o worker.o system.o extract.o transform.o load.o strings.o
+	gcc mysql.o mariadb.o odbc.o postgresql.o dcpam.o log.o time.o filesystem.o cJSON.o memory.o db.o worker.o system.o extract.o transform.o load.o strings.o -o dcpam $(LIBS)
 	rm *.o
