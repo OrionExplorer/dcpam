@@ -2,7 +2,7 @@ language: c
 compiler: gcc
 script: make
 before_install:
-  - sudo apt-get -y install libpq-dev libmysqlclient-dev unixodbc-dev
+  - sudo apt-get -y install libpq-dev libmysqlclient-dev libmariadbclient-dev unixodbc-dev
 addons:
   apt:
     update: true
