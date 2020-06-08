@@ -1,13 +1,11 @@
+language: c
 os:
   - linux
     dist: bionic
-  - osx
-language: c
 compiler: gcc
 script: make
 before_install:
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get -y install libpq-dev libmysqlclient-dev libmariadbclient-dev unixodbc-dev; fi
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew update; fi
+  - sudo apt-get -y install libpq-dev libmysqlclient-dev libmariadbclient-dev unixodbc-dev
 addons:
   apt:
     update: true
