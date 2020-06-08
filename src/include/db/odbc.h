@@ -12,7 +12,7 @@
 
 
 typedef struct {
-    SQLHENV   sqlenvhandle;
+    SQLHENV     sqlenvhandle;
     SQLHDBC     connection;
     char        *id;
     int         active;

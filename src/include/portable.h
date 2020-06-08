@@ -32,6 +32,7 @@
 #pragma comment( lib, "libmysql.lib" )
 #pragma comment( lib, "libpq.lib" )
 #pragma comment( lib, "libmariadb.lib" )
+#pragma comment( lib, "oci.lib" )
 #endif // _MSC_VER
 
 #endif

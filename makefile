@@ -28,6 +28,9 @@ mariadb.o: src/db/mariadb.c
 odbc.o: src/db/odbc.c
 	gcc -c src/db/odbc.c $(CFLAGS)
 
+#oracle.o: src/db/oracle.c
+#	gcc -c src/db/oracle.c $(CFLAGS)
+
 dcpam.o: src/dcpam.c
 	gcc -c src/dcpam.c $(CFLAGS)
 
@@ -67,6 +70,6 @@ memory.o: src/utils/memory.c
 strings.o: src/utils/strings.c
 	gcc -c src/utils/strings.c $(CFLAGS)
 
-dcpam: dcpam.o mysql.o mariadb.o odbc.o postgresql.o log.o time.o filesystem.o cJSON.o memory.o db.o worker.o system.o extract.o transform.o load.o strings.o
-	gcc mysql.o mariadb.o odbc.o postgresql.o dcpam.o log.o time.o filesystem.o cJSON.o memory.o db.o worker.o system.o extract.o transform.o load.o strings.o -o dcpam $(LIBS)
+dcpam: dcpam.o mysql.o mariadb.o odbc.o postgresql.o log.o time.o filesystem.o cJSON.o memory.o db.o worker.o system.o extract.o transform.o load.o strings.o #oracle.o
+	gcc mysql.o mariadb.o odbc.o postgresql.o dcpam.o log.o time.o filesystem.o cJSON.o memory.o db.o worker.o system.o extract.o transform.o load.o strings.o -o dcpam $(LIBS) #oracle.o
 	rm *.o

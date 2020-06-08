@@ -19,11 +19,11 @@ It is ETL-based([2]) system with CDC([3]) solutions depending on the data source
 DCPAM is still work in progress, with following data sources:
 |  ID  | Data source     | Type            | Support | Status      |
 |:----:|:--------------  |:---------------:|:-------:|:-----------:|
-| 1    | PostgreSQL      | Database        | Native  | Done        |
-| 2    | MySQL           | Database        | Native  | Done        |
-| 3    | MariaDB         | Database        | Native  | Done        |
-| 4    | SQL Server      | Database        | ODBC    | Done        |
-| 5    | Oracle Database | Database        | Native  | Research    |
+| 1    | PostgreSQL      | Database        | Native  | Available   |
+| 2    | MySQL           | Database        | Native  | Available   |
+| 3    | MariaDB         | Database        | Native  | Available   |
+| 4    | SQL Server      | Database        | ODBC    | Available   |
+| 5    | Oracle Database | Database        | Native  | In progress |
 
 
 ### Configuration
@@ -33,14 +33,7 @@ File `config.json` is DCPAM foundation. It defines:
 * DCPAM database, tabels and views (see _app.DATA_), where integrated data is stored
 
 
-#### Compilation
-##### Dependencies
-- libpq-dev (PostgreSQL)
-- libmysqlclient-dev (MySQL)
-- libmariadbclient-dev (MariaDB)
-- unixodbc-dev (ODBC)
-- [cJSON](https://github.com/DaveGamble/cJSON "cJSON") (included)
-
+#### Compilation (Linux)
 ```
 > make
 ```
@@ -52,6 +45,21 @@ File `config.json` is DCPAM foundation. It defines:
 ```
 > valgrind --tool=memcheck --leak-check=yes ./dcpam
 ```
+
+##### Linux Dependencies
+- libpq-dev (PostgreSQL)
+- libmysqlclient-dev (MySQL)
+- libmariadbclient-dev (MariaDB)
+- unixodbc-dev (ODBC)
+
+##### Windows Dependencies
+- MariaDB Connector C
+- MySQL Connector 8.0
+- PostgreSQL
+- Oracle Database
+
+
+This software uses [cJSON](https://github.com/DaveGamble/cJSON "cJSON") for parsing JSON data.
 
 [1]: https://en.wikipedia.org/wiki/Data_warehouse
 [2]: https://en.wikipedia.org/wiki/Extract,_transform,_load
