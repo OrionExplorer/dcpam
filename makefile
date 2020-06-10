@@ -6,8 +6,8 @@ CC=gcc
 
 #CFLAGS=-std=c11 -fexpensive-optimizations -Wshadow -Winit-self -Wredundant-decls -Wcast-align -Wundef -Wfloat-equal -Winline -Wunreachable-code -Wmissing-declarations -Wmissing-include-dirs -Wswitch-enum -Wswitch-default -Wmain -pedantic-errors -pedantic -w -Wfatal-errors -Wextra -Wall -Os -O3 -O2 -O1
 CFLAGS=-std=c11 -fexpensive-optimizations -Wshadow -Winit-self -Wredundant-decls -Wcast-align -Wundef -Wfloat-equal -Winline -Wunreachable-code -Wmissing-declarations -Wmissing-include-dirs -Wswitch-enum -Wswitch-default -Wmain -pedantic-errors -pedantic -w -Wfatal-errors -Wextra -Wall -g3 -O0
-LIBS=-lm -lpthread -lpq -lodbc -lmariadbclient
-#-L$ORACLE_HOME/lib/ -lclntsh
+LIBS=-lm -lpthread -lpq -lodbc -lmariadbclient -L$(ORACLE_HOME)/lib/ -lclntsh
+INC= -I$(ORACLE_HOME)/include/
 
 
 all: dcpam
@@ -70,6 +70,6 @@ memory.o: src/utils/memory.c
 strings.o: src/utils/strings.c
 	gcc -c src/utils/strings.c $(CFLAGS)
 
-dcpam: dcpam.o mysql.o mariadb.o odbc.o postgresql.o log.o time.o filesystem.o cJSON.o memory.o db.o worker.o system.o extract.o transform.o load.o strings.o #oracle.o
-	gcc mysql.o mariadb.o odbc.o postgresql.o dcpam.o log.o time.o filesystem.o cJSON.o memory.o db.o worker.o system.o extract.o transform.o load.o strings.o -o dcpam $(LIBS) #oracle.o
+dcpam: dcpam.o mysql.o mariadb.o odbc.o postgresql.o log.o time.o filesystem.o cJSON.o memory.o db.o worker.o system.o extract.o transform.o load.o strings.o oracle.o
+	gcc mysql.o mariadb.o odbc.o postgresql.o dcpam.o log.o time.o filesystem.o cJSON.o memory.o db.o worker.o system.o extract.o transform.o load.o strings.o oracle.o $(INC) -o dcpam $(LIBS)
 	rm *.o
