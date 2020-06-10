@@ -46,13 +46,13 @@ system.o: src/core/db/system.c
 	gcc -c src/core/db/system.c $(CFLAGS) $(ORACLE_INC)
 
 extract.o: src/core/db/cdc/extract.c
-	gcc -c src/core/db/cdc/extract.c $(CFLAGS)
+	gcc -c src/core/db/cdc/extract.c $(CFLAGS) $(ORACLE_INC)
 
 transform.o: src/core/db/cdc/transform.c
-	gcc -c src/core/db/cdc/transform.c $(CFLAGS)
+	gcc -c src/core/db/cdc/transform.c $(CFLAGS) $(ORACLE_INC)
 
 load.o: src/core/db/cdc/load.c
-	gcc -c src/core/db/cdc/load.c $(CFLAGS)
+	gcc -c src/core/db/cdc/load.c $(CFLAGS) $(ORACLE_INC)
 
 time.o: src/utils/time.c
 	gcc -c src/utils/time.c $(CFLAGS)
