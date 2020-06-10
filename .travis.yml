@@ -4,6 +4,14 @@ compiler: gcc
 script: make
 before_install:
   - sudo apt-get -y install libpq-dev libmariadbclient-dev unixodbc-dev
+  - sudo apt-get -y install alien
+  - wget https://download.oracle.com/otn_software/linux/instantclient/19600/oracle-instantclient19.6-basic-19.6.0.0.0-1.x86_64.rpm
+  - sudo alien -i oracle-instantclient19.6-basic-19.6.0.0.0-1.x86_64.rpm
+  - wget https://download.oracle.com/otn_software/linux/instantclient/19600/oracle-instantclient19.6-devel-19.6.0.0.0-1.x86_64.rpm
+  - sudo alien -i oracle-instantclient19.6-devel-19.6.0.0.0-1.x86_64.rpm
+  - export LD_LIBRARY_PATH=/usr/lib/oracle/19.6/client64/lib/${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}
+  - export PATH=$PATH:$ORACLE_HOME/bin
+  - sudo ln -s /usr/include/oracle/19.6/client64/ $ORACLE_HOME/include
 addons:
   apt:
     update: true

@@ -3,7 +3,8 @@
 	- proposal #2: make use of external scripts/applications.
 [✗] ETL process interval can vary between system[].queries[].
 [✗] New data sources:
-	- [✗] Oracle Database
+	- [✓] MariaDB
+	- [✓] Oracle Database
 	- [✗] SQLite
 	- [✗] CSV
 	- [✗] URL

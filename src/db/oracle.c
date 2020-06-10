@@ -78,7 +78,6 @@ int ORACLE_connect(
     sword       retcode = 0;
     OCIError    *errhp;
     OCIServer   *srvhp;
-    OCISvcCtx   *svchp;
     OCISession  *authp = ( OCISession* )0;
 
     db_connection->id = ( char * )SAFECALLOC( strlen(user)+strlen(host)+strlen(dbname)+8, sizeof( char ), __FILE__, __LINE__ );
@@ -106,12 +105,12 @@ int ORACLE_connect(
     OCIHandleAlloc( ( dvoid* )db_connection->envhp, ( dvoid** )&srvhp, OCI_HTYPE_SERVER,
         ( size_t )0, ( dvoid** )0 );
 
-    OCIHandleAlloc( ( dvoid* )db_connection->envhp, ( dvoid** )&svchp, OCI_HTYPE_SVCCTX,
+    OCIHandleAlloc( ( dvoid* )db_connection->envhp, ( dvoid** )&db_connection->svchp, OCI_HTYPE_SVCCTX,
         ( size_t )0, ( dvoid** )0 );
 
     OCIServerAttach( srvhp, errhp, ( text* )host, strlen( host ), 0 );
 
-    OCIAttrSet( ( dvoid* )svchp, OCI_HTYPE_SVCCTX, ( dvoid* )srvhp,
+    OCIAttrSet( ( dvoid* )db_connection->svchp, OCI_HTYPE_SVCCTX, ( dvoid* )srvhp,
         ( ub4 )0, OCI_ATTR_SERVER, ( OCIError* )errhp );
 
     OCIHandleAlloc( ( dvoid* )db_connection->envhp, ( dvoid** )&authp,
@@ -125,7 +124,7 @@ int ORACLE_connect(
         ( dvoid* )password, ( ub4 )strlen( ( char* )password ),
         ( ub4 )OCI_ATTR_PASSWORD, errhp );
 
-    retcode = OCISessionBegin( svchp, errhp, authp, OCI_CRED_RDBMS,
+    retcode = OCISessionBegin( db_connection->svchp, errhp, authp, OCI_CRED_RDBMS,
         ( ub4 )OCI_DEFAULT );
     if( retcode != OCI_SUCCESS ) {
         ORACLE_get_error( errhp, retcode );
@@ -134,7 +133,7 @@ int ORACLE_connect(
         return 0;
     }
 
-    OCIAttrSet( ( dvoid* )svchp, ( ub4 )OCI_HTYPE_SVCCTX,
+    OCIAttrSet( ( dvoid* )db_connection->svchp, ( ub4 )OCI_HTYPE_SVCCTX,
         ( dvoid* )authp, ( ub4 )0,
         ( ub4 )OCI_ATTR_SESSION, errhp );
 
@@ -156,11 +155,19 @@ int ORACLE_exec(
     const int           *param_lengths,
     const int           *param_formats
 ) {
-    /*PGresult        *pg_result = NULL;*/
-    int             row_count = 0, field_count = 0;
+    OCIStmt         *stmthp = NULL;
+    OCIError        *errhp = NULL;
+    sword           retcode = 0;
+    ub4             row_count = 0, field_count = 0;
     int             val_length = 0;
     int             i = 0, j = 0, k = 0;
     unsigned long   l = 0;
+    OCIParam        *mypard = ( OCIParam* )0;
+    ub2             dtype;
+    text            *col_name;
+    ub4             counter, col_name_len, char_semantics;
+    ub2             col_width;
+    sb4             parm_status;
 
     LOG_print( "[%s]\tORACLE_exec( <'%s'>, \"%s\", ... ).\n", TIME_get_gmt(), db_connection->id, sql );
     pthread_mutex_lock( &db_exec_mutex );
@@ -171,6 +178,78 @@ int ORACLE_exec(
     dst_result->sql = ( char* )SAFECALLOC( sql_length + 1, sizeof( char ), __FILE__, __LINE__ );
     for( l = 0; l < sql_length; l++ ) {
         *( dst_result->sql + l ) = sql[ l ];
+    }
+
+    OCIHandleAlloc( ( dvoid* )db_connection->envhp, ( dvoid** )&stmthp,
+        OCI_HTYPE_STMT, ( size_t )0, ( dvoid** )0 );
+
+    OCIStmtPrepare( stmthp, errhp, ( text* )dst_result->sql,
+        ( ub4 )sql_length,
+        ( ub4 )OCI_NTV_SYNTAX, ( ub4 )OCI_DEFAULT );
+
+    retcode = OCIStmtExecute( db_connection->svchp, stmthp, errhp, ( ub4 )1, ( ub4 )0,
+        ( CONST OCISnapshot* ) NULL, ( OCISnapshot* )NULL, OCI_DEFAULT );
+    if( retcode != OCI_SUCCESS ) {
+        ORACLE_get_error( errhp, retcode );
+        return 0;
+    }
+
+    counter = 1;
+    parm_status = OCIParamGet( ( dvoid* )stmthp, OCI_HTYPE_STMT, errhp, ( dvoid** )&mypard, ( ub4 )counter );
+    while( parm_status == OCI_SUCCESS ) {
+        /* Retrieve the datatype attribute */
+        retcode = OCIAttrGet( ( dvoid* )mypard, ( ub4 )OCI_DTYPE_PARAM,
+            ( dvoid* )&dtype, ( ub4* )0, ( ub4 )OCI_ATTR_DATA_TYPE,
+            ( OCIError* )errhp );
+        if( retcode != OCI_SUCCESS ) {
+            ORACLE_get_error( errhp, retcode );
+            return 0;
+        }
+
+        /* Retrieve the column name attribute */
+        col_name_len = 0;
+        retcode = OCIAttrGet( ( dvoid* )mypard, ( ub4 )OCI_DTYPE_PARAM,
+            ( dvoid** )&col_name, ( ub4* )&col_name_len, ( ub4 )OCI_ATTR_NAME,
+            ( OCIError* )errhp );
+        if( retcode != OCI_SUCCESS ) {
+            ORACLE_get_error( errhp, retcode );
+            return 0;
+        }
+
+        /* Retrieve the length semantics for the column */
+        char_semantics = 0;
+        retcode = OCIAttrGet( ( dvoid* )mypard, ( ub4 )OCI_DTYPE_PARAM,
+            ( dvoid* )&char_semantics, ( ub4* )0, ( ub4 )OCI_ATTR_CHAR_USED,
+            ( OCIError* )errhp );
+        if( retcode != OCI_SUCCESS ) {
+            ORACLE_get_error( errhp, retcode );
+            return 0;
+        }
+        col_width = 0;
+        if( char_semantics ) {
+            /* Retrieve the column width in characters */
+            retcode = OCIAttrGet( ( dvoid* )mypard, ( ub4 )OCI_DTYPE_PARAM,
+            ( dvoid* )&col_width, ( ub4* )0, ( ub4 )OCI_ATTR_CHAR_SIZE,
+                ( OCIError* )errhp );
+            if( retcode != OCI_SUCCESS ) {
+                ORACLE_get_error( errhp, retcode );
+                return 0;
+            }
+        } else {
+            /* Retrieve the column width in bytes */
+            retcode = OCIAttrGet( ( dvoid* )mypard, ( ub4 )OCI_DTYPE_PARAM,
+            ( dvoid* )&col_width, ( ub4* )0, ( ub4 )OCI_ATTR_DATA_SIZE,
+                ( OCIError* )errhp );
+            if( retcode != OCI_SUCCESS ) {
+                ORACLE_get_error( errhp, retcode );
+                return 0;
+            }
+        }
+
+        /* increment counter and get next descriptor, if there is one */
+        counter++;
+        parm_status = OCIParamGet( ( dvoid* )stmthp, OCI_HTYPE_STMT, errhp,
+            ( dvoid** )&mypard, ( ub4 )counter );
     }
 
     LOG_print( "[%s]\tORACLE_exec.\n", TIME_get_gmt() );
