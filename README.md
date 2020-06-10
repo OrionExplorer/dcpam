@@ -51,6 +51,8 @@ File `config.json` is DCPAM foundation. It defines:
 - libmysqlclient-dev (MySQL)
 - libmariadbclient-dev (MariaDB)
 - unixodbc-dev (ODBC)
+- oracle-instantclient19.6-basic-19.6.0.0.0-1.x86_64.rpm (Oracle Instant Client)
+- oracle-instantclient19.6-devel-19.6.0.0.0-1.x86_64.rpm (Oracle Instant Client SDK)
 
 ##### Windows Dependencies
 - MariaDB Connector C

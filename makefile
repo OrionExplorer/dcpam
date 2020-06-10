@@ -9,7 +9,7 @@ CC=gcc
 #CFLAGS=-std=c11 -fexpensive-optimizations -Wshadow -Winit-self -Wredundant-decls -Wcast-align -Wundef -Wfloat-equal -Winline -Wunreachable-code -Wmissing-declarations -Wmissing-include-dirs -Wswitch-enum -Wswitch-default -Wmain -pedantic-errors -pedantic -w -Wfatal-errors -Wextra -Wall -Os -O3 -O2 -O1
 CFLAGS=-std=c11 -fexpensive-optimizations -Wshadow -Winit-self -Wredundant-decls -Wcast-align -Wundef -Wfloat-equal -Winline -Wunreachable-code -Wmissing-declarations -Wmissing-include-dirs -Wswitch-enum -Wswitch-default -Wmain -pedantic-errors -pedantic -w -Wfatal-errors -Wextra -Wall -g3 -O0
 LIBS=-lm -lpthread -lpq -lodbc -lmariadbclient -L/usr/lib/oracle/19.6/client64/lib/ -lclntsh
-ORACLE_INC= -I$(ORACLE_HOME)/include/
+ORACLE_INC= -I/usr/include/oracle/19.6/client64/include/
 
 
 all: dcpam
