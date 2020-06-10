@@ -43,7 +43,7 @@ worker.o: src/core/db/worker.c
 	gcc -c src/core/db/worker.c $(CFLAGS) $(ORACLE_INC)
 
 system.o: src/core/db/system.c
-	gcc -c src/core/db/system.c $(CFLAGS)
+	gcc -c src/core/db/system.c $(CFLAGS) $(ORACLE_INC)
 
 extract.o: src/core/db/cdc/extract.c
 	gcc -c src/core/db/cdc/extract.c $(CFLAGS)
