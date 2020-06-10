@@ -41,9 +41,9 @@ File `config.json` is DCPAM foundation. It defines:
 ```
 > ./dcpam
 ```
-- run with Valgrind
+- run with Valgrind (with suppression of Oracle OCI errors)
 ```
-> valgrind --tool=memcheck --leak-check=yes ./dcpam
+> valgrind --leak-check=full --show-reachable=yes --error-limit=no --suppressions=valgrind_oci.supp ./dcpam
 ```
 
 ##### Linux Dependencies

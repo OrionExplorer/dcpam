@@ -5,19 +5,22 @@
 #include "../../db/mysql.h"
 #include "../../db/mariadb.h"
 #include "../../db/odbc.h"
+#include "../../db/oracle.h"
 
 typedef union {
     PG_CONNECTION           pgsql_conn;
     MYSQL_CONNECTION        mysql_conn;
     MARIADB_CONNECTION      mariadb_conn;
     ODBC_CONNECTION         odbc_conn;
+    ORACLE_CONNECTION       oracle_conn;
 } DB_CONN;
 
 typedef enum {
     D_POSTGRESQL = 1,
     D_MYSQL,
     D_MARIADB,
-    D_ODBC
+    D_ODBC,
+    D_ORACLE
 } DB_DRIVER;
 
 typedef struct DATABASE_SYSTEM_DB {

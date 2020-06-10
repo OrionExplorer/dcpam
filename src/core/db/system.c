@@ -237,7 +237,13 @@ void DATABASE_SYSTEM_DB_add(
     if( verbose > 0 ) LOG_print("\t· port=\"%d\"\n", port );
     dst->port = port;
 
-    if( verbose > 0 ) LOG_print("\t· driver=\"%s\"\n", driver == D_POSTGRESQL ? "PostgreSQL" : driver == D_MYSQL ? "MySQL" : driver == D_MARIADB ? "MariaDB" : "ODBC" );
+    if( verbose > 0 ) LOG_print("\t· driver=\"%s\"\n", 
+        driver == D_POSTGRESQL ? "PostgreSQL" 
+        : driver == D_MYSQL ? "MySQL" 
+        : driver == D_MARIADB ? "MariaDB" 
+        : driver == D_ODBC ? "ODBC" 
+        : "ORACLE"
+    );
     dst->driver = ( DB_DRIVER )driver;
 
     if( verbose > 0 ) LOG_print("\t· user=\"%s\"\n", user );
@@ -327,6 +333,11 @@ void DATABASE_SYSTEM_DB_free( DATABASE_SYSTEM_DB *db ) {
             
             LOG_print( "\t· Driver: \"ODBC\". Disconnecting...\n" );
             ODBC_disconnect( &db->db_conn.odbc_conn );
+        } break;
+        case D_ORACLE : {
+
+            LOG_print( "\t· Driver: \"Oracle\". Disconnecting...\n" );
+            ORACLE_disconnect( &db->db_conn.oracle_conn );
         }
         default : {
         }
@@ -353,8 +364,12 @@ int DATABASE_SYSTEM_DB_init( DATABASE_SYSTEM_DB *db ) {
             ret = MARIADB_connect( &db->db_conn.mariadb_conn, db->ip, db->port, db->db, db->user, db->password, db->connection_string );
         } break;
         case D_ODBC : {
-            LOG_print( "\t· Driver: \"SQL Server\". Connecting (%s)...", db->connection_string );
+            LOG_print( "\t· Driver: \"ODBC\". Connecting (%s)...", db->connection_string );
             ret = ODBC_connect( &db->db_conn.odbc_conn, db->ip, db->port, db->db, db->user, db->password, db->connection_string );
+        } break;
+        case D_ORACLE : {
+            LOG_print( "\t· Driver: \"Oracle\". Connecting..." );
+            ret = ORACLE_connect( &db->db_conn.oracle_conn, db->ip, db->port, db->db, db->user, db->password, db->connection_string );
         } break;
         default : {
             LOG_print( "Error: unknown driver: \"%d\".\n", db->driver );
