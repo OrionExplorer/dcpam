@@ -34,7 +34,7 @@ oracle.o: src/db/oracle.c
 	gcc -c src/db/oracle.c $(CFLAGS) $(ORACLE_INC)
 
 dcpam.o: src/dcpam.c
-	gcc -c src/dcpam.c $(CFLAGS)
+	gcc -c src/dcpam.c $(CFLAGS) $(ORACLE_INC)
 
 log.o: src/utils/log.c
 	gcc -c src/utils/log.c $(CFLAGS)
