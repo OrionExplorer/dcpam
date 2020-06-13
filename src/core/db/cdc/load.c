@@ -43,7 +43,6 @@ void CDC_LoadGeneric( DB_SYSTEM_CDC_LOAD *load, DB_SYSTEM_CDC_LOAD_QUERY *load_e
                             q_values[ q_values_len ] = SAFEMALLOC( (data->records[ i ].fields[ j ].size + 1) * sizeof **q_values, __FILE__, __LINE__ );
                             memcpy( q_values[ q_values_len ], data->records[ i ].fields[ j ].value, data->records[ i ].fields[ j ].size + 1 );
                             q_values[ q_values_len+1 ] = '\0';
-                            printf("\t- q_values[ %d ] = %s\n", q_values_len, q_values[ q_values_len ] );
 
                             q_lengths[ q_values_len ] = data->records[ i ].fields[ j ].size;
                             q_formats[ q_values_len ] = 0;
@@ -54,7 +53,6 @@ void CDC_LoadGeneric( DB_SYSTEM_CDC_LOAD *load, DB_SYSTEM_CDC_LOAD_QUERY *load_e
                             q_lengths[ q_values_len ] = 9;
                             q_formats[ q_values_len ] = 0;
                             q_types[ q_values_len ] = 0;
-                            printf( "\t- q_values[ %d ] = %s\n", q_values_len, q_values[ q_values_len ] );
                         }
 
                         q_values_len++;
