@@ -60,6 +60,11 @@ void ORACLE_disconnect( ORACLE_CONNECTION* db_connection ) {
             OCIServerDetach( db_connection->srvhp, errhp, ( ub4 )OCI_DEFAULT );
         }
 
+        if( db_connection->authp ) {
+            OCIHandleFree( ( dvoid* )db_connection->authp, OCI_HTYPE_ENV );
+            db_connection->authp = NULL;
+        }
+
         if( db_connection->envhp ) {
             OCIHandleFree( ( dvoid* )db_connection->envhp, OCI_HTYPE_ENV );
             db_connection->envhp = NULL;
@@ -67,6 +72,10 @@ void ORACLE_disconnect( ORACLE_CONNECTION* db_connection ) {
         if( db_connection->svchp ) {
             OCIHandleFree( ( dvoid* )db_connection->svchp, OCI_HTYPE_SVCCTX );
             db_connection->svchp = NULL;
+        }
+        if( db_connection->srvhp ) {
+            OCIHandleFree( ( dvoid* )db_connection->srvhp, OCI_HTYPE_SVCCTX );
+            db_connection->srvhp = NULL;
         }
         if( db_connection->id != NULL ) {
             free( db_connection->id );

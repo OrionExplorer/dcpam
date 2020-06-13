@@ -1,4 +1,64 @@
 {
+   OCI_Suppression
+   Memcheck:Addr4
+   fun:kpufhndl0
+   fun:ORACLE_disconnect
+   fun:DATABASE_SYSTEM_DB_free
+   fun:DCPAM_free_configuration
+   fun:app_terminate
+   fun:sslssAsynchHdlr
+   fun:sslsshandler
+   obj:/lib/x86_64-linux-gnu/libpthread-2.27.so
+   fun:__pthread_timedjoin_ex
+   fun:DB_WORKER_init
+   fun:main
+}
+{
+   OCI_Suppression
+   Memcheck:Addr8
+   fun:kpufhndl0
+   fun:ORACLE_disconnect
+   fun:DATABASE_SYSTEM_DB_free
+   fun:DCPAM_free_configuration
+   fun:app_terminate
+   fun:sslssAsynchHdlr
+   fun:sslsshandler
+   obj:/lib/x86_64-linux-gnu/libpthread-2.27.so
+   fun:__pthread_timedjoin_ex
+   fun:DB_WORKER_init
+   fun:main
+}
+{
+   OCI_Suppression
+   Memcheck:Addr1
+   fun:kpufhndl0
+   fun:ORACLE_disconnect
+   fun:DATABASE_SYSTEM_DB_free
+   fun:DCPAM_free_configuration
+   fun:app_terminate
+   fun:sslssAsynchHdlr
+   fun:sslsshandler
+   obj:/lib/x86_64-linux-gnu/libpthread-2.27.so
+   fun:__pthread_timedjoin_ex
+   fun:DB_WORKER_init
+   fun:main
+}
+{
+   OCI_Suppression
+   Memcheck:Addr4
+   fun:kpufhndl0
+   fun:ORACLE_disconnect
+   fun:DATABASE_SYSTEM_DB_free
+   fun:DCPAM_free_configuration
+   fun:app_terminate
+   fun:sslssAsynchHdlr
+   fun:sslsshandler
+   obj:/lib/x86_64-linux-gnu/libpthread-2.27.so
+   fun:__pthread_timedjoin_ex
+   fun:DB_WORKER_init
+   fun:main
+}
+{
 	OCI_Suppression
 	Memcheck:Cond
 	fun:ztcsc
