@@ -62,7 +62,7 @@ void CDC_ExtractGeneric( DB_SYSTEM_CDC_EXTRACT *extract, DB_SYSTEM_CDC_EXTRACT_Q
         primary_ret = DB_exec( primary_db, extract_element->primary_db_sql, strlen( extract_element->primary_db_sql ), &primary_db_sql_res, NULL, 0, NULL, NULL, NULL );
 
         /* Check if query finished successfully. */
-        if( primary_ret == 1) {
+        if( primary_ret == TRUE ) {
 
             /* Check if query resulted with any data */
             if( primary_db_sql_res.row_count > 0 ) {

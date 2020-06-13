@@ -34,15 +34,16 @@ void CDC_LoadGeneric( DB_SYSTEM_CDC_LOAD *load, DB_SYSTEM_CDC_LOAD_QUERY *load_e
             q_lengths = SAFEMALLOC( (load_element->extracted_values_len+1) * sizeof( int ), __FILE__, __LINE__ );
             q_formats = SAFEMALLOC( (load_element->extracted_values_len+1) * sizeof( int ), __FILE__, __LINE__ );
             q_types = SAFEMALLOC( (load_element->extracted_values_len+1) * sizeof( int ), __FILE__, __LINE__ );
-    
+
             /* Get defined values only based on "extracted_values" in config.json */
             for( j = 0; j < data->field_count; j++ ) {
                 for( k = 0; k < load_element->extracted_values_len; k++ ) {
-                    if( strcmp( load_element->extracted_values[ k ], data->records[ i ].fields[ j ].label ) == 0 ) {
+                    if( strncmp( load_element->extracted_values[ k ], data->records[ i ].fields[ j ].label, MAX_COLUMN_NAME_LEN ) == 0 ) {
                         if( data->records[ i ].fields[ j ].size > 0 ) {
                             q_values[ q_values_len ] = SAFEMALLOC( (data->records[ i ].fields[ j ].size + 1) * sizeof **q_values, __FILE__, __LINE__ );
                             memcpy( q_values[ q_values_len ], data->records[ i ].fields[ j ].value, data->records[ i ].fields[ j ].size + 1 );
                             q_values[ q_values_len+1 ] = '\0';
+                            printf("\t- q_values[ %d ] = %s\n", q_values_len, q_values[ q_values_len ] );
 
                             q_lengths[ q_values_len ] = data->records[ i ].fields[ j ].size;
                             q_formats[ q_values_len ] = 0;
@@ -53,6 +54,7 @@ void CDC_LoadGeneric( DB_SYSTEM_CDC_LOAD *load, DB_SYSTEM_CDC_LOAD_QUERY *load_e
                             q_lengths[ q_values_len ] = 9;
                             q_formats[ q_values_len ] = 0;
                             q_types[ q_values_len ] = 0;
+                            printf( "\t- q_values[ %d ] = %s\n", q_values_len, q_values[ q_values_len ] );
                         }
 
                         q_values_len++;
@@ -61,20 +63,24 @@ void CDC_LoadGeneric( DB_SYSTEM_CDC_LOAD *load, DB_SYSTEM_CDC_LOAD_QUERY *load_e
                 }
             }
 
-            DB_QUERY_init( &sql_res );
-            /* Perform DB query and store result in *data */
-            query_ret = DB_exec( &APP.DB, load_element->sql, strlen( load_element->sql ), &sql_res, q_values, q_values_len, q_lengths, q_formats, ( const char *)q_types );
+            if( q_values_len > 0 ) {
+                DB_QUERY_init( &sql_res );
+                /* Perform DB query and store result in *data */
+                query_ret = DB_exec( &APP.DB, load_element->sql, strlen( load_element->sql ), &sql_res, q_values, q_values_len, q_lengths, q_formats, ( const char* )q_types );
 
-            /* Free memory before next iteration */
-            for( j = 0; j < load_element->extracted_values_len; j++ ) {
-                free( q_values[ j ] ); q_values[ j ] = NULL;
+                /* Free memory before next iteration */
+                for( j = 0; j < q_values_len/*load_element->extracted_values_len*/; j++ ) {
+                    free( q_values[ j ] ); q_values[ j ] = NULL;
+                }
+                free( q_values ); q_values = NULL;
+                free( q_lengths ); q_lengths = NULL;
+                free( q_formats ); q_formats = NULL;
+                free( q_types ); q_types = NULL;
+
+                DB_QUERY_free( &sql_res );
+            } else {
+                LOG_print( "[%s] Error: Extract process returned data, but Load process conditions are not satisfied.\n", TIME_get_gmt() );
             }
-            free( q_values ); q_values = NULL;
-            free( q_lengths ); q_lengths = NULL;
-            free( q_formats ); q_formats = NULL;
-            free( q_types ); q_types = NULL;
-
-            DB_QUERY_free( &sql_res );
         }
     }
 

@@ -7,7 +7,9 @@
 
 typedef struct {
     OCIEnv      *envhp;
+    OCIServer   *srvhp;
     OCISvcCtx   *svchp;
+    OCISession  *authp;
     char        *id;
     int         active;
 } ORACLE_CONNECTION;

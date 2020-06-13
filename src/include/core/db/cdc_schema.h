@@ -1,6 +1,8 @@
 #ifndef DB_CDC_SCHEMA_H
 #define DB_CDC_SCHEMA_H
 
+#include "../../shared.h"
+
 /*
     config.json => system[].queries[].change_data_capture.extract
 */
@@ -43,7 +45,7 @@ typedef struct DB_SYSTEM_CDC_TRANSFORM {
 */
 typedef struct DB_SYSTEM_CDC_LOAD_QUERY {
     char                    *sql;
-    char                    extracted_values[ MAX_CDC_COLUMNS ][ 32 ];
+    char                    extracted_values[ MAX_CDC_COLUMNS ][ MAX_COLUMN_NAME_LEN ];
     int                     extracted_values_len;
 } DB_SYSTEM_CDC_LOAD_QUERY;
 

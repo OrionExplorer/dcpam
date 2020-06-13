@@ -29,8 +29,7 @@
 					"comment#10" : "##################################################################################################",
 					"inserted" : {
 						"primary_db" : "dcpam",
-						"__primary_db_sql" : "SELECT system_worklog_id FROM sys.accounted_time WHERE system = 'OTRS'",
-						"primary_db_sql" : "SELECT system_worklog_id FROM sys.accounted_time WHERE system = 'OTRS'",
+						"primary_db_sql" : "SELECT system_worklog_id FROM accounted_time WHERE system = 'OTRS'",
 						"secondary_db" : "this",
 						"secondary_db_sql" : "SELECT t.id AS system_object_id, ta.id AS system_worklog_id, t.customer_id AS system_customer, ta.create_by AS system_agent_id, ta.time_unit AS system_accounted_time, ta.create_time AS system_created FROM time_accounting ta LEFT JOIN ticket t ON t.id = ta.ticket_id WHERE ta.id NOT IN (%s)"
 					},
@@ -38,11 +37,11 @@
 						"primary_db" : "this",
 						"primary_db_sql" : "SELECT id AS system_worklog_id FROM time_accounting",
 						"secondary_db" : "dcpam",
-						"secondary_db_sql" : "SELECT system_worklog_id FROM sys.accounted_time WHERE is_valid = 1 AND system_worklog_id NOT IN (%s)"
+						"secondary_db_sql" : "SELECT system_worklog_id FROM accounted_time WHERE is_valid = 1 AND system_worklog_id NOT IN (%s)"
 					},
 					"modified" : {
 						"primary_db" : "dcpam",
-						"primary_db_sql" : "SELECT MAX(changed) AS changed FROM sys.accounted_time WHERE is_valid = 1 AND SYSTEM = 'OTRS'",
+						"primary_db_sql" : "SELECT MAX(changed) AS changed FROM accounted_time WHERE is_valid = 1 AND SYSTEM = 'OTRS'",
 						"secondary_db" : "this",
 						"secondary_db_sql" : "SELECT t.id AS system_object_id, ta.id AS system_worklog_id, t.customer_id AS system_customer, ta.create_by AS system_agent_id, ta.time_unit AS system_accounted_time, ta.create_time AS system_created FROM time_accounting ta LEFT JOIN ticket t ON t.id = ta.ticket_id WHERE ta.change_time > '%s'"
 					}
@@ -68,19 +67,14 @@
 					"comment#03" : "# There is no restriction on the query type in \"sql\" command.",
 					"comment#99" : "##################################################################################################",
 					"inserted" : {
-						"pg_sql" : "INSERT INTO accounted_time (system_object_id, system_worklog_id, system_customer, system_agent_id, system_accounted_time, system_created, is_valid, system) VALUES ($1, $2, $3, $4, $5, $6, 1, 'OTRS')",
-						"mysql_sql" : "INSERT INTO accounted_time (system_object_id, system_worklog_id, system_customer, system_agent_id, system_accounted_time, system_created, is_valid, system) VALUES (?, ?, ?, ?, ?, ?, 1, 'OTRS')",
 						"sql" : "INSERT INTO accounted_time (system_object_id, system_worklog_id, system_customer, system_agent_id, system_accounted_time system_created, is_valid, system) VALUES (?, ?, '?', '?', ?, '?', 1, 'OTRS')",
 						"extracted_values" : ["system_object_id", "system_worklog_id", "system_customer", "system_agent_id", "system_accounted_time", "system_created"]
 					},
 					"deleted" : {
-						"pg_sql" : "UPDATE accounted_time SET is_valid = 0 WHERE system_worklog_id = $1",
-						"sql_mysql" : "UPDATE accounted_time SET is_valid = 0 WHERE system_worklog_id = ?",
 						"sql" : "UPDATE accounted_time SET is_valid = 0 WHERE system_worklog_id = ?",
 						"extracted_values" : ["system_worklog_id"]
 					},
 					"modified" : {
-						"pg_sql" : "UPDATE accounted_time SET system_object_id = $1, system_worklog_id = $2, system_customer = $3, system_agent_id = $4, system_accounted_time = $5, system_created = $6 WHERE system_worklog_id = $7",
 						"sql" : "UPDATE accounted_time SET system_object_id = ?, system_worklog_id = ?, system_customer = ?, system_agent_id = ?, system_accounted_time = ?, system_created = ? WHERE system_worklog_id = ?",
 						"extracted_values" : ["system_object_id", "system_worklog_id", "system_customer", "system_agent_id", "system_accounted_time", "system_created", "system_worklog_id"]
 					}
@@ -231,7 +225,7 @@
 			"password" : "tantive-4",
 			"db" : "dcpam"
 		},
-		"DB_MYSQL" : {
+		"DB" : {
 			"ip" : "127.0.0.1",
 			"port" : 3306,
 			"driver" : 2,
@@ -251,7 +245,7 @@
 			"password" : "tantive-4",
 			"db" : "dcpam"
 		},
-		"DB" : {
+		"DB_ORACLE" : {
 			"ip" : "127.0.0.1",
 			"port" : 1521,
 			"driver" : 5,

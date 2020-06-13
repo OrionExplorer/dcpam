@@ -39,20 +39,24 @@ int DB_exec(
 
     switch( db->driver ) {
         case D_POSTGRESQL : {
-            q_ret = PG_exec( &db->db_conn.pgsql_conn, sql, *sql_len, dst_result, NULL, 0, NULL, NULL, NULL/*(Oid*)param_types*/ );
+            q_ret = PG_exec( &db->db_conn.pgsql_conn, sql, *sql_len, dst_result, NULL, 0, NULL, NULL, NULL );
         } break;
 
         case D_MYSQL : {
-            q_ret = MYSQL_exec( &db->db_conn.mysql_conn, sql, *sql_len, dst_result, NULL, 0, NULL, NULL, NULL/*(MYSQL_BIND*)param_types*/ );
+            q_ret = MYSQL_exec( &db->db_conn.mysql_conn, sql, *sql_len, dst_result, NULL, 0, NULL, NULL, NULL );
         } break;
 
         case D_MARIADB : {
-            q_ret = MARIADB_exec( &db->db_conn.mariadb_conn, sql, *sql_len, dst_result, NULL, 0, NULL, NULL, NULL/*(MYSQL_BIND*)param_types*/ );
+            q_ret = MARIADB_exec( &db->db_conn.mariadb_conn, sql, *sql_len, dst_result, NULL, 0, NULL, NULL, NULL );
         } break;
 
         case D_ODBC : {
-            q_ret = ODBC_exec( &db->db_conn.odbc_conn, sql, *sql_len, dst_result, NULL, 0, NULL, NULL, NULL/*(MYSQL_BIND*)param_types*/ );
+            q_ret = ODBC_exec( &db->db_conn.odbc_conn, sql, *sql_len, dst_result, NULL, 0, NULL, NULL, NULL );
         } break;
+
+        case D_ORACLE: {
+            q_ret = ORACLE_exec( &db->db_conn.oracle_conn, sql, *sql_len, dst_result, NULL, 0, NULL, NULL );
+        }
     }
 
     free( sql_bound ); sql_bound = NULL;

@@ -106,6 +106,8 @@ int MYSQL_exec(
 				mysql_result = mysql_store_result( db_connection->connection );
 			} else {
 				LOG_print( "[%s][ERROR]\tMYSQL_exec: #%d, %s (\"%s\", len=%d)\n", TIME_get_gmt(), query_result, mysql_error( db_connection->connection ), dst_result->sql, sql_length );
+				pthread_mutex_unlock( &db_exec_mutex );
+				return 0;
 			}
 
 			if( mysql_result ) {

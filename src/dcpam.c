@@ -64,7 +64,7 @@ void DCPAM_free_configuration( void ) {
     }
 }
 
-int DCPAM_load_configuration( void ) {
+int DCPAM_load_configuration( const char *filename ) {
     FILE*           file = NULL;
     char*           config_string;
     cJSON           *config_json = NULL;
@@ -168,8 +168,8 @@ int DCPAM_load_configuration( void ) {
     char                tmp_data_types[SMALL_BUFF_SIZE][SMALL_BUFF_SIZE];
     int                 tmp_data_types_len = 0;
 
-    LOG_print( "[%s] DCPAM_load_configuration( ).\n", TIME_get_gmt() );
-    file = fopen( "config.json", "r" );
+    LOG_print( "[%s] DCPAM_load_configuration( %s ).\n", TIME_get_gmt(), filename );
+    file = fopen( filename, "r" );
     if( file != NULL ) {
         config_string = ( char* )SAFECALLOC( MAX_BUFFER, sizeof( char ), __FILE__, __LINE__ );
         file_len = fread( config_string, MAX_BUFFER, 1, file );
@@ -838,7 +838,7 @@ int DCPAM_load_configuration( void ) {
                                 change_data_capture.load.inserted.extracted_values
                             */
                             for( k = 0; k < MAX_CDC_COLUMNS; k++ ) {
-                                memset( tmp_cdc.load.inserted.extracted_values[ k ], 0, 32 );
+                                memset( tmp_cdc.load.inserted.extracted_values[ k ], 0, MAX_COLUMN_NAME_LEN );
                             }
                             tmp_cdc.load.inserted.extracted_values_len = 0;
                             cfg_system_query_item_change_data_capture_load_inserted_extracted_values_array = cJSON_GetObjectItem( cfg_system_query_item_change_data_capture_load_inserted, "extracted_values" );
@@ -853,7 +853,7 @@ int DCPAM_load_configuration( void ) {
                                 strncpy(
                                     tmp_cdc.load.inserted.extracted_values[ k ],
                                     cfg_system_query_item_change_data_capture_load_inserted_extracted_values_item->valuestring,
-                                    32
+                                    MAX_COLUMN_NAME_LEN
                                 );
                                 tmp_cdc.load.inserted.extracted_values_len++;
                             }
@@ -895,7 +895,7 @@ int DCPAM_load_configuration( void ) {
                                 return FALSE;
                             }
                             for( k = 0; k < MAX_CDC_COLUMNS; k++ ) {
-                                memset( tmp_cdc.load.deleted.extracted_values[ k ], 0, 32 );
+                                memset( tmp_cdc.load.deleted.extracted_values[ k ], 0, MAX_COLUMN_NAME_LEN );
                             }
                             tmp_cdc.load.deleted.extracted_values_len = 0;
                             for( k = 0; k < cJSON_GetArraySize( cfg_system_query_item_change_data_capture_load_deleted_extracted_values_array ); k++ ) {
@@ -904,7 +904,7 @@ int DCPAM_load_configuration( void ) {
                                     tmp_cdc.load.deleted.extracted_values[ k ],
                                     //tmp_extracted_deleted_values[ k ],
                                     cfg_system_query_item_change_data_capture_load_deleted_extracted_values_item->valuestring,
-                                    32
+                                    MAX_COLUMN_NAME_LEN
                                 );
                                 tmp_cdc.load.deleted.extracted_values_len++;
                             }
@@ -946,7 +946,7 @@ int DCPAM_load_configuration( void ) {
                                 return FALSE;
                             }
                             for( k = 0; k < MAX_CDC_COLUMNS; k++ ) {
-                                memset( tmp_cdc.load.modified.extracted_values[ k ], 0, 32 );
+                                memset( tmp_cdc.load.modified.extracted_values[ k ], 0, MAX_COLUMN_NAME_LEN );
                             }
                             tmp_cdc.load.modified.extracted_values_len = 0;
                             for( k = 0; k < cJSON_GetArraySize( cfg_system_query_item_change_data_capture_load_modified_extracted_values_array ); k++ ) {
@@ -955,7 +955,7 @@ int DCPAM_load_configuration( void ) {
                                     tmp_cdc.load.modified.extracted_values[ k ],
                                     //tmp_extracted_modified_values[ k ],
                                     cfg_system_query_item_change_data_capture_load_modified_extracted_values_item->valuestring,
-                                    32
+                                    MAX_COLUMN_NAME_LEN
                                 );
                                 tmp_cdc.load.modified.extracted_values_len++;
                             }
@@ -1034,7 +1034,9 @@ int DCPAM_load_configuration( void ) {
 }
 
 
-int main( void ) {
+int main( int argc, char** argv ) {
+
+    char        config_file[ MAX_PATH_LENGTH ];
     signal( SIGINT, ( void* )&app_terminate );
 #ifndef _WIN32
     signal( SIGPIPE, SIG_IGN );
@@ -1044,7 +1046,18 @@ int main( void ) {
 
     LOG_init();
 
-    if( DCPAM_load_configuration() == 1 ) {
+    if( argc <= 1 ) {
+        strncpy( config_file, "config.json", MAX_PATH_LENGTH );
+    } else if( argc >= 2 ) {
+        if( strlen( argv[ 1 ] ) > MAX_PATH_LENGTH ) {
+            LOG_print( "[%s] Notice: \"%s\" is not valid config file name.\n", TIME_get_gmt(), argv[ 1 ] );
+            strncpy( config_file, "config.json", MAX_PATH_LENGTH );
+        } else {
+            strncpy( config_file, argv[ 1 ], MAX_PATH_LENGTH );
+        }
+    }
+
+    if( DCPAM_load_configuration( config_file ) == 1 ) {
         /*if( WORKER_init() == 0 ) {
             app_terminate();
             return 1;

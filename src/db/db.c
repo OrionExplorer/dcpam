@@ -135,6 +135,8 @@ int DB_QUERY_format( const char* src, char **dst, unsigned long *dst_length, con
     int         param_index = 0;
     int         dcpam_nulls = 0;
 
+    LOG_print( "[%s] DB_QUERY_format:\n", TIME_get_gmt() );
+
     /* Main checks */
     if( src == NULL ) {
         LOG_print( "Error: src pointer is NULL.\n" );
@@ -173,6 +175,8 @@ int DB_QUERY_format( const char* src, char **dst, unsigned long *dst_length, con
     /* Check if "?" count is equal to params_count */
     if( src_params_count != params_count ) {
         LOG_print( "Error: params_count and SQL template variables does not match!\n" );
+        LOG_print( "SQL: %s\n", src );
+        return FALSE;
     }
 
     /* Init dst buffer */
