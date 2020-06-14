@@ -148,6 +148,8 @@ void CDC_ExtractGeneric( DB_SYSTEM_CDC_EXTRACT *extract, DB_SYSTEM_CDC_EXTRACT_Q
                     DB_QUERY_free( data );
                     LOG_print( "Fatal error: query returned more than one column.\n" );
                 }
+            } else {
+                DB_QUERY_free( &primary_db_sql_res );
             }
         } else {
             /* In case of error, free query result struct */

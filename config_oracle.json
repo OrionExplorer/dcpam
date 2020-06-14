@@ -250,7 +250,7 @@
 			"port" : 1521,
 			"driver" : 5,
 			"driver_comment" : "Driver types: 1=PostgreSQL, 2=MySQL, 3=MariaDB, 4=ODBC 5=Oracle Database",
-			"connection_string" : "",
+			"connection_string" : "localhost:1521/xe",
 			"user" : "dcpam",
 			"password" : "tantive4",
 			"db" : "xe"

@@ -67,7 +67,7 @@ void CDC_LoadGeneric( DB_SYSTEM_CDC_LOAD *load, DB_SYSTEM_CDC_LOAD_QUERY *load_e
                 query_ret = DB_exec( &APP.DB, load_element->sql, strlen( load_element->sql ), &sql_res, q_values, q_values_len, q_lengths, q_formats, ( const char* )q_types );
 
                 /* Free memory before next iteration */
-                for( j = 0; j < q_values_len/*load_element->extracted_values_len*/; j++ ) {
+                for( j = 0; j < q_values_len; j++ ) {
                     free( q_values[ j ] ); q_values[ j ] = NULL;
                 }
 

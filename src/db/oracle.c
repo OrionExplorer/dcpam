@@ -131,7 +131,11 @@ int ORACLE_connect(
     OCIHandleAlloc( ( dvoid* )db_connection->envhp, ( dvoid** )&db_connection->svchp, OCI_HTYPE_SVCCTX,
         ( size_t )0, ( dvoid** )0 );
 
-    OCIServerAttach( db_connection->srvhp, errhp, ( text* )host, strlen( host ), 0 );
+    if( connection_string ) {
+        OCIServerAttach( db_connection->srvhp, errhp, ( text* )connection_string, strlen( connection_string), 0 );
+    } else {
+        OCIServerAttach( db_connection->srvhp, errhp, ( text* )host, strlen( host ), 0 );
+    }
 
     OCIAttrSet( ( dvoid* )db_connection->svchp, OCI_HTYPE_SVCCTX, ( dvoid* )db_connection->srvhp,
         ( ub4 )0, OCI_ATTR_SERVER, ( OCIError* )errhp );
@@ -375,7 +379,7 @@ int ORACLE_exec(
             free( _col_data[ i ] ); _col_data[ i ] = NULL;
         }
     }
-    LOG_print( "[%s]\tORACLE_exec (rows = %d, fields = %d).\n", TIME_get_gmt(), row_count, field_count );
+    LOG_print( "[%s]\tORACLE_exec.\n", TIME_get_gmt() );
     OCIHandleFree( ( dvoid* )stmthp, ( ub4 )OCI_HTYPE_STMT );
     pthread_mutex_unlock( &db_exec_mutex );
 

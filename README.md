@@ -1,9 +1,10 @@
 # DCPAM [![Build Status](https://travis-ci.org/OrionExplorer/dcpam.svg?branch=master)](https://travis-ci.org/OrionExplorer/dcpam)
-### _Data Construct-Populate-Access-Manage_
+## _Data Construct-Populate-Access-Manage_
 * Data warehouse or data mart.
 * DCPAM helps to create central repositories of integrated data from one or disparate sources([1]).
 * Cross-platform (Linux/Windows).
 
+### Architecture
 It is ETL-based([2]) system with CDC([3]) solutions depending on the data sources (currently it's database only):
 
 | CDC solution                            | Source        |
@@ -14,6 +15,7 @@ It is ETL-based([2]) system with CDC([3]) solutions depending on the data source
 
 ![Architecture overview](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/architecture.png)
 
+> **Notice**: Only Extract and Load processes are available. It is yet to be decided how to handle Transform process.
 
 ### Data sources
 DCPAM is still work in progress, with following data sources:
@@ -23,7 +25,7 @@ DCPAM is still work in progress, with following data sources:
 | 2    | MySQL           | Database        | Native  | Available   |
 | 3    | MariaDB         | Database        | Native  | Available   |
 | 4    | SQL Server      | Database        | ODBC    | Available   |
-| 5    | Oracle Database | Database        | Native  | In progress |
+| 5    | Oracle Database | Database        | Native  | Available   |
 
 
 ### Configuration
@@ -45,9 +47,9 @@ File `config.json` is DCPAM foundation. It defines:
 ```
 > valgrind --leak-check=full --show-reachable=yes --error-limit=no --suppressions=valgrind_oci.supp ./dcpam
 ```
-- run with Valgrind (with suppression of Oracle OCI errors) and `config_mysql.json` (where MySQL is DCPAM main database)
+- run with Valgrind and `config_mysql.json` (where MySQL is DCPAM main database)
 ```
-> valgrind --leak-check=full --show-reachable=yes --error-limit=no --suppressions=valgrind_oci.supp ./dcpam config_mysql.json
+> valgrind --leak-check=full --show-reachable=yes --error-limit=no ./dcpam config_mysql.json
 ```
 
 ##### Linux Dependencies
