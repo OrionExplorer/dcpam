@@ -67,8 +67,8 @@
 					"comment#03" : "# There is no restriction on the query type in \"sql\" command.",
 					"comment#99" : "##################################################################################################",
 					"inserted" : {
-						"sql" : "INSERT INTO sys.accounted_time (system_object_id, system_worklog_id, system_customer, system_agent_id, system_accounted_time system_created, is_valid, system) VALUES (?, ?, '?', '?', ?, '?', 1, 'OTRS')",
-						"extracted_values" : ["system_object_id", "SYSTEM_WORKLOG_ID", "SYSTEM_CUSTOMER", "SYSTEM_AGENT_ID", "SYSTEM_ACCOUNTED_TIME", "SYSTEM_CREATED"]
+						"sql" : "INSERT INTO sys.accounted_time (system_object_id, system_worklog_id, system_customer, system_agent_id, system_accounted_time, system_created, is_valid, system) VALUES (?, ?, '?', '?', ?, '?', 1, 'OTRS')",
+						"extracted_values" : ["system_object_id", "system_worklog_id", "system_customer", "system_agent_id", "system_accounted_time", "system_created"]
 					},
 					"deleted" : {
 						"sql" : "UPDATE sys.accounted_time SET is_valid = 0 WHERE system_worklog_id = ?",

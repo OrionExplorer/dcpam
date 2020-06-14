@@ -70,15 +70,15 @@ void CDC_LoadGeneric( DB_SYSTEM_CDC_LOAD *load, DB_SYSTEM_CDC_LOAD_QUERY *load_e
                 for( j = 0; j < q_values_len/*load_element->extracted_values_len*/; j++ ) {
                     free( q_values[ j ] ); q_values[ j ] = NULL;
                 }
-                free( q_values ); q_values = NULL;
-                free( q_lengths ); q_lengths = NULL;
-                free( q_formats ); q_formats = NULL;
-                free( q_types ); q_types = NULL;
 
                 DB_QUERY_free( &sql_res );
             } else {
                 LOG_print( "[%s] Error: Extract process returned data, but Load process conditions are not satisfied.\n", TIME_get_gmt() );
             }
+            free( q_values ); q_values = NULL;
+            free( q_lengths ); q_lengths = NULL;
+            free( q_formats ); q_formats = NULL;
+            free( q_types ); q_types = NULL;
         }
     }
 
