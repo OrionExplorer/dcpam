@@ -621,6 +621,7 @@ int DCPAM_load_configuration( const char *filename ) {
                             }
                             str_len = strlen( cfg_system_query_item_change_data_capture_extract_inserted_primary_db_sql->valuestring );
                             tmp_cdc.extract.inserted.primary_db_sql = ( char * )SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
+                            tmp_cdc.extract.inserted.primary_db_sql_len = str_len;
                             strncpy(
                                 tmp_cdc.extract.inserted.primary_db_sql,
                                 cfg_system_query_item_change_data_capture_extract_inserted_primary_db_sql->valuestring,
@@ -657,6 +658,7 @@ int DCPAM_load_configuration( const char *filename ) {
                             }
                             str_len = strlen( cfg_system_query_item_change_data_capture_extract_inserted_secondary_db_sql->valuestring );
                             tmp_cdc.extract.inserted.secondary_db_sql = ( char * )SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
+                            tmp_cdc.extract.inserted.secondary_db_sql_len = str_len;
                             strncpy(
                                 tmp_cdc.extract.inserted.secondary_db_sql,
                                 cfg_system_query_item_change_data_capture_extract_inserted_secondary_db_sql->valuestring,
@@ -704,6 +706,7 @@ int DCPAM_load_configuration( const char *filename ) {
                             }
                             str_len = strlen( cfg_system_query_item_change_data_capture_extract_modified_primary_db_sql->valuestring );
                             tmp_cdc.extract.modified.primary_db_sql = ( char * )SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
+                            tmp_cdc.extract.modified.primary_db_sql_len = str_len;
                             strncpy(
                                 tmp_cdc.extract.modified.primary_db_sql,
                                 cfg_system_query_item_change_data_capture_extract_modified_primary_db_sql->valuestring,
@@ -740,6 +743,7 @@ int DCPAM_load_configuration( const char *filename ) {
                             }
                             str_len = strlen( cfg_system_query_item_change_data_capture_extract_modified_secondary_db_sql->valuestring );
                             tmp_cdc.extract.modified.secondary_db_sql = ( char * )SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
+                            tmp_cdc.extract.modified.secondary_db_sql_len = str_len;
                             strncpy(
                                 tmp_cdc.extract.modified.secondary_db_sql,
                                 cfg_system_query_item_change_data_capture_extract_modified_secondary_db_sql->valuestring,
@@ -787,6 +791,7 @@ int DCPAM_load_configuration( const char *filename ) {
                             }
                             str_len = strlen( cfg_system_query_item_change_data_capture_extract_deleted_primary_db_sql->valuestring );
                             tmp_cdc.extract.deleted.primary_db_sql = ( char * )SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
+                            tmp_cdc.extract.deleted.primary_db_sql_len = str_len;
                             strncpy(
                                 tmp_cdc.extract.deleted.primary_db_sql,
                                 cfg_system_query_item_change_data_capture_extract_deleted_primary_db_sql->valuestring,
@@ -823,6 +828,7 @@ int DCPAM_load_configuration( const char *filename ) {
                             }
                             str_len = strlen( cfg_system_query_item_change_data_capture_extract_deleted_secondary_db_sql->valuestring );
                             tmp_cdc.extract.deleted.secondary_db_sql = ( char * )SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
+                            tmp_cdc.extract.deleted.secondary_db_sql_len = str_len;
                             strncpy(
                                 tmp_cdc.extract.deleted.secondary_db_sql,
                                 cfg_system_query_item_change_data_capture_extract_deleted_secondary_db_sql->valuestring,
@@ -873,6 +879,7 @@ int DCPAM_load_configuration( const char *filename ) {
                             }
                             str_len = strlen( cfg_system_query_item_change_data_capture_load_inserted_sql->valuestring );
                             tmp_cdc.load.inserted.sql = ( char * )SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
+                            tmp_cdc.load.inserted.sql_len = str_len;
                             strncpy(
                                 tmp_cdc.load.inserted.sql,
                                 cfg_system_query_item_change_data_capture_load_inserted_sql->valuestring,
@@ -926,6 +933,7 @@ int DCPAM_load_configuration( const char *filename ) {
                             }
                             str_len = strlen( cfg_system_query_item_change_data_capture_load_deleted_sql->valuestring );
                             tmp_cdc.load.deleted.sql = ( char * )SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
+                            tmp_cdc.load.deleted.sql_len = str_len;
                             strncpy(
                                 tmp_cdc.load.deleted.sql,
                                 cfg_system_query_item_change_data_capture_load_deleted_sql->valuestring,
@@ -980,6 +988,7 @@ int DCPAM_load_configuration( const char *filename ) {
                             }
                             str_len = strlen( cfg_system_query_item_change_data_capture_load_modified_sql->valuestring );
                             tmp_cdc.load.modified.sql = ( char * )SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
+                            tmp_cdc.load.modified.sql_len = str_len;
                             strncpy(
                                 tmp_cdc.load.modified.sql,
                                 cfg_system_query_item_change_data_capture_load_modified_sql->valuestring,

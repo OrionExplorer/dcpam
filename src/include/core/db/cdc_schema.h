@@ -9,8 +9,10 @@
 typedef struct DB_SYSTEM_CDC_EXTRACT_QUERY {
     char                    *primary_db;
     char                    *primary_db_sql;
+    size_t                  primary_db_sql_len;
     char                    *secondary_db;
     char                    *secondary_db_sql;
+    size_t                  secondary_db_sql_len;
 } DB_SYSTEM_CDC_EXTRACT_QUERY;
 
 typedef struct DB_SYSTEM_CDC_EXTRACT {
@@ -45,6 +47,7 @@ typedef struct DB_SYSTEM_CDC_TRANSFORM {
 */
 typedef struct DB_SYSTEM_CDC_LOAD_QUERY {
     char                    *sql;
+    size_t                  sql_len;
     char                    extracted_values[ MAX_CDC_COLUMNS ][ MAX_COLUMN_NAME_LEN ];
     int                     extracted_values_len;
 } DB_SYSTEM_CDC_LOAD_QUERY;

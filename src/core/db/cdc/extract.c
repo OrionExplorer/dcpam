@@ -28,15 +28,6 @@ int CDC_ExtractQueryTypeValid( const char *sql ) {
 }
 
 void CDC_ExtractGeneric( DB_SYSTEM_CDC_EXTRACT *extract, DB_SYSTEM_CDC_EXTRACT_QUERY *extract_element, DATABASE_SYSTEM_DB *db, DB_QUERY *data ) {
-    DB_QUERY            primary_db_sql_res;
-    DATABASE_SYSTEM_DB  *primary_db;
-    DATABASE_SYSTEM_DB  *secondary_db;
-    int                 ret_values_count = 0;
-    size_t              ret_values_len = 0;
-    char                **ret_values = NULL;
-    char                *ret_values_str = NULL;
-    char                *secondary_db_sql_p = NULL;
-    int                 str_index = 0;
 
     if( CDC_ExtractQueryTypeValid( extract_element->primary_db_sql ) == 0 || CDC_ExtractQueryTypeValid( extract_element->secondary_db_sql ) == 0 ) {
         LOG_print( "Fatal error: Only SELECT queries are allowed in *_sql commands.\n" );
@@ -44,6 +35,10 @@ void CDC_ExtractGeneric( DB_SYSTEM_CDC_EXTRACT *extract, DB_SYSTEM_CDC_EXTRACT_Q
     }
 
     if( extract ) {
+
+        DATABASE_SYSTEM_DB  *primary_db;
+        DATABASE_SYSTEM_DB  *secondary_db;
+        DB_QUERY            primary_db_sql_res;
 
         LOG_print( "\t\t- Primary DB: %s\n", extract_element->primary_db );
         LOG_print( "\t\t- Secondary DB: %s\n", extract_element->secondary_db );
@@ -57,7 +52,7 @@ void CDC_ExtractGeneric( DB_SYSTEM_CDC_EXTRACT *extract, DB_SYSTEM_CDC_EXTRACT_Q
         }
 
         DB_QUERY_init( &primary_db_sql_res );
-        int primary_ret = DB_exec( primary_db, extract_element->primary_db_sql, strlen( extract_element->primary_db_sql ), &primary_db_sql_res, NULL, 0, NULL, NULL, NULL );
+        int primary_ret = DB_exec( primary_db, extract_element->primary_db_sql, strnlen( extract_element->primary_db_sql, extract_element->primary_db_sql_len + 1 ), &primary_db_sql_res, NULL, 0, NULL, NULL, NULL );
 
         /* Check if query finished successfully. */
         if( primary_ret == TRUE ) {
@@ -66,6 +61,10 @@ void CDC_ExtractGeneric( DB_SYSTEM_CDC_EXTRACT *extract, DB_SYSTEM_CDC_EXTRACT_Q
             if( primary_db_sql_res.row_count > 0 ) {
 
                 if( primary_db_sql_res.field_count == 1 ) {
+
+                    size_t ret_values_len = 0;
+                    char   **ret_values = NULL;
+                    char   *ret_values_str = NULL;
 
                     /* Allocate memory for query result values  */
                     ret_values = SAFEMALLOC( (primary_db_sql_res.row_count + 1) *  sizeof *ret_values, __FILE__, __LINE__ );
@@ -83,10 +82,13 @@ void CDC_ExtractGeneric( DB_SYSTEM_CDC_EXTRACT *extract, DB_SYSTEM_CDC_EXTRACT_Q
                     }
 
                     if( ret_values_len > 0 ) {
+
                         int i = 0;
+                        int str_index = 0;
+
                         /* Allocate enough memory for data and commas */
                         ret_values_len += primary_db_sql_res.row_count;
-                        ret_values_str = SAFEMALLOC( ret_values_len * sizeof( char ), __FILE__, __LINE__ );
+                        ret_values_str = SAFECALLOC( ret_values_len, sizeof( char ), __FILE__, __LINE__ );
                         if( ret_values_str == NULL ) {
                             LOG_print( "Fatal error: unable to SAFEMALLOC( %d * sizeof( char ) ).\n", ret_values_len );
                             for( i = 0; i < primary_db_sql_res.row_count; i++ ) {
@@ -101,7 +103,7 @@ void CDC_ExtractGeneric( DB_SYSTEM_CDC_EXTRACT *extract, DB_SYSTEM_CDC_EXTRACT_Q
                         for( i = 0; i < primary_db_sql_res.row_count; i++ ) {
                             str_index += snprintf( &ret_values_str[ str_index ], ret_values_len - str_index, "%s,", ret_values[ i ] );
                         }
-                        ret_values_str[ strlen( ret_values_str ) ] = '\0';
+                        //ret_values_str[ strlen( ret_values_str ) ] = '\0';
 
                         /* Not needed anymore */
                         for( i = 0; i < primary_db_sql_res.row_count; i++ ) {
@@ -115,7 +117,8 @@ void CDC_ExtractGeneric( DB_SYSTEM_CDC_EXTRACT *extract, DB_SYSTEM_CDC_EXTRACT_Q
                         LOG_print( "\t· [CDC - EXTRACT] new data:\n" );
 
                         /* Allocate enough memory for SQL string and concatenated rev_values in ret_values_str */
-                        size_t secondary_db_sql_len = strlen( extract_element->secondary_db_sql ) + ret_values_len;
+                        char *secondary_db_sql_p = NULL;
+                        size_t secondary_db_sql_len = extract_element->secondary_db_sql_len + ret_values_len;
                         secondary_db_sql_p = SAFECALLOC( secondary_db_sql_len, sizeof( char ), __FILE__, __LINE__ );
                         snprintf( secondary_db_sql_p, secondary_db_sql_len, extract_element->secondary_db_sql, ret_values_str );
 
