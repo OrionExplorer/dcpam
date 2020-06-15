@@ -40,7 +40,7 @@ int PG_connect(
 ) {
     char        conn_str[ 1024 ];
 
-    db_connection->id = ( char * )SAFECALLOC( strlen(user)+strlen(host)+strlen(dbname)+8, sizeof( char ), __FILE__, __LINE__ );
+    db_connection->id = ( char * )SAFECALLOC( dcpam_strnlen( user, 128 )+dcpam_strnlen( host, 128 )+dcpam_strnlen( dbname, 128 )+8, sizeof( char ), __FILE__, __LINE__ );
     if( connection_string ) {
         snprintf( conn_str, 1024, connection_string, dbname, host, port, user, password );
     } else {

@@ -3,6 +3,16 @@
 #include <string.h>
 
 
+size_t dcpam_strnlen(const char *str, size_t max_len) {
+    const       char *end = ( const char  *)memchr( str, '\0', max_len );
+
+    if (end == NULL)
+        return max_len;
+    else
+        return end - str;
+}
+
+
 void strpl( char *src ) {
     int         i = 0;
     int         src_len = ( int )strlen( src );
