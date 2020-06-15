@@ -3,20 +3,27 @@
 #### Data warehouse engine
 ![PostgreSQL](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/postgresql102x100.png) ![MySQL ](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/mysql159x100.png) ![MariaDB ](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/mariadb100x100.png) ![Microsoft SQL Server ](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/sqlserver134x100.png) ![Oracle Database ](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/oracle100x100.png) ![Linux ](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/linux100x100.png) ![Windows 10 ](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/windows87x100.png)
 
-* Data warehouse or data mart engine
+* Data warehouse or data mart engine.
 * DCPAM helps to create central repositories of integrated data from one or disparate sources([1]).
 * Multiplatform (Linux/Windows).
 
 ### Architecture
-It is ETL-based([2]) system with CDC([3]) solutions depending on the data sources (currently it's database only):
+#### Overview
+* DCPAM is ETL - based solution([2]).
+* Each Change Data Capture process operates independently within separated thread.
+* Multiple instances of DCPAM with different configuration can run on single server.
+* Most database support is provided with native libraries (see _Datasources_ and _Linux Dependencies_ in this document).
+
+![Architecture overview](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/architecture.png)
+
+####  ETL and Change Data Capture
+Chance Data Capture([3]) solutions depends on the data sources (currently it's database only):
 
 | CDC solution                            | Source        |
 |-----------------------------------------|:-------------:| 
 | SQL query for timestamps (eg. MIN, MAX) | Database      |
 | SQL query for diffs (eg. IN, NOT IN)    | Database      |
 
-
-![Architecture overview](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/architecture.png)
 
 > **Notice**: Only Extract and Load processes are available. It is yet to be decided how to handle Transform process.
 
@@ -25,8 +32,8 @@ DCPAM is still work in progress, with following data sources:
 |  ID  | Data source     | Type            | Support | Status      |
 |:----:|:--------------  |:---------------:|:-------:|:-----------:|
 | 1    | PostgreSQL      | Database        | Native  | Available   |
-| 2    | MySQL           | Database        | Native  | Available   |
-| 3    | MariaDB         | Database        | Native  | Available   |
+| 2    | MySQL 8         | Database        | Native  | Available   |
+| 3    | MariaDB/MySQL 5 | Database        | Native  | Available   |
 | 4    | SQL Server      | Database        | ODBC    | Available   |
 | 5    | Oracle Database | Database        | Native  | Available   |
 
