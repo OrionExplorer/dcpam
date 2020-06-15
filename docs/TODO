@@ -1,6 +1,7 @@
 [✗] Ideas for Transform subprocess (https://en.wikipedia.org/wiki/Extract,_transform,_load#Transform):
 	- proposal #1: simple internal operations within dcpam.
 	- proposal #2: make use of external scripts/applications.
+	- proposal #3: LUA scripts.
 [✗] ETL process interval can vary between system[].queries[].
 [✗] New data sources:
 	- [✓] MariaDB
