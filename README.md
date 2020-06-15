@@ -12,7 +12,7 @@
 * DCPAM is ETL - based solution([2]).
 * Each Change Data Capture process operates independently within separated thread.
 * Multiple instances of DCPAM with different configuration can run on single server.
-* Most database support is provided with native libraries (see _Datasources_ and _Linux Dependencies_ in this document).
+* Most database support is provided with native libraries (see _Data sources_ and _Linux Dependencies_ in this document).
 
 ![Architecture overview](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/architecture.png)
 
