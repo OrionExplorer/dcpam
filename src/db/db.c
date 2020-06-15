@@ -26,7 +26,6 @@ char* concatenate( void* varA, int tamA, void* varB, int tamB ) {
 }
 
 void DB_QUERY_free( DB_QUERY* db_query ) {
-    int         i = 0, j = 0;
 
     /*LOG_print( "[%s]]\tDB_QUERY_free( <'%s'> ).\n", TIME_get_gmt(), db_query->sql );*/
     if( db_query != NULL ) {
@@ -36,8 +35,8 @@ void DB_QUERY_free( DB_QUERY* db_query ) {
         }
 
         if( db_query->row_count > 0 && db_query->field_count > 0 ) {
-            for( i = 0; i < db_query->row_count; i++ ) {
-                for( j = 0; j < db_query->field_count; j++ ) {
+            for( int i = 0; i < db_query->row_count; i++ ) {
+                for( int j = 0; j < db_query->field_count; j++ ) {
                     if( db_query->records[i].fields[ j ].value != NULL ) {
                         free( db_query->records[ i ].fields[ j ].value ); db_query->records[ i ].fields[ j ].value = NULL;
                     }

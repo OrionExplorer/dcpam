@@ -31,8 +31,6 @@ void CDC_ExtractGeneric( DB_SYSTEM_CDC_EXTRACT *extract, DB_SYSTEM_CDC_EXTRACT_Q
     DB_QUERY            primary_db_sql_res;
     DATABASE_SYSTEM_DB  *primary_db;
     DATABASE_SYSTEM_DB  *secondary_db;
-    int                 primary_ret = 0, secondary_ret = 0;
-    int                 i = 0, j = 0;
     int                 ret_values_count = 0;
     size_t              ret_values_len = 0;
     char                **ret_values = NULL;
@@ -59,7 +57,7 @@ void CDC_ExtractGeneric( DB_SYSTEM_CDC_EXTRACT *extract, DB_SYSTEM_CDC_EXTRACT_Q
         }
 
         DB_QUERY_init( &primary_db_sql_res );
-        primary_ret = DB_exec( primary_db, extract_element->primary_db_sql, strlen( extract_element->primary_db_sql ), &primary_db_sql_res, NULL, 0, NULL, NULL, NULL );
+        int primary_ret = DB_exec( primary_db, extract_element->primary_db_sql, strlen( extract_element->primary_db_sql ), &primary_db_sql_res, NULL, 0, NULL, NULL, NULL );
 
         /* Check if query finished successfully. */
         if( primary_ret == TRUE ) {
@@ -73,7 +71,7 @@ void CDC_ExtractGeneric( DB_SYSTEM_CDC_EXTRACT *extract, DB_SYSTEM_CDC_EXTRACT_Q
                     ret_values = SAFEMALLOC( (primary_db_sql_res.row_count + 1) *  sizeof *ret_values, __FILE__, __LINE__ );
 
                     /* Allocate memory for each row value and copy data */
-                    for( i = 0; i < primary_db_sql_res.row_count; i++ ) {
+                    for( int i = 0; i < primary_db_sql_res.row_count; i++ ) {
                         if( primary_db_sql_res.records[ i ].fields[ 0 ].size > 0 ) {
                             ret_values[ i ] = SAFEMALLOC( ( primary_db_sql_res.records[ i ].fields[ 0 ].size + 1 ) * sizeof * *ret_values, __FILE__, __LINE__ );
                             memcpy( ret_values[ i ], primary_db_sql_res.records[ i ].fields[ 0 ].value, primary_db_sql_res.records[ i ].fields[ 0 ].size + 1 );
@@ -85,6 +83,7 @@ void CDC_ExtractGeneric( DB_SYSTEM_CDC_EXTRACT *extract, DB_SYSTEM_CDC_EXTRACT_Q
                     }
 
                     if( ret_values_len > 0 ) {
+                        int i = 0;
                         /* Allocate enough memory for data and commas */
                         ret_values_len += primary_db_sql_res.row_count;
                         ret_values_str = SAFEMALLOC( ret_values_len * sizeof( char ), __FILE__, __LINE__ );
@@ -125,7 +124,7 @@ void CDC_ExtractGeneric( DB_SYSTEM_CDC_EXTRACT *extract, DB_SYSTEM_CDC_EXTRACT_Q
                         ret_values_str = NULL;
 
                         /* Perform DB query and store result in *data */
-                        secondary_ret = DB_exec( secondary_db, secondary_db_sql_p, secondary_db_sql_len - 2 /* "%s" */, data, NULL, 0, NULL, NULL, NULL );
+                        int secondary_ret = DB_exec( secondary_db, secondary_db_sql_p, secondary_db_sql_len - 2 /* "%s" */, data, NULL, 0, NULL, NULL, NULL );
 
                         if( secondary_ret == 1 ) {
                             LOG_print( "\t· [CDC - EXTRACT] records found: %d\n", data->row_count );
@@ -135,7 +134,7 @@ void CDC_ExtractGeneric( DB_SYSTEM_CDC_EXTRACT *extract, DB_SYSTEM_CDC_EXTRACT_Q
                         secondary_db_sql_p = NULL;
                     } else {
                         LOG_print( "[%s] Error: query completed, but no significant data returned.\n", TIME_get_gmt() );
-                        for( i = 0; i < primary_db_sql_res.row_count; i++ ) {
+                        for( int i = 0; i < primary_db_sql_res.row_count; i++ ) {
                             free( ret_values[ i ] ); ret_values[ i ] = NULL;
                         }
                         free( ret_values );

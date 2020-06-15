@@ -385,14 +385,13 @@ int DATABASE_SYSTEM_DB_init( DATABASE_SYSTEM_DB *db ) {
 
 
 void DATABASE_SYSTEM_close( DATABASE_SYSTEM *system ) {
-    int         i = 0;
 
     if( system != NULL ) {
         if( system->name != NULL ) {
             LOG_print( "[%s] DATABASE_SYSTEM_close(\"%s\").\n", TIME_get_gmt(), system->name );
             free( system->name ); system->name = NULL;
         }
-        for( i = 0; i < system->queries_len; i++ ) {
+        for( int i = 0; i < system->queries_len; i++ ) {
             SYSTEM_QUERY_free( &system->queries[ i ] );
         }
         DATABASE_SYSTEM_DB_free( &system->DB );
@@ -407,11 +406,13 @@ void DATABASE_SYSTEM_add(
     const int       queries_len,
     short           verbose
 ) {
-    int     i = 0, j = 0;
+    int     i = 0;
     int     name_len = 0;
 
     if( verbose > 0 ) LOG_print( "[%s] DATABASE_SYSTEM_add( \"%s\", ... ).\n", TIME_get_gmt(), name );
     if( DATABASE_SYSTEMS_COUNT < MAX_DATA_SYSTEMS ) {
+
+        int j = 0;
 
         name_len = strlen(name);
         DATABASE_SYSTEMS[ DATABASE_SYSTEMS_COUNT ].name = ( char* )SAFECALLOC( name_len + 1, sizeof( char ), __FILE__, __LINE__ );

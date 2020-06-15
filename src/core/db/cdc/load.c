@@ -14,10 +14,8 @@ void CDC_LoadGeneric( DB_SYSTEM_CDC_LOAD *load, DB_SYSTEM_CDC_LOAD_QUERY *load_e
 
 void CDC_LoadGeneric( DB_SYSTEM_CDC_LOAD *load, DB_SYSTEM_CDC_LOAD_QUERY *load_element, DATABASE_SYSTEM_DB *db, DB_QUERY *data ) {
     DB_QUERY            sql_res;
-    int                 query_ret = 0;
-    int                 i = 0, j = 0, k = 0;
+    int                 j = 0, k = 0;
     char                **q_values = NULL;
-    int                 q_values_len = 0;
     int                 *q_lengths;
     int                 *q_formats;
     Oid                 *q_types;
@@ -25,11 +23,11 @@ void CDC_LoadGeneric( DB_SYSTEM_CDC_LOAD *load, DB_SYSTEM_CDC_LOAD_QUERY *load_e
     if( load ) {
 
         /* Each extracted record is loaded separatedly */
-        for( i = 0; i < data->row_count; i++ ) {
+        for( int i = 0; i < data->row_count; i++ ) {
 
             /* Prepare query data. PostgreSQL compatibile for now only. */
             q_values = SAFEMALLOC( (load_element->extracted_values_len+1) * sizeof *q_values, __FILE__, __LINE__ );
-            q_values_len = 0;
+            int q_values_len = 0;
 
             q_lengths = SAFEMALLOC( (load_element->extracted_values_len+1) * sizeof( int ), __FILE__, __LINE__ );
             q_formats = SAFEMALLOC( (load_element->extracted_values_len+1) * sizeof( int ), __FILE__, __LINE__ );
@@ -64,7 +62,7 @@ void CDC_LoadGeneric( DB_SYSTEM_CDC_LOAD *load, DB_SYSTEM_CDC_LOAD_QUERY *load_e
             if( q_values_len > 0 ) {
                 DB_QUERY_init( &sql_res );
                 /* Perform DB query and store result in *data */
-                query_ret = DB_exec( &APP.DB, load_element->sql, strlen( load_element->sql ), &sql_res, q_values, q_values_len, q_lengths, q_formats, ( const char* )q_types );
+                int query_ret = DB_exec( &APP.DB, load_element->sql, strlen( load_element->sql ), &sql_res, q_values, q_values_len, q_lengths, q_formats, ( const char* )q_types );
 
                 /* Free memory before next iteration */
                 for( j = 0; j < q_values_len; j++ ) {
