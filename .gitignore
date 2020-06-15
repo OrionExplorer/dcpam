@@ -8,3 +8,10 @@ x64/
 *.vcx*
 *.sln
 wtf.txt
+docs/linux.png
+docs/windows.png
+docs/mariadb.png
+docs/postgresql.png
+docs/sqlserver.png
+docs/oracle.png
+docs/mysql.png
