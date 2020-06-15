@@ -437,6 +437,8 @@ int DCPAM_load_configuration( const char *filename ) {
                 } else {
                     LOG_print( "ERROR: \"app\" key not found.\n " );
                     cJSON_Delete( config_json );
+                    free( config_string ); config_string = NULL;
+                    fclose( file );
                     return FALSE;
                 }
 

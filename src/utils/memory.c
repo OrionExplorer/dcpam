@@ -7,7 +7,7 @@ void* safe_malloc( size_t n, const char* filename, int line ) {
     void* p = malloc( n );
 
     if( !p ) {
-        fprintf( stderr, "[%s:%d] Out of memory (%zu bytes)\n", filename, line, ( unsigned long )n );
+        fprintf( stderr, "[%s:%d] Out of memory (%zu bytes)\n", filename, line, n );
         exit( EXIT_FAILURE );
     }
     return p;
