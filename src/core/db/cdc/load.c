@@ -38,9 +38,8 @@ void CDC_LoadGeneric( DB_SYSTEM_CDC_LOAD *load, DB_SYSTEM_CDC_LOAD_QUERY *load_e
                 for( k = 0; k < load_element->extracted_values_len; k++ ) {
                     if( strncmp( load_element->extracted_values[ k ], data->records[ i ].fields[ j ].label, MAX_COLUMN_NAME_LEN ) == 0 ) {
                         if( data->records[ i ].fields[ j ].size > 0 ) {
-                            q_values[ q_values_len ] = SAFEMALLOC( (data->records[ i ].fields[ j ].size + 1) * sizeof **q_values, __FILE__, __LINE__ );
+                            q_values[ q_values_len ] = SAFECALLOC( (data->records[ i ].fields[ j ].size + 1), sizeof **q_values, __FILE__, __LINE__ );
                             memcpy( q_values[ q_values_len ], data->records[ i ].fields[ j ].value, data->records[ i ].fields[ j ].size + 1 );
-                            q_values[ q_values_len+1 ] = '\0';
 
                             q_lengths[ q_values_len ] = data->records[ i ].fields[ j ].size;
                             q_formats[ q_values_len ] = 0;
