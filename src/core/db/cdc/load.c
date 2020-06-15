@@ -14,13 +14,12 @@ void CDC_LoadGeneric( DB_SYSTEM_CDC_LOAD *load, DB_SYSTEM_CDC_LOAD_QUERY *load_e
 
 void CDC_LoadGeneric( DB_SYSTEM_CDC_LOAD *load, DB_SYSTEM_CDC_LOAD_QUERY *load_element, DATABASE_SYSTEM_DB *db, DB_QUERY *data ) {
     DB_QUERY            sql_res;
-    int                 j = 0, k = 0;
-    char                **q_values = NULL;
-    int                 *q_lengths;
-    int                 *q_formats;
-    Oid                 *q_types;
     
     if( load ) {
+
+        char **q_values = NULL;
+        int *q_lengths;
+        int *q_formats;
 
         /* Each extracted record is loaded separatedly */
         for( int i = 0; i < data->row_count; i++ ) {
@@ -31,11 +30,10 @@ void CDC_LoadGeneric( DB_SYSTEM_CDC_LOAD *load, DB_SYSTEM_CDC_LOAD_QUERY *load_e
 
             q_lengths = SAFEMALLOC( (load_element->extracted_values_len+1) * sizeof( int ), __FILE__, __LINE__ );
             q_formats = SAFEMALLOC( (load_element->extracted_values_len+1) * sizeof( int ), __FILE__, __LINE__ );
-            q_types = SAFEMALLOC( (load_element->extracted_values_len+1) * sizeof( int ), __FILE__, __LINE__ );
 
             /* Get defined values only based on "extracted_values" in config.json */
-            for( j = 0; j < data->field_count; j++ ) {
-                for( k = 0; k < load_element->extracted_values_len; k++ ) {
+            for( int j = 0; j < data->field_count; j++ ) {
+                for( int k = 0; k < load_element->extracted_values_len; k++ ) {
                     if( strncmp( load_element->extracted_values[ k ], data->records[ i ].fields[ j ].label, MAX_COLUMN_NAME_LEN ) == 0 ) {
                         if( data->records[ i ].fields[ j ].size > 0 ) {
                             q_values[ q_values_len ] = SAFECALLOC( (data->records[ i ].fields[ j ].size + 1), sizeof **q_values, __FILE__, __LINE__ );
@@ -43,13 +41,11 @@ void CDC_LoadGeneric( DB_SYSTEM_CDC_LOAD *load, DB_SYSTEM_CDC_LOAD_QUERY *load_e
 
                             q_lengths[ q_values_len ] = data->records[ i ].fields[ j ].size;
                             q_formats[ q_values_len ] = 0;
-                            q_types[ q_values_len ] = 0;
                         } else {
                             q_values[ q_values_len ] = SAFEMALLOC( ( 10 + 1 ) * sizeof **q_values, __FILE__, __LINE__ );
                             strncpy( q_values[ q_values_len ], "dcpamNULL\0", 10 );
                             q_lengths[ q_values_len ] = 9;
                             q_formats[ q_values_len ] = 0;
-                            q_types[ q_values_len ] = 0;
                         }
 
                         q_values_len++;
@@ -61,11 +57,15 @@ void CDC_LoadGeneric( DB_SYSTEM_CDC_LOAD *load, DB_SYSTEM_CDC_LOAD_QUERY *load_e
             if( q_values_len > 0 ) {
                 DB_QUERY_init( &sql_res );
                 /* Perform DB query and store result in *data */
-                int query_ret = DB_exec( &APP.DB, load_element->sql, strlen( load_element->sql ), &sql_res, q_values, q_values_len, q_lengths, q_formats, ( const char* )q_types );
+                int query_ret = DB_exec( &APP.DB, load_element->sql, load_element->sql_len, &sql_res, q_values, q_values_len, q_lengths, q_formats, NULL );
+
+                if( query_ret == FALSE ) {
+                    LOG_print( "[%s] DB_exec error.\n", TIME_get_gmt() );
+                }
 
                 /* Free memory before next iteration */
-                for( j = 0; j < q_values_len; j++ ) {
-                    free( q_values[ j ] ); q_values[ j ] = NULL;
+                for( int i = 0; i < q_values_len; i++ ) {
+                    free( q_values[ i ] ); q_values[ i ] = NULL;
                 }
 
                 DB_QUERY_free( &sql_res );
@@ -75,7 +75,6 @@ void CDC_LoadGeneric( DB_SYSTEM_CDC_LOAD *load, DB_SYSTEM_CDC_LOAD_QUERY *load_e
             free( q_values ); q_values = NULL;
             free( q_lengths ); q_lengths = NULL;
             free( q_formats ); q_formats = NULL;
-            free( q_types ); q_types = NULL;
         }
     }
 
