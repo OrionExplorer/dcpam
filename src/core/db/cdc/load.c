@@ -17,12 +17,12 @@ void CDC_LoadGeneric( DB_SYSTEM_CDC_LOAD *load, DB_SYSTEM_CDC_LOAD_QUERY *load_e
     
     if( load ) {
 
-        char **q_values = NULL;
-        int *q_lengths;
-        int *q_formats;
-
         /* Each extracted record is loaded separatedly */
         for( int i = 0; i < data->row_count; i++ ) {
+
+            char **q_values = NULL;
+            int *q_lengths;
+            int *q_formats;
 
             /* Prepare query data. PostgreSQL compatibile for now only. */
             q_values = SAFEMALLOC( (load_element->extracted_values_len+1) * sizeof *q_values, __FILE__, __LINE__ );
@@ -43,7 +43,8 @@ void CDC_LoadGeneric( DB_SYSTEM_CDC_LOAD *load, DB_SYSTEM_CDC_LOAD_QUERY *load_e
                             q_formats[ q_values_len ] = 0;
                         } else {
                             q_values[ q_values_len ] = SAFEMALLOC( ( 10 + 1 ) * sizeof **q_values, __FILE__, __LINE__ );
-                            strncpy( q_values[ q_values_len ], "dcpamNULL\0", 10 );
+                            //strncpy( q_values[ q_values_len ], "dcpamNULL\0", 10 );
+                            q_values[ q_values_len ] = strdup( "dcpamNULL" );
                             q_lengths[ q_values_len ] = 9;
                             q_formats[ q_values_len ] = 0;
                         }
