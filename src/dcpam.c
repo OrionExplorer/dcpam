@@ -43,19 +43,18 @@ void app_terminate( void ) {
 }
 
 void DCPAM_free_configuration( void ) {
-    int i = 0, j = 0;
 
     DATABASE_SYSTEM_DB_free( &APP.DB );
     if( APP.version != NULL ) { free( APP.version ); APP.version = NULL; }
     if( APP.name != NULL ) { free( APP.name ); APP.name = NULL; }
 
-    for( i = 0; i < APP.DATA_len; i++ ) {
+    for( int i = 0; i < APP.DATA_len; i++ ) {
         if( APP.DATA[ i ].id != NULL ) { free( APP.DATA[ i ].id ); APP.DATA[ i ].id = NULL; }
         if( APP.DATA[ i ].name != NULL ) { free( APP.DATA[ i ].name ); APP.DATA[ i ].name = NULL; }
         if( APP.DATA[ i ].db_table_name != NULL ) { free( APP.DATA[ i ].db_table_name ); APP.DATA[ i ].db_table_name = NULL; }
         if( APP.DATA[ i ].description != NULL ) { free( APP.DATA[ i ].description ); APP.DATA[ i ].description = NULL; }
 
-        for( j = 0; j < APP.DATA[ i ].actions_len; j++ ) {
+        for( int j = 0; j < APP.DATA[ i ].actions_len; j++ ) {
             if( APP.DATA[ i ].actions[ j ].name != NULL ) { free( APP.DATA[ i ].actions[ j ].name ); APP.DATA[ i ].actions[ j ].name = NULL; }
             if( APP.DATA[ i ].actions[ j ].description != NULL ) { free( APP.DATA[ i ].actions[ j ].description ); APP.DATA[ i ].actions[ j ].description = NULL; }
             if( APP.DATA[ i ].actions[ j ].condition != NULL ) { free( APP.DATA[ i ].actions[ j ].condition ); APP.DATA[ i ].actions[ j ].condition = NULL; }
@@ -66,7 +65,6 @@ void DCPAM_free_configuration( void ) {
 
 int DCPAM_load_configuration( const char *filename ) {
     FILE*           file = NULL;
-    char*           config_string;
     cJSON           *config_json = NULL;
 
     cJSON           *cfg_app = NULL;
@@ -155,22 +153,24 @@ int DCPAM_load_configuration( const char *filename ) {
     cJSON           *cfg_system_info = NULL;
 
     cJSON           *array_value = NULL;
-    size_t          file_len = 0, str_len = 0;
-    int             i = 0, j = 0, k = 0;
+    size_t str_len = 0;
+    int             k = 0;
     int             result = 0;
     
     DATABASE_SYSTEM_DB          tmp_db;
     DATABASE_SYSTEM_QUERY       tmp_queries[ MAX_SYSTEM_QUERIES ];
     DB_SYSTEM_CDC   tmp_cdc;
 
-    int                 tmp_queries_count = 0;
     int                 tmp_columns_len = 0;
-    char                tmp_data_types[SMALL_BUFF_SIZE][SMALL_BUFF_SIZE];
-    int                 tmp_data_types_len = 0;
+    
 
     LOG_print( "[%s] DCPAM_load_configuration( %s ).\n", TIME_get_gmt(), filename );
     file = fopen( filename, "r" );
     if( file != NULL ) {
+
+        char   *config_string = NULL;
+        size_t file_len = 0;
+
         config_string = ( char* )SAFECALLOC( MAX_BUFFER, sizeof( char ), __FILE__, __LINE__ );
         file_len = fread( config_string, MAX_BUFFER, 1, file );
         if( strlen( config_string ) > 0 ) {
@@ -184,8 +184,9 @@ int DCPAM_load_configuration( const char *filename ) {
                     if( cfg_app_name ) {
                         str_len = strlen( cfg_app_name->valuestring );
                         
-                        APP.name = ( char * )SAFECALLOC( str_len+1, sizeof( char ), __FILE__, __LINE__ );
-                        strncpy( APP.name, cfg_app_name->valuestring, str_len );
+                        /*APP.name = ( char * )SAFECALLOC( str_len+1, sizeof( char ), __FILE__, __LINE__ );
+                        strncpy( APP.name, cfg_app_name->valuestring, str_len );*/
+                        APP.name = strdup( cfg_app_name->valuestring );
                         LOG_print( "\t· %s", APP.name );
                     } else {
                         LOG_print( "ERROR: \"app.name\" key not found.\n" );
@@ -199,8 +200,9 @@ int DCPAM_load_configuration( const char *filename ) {
                     if( cfg_app_version ) {
                         str_len = strlen( cfg_app_version->valuestring );
 
-                        APP.version = ( char * )SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
-                        strncpy( APP.version, cfg_app_version->valuestring, str_len );
+                        /*APP.version = ( char * )SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
+                        strncpy( APP.version, cfg_app_version->valuestring, str_len );*/
+                        APP.version = strdup( cfg_app_version->valuestring );
                         LOG_print( " v%s.\n", APP.version );
                     } else {
                         LOG_print( "ERROR: \"app.version\" key not found.\n" );
@@ -272,7 +274,7 @@ int DCPAM_load_configuration( const char *filename ) {
                     cfg_app_data = cJSON_GetObjectItem( cfg_app, "DATA" );
                     if( cfg_app_data ) {
                         APP.DATA_len = cJSON_GetArraySize( cfg_app_data );
-                        for( i = 0; i < APP.DATA_len; i++ ) {
+                        for( int i = 0; i < APP.DATA_len; i++ ) {
                             cfg_app_data_item = cJSON_GetArrayItem( cfg_app_data, i );
 
                             cfg_app_data_item_id = cJSON_GetObjectItem( cfg_app_data_item, "id" );
@@ -283,9 +285,10 @@ int DCPAM_load_configuration( const char *filename ) {
                                 fclose( file );
                                 return FALSE;
                             }
-                            str_len = strlen( cfg_app_data_item_id->valuestring );
+                            /*str_len = strlen( cfg_app_data_item_id->valuestring );
                             APP.DATA[ i ].id = ( char * )SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
-                            strncpy( APP.DATA[ i ].id, cfg_app_data_item_id->valuestring, str_len );
+                            strncpy( APP.DATA[ i ].id, cfg_app_data_item_id->valuestring, str_len );*/
+                            APP.DATA[ i ].id = strdup( cfg_app_data_item_id->valuestring );
                             LOG_print("#%d: \"%s\"\n", i+1, APP.DATA[ i ].id );
 
                             cfg_app_data_item_name = cJSON_GetObjectItem( cfg_app_data_item, "name" );
@@ -296,9 +299,10 @@ int DCPAM_load_configuration( const char *filename ) {
                                 fclose( file );
                                 return FALSE;
                             }
-                            str_len = strlen( cfg_app_data_item_name->valuestring );
+                            /*str_len = strlen( cfg_app_data_item_name->valuestring );
                             APP.DATA[ i ].name = ( char * )SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
-                            strncpy( APP.DATA[ i ].name, cfg_app_data_item_name->valuestring, str_len );
+                            strncpy( APP.DATA[ i ].name, cfg_app_data_item_name->valuestring, str_len );*/
+                            APP.DATA[ i ].name = strdup( cfg_app_data_item_name->valuestring );
                             LOG_print("\t· name=\"%s\"\n", APP.DATA[ i ].name );
 
                             cfg_app_data_item_db_table_name = cJSON_GetObjectItem( cfg_app_data_item, "db_table_name" );
@@ -309,16 +313,17 @@ int DCPAM_load_configuration( const char *filename ) {
                                 fclose( file );
                                 return FALSE;
                             }
-                            str_len = strlen( cfg_app_data_item_db_table_name->valuestring );
+                            /*str_len = strlen( cfg_app_data_item_db_table_name->valuestring );
                             APP.DATA[ i ].db_table_name = ( char * )SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
-                            strncpy( APP.DATA[ i ].db_table_name, cfg_app_data_item_db_table_name->valuestring, str_len );
+                            strncpy( APP.DATA[ i ].db_table_name, cfg_app_data_item_db_table_name->valuestring, str_len );*/
+                            APP.DATA[ i ].db_table_name = strdup( cfg_app_data_item_db_table_name->valuestring );
                             LOG_print("\t· db_table_name=\"%s\"\n", APP.DATA[ i ].db_table_name );
 
                             APP.DATA[ i ].columns_len = 0;
                             cfg_app_data_actions_item_columns = cJSON_GetObjectItem( cfg_app_data_item, "columns");
                             if( cfg_app_data_actions_item_columns ) {
                                 LOG_print("\t· columns=[");
-                                for( k = 0; k < cJSON_GetArraySize( cfg_app_data_actions_item_columns ); k++ ) {
+                                for( int k = 0; k < cJSON_GetArraySize( cfg_app_data_actions_item_columns ); k++ ) {
                                     cfg_app_data_actions_item_columns_name = cJSON_GetArrayItem( cfg_app_data_actions_item_columns, k );
                                     memset( APP.DATA[ i ].columns[ k ], 0, 32 );
                                     strncpy(
@@ -346,15 +351,16 @@ int DCPAM_load_configuration( const char *filename ) {
                                 fclose( file );
                                 return FALSE;
                             }
-                            str_len = strlen( cfg_app_data_item_description->valuestring );
+                            /*str_len = strlen( cfg_app_data_item_description->valuestring );
                             APP.DATA[ i ].description = ( char * )SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
-                            strncpy( APP.DATA[ i ].description, cfg_app_data_item_description->valuestring, str_len );
+                            strncpy( APP.DATA[ i ].description, cfg_app_data_item_description->valuestring, str_len );*/
+                            APP.DATA[ i ].description = strdup( cfg_app_data_item_description->valuestring );
                             LOG_print("\t· description=\"%s\"\n", APP.DATA[ i ].description );
 
                             cfg_app_data_actions = cJSON_GetObjectItem( cfg_app_data_item, "actions" );
                             if( cfg_app_data_actions ) {
                                 APP.DATA[ i ].actions_len = cJSON_GetArraySize( cfg_app_data_actions );
-                                for( j = 0; j < APP.DATA[ i ].actions_len; j++ ) {
+                                for( int j = 0; j < APP.DATA[ i ].actions_len; j++ ) {
                                     cfg_app_data_actions_item = cJSON_GetArrayItem( cfg_app_data_actions, j );
 
                                     cfg_app_data_actions_item_name = cJSON_GetObjectItem( cfg_app_data_actions_item, "name" );
@@ -363,9 +369,10 @@ int DCPAM_load_configuration( const char *filename ) {
                                         cJSON_Delete( config_json );
                                         return FALSE;
                                     }
-                                    str_len = strlen( cfg_app_data_actions_item_name->valuestring );
+                                    /*str_len = strlen( cfg_app_data_actions_item_name->valuestring );
                                     APP.DATA[ i ].actions[ j ].name = ( char * )SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
-                                    strncpy( APP.DATA[ i ].actions[ j ].name, cfg_app_data_actions_item_name->valuestring, str_len );
+                                    strncpy( APP.DATA[ i ].actions[ j ].name, cfg_app_data_actions_item_name->valuestring, str_len );*/
+                                    APP.DATA[ i ].actions[ j ].name = strdup( cfg_app_data_actions_item_name->valuestring );
                                     LOG_print("\t· action #%d: \"%s\"\n", j + 1, APP.DATA[ i ].actions[ j ].name );
 
                                     cfg_app_data_actions_item_description = cJSON_GetObjectItem( cfg_app_data_actions_item, "description" );
@@ -374,9 +381,10 @@ int DCPAM_load_configuration( const char *filename ) {
                                         cJSON_Delete( config_json );
                                         return FALSE;
                                     }
-                                    str_len = strlen( cfg_app_data_actions_item_description->valuestring );
+                                    /*str_len = strlen( cfg_app_data_actions_item_description->valuestring );
                                     APP.DATA[ i ].actions[ j ].description = ( char * )SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
-                                    strncpy( APP.DATA[ i ].actions[ j ].description, cfg_app_data_actions_item_description->valuestring, str_len );
+                                    strncpy( APP.DATA[ i ].actions[ j ].description, cfg_app_data_actions_item_description->valuestring, str_len );*/
+                                    APP.DATA[ i ].actions[ j ].description = strdup( cfg_app_data_actions_item_description->valuestring );
                                     LOG_print("\t\t· description=\"%s\"\n", APP.DATA[ i ].actions[ j ].description );
 
                                     cfg_app_data_actions_item_type = cJSON_GetObjectItem( cfg_app_data_actions_item, "type" );
@@ -403,9 +411,10 @@ int DCPAM_load_configuration( const char *filename ) {
                                         cJSON_Delete( config_json );
                                         return FALSE;
                                     }
-                                    str_len = strlen( cfg_app_data_actions_item_condition->valuestring );
+                                    /*str_len = strlen( cfg_app_data_actions_item_condition->valuestring );
                                     APP.DATA[ i ].actions[ j ].condition = ( char * )SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
-                                    strncpy( APP.DATA[ i ].actions[ j ].condition, cfg_app_data_actions_item_condition->valuestring, str_len );
+                                    strncpy( APP.DATA[ i ].actions[ j ].condition, cfg_app_data_actions_item_condition->valuestring, str_len );*/
+                                    APP.DATA[ i ].actions[ j ].condition = strdup( cfg_app_data_actions_item_condition->valuestring );
                                     LOG_print("\t\t· condition=\"%s\"\n", APP.DATA[ i ].actions[ j ].condition );
 
                                     cfg_app_data_actions_item_sql = cJSON_GetObjectItem( cfg_app_data_actions_item, "sql" );
@@ -414,9 +423,10 @@ int DCPAM_load_configuration( const char *filename ) {
                                         cJSON_Delete( config_json );
                                         return FALSE;
                                     }
-                                    str_len = strlen( cfg_app_data_actions_item_sql->valuestring );
+                                    /*str_len = strlen( cfg_app_data_actions_item_sql->valuestring );
                                     APP.DATA[ i ].actions[ j ].sql = ( char * )SAFECALLOC( str_len+1, sizeof( char ), __FILE__, __LINE__ );
-                                    strncpy( APP.DATA[ i ].actions[ j ].sql, cfg_app_data_actions_item_sql->valuestring, str_len );
+                                    strncpy( APP.DATA[ i ].actions[ j ].sql, cfg_app_data_actions_item_sql->valuestring, str_len );*/
+                                    APP.DATA[ i ].actions[ j ].sql = strdup( cfg_app_data_actions_item_sql->valuestring );
                                     LOG_print("\t\t· sql=\"%s\"\n", APP.DATA[ i ].actions[ j ].sql );
                                 }
                             } else {
@@ -444,7 +454,7 @@ int DCPAM_load_configuration( const char *filename ) {
 
                 cfg_system_array = cJSON_GetObjectItem( config_json, "system" );
                 if( cfg_system_array ) {
-                    for( i = 0; i < cJSON_GetArraySize( cfg_system_array ); i++ ) {
+                    for( int i = 0; i < cJSON_GetArraySize( cfg_system_array ); i++ ) {
 
                         array_value = cJSON_GetArrayItem( cfg_system_array, i );
 
@@ -537,8 +547,8 @@ int DCPAM_load_configuration( const char *filename ) {
                             return FALSE;
                         }
 
-                        tmp_queries_count = 0;
-                        tmp_data_types_len = 0;
+                        int tmp_queries_count = 0;
+                        int tmp_data_types_len = 0;
 
                         cfg_system_queries_array = cJSON_GetObjectItem( array_value, "queries" );
                         if( cfg_system_queries_array == NULL ) {
@@ -548,7 +558,7 @@ int DCPAM_load_configuration( const char *filename ) {
                             fclose( file );
                             return FALSE;
                         }
-                        for( j = 0; j < cJSON_GetArraySize( cfg_system_queries_array ); j++ ) {
+                        for( int j = 0; j < cJSON_GetArraySize( cfg_system_queries_array ); j++ ) {
                             cfg_system_query_item = cJSON_GetArrayItem( cfg_system_queries_array, j );
                             
                             cfg_system_query_item_name = cJSON_GetObjectItem( cfg_system_query_item, "name");
@@ -601,13 +611,14 @@ int DCPAM_load_configuration( const char *filename ) {
                                 fclose( file );
                                 return FALSE;
                             }
-                            str_len = strlen( cfg_system_query_item_change_data_capture_extract_inserted_primary_db->valuestring );
+                            /*str_len = strlen( cfg_system_query_item_change_data_capture_extract_inserted_primary_db->valuestring );
                             tmp_cdc.extract.inserted.primary_db = ( char * )SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
                             strncpy(
                                 tmp_cdc.extract.inserted.primary_db,
                                 cfg_system_query_item_change_data_capture_extract_inserted_primary_db->valuestring,
                                 str_len
-                            );
+                            );*/
+                            tmp_cdc.extract.inserted.primary_db = strdup( cfg_system_query_item_change_data_capture_extract_inserted_primary_db->valuestring );
                             /*
                                 change_data_capture.extract.inserted.primary_db_sql
                             */
@@ -620,13 +631,15 @@ int DCPAM_load_configuration( const char *filename ) {
                                 return FALSE;
                             }
                             str_len = strlen( cfg_system_query_item_change_data_capture_extract_inserted_primary_db_sql->valuestring );
-                            tmp_cdc.extract.inserted.primary_db_sql = ( char * )SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
+                            tmp_cdc.extract.inserted.primary_db_sql_len = str_len;
+                            tmp_cdc.extract.inserted.primary_db_sql = strdup( cfg_system_query_item_change_data_capture_extract_inserted_primary_db_sql->valuestring );
+                            /*tmp_cdc.extract.inserted.primary_db_sql = ( char * )SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
                             tmp_cdc.extract.inserted.primary_db_sql_len = str_len;
                             strncpy(
                                 tmp_cdc.extract.inserted.primary_db_sql,
                                 cfg_system_query_item_change_data_capture_extract_inserted_primary_db_sql->valuestring,
                                 str_len
-                            );
+                            );*/
                             /*
                                 change_data_capture.extract.secondary_db
                             */
@@ -638,13 +651,14 @@ int DCPAM_load_configuration( const char *filename ) {
                                 fclose( file );
                                 return FALSE;
                             }
-                            str_len = strlen( cfg_system_query_item_change_data_capture_extract_inserted_secondary_db->valuestring );
+                            /*str_len = strlen( cfg_system_query_item_change_data_capture_extract_inserted_secondary_db->valuestring );
                             tmp_cdc.extract.inserted.secondary_db = ( char * )SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
                             strncpy(
                                 tmp_cdc.extract.inserted.secondary_db,
                                 cfg_system_query_item_change_data_capture_extract_inserted_secondary_db->valuestring,
                                 str_len
-                            );
+                            );*/
+                            tmp_cdc.extract.inserted.secondary_db = strdup( cfg_system_query_item_change_data_capture_extract_inserted_secondary_db->valuestring );
                             /*
                                 change_data_capture.extract.secondary_db_sql
                             */
@@ -657,13 +671,15 @@ int DCPAM_load_configuration( const char *filename ) {
                                 return FALSE;
                             }
                             str_len = strlen( cfg_system_query_item_change_data_capture_extract_inserted_secondary_db_sql->valuestring );
-                            tmp_cdc.extract.inserted.secondary_db_sql = ( char * )SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
+                            tmp_cdc.extract.inserted.secondary_db_sql_len = str_len;
+                            /*tmp_cdc.extract.inserted.secondary_db_sql = ( char * )SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
                             tmp_cdc.extract.inserted.secondary_db_sql_len = str_len;
                             strncpy(
                                 tmp_cdc.extract.inserted.secondary_db_sql,
                                 cfg_system_query_item_change_data_capture_extract_inserted_secondary_db_sql->valuestring,
                                 str_len
-                            );
+                            );*/
+                            tmp_cdc.extract.inserted.secondary_db_sql = strdup( cfg_system_query_item_change_data_capture_extract_inserted_secondary_db_sql->valuestring );
                             /*
                                 change_data_capture.extract.modified
                             */
@@ -686,13 +702,14 @@ int DCPAM_load_configuration( const char *filename ) {
                                 fclose( file );
                                 return FALSE;
                             }
-                            str_len = strlen( cfg_system_query_item_change_data_capture_extract_modified_primary_db->valuestring );
+                            /*str_len = strlen( cfg_system_query_item_change_data_capture_extract_modified_primary_db->valuestring );
                             tmp_cdc.extract.modified.primary_db = ( char * )SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
                             strncpy(
                                 tmp_cdc.extract.modified.primary_db,
                                 cfg_system_query_item_change_data_capture_extract_modified_primary_db->valuestring,
                                 str_len
-                            );
+                            );*/
+                            tmp_cdc.extract.modified.primary_db = strdup( cfg_system_query_item_change_data_capture_extract_modified_primary_db->valuestring );
                             /*
                                 change_data_capture.extract.modified.primary_db_sql
                             */
@@ -705,13 +722,15 @@ int DCPAM_load_configuration( const char *filename ) {
                                 return FALSE;
                             }
                             str_len = strlen( cfg_system_query_item_change_data_capture_extract_modified_primary_db_sql->valuestring );
-                            tmp_cdc.extract.modified.primary_db_sql = ( char * )SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
+                            tmp_cdc.extract.modified.primary_db_sql_len = str_len;
+                            /*tmp_cdc.extract.modified.primary_db_sql = ( char * )SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
                             tmp_cdc.extract.modified.primary_db_sql_len = str_len;
                             strncpy(
                                 tmp_cdc.extract.modified.primary_db_sql,
                                 cfg_system_query_item_change_data_capture_extract_modified_primary_db_sql->valuestring,
                                 str_len
-                            );
+                            );*/
+                            tmp_cdc.extract.modified.primary_db_sql = strdup( cfg_system_query_item_change_data_capture_extract_modified_primary_db_sql->valuestring );
                             /*
                                 change_data_capture.extract.modified.secondary_db
                             */
@@ -723,13 +742,14 @@ int DCPAM_load_configuration( const char *filename ) {
                                 fclose( file );
                                 return FALSE;
                             }
-                            str_len = strlen( cfg_system_query_item_change_data_capture_extract_modified_secondary_db->valuestring );
+                            /*str_len = strlen( cfg_system_query_item_change_data_capture_extract_modified_secondary_db->valuestring );
                             tmp_cdc.extract.modified.secondary_db = ( char * )SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
                             strncpy(
                                 tmp_cdc.extract.modified.secondary_db,
                                 cfg_system_query_item_change_data_capture_extract_modified_secondary_db->valuestring,
                                 str_len
-                            );
+                            );*/
+                            tmp_cdc.extract.modified.secondary_db = strdup( cfg_system_query_item_change_data_capture_extract_modified_secondary_db->valuestring );
                             /*
                                 change_data_capture.extract.modified.secondary_db_sql
                             */
@@ -742,13 +762,15 @@ int DCPAM_load_configuration( const char *filename ) {
                                 return FALSE;
                             }
                             str_len = strlen( cfg_system_query_item_change_data_capture_extract_modified_secondary_db_sql->valuestring );
-                            tmp_cdc.extract.modified.secondary_db_sql = ( char * )SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
+                            tmp_cdc.extract.modified.secondary_db_sql_len = str_len;
+                            /*tmp_cdc.extract.modified.secondary_db_sql = ( char * )SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
                             tmp_cdc.extract.modified.secondary_db_sql_len = str_len;
                             strncpy(
                                 tmp_cdc.extract.modified.secondary_db_sql,
                                 cfg_system_query_item_change_data_capture_extract_modified_secondary_db_sql->valuestring,
                                 str_len
-                            );
+                            );*/
+                            tmp_cdc.extract.modified.secondary_db_sql = strdup( cfg_system_query_item_change_data_capture_extract_modified_secondary_db_sql->valuestring );
                             /*
                                 change_data_capture.extract.deleted
                             */
@@ -771,13 +793,14 @@ int DCPAM_load_configuration( const char *filename ) {
                                 fclose( file );
                                 return FALSE;
                             }
-                            str_len = strlen( cfg_system_query_item_change_data_capture_extract_deleted_primary_db->valuestring );
+                            /*str_len = strlen( cfg_system_query_item_change_data_capture_extract_deleted_primary_db->valuestring );
                             tmp_cdc.extract.deleted.primary_db = ( char * )SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
                             strncpy(
                                 tmp_cdc.extract.deleted.primary_db,
                                 cfg_system_query_item_change_data_capture_extract_deleted_primary_db->valuestring,
                                 str_len
-                            );
+                            );*/
+                            tmp_cdc.extract.deleted.primary_db = strdup( cfg_system_query_item_change_data_capture_extract_deleted_primary_db->valuestring );
                             /*
                                 change_data_capture.extract.deleted.primary_db_sql
                             */
@@ -790,13 +813,15 @@ int DCPAM_load_configuration( const char *filename ) {
                                 return FALSE;
                             }
                             str_len = strlen( cfg_system_query_item_change_data_capture_extract_deleted_primary_db_sql->valuestring );
-                            tmp_cdc.extract.deleted.primary_db_sql = ( char * )SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
+                            tmp_cdc.extract.deleted.primary_db_sql_len = str_len;
+                            /*tmp_cdc.extract.deleted.primary_db_sql = ( char * )SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
                             tmp_cdc.extract.deleted.primary_db_sql_len = str_len;
                             strncpy(
                                 tmp_cdc.extract.deleted.primary_db_sql,
                                 cfg_system_query_item_change_data_capture_extract_deleted_primary_db_sql->valuestring,
                                 str_len
-                            );
+                            );*/
+                            tmp_cdc.extract.deleted.primary_db_sql = strdup( cfg_system_query_item_change_data_capture_extract_deleted_primary_db_sql->valuestring );
                             /*
                                 change_data_capture.extract.deleted.secondary_db
                             */
@@ -808,13 +833,14 @@ int DCPAM_load_configuration( const char *filename ) {
                                 fclose( file );
                                 return FALSE;
                             }
-                            str_len = strlen( cfg_system_query_item_change_data_capture_extract_deleted_secondary_db->valuestring );
+                            /*str_len = strlen( cfg_system_query_item_change_data_capture_extract_deleted_secondary_db->valuestring );
                             tmp_cdc.extract.deleted.secondary_db = ( char * )SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
                             strncpy(
                                 tmp_cdc.extract.deleted.secondary_db,
                                 cfg_system_query_item_change_data_capture_extract_deleted_secondary_db->valuestring,
                                 str_len
-                            );
+                            );*/
+                            tmp_cdc.extract.deleted.secondary_db = strdup( cfg_system_query_item_change_data_capture_extract_deleted_secondary_db->valuestring );
                             /*
                                 change_data_capture.extract.deleted.secondary_db_sql
                             */
@@ -827,13 +853,15 @@ int DCPAM_load_configuration( const char *filename ) {
                                 return FALSE;
                             }
                             str_len = strlen( cfg_system_query_item_change_data_capture_extract_deleted_secondary_db_sql->valuestring );
-                            tmp_cdc.extract.deleted.secondary_db_sql = ( char * )SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
+                            tmp_cdc.extract.deleted.secondary_db_sql_len = str_len;
+                            /*tmp_cdc.extract.deleted.secondary_db_sql = ( char * )SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
                             tmp_cdc.extract.deleted.secondary_db_sql_len = str_len;
                             strncpy(
                                 tmp_cdc.extract.deleted.secondary_db_sql,
                                 cfg_system_query_item_change_data_capture_extract_deleted_secondary_db_sql->valuestring,
                                 str_len
-                            );
+                            );*/
+                            tmp_cdc.extract.deleted.secondary_db_sql = strdup( cfg_system_query_item_change_data_capture_extract_deleted_secondary_db_sql->valuestring );
 
                             /*
                                 change_data_capture.transform 
@@ -878,16 +906,21 @@ int DCPAM_load_configuration( const char *filename ) {
                                 return FALSE;
                             }
                             str_len = strlen( cfg_system_query_item_change_data_capture_load_inserted_sql->valuestring );
-                            tmp_cdc.load.inserted.sql = ( char * )SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
+                            tmp_cdc.load.inserted.sql_len = str_len;
+                            /*tmp_cdc.load.inserted.sql = ( char * )SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
                             tmp_cdc.load.inserted.sql_len = str_len;
                             strncpy(
                                 tmp_cdc.load.inserted.sql,
                                 cfg_system_query_item_change_data_capture_load_inserted_sql->valuestring,
                                 str_len
-                            );
+                            );*/
+                            tmp_cdc.load.inserted.sql = strdup( cfg_system_query_item_change_data_capture_load_inserted_sql->valuestring );
                             /*
                                 change_data_capture.load.inserted.extracted_values
                             */
+
+                            int k = 0;
+
                             for( k = 0; k < MAX_CDC_COLUMNS; k++ ) {
                                 memset( tmp_cdc.load.inserted.extracted_values[ k ], 0, MAX_COLUMN_NAME_LEN );
                             }
@@ -932,13 +965,15 @@ int DCPAM_load_configuration( const char *filename ) {
                                 return FALSE;
                             }
                             str_len = strlen( cfg_system_query_item_change_data_capture_load_deleted_sql->valuestring );
-                            tmp_cdc.load.deleted.sql = ( char * )SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
+                            tmp_cdc.load.deleted.sql_len = str_len;
+                            /*tmp_cdc.load.deleted.sql = ( char * )SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
                             tmp_cdc.load.deleted.sql_len = str_len;
                             strncpy(
                                 tmp_cdc.load.deleted.sql,
                                 cfg_system_query_item_change_data_capture_load_deleted_sql->valuestring,
                                 str_len
-                            );
+                            );*/
+                            tmp_cdc.load.deleted.sql = strdup( cfg_system_query_item_change_data_capture_load_deleted_sql->valuestring );
                             /*
                                 change_data_capture.load.deleted.extracted_values
                             */
@@ -987,13 +1022,15 @@ int DCPAM_load_configuration( const char *filename ) {
                                 return FALSE;
                             }
                             str_len = strlen( cfg_system_query_item_change_data_capture_load_modified_sql->valuestring );
-                            tmp_cdc.load.modified.sql = ( char * )SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
+                            tmp_cdc.load.modified.sql_len = str_len;
+                            /*tmp_cdc.load.modified.sql = ( char * )SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
                             tmp_cdc.load.modified.sql_len = str_len;
                             strncpy(
                                 tmp_cdc.load.modified.sql,
                                 cfg_system_query_item_change_data_capture_load_modified_sql->valuestring,
                                 str_len
-                            );
+                            );*/
+                            tmp_cdc.load.modified.sql = strdup( cfg_system_query_item_change_data_capture_load_modified_sql->valuestring );
                             /*
                                 change_data_capture.load.modified.extracted_values
                             */
@@ -1029,6 +1066,8 @@ int DCPAM_load_configuration( const char *filename ) {
                                 return FALSE;
                             }
                             
+                            char tmp_data_types[SMALL_BUFF_SIZE][SMALL_BUFF_SIZE];
+
                             for( k = 0; k < cJSON_GetArraySize( cfg_system_query_item_data_types ); k++ ) {
                                 cfg_system_query_item_data_types_name = cJSON_GetArrayItem( cfg_system_query_item_data_types, k );
                                 strncpy(
@@ -1073,7 +1112,7 @@ int DCPAM_load_configuration( const char *filename ) {
                         LOG_print( "===========================\n" );
                     }
                 } else {
-                    LOG_print( "ERROR: \"system\" key not found.\n", i, j );
+                    LOG_print( "ERROR: \"system\" key not found.\n" );
                     cJSON_Delete( config_json );
                     return FALSE;
                 }
