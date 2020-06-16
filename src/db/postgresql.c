@@ -47,7 +47,7 @@ int PG_connect(
         snprintf( conn_str, 1024, "dbname=%s host=%s port=%d user=%s password=%s", dbname, host, port, user, password );
     }
     
-    sprintf( db_connection->id, "%s@%s[db=%s]", user, host, dbname );
+    snprintf( db_connection->id, 1024, "%s@%s[db=%s]", user, host, dbname );
 
     db_connection->connection = PQconnectdb( conn_str );
 
@@ -127,8 +127,7 @@ int PG_exec(
         for( int i = 0; i < row_count; i++) {
             dst_result->records[i].fields = ( DB_FIELD* )SAFEMALLOC( field_count * sizeof( DB_FIELD ), __FILE__, __LINE__ );
             for( int j = 0; j < field_count; j++ ) {
-                snprintf( dst_result->records[i].fields[j].label, MAX_COLUMN_NAME_LEN, "%s", PQfname( pg_result, j ) );
-                /*strncpy( dst_result->records[i].fields[j].label, PQfname( pg_result, j ), MAX_COLUMN_NAME_LEN );*/
+                strncpy( dst_result->records[i].fields[j].label, PQfname( pg_result, j ), MAX_COLUMN_NAME_LEN );
                 int val_length = PQgetlength( pg_result, i, j );
                 if( val_length > 0 ) {
                     dst_result->records[ i ].fields[ j ].value = SAFECALLOC( ( val_length + 1 ), sizeof( char ), __FILE__, __LINE__ );

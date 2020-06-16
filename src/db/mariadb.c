@@ -36,8 +36,8 @@ int MARIADB_connect(
     const char* connection_string
 ) {
 
-    db_connection->id = ( char* )SAFECALLOC( dcpam_strnlen( user, 128 ) + dcpam_strnlen( host, 128 ) + dcpam_strnlen( dbname, 128 ) + 7, sizeof( char ), __FILE__, __LINE__ );
-    sprintf( db_connection->id, "%s@%s[db=%s]", user, host, dbname );
+    db_connection->id = ( char* )SAFECALLOC( 1024, sizeof( char ), __FILE__, __LINE__ );
+    snprintf( db_connection->id, 1024, "%s@%s[db=%s]", user, host, dbname );
 
     db_connection->connection = mysql_init( NULL );
 

@@ -105,7 +105,7 @@ int ORACLE_connect(
 
     db_connection->id = ( char * )SAFECALLOC( 1024, sizeof( char ), __FILE__, __LINE__ );
     
-    sprintf( db_connection->id, "%s@%s[db=%s]", user, host, dbname );
+    snprintf( db_connection->id, 1024, "%s@%s[db=%s]", user, host, dbname );
 
     retcode = OCIEnvCreate( ( OCIEnv** )&db_connection->envhp, ( ub4 )OCI_DEFAULT,
         ( dvoid* )0, ( dvoid * ( * )( dvoid*, size_t ) ) 0,
