@@ -1,7 +1,7 @@
 #ifndef TIME_H
 #define TIME_H
 
-int dcpam_usleep( double usec );
+void dcpam_sleep( unsigned int ms );
 char* TIME_get_gmt( void );
 long int TIME_get_epoch( void );
 void TIME_format( long int seconds, char *dst );

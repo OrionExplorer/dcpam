@@ -15,7 +15,6 @@
     #define S_IXOTH         S_IEXEC
     #define sighandler      __p_sig_fn_t
     #define MSG_NOSIGNAL    0
-    #define sleep           Sleep
 #else
     #define SLASH           "/"
     #define C_SLASH         '/'
@@ -23,7 +22,7 @@
     #define EXIT_FAILURE    ( 1 )
     #define READ_BINARY     "re"
     #define sighandler      __sighandler_t
-    #define Sleep(x)        dcpam_usleep(x*1000)
+    #define Sleep(x)        dcpam_sleep(x)
 #endif
 
 

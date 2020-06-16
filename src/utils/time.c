@@ -5,21 +5,34 @@
 #include <time.h>
 #include <errno.h>
 
+/*
+    https://stackoverflow.com/a/26064185
+*/
+void dcpam_sleep( unsigned int ms ) {
 
-int dcpam_usleep( double usec ) {
-    struct timespec req, rem;
-    int r;
+#ifndef _WIN32
+    int result = 0;
 
-    req.tv_sec = 0;
-    req.tv_nsec = usec * 1000;
-    while( (r = nanosleep(&req, &rem) ) == -1 && errno == EINTR )
-        req = rem;
-    return r;
+    {
+        struct timespec ts_remaining =
+        {
+          ms / 1000,
+          ( ms % 1000 ) * 1000000L
+        };
+
+        do
+        {
+            struct timespec ts_sleep = ts_remaining;
+            result = nanosleep( &ts_sleep, &ts_remaining );
+        } while( ( EINTR == errno ) && ( -1 == result ) );
+    }
+#else
+    Sleep( ms );
+#endif
 }
 
 
 char* TIME_get_gmt( void ) {
-    /*return NULL;*/
     static char s[ TIME_BUFF_SIZE ];
     struct tm tim;
     time_t now;
@@ -32,8 +45,8 @@ char* TIME_get_gmt( void ) {
 }
 
 
-char* TIME_get_time( const char *format ) {
-    static char s[TIME_BUFF_SIZE];
+char* TIME_get_time( const char* format ) {
+    static char s[ TIME_BUFF_SIZE ];
     struct tm tim;
     time_t now;
 
@@ -53,24 +66,24 @@ long int TIME_get_epoch( void ) {
     return ( long int )now;
 }
 
-void TIME_format( long int seconds, char *dst ) {
+void TIME_format( long int seconds, char* dst ) {
     div_t       res;
 
     res = div( seconds, 60 );
     sprintf( dst, "%d minutes, %d seconds", res.quot, res.rem );
 }
 
-void TIME_epoch2time( const char *epoch, char *dst, const int dst_len ) {   
+void TIME_epoch2time( const char* epoch, char* dst, const int dst_len ) {
     time_t c;
 
     c = strtoul( epoch, NULL, 0 );
-    strftime(dst, dst_len, "%Y-%m-%d %H:%M:%S", localtime( &c ) );
+    strftime( dst, dst_len, "%Y-%m-%d %H:%M:%S", localtime( &c ) );
 }
 
 
-void TIME_get_month_name( char *dst, const int dst_len ) {
+void TIME_get_month_name( char* dst, const int dst_len ) {
     time_t now;
-    struct tm *tmp;
+    struct tm* tmp;
 
     now = time( NULL );
     tmp = localtime( &now );
@@ -78,9 +91,9 @@ void TIME_get_month_name( char *dst, const int dst_len ) {
 }
 
 
-void TIME_get_year( char *dst, const int dst_len ) {
+void TIME_get_year( char* dst, const int dst_len ) {
     time_t now;
-    struct tm *tmp;
+    struct tm* tmp;
 
     now = time( NULL );
     tmp = localtime( &now );
@@ -88,7 +101,7 @@ void TIME_get_year( char *dst, const int dst_len ) {
 }
 
 
-long int TIME_epoch_from_datetime( const char *src ) {
+long int TIME_epoch_from_datetime( const char* src ) {
     int year;
     int month;
     int day;
@@ -98,11 +111,11 @@ long int TIME_epoch_from_datetime( const char *src ) {
     time_t epoch;
     long int result = 0;
 
-    memset(&tm, 0, sizeof(struct tm));
-    
+    memset( &tm, 0, sizeof( struct tm ) );
+
     sscanf( src, "%d-%d-%d %d:%d", &year, &month, &day, &hours, &minutes );
-    tm.tm_year = year-1900;
-    tm.tm_mon = month-1;
+    tm.tm_year = year - 1900;
+    tm.tm_mon = month - 1;
     tm.tm_mday = day;
     tm.tm_hour = hours;
     tm.tm_min = minutes;
