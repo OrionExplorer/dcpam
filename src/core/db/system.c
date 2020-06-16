@@ -224,7 +224,6 @@ void DATABASE_SYSTEM_DB_add(
     DATABASE_SYSTEM_DB      *dst,
     short                   verbose
 ) {
-    size_t  str_len = 0;
 
     if( verbose > 0 ) {
         LOG_print( "[%s] SYSTEM_db_add(\"%s\", %d, \"%s\", ... ).\n", TIME_get_gmt(), ip, port, user );
