@@ -154,7 +154,6 @@ void DATABASE_SYSTEM_QUERY_add(
     short               verbose
 ) {
     int     i = 0;
-    size_t  str_len = 0;
 
     if( verbose > 0 ) LOG_print( "[%s] SYSTEM_query_add(\"%s\", ... ).\n", TIME_get_gmt(), name );
     /*str_len = strlen( name );

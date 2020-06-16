@@ -131,7 +131,6 @@ int DB_QUERY_format( const char* src, char **dst, unsigned long *dst_length, con
     char        *ptr_src = ( char* )src;
     char        *ptr_dst;
     int         src_params_count = 0;
-    int         param_index = 0;
     int         dcpam_nulls = 0;
 
     LOG_print( "[%s] DB_QUERY_format:\n", TIME_get_gmt() );

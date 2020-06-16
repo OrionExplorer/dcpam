@@ -1131,7 +1131,7 @@ int DCPAM_load_configuration( const char *filename ) {
 
         result = 1;
     } else {
-        LOG_print( "[%s] Fatal error: unable to open config file \"config.json\"!", TIME_get_gmt() );
+        LOG_print( "[%s] Fatal error: unable to open config file \"%s\"!", TIME_get_gmt(), filename );
     }
 
     return result;
