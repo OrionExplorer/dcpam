@@ -11,14 +11,13 @@
 void dcpam_sleep( unsigned int ms ) {
 
 #ifndef _WIN32
-    int result = 0;
-
     {
-        struct timespec ts_remaining =
-        {
+        struct timespec ts_remaining = {
           ms / 1000,
           ( ms % 1000 ) * 1000000L
         };
+
+        int result = 0;
 
         do
         {
