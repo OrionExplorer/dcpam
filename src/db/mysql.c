@@ -37,7 +37,7 @@ int MYSQL_connect(
 ) {
 
 	db_connection->id = ( char* )SAFECALLOC( 1024, sizeof( char ), __FILE__, __LINE__ );
-	sprintf( db_connection->id, "%s@%s[db=%s]", user, host, dbname );
+	snprintf( db_connection->id, 1024, "%s@%s[db=%s]", user, host, dbname );
 
 	db_connection->connection = mysql_init( NULL );
 
@@ -78,12 +78,7 @@ int MYSQL_exec(
 	MYSQL_BIND* bind_param = NULL;
 	unsigned long* lengths = NULL;
 	int             query_result = -1;
-	int             row_count = 0, field_count = 0;
-	int             val_length = 0;
-	int             i = 0, j = 0, k = 0;
 	unsigned long   l = 0;
-	int             internal_params_count = 0;
-	my_ulonglong    affected_rows = 0;
 
 	LOG_print( "[%s]\tMYSQL_exec( <'%s'>, \"%s\", ... ).\n", TIME_get_gmt(), db_connection->id, sql );
 	pthread_mutex_lock( &db_exec_mutex );
@@ -100,6 +95,9 @@ int MYSQL_exec(
 	if( db_connection->connection ) {
 		/* Simple query without binding parameters */
 		if( param_values == NULL || params_count == 0 ) {
+
+			int row_count = 0;
+			int field_count = 0;
 			query_result = mysql_real_query( db_connection->connection, dst_result->sql, sql_length );
 
 			if( query_result == 0 ) {
@@ -117,20 +115,21 @@ int MYSQL_exec(
 			}
 
 			if( row_count > 0 ) {
+				unsigned long val_length = 0;
 				dst_result->row_count = row_count;
 				dst_result->records = ( DB_RECORD* )SAFEMALLOC( row_count * sizeof( DB_RECORD ), __FILE__, __LINE__ );
 
-				for( i = 0; i < row_count; i++ ) {
+				for( int i = 0; i < row_count; i++ ) {
 					mysql_row = mysql_fetch_row( mysql_result );
 					lengths = mysql_fetch_lengths( mysql_result );
 					dst_result->records[ i ].fields = ( DB_FIELD* )SAFEMALLOC( field_count * sizeof( DB_FIELD ), __FILE__, __LINE__ );
 
-					for( j = 0; j < field_count; j++ ) {
+					for( int j = 0; j < field_count; j++ ) {
 						val_length = lengths[ j ];
 						if( val_length > 0 ) {
 							dst_result->records[ i ].fields[ j ].size = val_length;
 							dst_result->records[ i ].fields[ j ].value = SAFECALLOC( val_length + 1, sizeof( char ), __FILE__, __LINE__ );
-							for( k = 0; k < val_length; k++ ) {
+							for( unsigned long k = 0; k < val_length; k++ ) {
 								*( k + dst_result->records[ i ].fields[ j ].value ) = mysql_row[ j ][ k ];
 							}
 						} else {
@@ -140,9 +139,9 @@ int MYSQL_exec(
 					}
 				}
 
-				for( i = 0; i < field_count; i++ ) {
+				for( int i = 0; i < field_count; i++ ) {
 					mysql_field = mysql_fetch_field( mysql_result );
-					for( j = 0; j < row_count; j++ ) {
+					for( int j = 0; j < row_count; j++ ) {
 						strncpy( dst_result->records[ j ].fields[ i ].label, mysql_field->name, MAX_COLUMN_NAME_LEN );
 					}
 				}
@@ -150,7 +149,7 @@ int MYSQL_exec(
 
 			mysql_free_result( mysql_result );
 
-		} else if( param_values != NULL && params_count > 0 ) {
+		} else if( params_count > 0 ) {
 			/* Query with bind parameters */
 			stmt = mysql_stmt_init( db_connection->connection );
 			if( !stmt ) {
@@ -166,7 +165,7 @@ int MYSQL_exec(
 				return 0;
 			}
 
-			internal_params_count = mysql_stmt_param_count( stmt );
+			int internal_params_count = mysql_stmt_param_count( stmt );
 
 			if( internal_params_count != params_count ) {
 				LOG_print( "[%s][ERROR]\tMYSQL_exec: invalid parameter count returned by MySQL.\n", TIME_get_gmt(), mysql_stmt_error( stmt ) );
@@ -178,7 +177,7 @@ int MYSQL_exec(
 			bind_param = SAFEMALLOC( internal_params_count * sizeof( MYSQL_BIND ), __FILE__, __LINE__ );
 			memset( bind_param, 0, internal_params_count * sizeof( MYSQL_BIND ) );
 
-			for( i = 0; i < internal_params_count; i++ ) {
+			for( int i = 0; i < internal_params_count; i++ ) {
 				bind_param[ i ].buffer_type = MYSQL_TYPE_STRING;
 				bind_param[ i ].buffer = ( char* )param_values[ i ];
 				bind_param[ i ].buffer_length = param_lengths[ i ];
