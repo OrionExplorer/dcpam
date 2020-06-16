@@ -8,11 +8,6 @@
 #include "../../../include/core/db/cdc/extract.h"
 
 
-//extern DCPAM_APP           APP;
-
-//void CDC_ExtractGeneric( DB_SYSTEM_CDC_EXTRACT *extract, DB_SYSTEM_CDC_EXTRACT_QUERY *extract_element, DATABASE_SYSTEM_DB *db, DB_QUERY *data );
-
-
 int CDC_ExtractQueryTypeValid( const char *sql ) {
 
     DB_QUERY_TYPE dqt = DB_QUERY_get_type( sql );
