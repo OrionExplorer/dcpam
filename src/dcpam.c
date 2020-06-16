@@ -936,11 +936,12 @@ int DCPAM_load_configuration( const char *filename ) {
                             }
                             for( k = 0; k < cJSON_GetArraySize( cfg_system_query_item_change_data_capture_load_inserted_extracted_values_array ); k++ ) {
                                 cfg_system_query_item_change_data_capture_load_inserted_extracted_values_item = cJSON_GetArrayItem( cfg_system_query_item_change_data_capture_load_inserted_extracted_values_array, k );
-                                strncpy(
+                                snprintf( tmp_cdc.load.inserted.extracted_values[ k ], MAX_COLUMN_NAME_LEN, "%s", cfg_system_query_item_change_data_capture_load_inserted_extracted_values_item->valuestring );
+                                /*strncpy(
                                     tmp_cdc.load.inserted.extracted_values[ k ],
                                     cfg_system_query_item_change_data_capture_load_inserted_extracted_values_item->valuestring,
                                     MAX_COLUMN_NAME_LEN
-                                );
+                                );*/
                                 tmp_cdc.load.inserted.extracted_values_len++;
                             }
                             /*
@@ -992,12 +993,12 @@ int DCPAM_load_configuration( const char *filename ) {
                             tmp_cdc.load.deleted.extracted_values_len = 0;
                             for( k = 0; k < cJSON_GetArraySize( cfg_system_query_item_change_data_capture_load_deleted_extracted_values_array ); k++ ) {
                                 cfg_system_query_item_change_data_capture_load_deleted_extracted_values_item = cJSON_GetArrayItem( cfg_system_query_item_change_data_capture_load_deleted_extracted_values_array, k );
-                                strncpy(
+                                snprintf( tmp_cdc.load.deleted.extracted_values[ k ], MAX_COLUMN_NAME_LEN, "%s", cfg_system_query_item_change_data_capture_load_deleted_extracted_values_item->valuestring );
+                                /*strncpy(
                                     tmp_cdc.load.deleted.extracted_values[ k ],
-                                    //tmp_extracted_deleted_values[ k ],
                                     cfg_system_query_item_change_data_capture_load_deleted_extracted_values_item->valuestring,
                                     MAX_COLUMN_NAME_LEN
-                                );
+                                );*/
                                 tmp_cdc.load.deleted.extracted_values_len++;
                             }
                             /*
@@ -1049,12 +1050,13 @@ int DCPAM_load_configuration( const char *filename ) {
                             tmp_cdc.load.modified.extracted_values_len = 0;
                             for( k = 0; k < cJSON_GetArraySize( cfg_system_query_item_change_data_capture_load_modified_extracted_values_array ); k++ ) {
                                 cfg_system_query_item_change_data_capture_load_modified_extracted_values_item = cJSON_GetArrayItem( cfg_system_query_item_change_data_capture_load_modified_extracted_values_array, k );
-                                strncpy(
+                                snprintf( tmp_cdc.load.modified.extracted_values[ k ], MAX_COLUMN_NAME_LEN, "%s", cfg_system_query_item_change_data_capture_load_modified_extracted_values_item->valuestring );
+                                /*strncpy(
                                     tmp_cdc.load.modified.extracted_values[ k ],
                                     //tmp_extracted_modified_values[ k ],
                                     cfg_system_query_item_change_data_capture_load_modified_extracted_values_item->valuestring,
                                     MAX_COLUMN_NAME_LEN
-                                );
+                                );*/
                                 tmp_cdc.load.modified.extracted_values_len++;
                             }
 
@@ -1071,11 +1073,12 @@ int DCPAM_load_configuration( const char *filename ) {
 
                             for( k = 0; k < cJSON_GetArraySize( cfg_system_query_item_data_types ); k++ ) {
                                 cfg_system_query_item_data_types_name = cJSON_GetArrayItem( cfg_system_query_item_data_types, k );
-                                strncpy(
+                                snprintf( tmp_data_types[ k ], SMALL_BUFF_SIZE, "%s", cfg_system_query_item_data_types_name->valuestring );
+                                /*strncpy(
                                     tmp_data_types[ k ],
                                     cfg_system_query_item_data_types_name->valuestring,
                                     SMALL_BUFF_SIZE
-                                );
+                                );*/
                                 tmp_data_types_len++;
                             }
                             DATABASE_SYSTEM_QUERY_add(
@@ -1148,13 +1151,15 @@ int main( int argc, char** argv ) {
     LOG_init();
 
     if( argc <= 1 ) {
-        strncpy( config_file, "config.json", MAX_PATH_LENGTH );
+        /*strncpy( config_file, "config.json", MAX_PATH_LENGTH );*/
+        snprintf( config_file, MAX_PATH_LENGTH, "config.json" );
     } else if( argc >= 2 ) {
         if( strlen( argv[ 1 ] ) > MAX_PATH_LENGTH ) {
             LOG_print( "[%s] Notice: \"%s\" is not valid config file name.\n", TIME_get_gmt(), argv[ 1 ] );
-            strncpy( config_file, "config.json", MAX_PATH_LENGTH );
+            snprintf( config_file, MAX_PATH_LENGTH, "config.json" );
         } else {
-            strncpy( config_file, argv[ 1 ], MAX_PATH_LENGTH );
+            /*strncpy( config_file, argv[ 1 ], MAX_PATH_LENGTH );*/
+            snprintf( config_file, MAX_PATH_LENGTH, "%s", argv[ 1 ] );
         }
     }
 
