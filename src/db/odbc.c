@@ -226,7 +226,6 @@ int ODBC_exec(
             if( DB_QUERY_get_type( dst_result->sql ) == DQT_SELECT && num_columns > 0 ) {
 
                 int row_count = 0;
-                int field_count = 0;
 
                 if( dst_result->records ) {
                     free( dst_result->records ); dst_result->records = NULL;
