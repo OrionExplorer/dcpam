@@ -419,15 +419,6 @@ void DATABASE_SYSTEM_add(
         int j = 0;
 
         DATABASE_SYSTEMS[ DATABASE_SYSTEMS_COUNT ].name = strdup( name );
-        /*name_len = strlen(name);
-        DATABASE_SYSTEMS[ DATABASE_SYSTEMS_COUNT ].name = ( char* )SAFECALLOC( name_len + 1, sizeof( char ), __FILE__, __LINE__ );
-        if( DATABASE_SYSTEMS[ DATABASE_SYSTEMS_COUNT ].name ) {
-            strncpy(
-                DATABASE_SYSTEMS[ DATABASE_SYSTEMS_COUNT ].name,
-                name,
-                name_len
-            );
-        }*/
 
         DATABASE_SYSTEMS[ DATABASE_SYSTEMS_COUNT ].queries_len = queries_len;
 

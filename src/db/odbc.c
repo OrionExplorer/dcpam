@@ -82,14 +82,15 @@ int ODBC_connect(
     CHECK_ERROR( retcode, "SQLAllocHandle( SQL_HANDLE_DBC, db_connection->sqlenvhandle, &db_connection->connection )", db_connection->connection, SQL_HANDLE_DBC, TRUE );
 
     if( connection_string ) {
-        db_connection->id = SAFECALLOC( strlen( connection_string ) + 1, sizeof( char ), __FILE__, __LINE__ );
+        db_connection->id = strdup( connection_string );
+        /*db_connection->id = SAFECALLOC( strlen( connection_string ) + 1, sizeof( char ), __FILE__, __LINE__ );
         if( db_connection->id ) {
             strncpy(
                 db_connection->id,
                 connection_string,
                 strlen( connection_string )
             );
-        }
+        }*/
     } else {
         LOG_print( "error. Message: no \"connection_string\" provided in config.json\n" );
         return 0;
@@ -125,12 +126,10 @@ int ODBC_exec(
     const char* const      *param_types
 ) {
     SQLHSTMT        stmt;
-    int             i, j, k, l;
     SQLLEN          indicator;
     SQLRETURN       retcode;
     SQLWCHAR        sqlstate[ 1024 ];
     SQLWCHAR        message[ 1024 ];
-    int             row_count = 0, field_count = 0;
     SQLCHAR         *column_name[ MAX_COLUMNS ];
     SQLWCHAR        *column_data[ MAX_COLUMNS ];
     SQLULEN         column_data_size[ MAX_COLUMNS ];
@@ -150,7 +149,7 @@ int ODBC_exec(
     dst_result->field_count = 0;
 
     dst_result->sql = SAFECALLOC( sql_length + 1, sizeof( char ), __FILE__, __LINE__ );
-    for( l = 0; l < sql_length; l++ ) {
+    for( unsigned long l = 0; l < sql_length; l++ ) {
         *( dst_result->sql + l ) = sql[ l ];
     }
 
@@ -161,7 +160,7 @@ int ODBC_exec(
         /* Simple query without binding parameters */
         if( param_values == NULL || params_count == 0 ) {
 
-            for( i = 0; i < MAX_COLUMNS; i++ ) {
+            for( int i = 0; i < MAX_COLUMNS; i++ ) {
                 column_name[ i ] = NULL;
                 column_data[ i ] = NULL;
             }
@@ -179,7 +178,7 @@ int ODBC_exec(
                 return 0;
             }
 
-            for( i = 0; i < num_columns; i++ ) {
+            for( int i = 0; i < num_columns; i++ ) {
                 column_name[ i ] = SAFECALLOC( MAX_COLUMN_NAME_LEN + 1, sizeof( SQLCHAR ), __FILE__, __LINE__ );
                 retcode = SQLDescribeCol(
                     stmt,
@@ -212,7 +211,7 @@ int ODBC_exec(
                 ODBC_get_error( "SQLExecute()", stmt, SQL_HANDLE_STMT );
                 SQLFreeHandle( SQL_HANDLE_STMT, stmt );
 
-                for( i = 0; i < MAX_COLUMNS; i++ ) {
+                for( int i = 0; i < MAX_COLUMNS; i++ ) {
                     free( column_name[ i ] ); column_name[ i ] = NULL;
                     free( column_data[ i ] ); column_data[ i ] = NULL;
                     column_data_len[ i ] = 0;
@@ -225,6 +224,10 @@ int ODBC_exec(
             }
 
             if( DB_QUERY_get_type( dst_result->sql ) == DQT_SELECT && num_columns > 0 ) {
+
+                int row_count = 0;
+                int field_count = 0;
+
                 if( dst_result->records ) {
                     free( dst_result->records ); dst_result->records = NULL;
                 }
@@ -240,7 +243,7 @@ int ODBC_exec(
                     if( dst_result->records != NULL ) {
                         tmp_records = dst_result->records;
                         dst_result->records[ row_count ].fields = ( DB_FIELD* )SAFEMALLOC( num_columns * sizeof( DB_FIELD ), __FILE__, __LINE__ );
-                        for( k = 0; k < num_columns; k++ ) {
+                        for( int k = 0; k < num_columns; k++ ) {
                             if( column_data_len[ k ] != SQL_NULL_DATA ) {
                                 strncpy( dst_result->records[ row_count ].fields[ k ].label, column_name[ k ], MAX_COLUMN_NAME_LEN );
                                 dst_result->records[ row_count ].fields[ k ].size = ( int )column_data_len[ k ];
@@ -263,7 +266,7 @@ int ODBC_exec(
                 dst_result->row_count = row_count;
                 dst_result->field_count = num_columns;
 
-                for( i = 0; i < num_columns; i++ ) {
+                for( int i = 0; i < num_columns; i++ ) {
                     free( column_name[ i ] ); column_name[ i ] = NULL;
                     free( column_data[ i ] ); column_data[ i ] = NULL;
                     column_data_len[ i ] = 0;
