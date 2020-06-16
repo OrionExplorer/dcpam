@@ -199,9 +199,8 @@ int DCPAM_load_configuration( const char *filename ) {
 
                     cfg_app_version = cJSON_GetObjectItem( cfg_app, "version" );
                     if( cfg_app_version ) {
-                        str_len = strlen( cfg_app_version->valuestring );
-
-                        /*APP.version = ( char * )SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
+                        /*str_len = strlen( cfg_app_version->valuestring );
+                        APP.version = ( char * )SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
                         strncpy( APP.version, cfg_app_version->valuestring, str_len );*/
                         APP.version = strdup( cfg_app_version->valuestring );
                         LOG_print( " v%s.\n", APP.version );

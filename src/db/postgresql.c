@@ -78,8 +78,6 @@ int PG_exec(
     Oid                 *param_types 
 ) {
     PGresult        *pg_result = NULL;
-    int             row_count = 0, field_count = 0;
-    int             val_length = 0;
     int             i = 0, j = 0, k = 0;
     unsigned long   l = 0;
 
@@ -110,7 +108,6 @@ int PG_exec(
         }
     } else {
         PQclear( pg_result );
-        //pg_result = CONNECTION_BAD;
     }
 
     if ( PQresultStatus( pg_result ) != PGRES_TUPLES_OK && PQresultStatus( pg_result ) != PGRES_COMMAND_OK ) {
@@ -120,19 +117,19 @@ int PG_exec(
         return 0;
     }
     
-    row_count = PQntuples( pg_result );
+    int row_count = PQntuples( pg_result );
     dst_result->row_count = row_count;
     if( row_count > 0 ) {
         dst_result->records = ( DB_RECORD* )SAFEMALLOC( row_count * sizeof( DB_RECORD ), __FILE__, __LINE__ );
 
-        field_count = PQnfields( pg_result );
+        int field_count = PQnfields( pg_result );
         dst_result->field_count = field_count;
 
         for( i = 0; i < row_count; i++) {
             dst_result->records[i].fields = ( DB_FIELD* )SAFEMALLOC( field_count * sizeof( DB_FIELD ), __FILE__, __LINE__ );
             for( j = 0; j < field_count; j++ ) {
                 strncpy( dst_result->records[i].fields[j].label, PQfname( pg_result, j ), MAX_COLUMN_NAME_LEN );
-                val_length = PQgetlength( pg_result, i, j );
+                int val_length = PQgetlength( pg_result, i, j );
                 if( val_length > 0 ) {
                     dst_result->records[ i ].fields[ j ].value = SAFECALLOC( ( val_length + 1 ), sizeof( char ), __FILE__, __LINE__ );
                     char* tmp_res = PQgetvalue( pg_result, i, j );
