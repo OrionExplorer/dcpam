@@ -325,12 +325,13 @@ int DCPAM_load_configuration( const char *filename ) {
                                 LOG_print("\t· columns=[");
                                 for( int k = 0; k < cJSON_GetArraySize( cfg_app_data_actions_item_columns ); k++ ) {
                                     cfg_app_data_actions_item_columns_name = cJSON_GetArrayItem( cfg_app_data_actions_item_columns, k );
-                                    memset( APP.DATA[ i ].columns[ k ], 0, 32 );
-                                    strncpy(
+                                    memset( APP.DATA[ i ].columns[ k ], 0, MAX_COLUMN_NAME_LEN );
+                                    snprintf( APP.DATA[ i ].columns[ k ], MAX_COLUMN_NAME_LEN, "%s", cfg_app_data_actions_item_columns_name->valuestring );
+                                    /*strncpy(
                                         APP.DATA[ i ].columns[ k ],
                                         cfg_app_data_actions_item_columns_name->valuestring,
                                         32
-                                    );
+                                    );*/
                                     LOG_print( "\"%s\", ", cfg_app_data_actions_item_columns_name->valuestring );
                                     APP.DATA[ i ].columns_len++;
                                 }

@@ -36,7 +36,7 @@ int MYSQL_connect(
 	const char* connection_string
 ) {
 
-	db_connection->id = ( char* )SAFECALLOC( strlen( user ) + strlen( host ) + strlen( dbname ) + 7, sizeof( char ), __FILE__, __LINE__ );
+	db_connection->id = ( char* )SAFECALLOC( 1024, sizeof( char ), __FILE__, __LINE__ );
 	sprintf( db_connection->id, "%s@%s[db=%s]", user, host, dbname );
 
 	db_connection->connection = mysql_init( NULL );
