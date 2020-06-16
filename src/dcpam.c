@@ -153,7 +153,6 @@ int DCPAM_load_configuration( const char *filename ) {
     cJSON           *cfg_system_info = NULL;
 
     cJSON           *array_value = NULL;
-    size_t str_len = 0;
     int             k = 0;
     int             result = 0;
     
@@ -176,6 +175,8 @@ int DCPAM_load_configuration( const char *filename ) {
         if( strlen( config_string ) > 0 ) {
             config_json = cJSON_Parse( config_string );
             if( config_json ) {
+
+                size_t str_len = 0;
 
                 cfg_app = cJSON_GetObjectItem( config_json, "app" );
                 if( cfg_app ) {
