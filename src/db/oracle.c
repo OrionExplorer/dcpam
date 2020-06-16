@@ -103,12 +103,7 @@ int ORACLE_connect(
     
     db_connection->authp = ( OCISession* )0;
 
-    db_connection->id = ( char * )SAFECALLOC( strlen(user)+strlen(host)+strlen(dbname)+8, sizeof( char ), __FILE__, __LINE__ );
-    if( connection_string ) {
-        snprintf( conn_str, 1024, connection_string, dbname, host, port, user, password );
-    } else {
-        snprintf( conn_str, 1024, "dbname=%s host=%s port=%d user=%s password=%s", dbname, host, port, user, password );
-    }
+    db_connection->id = ( char * )SAFECALLOC( 1024, sizeof( char ), __FILE__, __LINE__ );
     
     sprintf( db_connection->id, "%s@%s[db=%s]", user, host, dbname );
 
@@ -186,15 +181,10 @@ int ORACLE_exec(
     ub2             stmt_type;
     OCIError        *errhp = NULL;
     sword           retcode = 0;
-    int             row_count = 0, field_count = 0;
-    int             val_length = 0;
-    int             i = 0, j = 0;
-    unsigned long   l = 0;
     OCIParam        *mypard = ( OCIParam* )0;
     ub2             dtype;
     text            *_col_name;
     text            *_col_data[ MAX_COLUMNS ];
-    char            *column_name[ MAX_COLUMNS ];
     ub4             counter, col_name_len, char_semantics;
     ub2             col_width;
     sb4             _real_col_width[ MAX_COLUMNS ];
@@ -215,7 +205,7 @@ int ORACLE_exec(
     dst_result->field_count = 0;
 
     dst_result->sql = SAFECALLOC( sql_length + 1, sizeof( char ), __FILE__, __LINE__ );
-    for( l = 0; l < sql_length; l++ ) {
+    for( unsigned long l = 0; l < sql_length; l++ ) {
         *( dst_result->sql + l ) = sql[ l ];
     }
 
@@ -254,7 +244,10 @@ int ORACLE_exec(
 
     if( stmt_type == OCI_STMT_SELECT ) {
 
-        for( i = 0; i < MAX_COLUMNS; i++ ) {
+        int  field_count = 0;
+        char *column_name[ MAX_COLUMNS ];
+
+        for( int i = 0; i < MAX_COLUMNS; i++ ) {
             column_name[ i ] = NULL;
         }
 
@@ -336,7 +329,10 @@ int ORACLE_exec(
                 ( dvoid** )&mypard, ( ub4 )counter );
         }
 
+        int row_count = 0;
+
         if( counter >= 1 ) {
+
             while( TRUE ) {
                 retcode = OCIStmtFetch2( stmthp, errhp, 1, OCI_FETCH_NEXT, 0, OCI_DEFAULT );
                 if( retcode != OCI_SUCCESS && retcode != OCI_NO_DATA ) {
@@ -351,14 +347,14 @@ int ORACLE_exec(
                     tmp_records = dst_result->records;
                     dst_result->records[ row_count ].fields = ( DB_FIELD* )SAFEMALLOC( field_count * sizeof( DB_FIELD ), __FILE__, __LINE__ );
 
-                    for( i = 0; i < field_count; i++ ) {
+                    for( int i = 0; i < field_count; i++ ) {
                         _real_col_width[ i ] = strlen( _col_data[ i ] );
                         strncpy( dst_result->records[ row_count ].fields[ i ].label, column_name[ i ], MAX_COLUMN_NAME_LEN );
 
                         dst_result->records[ row_count ].fields[ i ].size = _real_col_width[ i ];
                         if( _real_col_width[ i ] > 0 ) {
                             dst_result->records[ row_count ].fields[ i ].value = SAFECALLOC( _real_col_width[ i ] + 1, sizeof( char ), __FILE__, __LINE__ );
-                            for( j = 0; j < _real_col_width[ i ]; j++ ) {
+                            for( int j = 0; j < _real_col_width[ i ]; j++ ) {
                                 dst_result->records[ row_count ].fields[ i ].value[ j ] = _col_data[ i ][ j ];
                             }
                         } else {
@@ -374,7 +370,7 @@ int ORACLE_exec(
         dst_result->field_count = field_count;
         dst_result->row_count = row_count;
 
-        for( i = 0; i < field_count; i++ ) {
+        for( int i = 0; i < field_count; i++ ) {
             free( column_name[ i ] ); column_name[ i ] = NULL;
             free( _col_data[ i ] ); _col_data[ i ] = NULL;
         }

@@ -3,6 +3,19 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <errno.h>
+
+
+int dcpam_usleep( double usec ) {
+    struct timespec req, rem;
+    int r;
+
+    req.tv_sec = 0;
+    req.tv_nsec = usec * 1000;
+    while( (r = nanosleep(&req, &rem) ) == -1 && errno == EINTR )
+        req = rem;
+    return r;
+}
 
 
 char* TIME_get_gmt( void ) {

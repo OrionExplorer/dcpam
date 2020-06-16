@@ -23,7 +23,7 @@
     #define EXIT_FAILURE    ( 1 )
     #define READ_BINARY     "re"
     #define sighandler      __sighandler_t
-    #define Sleep(x)        usleep(x*1000)
+    #define Sleep(x)        dcpam_usleep(x*1000)
 #endif
 
 
