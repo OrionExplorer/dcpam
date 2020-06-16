@@ -78,7 +78,6 @@ int PG_exec(
     Oid                 *param_types 
 ) {
     PGresult        *pg_result = NULL;
-    int             i = 0, j = 0, k = 0;
     unsigned long   l = 0;
 
     LOG_print( "[%s]\tPG_exec( <'%s'>, \"%s\", ... ).\n", TIME_get_gmt(), db_connection->id, sql );
@@ -95,7 +94,7 @@ int PG_exec(
     if( db_connection->connection ) {
         if( param_values == NULL || params_count == 0) {
             pg_result = PQexec( db_connection->connection, dst_result->sql );
-        } else if ( param_values != NULL && params_count > 0 ) {
+        } else {
             pg_result = PQexecParams( db_connection->connection,
                 dst_result->sql,
                 params_count,
@@ -125,9 +124,9 @@ int PG_exec(
         int field_count = PQnfields( pg_result );
         dst_result->field_count = field_count;
 
-        for( i = 0; i < row_count; i++) {
+        for( int i = 0; i < row_count; i++) {
             dst_result->records[i].fields = ( DB_FIELD* )SAFEMALLOC( field_count * sizeof( DB_FIELD ), __FILE__, __LINE__ );
-            for( j = 0; j < field_count; j++ ) {
+            for( int j = 0; j < field_count; j++ ) {
                 strncpy( dst_result->records[i].fields[j].label, PQfname( pg_result, j ), MAX_COLUMN_NAME_LEN );
                 int val_length = PQgetlength( pg_result, i, j );
                 if( val_length > 0 ) {
@@ -135,8 +134,8 @@ int PG_exec(
                     char* tmp_res = PQgetvalue( pg_result, i, j );
 
                     dst_result->records[ i ].fields[ j ].size = val_length;
-                    for( k = 0; k < val_length; k++ ) {
-                        dst_result->records[ i ].fields[ j ].value[ k ] = tmp_res[ k ];
+                    for( l = 0; l < val_length; l++ ) {
+                        dst_result->records[ i ].fields[ j ].value[ l ] = tmp_res[ l ];
                     }
                 } else {
                     dst_result->records[ i ].fields[ j ].size = 0;
