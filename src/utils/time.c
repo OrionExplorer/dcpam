@@ -105,18 +105,19 @@ void TIME_get_year( char* dst, const int dst_len ) {
 
 
 long int TIME_epoch_from_datetime( const char* src ) {
+    long int result = 0;
     int year;
     int month;
     int day;
     int hours;
     int minutes;
-    struct tm tm;
-    time_t epoch;
-    long int result = 0;
-
-    memset( &tm, 0, sizeof( struct tm ) );
 
     if( sscanf( src, "%d-%d-%d %d:%d", &year, &month, &day, &hours, &minutes ) == 5 ) {
+        time_t epoch;
+        struct tm tm;
+
+        memset( &tm, 0, sizeof( struct tm ) );
+
         tm.tm_year = year - 1900;
         tm.tm_mon = month - 1;
         tm.tm_mday = day;
