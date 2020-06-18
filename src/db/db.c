@@ -123,7 +123,7 @@ DB_QUERY_TYPE DB_QUERY_get_type( const char* sql ) {
     }
 }
 
-int DB_QUERY_format( const char* src, char **dst, unsigned long *dst_length, const char* const* param_values, const int params_count, const int *param_lengths ) {
+int DB_QUERY_format( const char* src, char **dst, size_t *dst_length, const char* const* param_values, const int params_count, const int *param_lengths ) {
     size_t      src_len = 0;
     size_t      dst_len = 0;
     int         i = 0;
@@ -134,34 +134,27 @@ int DB_QUERY_format( const char* src, char **dst, unsigned long *dst_length, con
     int         dcpam_nulls = 0;
 
     LOG_print( "[%s] DB_QUERY_format:\n", TIME_get_gmt() );
-
     /* Main checks */
     if( src == NULL ) {
         LOG_print( "Error: src pointer is NULL.\n" );
         return FALSE;
     }
-
     if( strstr( ptr_src, "?" ) == NULL ) {
         LOG_print( "Notice: SQL statement does not qualify to format.\n" );
         return TRUE;
     }
-
     if( *dst != NULL ) {
         LOG_print( "Error: dst pointer is already initialized.\n" );
         return FALSE;
     }
-
     /* Get SQL statement template length */
     src_len = strlen( src );
-
     /* Calculate dst result length. Start with src_len */
     dst_len = src_len;
-
     /*      1. Sum all param lengths */
     for( i = 0; i < params_count; i++ ) {
         dst_len += param_lengths[ i ];
     }
-
     ptr_src = ( char *)src;
     /*      2. Subtract all "?" occurrences */
     while( ptr_src = strstr( ptr_src, "?" ) ) {
@@ -169,23 +162,19 @@ int DB_QUERY_format( const char* src, char **dst, unsigned long *dst_length, con
         ptr_src++;
         src_params_count++;
     }
-
     /* Check if "?" count is equal to params_count */
     if( src_params_count != params_count ) {
         LOG_print( "Error: params_count and SQL template variables does not match!\n" );
         LOG_print( "SQL: %s\n", src );
         return FALSE;
     }
-
     /* Init dst buffer */
     *dst = SAFECALLOC( dst_len + 1, sizeof( char ), __FILE__, __LINE__ );
     /* Copy SQL template to dst buffer */
     strncpy( *dst, src, dst_len );
-
     /* Replace all "?" occurrences with values */
     ptr_dst = *dst;
     _DB_QUERY_replace_params( ptr_dst, "?", param_values, params_count, &dst_len );
-
     /* Replace all 'dcpamNULL' with NULL */
     ptr_dst = *dst;
     dcpam_nulls = _DB_QUERY_replace_param( ptr_dst, "'dcpamNULL'", "NULL", &dst_len );

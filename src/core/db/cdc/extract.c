@@ -62,7 +62,7 @@ void CDC_ExtractGeneric( DB_SYSTEM_CDC_EXTRACT *extract, DB_SYSTEM_CDC_EXTRACT_Q
                     char   *ret_values_str = NULL;
 
                     /* Allocate memory for query result values  */
-                    ret_values = SAFEMALLOC( (primary_db_sql_res.row_count + 1) *  sizeof *ret_values, __FILE__, __LINE__ );
+                    ret_values = SAFEMALLOC( (primary_db_sql_res.row_count + 1) * sizeof *ret_values, __FILE__, __LINE__ );
 
                     /* Allocate memory for each row value and copy data */
                     for( int i = 0; i < primary_db_sql_res.row_count; i++ ) {

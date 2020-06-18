@@ -32,8 +32,8 @@
 #define EXT_LEN                             8
 #define EXT_LEN_CHAR                        8*sizeof( char )
 
-#define MAX_PATH_LENGTH                     1024
-#define MAX_PATH_LENGTH_CHAR                1024*sizeof( char )
+#define MAX_PATH_LENGTH                     256
+#define MAX_PATH_LENGTH_CHAR                256*sizeof( char )
 #define MAX_CLIENTS                         FD_SETSIZE
 #define DEFAULT_PORT                        1212
 #define MAX_COLUMNS							64
@@ -58,7 +58,7 @@ typedef enum ACTION_TYPE {
 } ACTION_TYPE;
 
 
-extern char                     app_path[ MAX_PATH_LENGTH ];
+extern char                     app_path[ MAX_PATH_LENGTH + 1 ];
 
 
 

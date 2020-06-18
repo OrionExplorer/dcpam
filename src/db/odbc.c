@@ -14,7 +14,7 @@ static pthread_mutex_t      db_exec_mutex = PTHREAD_MUTEX_INITIALIZER;
 #define CHECK_ERROR(e, s, h, t, r) {if (e!=SQL_SUCCESS && e != SQL_SUCCESS_WITH_INFO) { ODBC_get_error(s, h, t); if( r == TRUE ) { return 0; } } }
 
 void ODBC_get_error( char* fn, SQLHANDLE handle, SQLSMALLINT type ) {
-    SQLINTEGER i = 0;
+    SQLSMALLINT i = 0;
     SQLINTEGER native_err;
     SQLCHAR sql_state[ 7 ];
     SQLCHAR message[ 256 ];
@@ -64,11 +64,7 @@ int ODBC_connect(
     const char* password,
     const char* connection_string
 ) {
-    SQLWCHAR        sqlstate[ 1024 ];
-    SQLWCHAR        message[ 1024 ];
-    SQLWCHAR        w_connection_str[ 1024 ];
     SQLRETURN       retcode;
-
 
     retcode = SQLAllocHandle( SQL_HANDLE_ENV, SQL_NULL_HANDLE, &db_connection->sqlenvhandle );
     CHECK_ERROR( retcode, "SQLAllocHandle( SQL_HANDLE_ENV, SQL_NULL_HANDLE, &db_connection->sqlenvhandle )", db_connection->sqlenvhandle, SQL_HANDLE_ENV, TRUE );
@@ -82,15 +78,15 @@ int ODBC_connect(
     CHECK_ERROR( retcode, "SQLAllocHandle( SQL_HANDLE_DBC, db_connection->sqlenvhandle, &db_connection->connection )", db_connection->connection, SQL_HANDLE_DBC, TRUE );
 
     if( connection_string ) {
-        db_connection->id = strdup( connection_string );
-        /*db_connection->id = SAFECALLOC( strlen( connection_string ) + 1, sizeof( char ), __FILE__, __LINE__ );
+        /*db_connection->id = strdup( connection_string );*/
+        db_connection->id = SAFECALLOC( strlen( connection_string ) + 1, sizeof( char ), __FILE__, __LINE__ );
         if( db_connection->id ) {
             strncpy(
                 db_connection->id,
                 connection_string,
                 strlen( connection_string )
             );
-        }*/
+        }
     } else {
         LOG_print( "error. Message: no \"connection_string\" provided in config.json\n" );
         return 0;
@@ -117,7 +113,7 @@ int ODBC_connect(
 int ODBC_exec(
     ODBC_CONNECTION        *db_connection,
     const char             *sql,
-    unsigned long          sql_length,
+    size_t                 sql_length,
     DB_QUERY               *dst_result,
     const char* const      *param_values,
     const int              params_count,
@@ -126,10 +122,7 @@ int ODBC_exec(
     const char* const      *param_types
 ) {
     SQLHSTMT        stmt;
-    SQLLEN          indicator;
     SQLRETURN       retcode;
-    SQLWCHAR        sqlstate[ 1024 ];
-    SQLWCHAR        message[ 1024 ];
     SQLCHAR         *column_name[ MAX_COLUMNS ];
     SQLWCHAR        *column_data[ MAX_COLUMNS ];
     SQLULEN         column_data_size[ MAX_COLUMNS ];
@@ -165,7 +158,7 @@ int ODBC_exec(
                 column_data[ i ] = NULL;
             }
 
-            retcode = SQLPrepare( stmt, ( SQLCHAR* )sql, sql_length );
+            retcode = SQLPrepare( stmt, ( SQLCHAR* )sql, ( SQLINTEGER )sql_length );
             CHECK_ERROR( retcode, "SQLPrepare()", stmt, SQL_HANDLE_STMT, TRUE );
 
             retcode = SQLNumResultCols( stmt, &num_columns );
@@ -244,7 +237,7 @@ int ODBC_exec(
                         dst_result->records[ row_count ].fields = ( DB_FIELD* )SAFEMALLOC( num_columns * sizeof( DB_FIELD ), __FILE__, __LINE__ );
                         for( int k = 0; k < num_columns; k++ ) {
                             if( column_data_len[ k ] != SQL_NULL_DATA ) {
-                                strncpy( dst_result->records[ row_count ].fields[ k ].label, column_name[ k ], MAX_COLUMN_NAME_LEN );
+                                strncpy( dst_result->records[ row_count ].fields[ k ].label, (const char *)column_name[ k ], MAX_COLUMN_NAME_LEN );
                                 dst_result->records[ row_count ].fields[ k ].size = ( int )column_data_len[ k ];
                                 dst_result->records[ row_count ].fields[ k ].value = SAFECALLOC( ( int )column_data_len[ k ] + 1, sizeof( char ), __FILE__, __LINE__ );
                                 memcpy( dst_result->records[ row_count ].fields[ k ].value, ( char* )column_data[ k ], ( int )column_data_len[ k ] );

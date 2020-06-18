@@ -20,7 +20,7 @@ typedef struct {
 
 
 int ODBC_connect( ODBC_CONNECTION* db_connection, const char* host, const int port, const char* dbname, const char* user, const char* password, const char* connection_string );
-int  ODBC_exec( ODBC_CONNECTION* db_connection, const char* sql, unsigned long sql_length, DB_QUERY* dst_result, const char* const *param_values, const int params_count, const int *param_lengths, const int *param_formats, const char* const *param_types );
+int  ODBC_exec( ODBC_CONNECTION* db_connection, const char* sql, size_t sql_length, DB_QUERY* dst_result, const char* const *param_values, const int params_count, const int *param_lengths, const int *param_formats, const char* const *param_types );
 void ODBC_disconnect( ODBC_CONNECTION* db_connection );
 
 #endif

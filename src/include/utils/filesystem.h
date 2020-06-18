@@ -8,6 +8,7 @@
 
 char* get_app_path( void );
 short directory_exists( const char *path );
+char* file_get_content( const char *filename );
 
 
 #endif

@@ -38,7 +38,7 @@ typedef struct {
 void DB_QUERY_init( DB_QUERY *db_query );
 void DB_QUERY_free( DB_QUERY *db_query );
 void DB_QUERY_field_type( DB_FIELD *field, char *dst );
-int  DB_QUERY_format( const char *src, char **dst, unsigned long *dst_length, const char* const* param_values, const int params_count, const int *param_lengths );
+int  DB_QUERY_format( const char *src, char **dst, size_t *dst_length, const char* const* param_values, const int params_count, const int *param_lengths );
 DB_QUERY_TYPE DB_QUERY_get_type( const char *sql );
 
 #endif

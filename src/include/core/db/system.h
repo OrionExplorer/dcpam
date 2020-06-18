@@ -53,7 +53,7 @@ void DATABASE_SYSTEM_QUERY_add(
 int DB_exec(
             DATABASE_SYSTEM_DB      *db,
             const char              *sql_template,
-            unsigned long           sql_length,
+            size_t                  sql_length,
             DB_QUERY                *dst_result,
             const char* const       *param_values,
             const int               params_count,

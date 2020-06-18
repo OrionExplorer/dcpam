@@ -42,7 +42,8 @@ void CDC_LoadGeneric( DB_SYSTEM_CDC_LOAD *load, DB_SYSTEM_CDC_LOAD_QUERY *load_e
                             q_lengths[ q_values_len ] = data->records[ i ].fields[ j ].size;
                             q_formats[ q_values_len ] = 0;
                         } else {
-                            q_values[ q_values_len ] = strdup( "dcpamNULL" );
+                            q_values[ q_values_len ] = SAFECALLOC( 10, sizeof( char ), __FILE__, __LINE__ );
+                            strcpy( q_values[ q_values_len ], "dcpamNULL" );
                             q_lengths[ q_values_len ] = 9;
                             q_formats[ q_values_len ] = 0;
                         }
@@ -56,7 +57,7 @@ void CDC_LoadGeneric( DB_SYSTEM_CDC_LOAD *load, DB_SYSTEM_CDC_LOAD_QUERY *load_e
             if( q_values_len > 0 ) {
                 DB_QUERY_init( &sql_res );
                 /* Perform DB query and store result in *data */
-                int query_ret = DB_exec( &APP.DB, load_element->sql, load_element->sql_len, &sql_res, q_values, q_values_len, q_lengths, q_formats, NULL );
+                int query_ret = DB_exec( &APP.DB, load_element->sql, load_element->sql_len, &sql_res, ( const char* const* )q_values, q_values_len, q_lengths, q_formats, NULL );
 
                 if( query_ret == FALSE ) {
                     LOG_print( "[%s] DB_exec error.\n", TIME_get_gmt() );

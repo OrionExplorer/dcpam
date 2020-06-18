@@ -25,7 +25,7 @@ typedef struct DCPAM_DATA {
     char                    columns[ MAX_CDC_COLUMNS ][ 32 ];
     int                     columns_len;
     char                    *description;
-    DCPAM_DATA_ACTION      actions[ MAX_DCPAM_DATA_ACTIONS ];
+    DCPAM_DATA_ACTION       actions[ MAX_DCPAM_DATA_ACTIONS ];
     int                     actions_len;
 } DCPAM_DATA;
 
@@ -36,7 +36,7 @@ typedef struct DCPAM_APP {
     char                    *version;
     char                    *name;
     DATABASE_SYSTEM_DB      DB;
-    DCPAM_DATA             DATA[ MAX_DCPAM_DATA_ITEMS ];
+    DCPAM_DATA              DATA[ MAX_DCPAM_DATA_ITEMS ];
     int                     DATA_len;
 } DCPAM_APP;
 

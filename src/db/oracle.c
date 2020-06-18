@@ -97,7 +97,6 @@ int ORACLE_connect(
     const char*         password,
     const char*         connection_string
 ) {
-    char        conn_str[ 1024 ];
     sword       retcode = 0;
     OCIError    *errhp;
     
@@ -127,9 +126,15 @@ int ORACLE_connect(
         ( size_t )0, ( dvoid** )0 );
 
     if( connection_string ) {
-        OCIServerAttach( db_connection->srvhp, errhp, ( text* )connection_string, strlen( connection_string), 0 );
+        retcode = OCIServerAttach( db_connection->srvhp, errhp, ( text* )connection_string, ( sb4 )strlen( connection_string), 0 );
     } else {
-        OCIServerAttach( db_connection->srvhp, errhp, ( text* )host, strlen( host ), 0 );
+        retcode = OCIServerAttach( db_connection->srvhp, errhp, ( text* )host, ( sb4 )strlen( host ), 0 );
+    }
+    if( retcode != OCI_SUCCESS ) {
+        ORACLE_get_error( errhp, retcode, __LINE__ );
+        db_connection->active = 0;
+        free( db_connection->id ); db_connection->id = NULL;
+        return 0;
     }
 
     OCIAttrSet( ( dvoid* )db_connection->svchp, OCI_HTYPE_SVCCTX, ( dvoid* )db_connection->srvhp,
@@ -170,7 +175,7 @@ int ORACLE_connect(
 int ORACLE_exec(
     ORACLE_CONNECTION   *db_connection,
     const char          *sql,
-    unsigned long       sql_length, 
+    size_t              sql_length, 
     DB_QUERY            *dst_result,
     const char* const   *param_values,
     const int           params_count,
@@ -189,7 +194,6 @@ int ORACLE_exec(
     ub2             col_width;
     sb4             _real_col_width[ MAX_COLUMNS ];
     sb4             parm_status;
-    ub2             *rlenp;
     ub4             iters;
     OCIDefine       *defnp;
     DB_RECORD       *tmp_records = NULL;
@@ -348,7 +352,7 @@ int ORACLE_exec(
                     dst_result->records[ row_count ].fields = ( DB_FIELD* )SAFEMALLOC( field_count * sizeof( DB_FIELD ), __FILE__, __LINE__ );
 
                     for( int i = 0; i < field_count; i++ ) {
-                        _real_col_width[ i ] = strlen( _col_data[ i ] );
+                        _real_col_width[ i ] = ( sb4 )strlen( (const char* )_col_data[ i ] );
                         strncpy( dst_result->records[ row_count ].fields[ i ].label, column_name[ i ], MAX_COLUMN_NAME_LEN );
 
                         dst_result->records[ row_count ].fields[ i ].size = _real_col_width[ i ];

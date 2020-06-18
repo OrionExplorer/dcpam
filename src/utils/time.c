@@ -5,6 +5,10 @@
 #include <time.h>
 #include <errno.h>
 
+#ifdef _WIN32
+#include <Windows.h>
+#endif
+
 /*
     https://stackoverflow.com/a/26064185
 */
@@ -112,17 +116,18 @@ long int TIME_epoch_from_datetime( const char* src ) {
 
     memset( &tm, 0, sizeof( struct tm ) );
 
-    sscanf( src, "%d-%d-%d %d:%d", &year, &month, &day, &hours, &minutes );
-    tm.tm_year = year - 1900;
-    tm.tm_mon = month - 1;
-    tm.tm_mday = day;
-    tm.tm_hour = hours;
-    tm.tm_min = minutes;
-    tm.tm_sec = 0;
-    epoch = mktime( &tm );
+    if( sscanf( src, "%d-%d-%d %d:%d", &year, &month, &day, &hours, &minutes ) == 5 ) {
+        tm.tm_year = year - 1900;
+        tm.tm_mon = month - 1;
+        tm.tm_mday = day;
+        tm.tm_hour = hours;
+        tm.tm_min = minutes;
+        tm.tm_sec = 0;
+        epoch = mktime( &tm );
 
-    result = ( long int )epoch;
-    result *= 1;
+        result = ( long int )epoch;
+        result *= 1;
+    }
 
     return result;
 }

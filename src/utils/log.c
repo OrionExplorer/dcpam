@@ -9,7 +9,7 @@
 #include <pthread.h>
 #include <sys/stat.h>
 
-static char                 log_object[LOG_BUFFER + STD_BUFF_SIZE];
+static char                 log_object[LARGE_BUFF_SIZE];
 char                        LOG_filename[MAX_PATH_LENGTH];
 static pthread_mutex_t      printf_mutex = PTHREAD_MUTEX_INITIALIZER;
 
@@ -47,12 +47,12 @@ static void LOG_validate_paths( void ) {
 }
 
 void LOG_init( void ) {
-    snprintf( app_path, MAX_PATH_LENGTH, "%s", get_app_path() );
+    snprintf( app_path, MAX_PATH_LENGTH, get_app_path() );
     /*strncpy( app_path, get_app_path(), MAX_PATH_LENGTH );*/
 
     ( void )LOG_validate_paths();
 
-    printf( "[%s] Start path: \"%s\".\n", TIME_get_gmt(), app_path );
+    LOG_print( "[%s] Start path: \"%s\".\n", TIME_get_gmt(), app_path );
 
     LOG_save();
 
@@ -70,7 +70,7 @@ void LOG_print( char *fmt, ... ) {
     vsnprintf( output_text, LARGE_BUFF_SIZE, fmt, args );
     va_end( args );
 
-    strncat( log_object, output_text, LOG_BUFFER );
+    strncat( log_object, output_text, LARGE_BUFF_SIZE );
     printf( "%s", output_text );
 
     free( output_text );
@@ -85,7 +85,7 @@ void LOG_print( char *fmt, ... ) {
         }
     }
 
-    memset( log_object, '\0', LOG_BUFFER );
+    memset( log_object, '\0', LARGE_BUFF_SIZE );
     if( chdir( app_path ) != 0 ) {
         LOG_print( "Error: unable to perform chdir( %s ).\n", app_path );
     }
@@ -107,7 +107,7 @@ void LOG_save( void ) {
         exit( EXIT_FAILURE );
     }
 
-    memset( log_object, 0, LOG_BUFFER );
+    memset( log_object, 0, LARGE_BUFF_SIZE );
     if( chdir( app_path ) != 0 ) {
         LOG_print( "Error: unable to perform chdir( %s ).\n", app_path );
     }

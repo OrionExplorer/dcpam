@@ -40,7 +40,7 @@ int PG_connect(
 ) {
     char        conn_str[ 1024 ];
 
-    db_connection->id = ( char * )SAFECALLOC( dcpam_strnlen( user, 128 )+dcpam_strnlen( host, 128 )+dcpam_strnlen( dbname, 128 )+8, sizeof( char ), __FILE__, __LINE__ );
+    db_connection->id = ( char * )SAFECALLOC( 1024, sizeof( char ), __FILE__, __LINE__ );
     if( connection_string ) {
         snprintf( conn_str, 1024, connection_string, dbname, host, port, user, password );
     } else {
@@ -69,7 +69,7 @@ int PG_connect(
 int PG_exec(
     PG_CONNECTION       *db_connection,
     const char          *sql,
-    unsigned long       sql_length, 
+    size_t              sql_length, 
     DB_QUERY            *dst_result,
     const char* const   *param_values,
     const int           params_count,
@@ -128,7 +128,7 @@ int PG_exec(
             dst_result->records[i].fields = ( DB_FIELD* )SAFEMALLOC( field_count * sizeof( DB_FIELD ), __FILE__, __LINE__ );
             for( int j = 0; j < field_count; j++ ) {
                 strncpy( dst_result->records[i].fields[j].label, PQfname( pg_result, j ), MAX_COLUMN_NAME_LEN );
-                int val_length = PQgetlength( pg_result, i, j );
+                unsigned long val_length = PQgetlength( pg_result, i, j );
                 if( val_length > 0 ) {
                     dst_result->records[ i ].fields[ j ].value = SAFECALLOC( ( val_length + 1 ), sizeof( char ), __FILE__, __LINE__ );
                     char* tmp_res = PQgetvalue( pg_result, i, j );

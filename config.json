@@ -29,7 +29,6 @@
 					"comment#07" : "##################################################################################################",
 					"inserted" : {
 						"primary_db" : "dcpam",
-						"__primary_db_sql" : "SELECT system_worklog_id FROM sys.accounted_time WHERE system = 'OTRS'",
 						"primary_db_sql" : "SELECT system_worklog_id FROM sys.accounted_time WHERE system = 'OTRS'",
 						"secondary_db" : "this",
 						"secondary_db_sql" : "SELECT t.id AS system_object_id, ta.id AS system_worklog_id, t.customer_id AS system_customer, ta.create_by AS system_agent_id, ta.time_unit AS system_accounted_time, ta.create_time AS system_created FROM time_accounting ta LEFT JOIN ticket t ON t.id = ta.ticket_id WHERE ta.id NOT IN (%s)"
@@ -68,21 +67,16 @@
 					"comment#03" : "# There is no restriction on the query type in \"sql\" command.",
 					"comment#04" : "##################################################################################################",
 					"inserted" : {
-						"pg_sql" : "INSERT INTO accounted_time (system_object_id, system_worklog_id, system_customer, system_agent_id, system_accounted_time, system_created, is_valid, system) VALUES ($1, $2, $3, $4, $5, $6, 1, 'OTRS')",
-						"mysql_sql" : "INSERT INTO accounted_time (system_object_id, system_worklog_id, system_customer, system_agent_id, system_accounted_time, system_created, is_valid, system) VALUES (?, ?, ?, ?, ?, ?, 1, 'OTRS')",
-						"sql" : "INSERT INTO accounted_time (system_object_id, system_worklog_id, system_customer, system_agent_id, system_accounted_time system_created, is_valid, system) VALUES (?, ?, '?', '?', ?, '?', 1, 'OTRS')",
+						"sql" : "INSERT INTO sys.accounted_time (system_object_id, system_worklog_id, system_customer, system_agent_id, system_accounted_time, system_created, is_valid, system) VALUES (?, ?, '?', '?', ?, '?', 1, 'OTRS')",
 						"extracted_values" : ["system_object_id", "system_worklog_id", "system_customer", "system_agent_id", "system_accounted_time", "system_created"]
 					},
 					"deleted" : {
-						"pg_sql" : "UPDATE accounted_time SET is_valid = 0 WHERE system_worklog_id = $1",
-						"sql_mysql" : "UPDATE accounted_time SET is_valid = 0 WHERE system_worklog_id = ?",
-						"sql" : "UPDATE accounted_time SET is_valid = 0 WHERE system_worklog_id = ?",
-						"extracted_values" : ["system_worklog_id"]
+						"sql" : "UPDATE sys.accounted_time SET is_valid = 0 WHERE system_worklog_id = ?",
+						"extracted_values" : ["SYSTEM_WORKLOG_ID"]
 					},
 					"modified" : {
-						"pg_sql" : "UPDATE accounted_time SET system_object_id = $1, system_worklog_id = $2, system_customer = $3, system_agent_id = $4, system_accounted_time = $5, system_created = $6 WHERE system_worklog_id = $7",
-						"sql" : "UPDATE accounted_time SET system_object_id = ?, system_worklog_id = ?, system_customer = ?, system_agent_id = ?, system_accounted_time = ?, system_created = ? WHERE system_worklog_id = ?",
-						"extracted_values" : ["system_object_id", "system_worklog_id", "system_customer", "system_agent_id", "system_accounted_time", "system_created", "system_worklog_id"]
+						"sql" : "UPDATE sys.accounted_time SET system_object_id = ?, system_worklog_id = ?, system_customer = ?, system_agent_id = ?, system_accounted_time = ?, system_created = ? WHERE system_worklog_id = ?",
+						"extracted_values" : ["SYSTEM_OBJECT_ID", "SYSTEM_WORKLOG_ID", "SYSTEM_CUSTOMER", "SYSTEM_AGENT_ID", "SYSTEM_ACCOUNTED_TIME", "SYSTEM_CREATED", "SYSTEM_WORKLOG_ID"]
 					}
 				}
 			}
@@ -256,7 +250,7 @@
 			"port" : 1521,
 			"driver" : 5,
 			"driver_comment" : "Driver types: 1=PostgreSQL, 2=MySQL, 3=MariaDB, 4=ODBC 5=Oracle Database",
-			"connection_string" : "",
+			"connection_string" : "localhost:1521/xe",
 			"user" : "dcpam",
 			"password" : "tantive4",
 			"db" : "xe"

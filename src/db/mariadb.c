@@ -63,7 +63,7 @@ int MARIADB_connect(
 int MARIADB_exec(
     MARIADB_CONNECTION* db_connection,
     const char* sql,
-    unsigned long       sql_length,
+    size_t       sql_length,
     DB_QUERY* dst_result,
     const char* const* param_values,
     const int           params_count,
@@ -98,7 +98,7 @@ int MARIADB_exec(
 
             int row_count = 0;
             int field_count = 0;
-            query_result = mysql_real_query( db_connection->connection, dst_result->sql, sql_length );
+            query_result = mysql_real_query( db_connection->connection, dst_result->sql, ( unsigned long )sql_length );
 
             if( query_result == 0 ) {
                 mysql_result = mysql_store_result( db_connection->connection );
@@ -158,7 +158,7 @@ int MARIADB_exec(
                 pthread_mutex_unlock( &db_exec_mutex );
                 return 0;
             }
-            if( mysql_stmt_prepare( stmt, dst_result->sql, sql_length ) ) {
+            if( mysql_stmt_prepare( stmt, dst_result->sql, ( unsigned long )sql_length ) ) {
                 LOG_print( "[%s][ERROR]\tMARIADB_exec: mysql_stmt_prepare() SQL failed: %s\n", TIME_get_gmt(), mysql_stmt_error( stmt ) );
                 mysql_stmt_close( stmt );
                 pthread_mutex_unlock( &db_exec_mutex );
