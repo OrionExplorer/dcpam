@@ -145,7 +145,7 @@ int _DB_QUERY_replace_params( char *src,  const char *search, const char* const 
 //    return occurrences;
 //}
 
-int _DB_QUERY_replace_param( char* src, const char* search, const char*replace, size_t *dst_len ) {
+int _DB_QUERY_internal_replace_str_( char* src, const char* search, const char*replace, size_t *dst_len ) {
     char* buffer = SAFECALLOC( *dst_len + 1, sizeof( char ), __FILE__, __LINE__ );
     char* p = src;
     int occurrences = 0;
@@ -242,11 +242,11 @@ int DB_QUERY_format( const char* src, char **dst, size_t *dst_length, const char
     _DB_QUERY_replace_params( ptr_dst, "?", param_values, param_lengths, params_count, &dst_len );
     /* Replace all 'dcpamNULL' with NULL */
     ptr_dst = *dst;
-    dcpam_nulls = _DB_QUERY_replace_param( ptr_dst, "'dcpamNULL'", "NULL", &dst_len );
+    dcpam_nulls = _DB_QUERY_internal_replace_str_( ptr_dst, "'dcpamNULL'", "NULL", &dst_len );
     dst_len = dst_len - (dcpam_nulls * 7);
     /* Replace all dcpamNULL with NULL */
     ptr_dst = *dst;
-    dcpam_nulls = _DB_QUERY_replace_param( ptr_dst, "dcpamNULL", "NULL", &dst_len );
+    dcpam_nulls = _DB_QUERY_internal_replace_str_( ptr_dst, "dcpamNULL", "NULL", &dst_len );
     dst_len = dst_len - ( dcpam_nulls * 5 );
 
     *dst_length = dst_len;
