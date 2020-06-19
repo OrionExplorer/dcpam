@@ -123,27 +123,27 @@ int _DB_QUERY_replace_params( char *src,  const char *search, const char* const 
 }
 
 /* Old function, unusable for blobs */
-int _DB_QUERY_replace_params_b( char *src, const char *search, const char* const *replaces, const int replace_count, size_t *dst_len ) {
-    char *buffer = SAFECALLOC( *dst_len + 1, sizeof( char ), __FILE__, __LINE__ );
-    char* p = src;
-    int replace_index = 0;
-    int occurrences = 0;
-
-    while( ( p = strstr( p, search ) ) ) {
-        strncpy( buffer, src, p - src );
-        buffer[ p - src ] = '\0';
-        strcat( buffer, replaces[ replace_index ] );
-        strcat( buffer, p + strlen( search ) );
-        strcpy( src, buffer );
-        p++;
-        replace_index++;
-        occurrences++;
-    }
-
-    free( buffer ); buffer = NULL;
-
-    return occurrences;
-}
+//int _DB_QUERY_replace_params_b( char *src, const char *search, const char* const *replaces, const int replace_count, size_t *dst_len ) {
+//    char *buffer = SAFECALLOC( *dst_len + 1, sizeof( char ), __FILE__, __LINE__ );
+//    char* p = src;
+//    int replace_index = 0;
+//    int occurrences = 0;
+//
+//    while( ( p = strstr( p, search ) ) ) {
+//        strncpy( buffer, src, p - src );
+//        buffer[ p - src ] = '\0';
+//        strcat( buffer, replaces[ replace_index ] );
+//        strcat( buffer, p + strlen( search ) );
+//        strcpy( src, buffer );
+//        p++;
+//        replace_index++;
+//        occurrences++;
+//    }
+//
+//    free( buffer ); buffer = NULL;
+//
+//    return occurrences;
+//}
 
 int _DB_QUERY_replace_param( char* src, const char* search, const char*replace, size_t *dst_len ) {
     char* buffer = SAFECALLOC( *dst_len + 1, sizeof( char ), __FILE__, __LINE__ );
