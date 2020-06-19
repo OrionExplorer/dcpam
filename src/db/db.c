@@ -58,7 +58,72 @@ void DB_QUERY_free( DB_QUERY* db_query ) {
     }
 }
 
-int _DB_QUERY_replace_params( char *src, const char *search, const char* const *replaces, const int replace_count, size_t *dst_len ) {
+int _DB_QUERY_replace_params( char *src,  const char *search, const char* const *replaces, const int* param_lengths, const int replace_count, size_t *dst_len ) {
+    /* Allocate buffer for source query copy */
+    char *tmp_src = SAFEMALLOC( ( *dst_len + 1 ) * sizeof( char ), __FILE__, __LINE__ );
+    /* 2D array for query parts from strtok with "?" */
+    char **src_part = NULL;
+    char *ptr;
+    /* "?" counter */
+    int repl_count = 0;
+
+    /* Duplicate source query */
+    memcpy( tmp_src, src, *dst_len );
+
+    /* Split query by "?" */
+    ptr = strtok( tmp_src, "?" );
+    while( ptr != NULL ) {
+        /* Allocate memory for next query part */
+        src_part = realloc( src_part, ( repl_count + 1 ) * sizeof( *src_part ) );
+        /* Allocate memory for next query part token */
+        src_part[ repl_count ] = SAFECALLOC( strlen( ptr ) + 1, sizeof( char ), __FILE__, __LINE__ );
+        /* Store token as query part */
+        memcpy( src_part[ repl_count ], ptr, strlen( ptr ) );
+
+        ptr = strtok( NULL, "?" );
+        repl_count++;
+    }
+
+    if( repl_count > 0 ) {
+        /* Allocate temporary buffer for writing output query */
+        char* dst_buffer = SAFEMALLOC( ( *dst_len + 1 ) * sizeof( char ), __FILE__, __LINE__ );
+        /* Store already written data length to dst_buffer for concatenate with memcpy */
+        size_t current_buff_len = 0;
+
+        for( int i = 0; i < repl_count; i++ ) {
+            /* Firstly, append token into temporary buffer */
+            memcpy( dst_buffer + current_buff_len, src_part[ i ], strlen( src_part[ i ] ) );
+            /* Sum and store already written data length */
+            current_buff_len += strlen( src_part[ i ] );
+            if( i < replace_count ) { /* repl_count is always greater by 1 than replace_count */
+                /* Secondly, append given value into temporary buffer */
+                memcpy( dst_buffer + current_buff_len, replaces[ i ], param_lengths[ i ] );
+                /* Sum and store already written data lengt */
+                current_buff_len += param_lengths[ i ];
+            }
+        }
+
+        dst_buffer[current_buff_len] = '\0';
+
+        /* Free query parts */
+        for( int i = 0; i < repl_count; i++ ) {
+            free( src_part[ i] ); src_part[i] = NULL;
+        }
+        free( src_part ); src_part = NULL;
+
+        /* Write data to destination buffer */
+        memcpy( src, dst_buffer, *dst_len );
+
+        /* Free temporary buffers */
+        free( dst_buffer); dst_buffer = NULL;
+        free( tmp_src ); tmp_src = NULL;
+        return repl_count - 1;
+    }
+    return 0;
+}
+
+/* Old function, unusable for blobs */
+int _DB_QUERY_replace_params_b( char *src, const char *search, const char* const *replaces, const int replace_count, size_t *dst_len ) {
     char *buffer = SAFECALLOC( *dst_len + 1, sizeof( char ), __FILE__, __LINE__ );
     char* p = src;
     int replace_index = 0;
@@ -174,7 +239,7 @@ int DB_QUERY_format( const char* src, char **dst, size_t *dst_length, const char
     strncpy( *dst, src, dst_len );
     /* Replace all "?" occurrences with values */
     ptr_dst = *dst;
-    _DB_QUERY_replace_params( ptr_dst, "?", param_values, params_count, &dst_len );
+    _DB_QUERY_replace_params( ptr_dst, "?", param_values, param_lengths, params_count, &dst_len );
     /* Replace all 'dcpamNULL' with NULL */
     ptr_dst = *dst;
     dcpam_nulls = _DB_QUERY_replace_param( ptr_dst, "'dcpamNULL'", "NULL", &dst_len );
