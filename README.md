@@ -38,6 +38,7 @@ DCPAM is still work in progress, with following data sources:
 | 3    | MariaDB/MySQL 5 | Database        | Native  | Available   |
 | 4    | SQL Server      | Database        | ODBC    | Available   |
 | 5    | Oracle Database | Database        | Native  | Available   |
+| 6    | SQLite3         | Database        | Native  | Available   |
 
 
 ### Configuration
