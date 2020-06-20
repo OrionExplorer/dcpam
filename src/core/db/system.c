@@ -57,6 +57,10 @@ int DB_exec(
         case D_ORACLE: {
             q_ret = ORACLE_exec( &db->db_conn.oracle_conn, sql, *sql_len, dst_result, NULL, 0, NULL, NULL );
         }
+
+        case D_SQLITE: {
+            q_ret = SQLITE_exec( &db->db_conn.sqlite_conn, sql, *sql_len, dst_result, NULL, 0, NULL, NULL );
+        }
     }
 
     free( sql_bound ); sql_bound = NULL;
@@ -248,7 +252,8 @@ void DATABASE_SYSTEM_DB_add(
         : driver == D_MYSQL ? "MySQL" 
         : driver == D_MARIADB ? "MariaDB" 
         : driver == D_ODBC ? "ODBC" 
-        : "ORACLE"
+        : driver == D_ORACLE ? "ORACLE"
+        : "SQLite3"
     );
     dst->driver = ( DB_DRIVER )driver;
 
@@ -325,29 +330,28 @@ void DATABASE_SYSTEM_DB_free( DATABASE_SYSTEM_DB *db ) {
 
     switch( db->driver ) {
         case D_POSTGRESQL : {
-            
             LOG_print( "\t· Driver: \"PostgreSQL\". Disconnecting...\n" );
             PG_disconnect( &db->db_conn.pgsql_conn );
         } break;
         case D_MYSQL : {
-            
             LOG_print( "\t· Driver: \"MySQL\". Disconnecting...\n" );
             MYSQL_disconnect( &db->db_conn.mysql_conn );
         } break;
          case D_MARIADB : {
-            
             LOG_print( "\t· Driver: \"MariaDB\". Disconnecting...\n" );
             MARIADB_disconnect( &db->db_conn.mariadb_conn );
         } break;
         case D_ODBC : {
-            
             LOG_print( "\t· Driver: \"ODBC\". Disconnecting...\n" );
             ODBC_disconnect( &db->db_conn.odbc_conn );
         } break;
         case D_ORACLE : {
-
             LOG_print( "\t· Driver: \"Oracle\". Disconnecting...\n" );
             ORACLE_disconnect( &db->db_conn.oracle_conn );
+        } break;
+        case D_SQLITE : {
+            LOG_print( "\t· Driver: \"SQLite3\". Disconnecting...\n" );
+            SQLITE_disconnect( &db->db_conn.sqlite_conn );
         }
         default : {
         }
@@ -380,6 +384,10 @@ int DATABASE_SYSTEM_DB_init( DATABASE_SYSTEM_DB *db ) {
         case D_ORACLE : {
             LOG_print( "\t· Driver: \"Oracle\". Connecting..." );
             ret = ORACLE_connect( &db->db_conn.oracle_conn, db->ip, db->port, db->db, db->user, db->password, db->connection_string );
+        } break;
+        case D_SQLITE : {
+            LOG_print( "\t· Driver: \"SQLite3\". Connecting..." );
+            ret = SQLITE_connect( &db->db_conn.sqlite_conn, db->connection_string /* As filename for now. DCPAM would download DB file in future. */);
         } break;
         default : {
             LOG_print( "Error: unknown driver: \"%d\".\n", db->driver );

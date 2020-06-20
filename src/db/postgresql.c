@@ -78,7 +78,6 @@ int PG_exec(
     Oid                 *param_types 
 ) {
     PGresult        *pg_result = NULL;
-    unsigned long   l = 0;
 
     LOG_print( "[%s]\tPG_exec( <'%s'>, \"%s\", ... ).\n", TIME_get_gmt(), db_connection->id, sql );
     pthread_mutex_lock( &db_exec_mutex );
@@ -87,7 +86,7 @@ int PG_exec(
     dst_result->field_count = 0;
 
     dst_result->sql = ( char* )SAFECALLOC( sql_length + 1, sizeof( char ), __FILE__, __LINE__ );
-    for( l = 0; l < sql_length; l++ ) {
+    for( size_t l = 0; l < sql_length; l++ ) {
         *( dst_result->sql + l ) = sql[ l ];
     }
 
@@ -128,13 +127,13 @@ int PG_exec(
             dst_result->records[i].fields = ( DB_FIELD* )SAFEMALLOC( field_count * sizeof( DB_FIELD ), __FILE__, __LINE__ );
             for( int j = 0; j < field_count; j++ ) {
                 strncpy( dst_result->records[i].fields[j].label, PQfname( pg_result, j ), MAX_COLUMN_NAME_LEN );
-                unsigned long val_length = PQgetlength( pg_result, i, j );
+                int val_length = PQgetlength( pg_result, i, j );
                 if( val_length > 0 ) {
                     dst_result->records[ i ].fields[ j ].value = SAFECALLOC( ( val_length + 1 ), sizeof( char ), __FILE__, __LINE__ );
                     char* tmp_res = PQgetvalue( pg_result, i, j );
 
                     dst_result->records[ i ].fields[ j ].size = val_length;
-                    for( l = 0; l < val_length; l++ ) {
+                    for( int l = 0; l < val_length; l++ ) {
                         dst_result->records[ i ].fields[ j ].value[ l ] = tmp_res[ l ];
                     }
                 } else {

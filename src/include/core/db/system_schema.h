@@ -6,6 +6,7 @@
 #include "../../db/mariadb.h"
 #include "../../db/odbc.h"
 #include "../../db/oracle.h"
+#include "../../db/sqlite.h"
 
 typedef union {
     PG_CONNECTION           pgsql_conn;
@@ -13,6 +14,7 @@ typedef union {
     MARIADB_CONNECTION      mariadb_conn;
     ODBC_CONNECTION         odbc_conn;
     ORACLE_CONNECTION       oracle_conn;
+    SQLITE_CONNECTION       sqlite_conn;
 } DB_CONN;
 
 typedef enum {
@@ -20,7 +22,8 @@ typedef enum {
     D_MYSQL,
     D_MARIADB,
     D_ODBC,
-    D_ORACLE
+    D_ORACLE,
+    D_SQLITE
 } DB_DRIVER;
 
 typedef struct DATABASE_SYSTEM_DB {

@@ -3,12 +3,13 @@
 # libmysqlclient-dev
 # oracle-instantclient19.6-basic-19.6.0.0.0-1.x86_64.rpm
 # oracle-instantclient19.6-devel-19.6.0.0.0-1.x86_64.rpm
+# libsqlite3-dev
 CC=clang 
 
 
 #CFLAGS=-std=c11 -fexpensive-optimizations -Wshadow -Winit-self -Wredundant-decls -Wcast-align -Wundef -Wfloat-equal -Winline -Wunreachable-code -Wmissing-declarations -Wmissing-include-dirs -Wswitch-enum -Wswitch-default -Wmain -pedantic-errors -pedantic -w -Wfatal-errors -Wextra -Wall -Os -O3 -O2 -O1
 CFLAGS=-std=c11 -fexpensive-optimizations -Wshadow -Winit-self -Wredundant-decls -Wcast-align -Wundef -Wfloat-equal -Winline -Wunreachable-code -Wmissing-declarations -Wmissing-include-dirs -Wswitch-enum -Wswitch-default -Wmain -pedantic-errors -pedantic -w -Wfatal-errors -Wextra -Wall -g3 -O0
-LIBS=-lm -lpthread -lpq -lodbc -lmariadbclient -L/usr/lib/oracle/19.6/client64/lib/ -lclntsh
+LIBS=-lm -lpthread -lpq -lodbc -lmariadbclient -ldl -L/usr/lib/oracle/19.6/client64/lib/ -lclntsh
 ORACLE_INC= -I/usr/include/oracle/19.6/client64/
 
 
@@ -32,6 +33,9 @@ odbc.o: src/db/odbc.c
 
 oracle.o: src/db/oracle.c
 	$(CC) -c src/db/oracle.c $(CFLAGS) $(ORACLE_INC)
+
+sqlite.o: src/db/sqlite.c
+	$(CC) -c src/db/sqlite.c $(CFLAGS)
 
 dcpam.o: src/dcpam.c
 	$(CC) -c src/dcpam.c $(CFLAGS) $(ORACLE_INC)
@@ -63,6 +67,9 @@ filesystem.o: src/utils/filesystem.c
 cJSON.o: src/third-party/cJSON.c
 	$(CC) -c src/third-party/cJSON.c $(CFLAGS)
 
+sqlite3.o: src/third-party/sqlite3.c
+	$(CC) -c src/third-party/sqlite3.c $(CFLAGS)
+
 misc.o: src/utils/misc.c
 	$(CC) -c src/utils/misc.c $(CFLAGS)
 
@@ -72,6 +79,6 @@ memory.o: src/utils/memory.c
 strings.o: src/utils/strings.c
 	$(CC) -c src/utils/strings.c $(CFLAGS)
 
-dcpam: dcpam.o mysql.o mariadb.o odbc.o postgresql.o log.o time.o filesystem.o cJSON.o memory.o db.o worker.o system.o extract.o transform.o load.o strings.o oracle.o
-	$(CC) mysql.o mariadb.o odbc.o postgresql.o dcpam.o log.o time.o filesystem.o cJSON.o memory.o db.o worker.o system.o extract.o transform.o load.o strings.o oracle.o -o dcpam $(LIBS)
+dcpam: dcpam.o mysql.o mariadb.o odbc.o postgresql.o log.o time.o filesystem.o cJSON.o sqlite3.o memory.o db.o worker.o system.o extract.o transform.o load.o strings.o oracle.o sqlite.o
+	$(CC) mysql.o mariadb.o odbc.o postgresql.o dcpam.o log.o time.o filesystem.o cJSON.o sqlite3.o memory.o db.o worker.o system.o extract.o transform.o load.o strings.o oracle.o sqlite.o -o dcpam $(LIBS)
 	rm *.o

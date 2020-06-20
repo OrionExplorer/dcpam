@@ -6,10 +6,10 @@
 #include "include/core/db/worker.h"
 #include "include/core/schema.h"
 
-#include "include/db/mariadb.h"
+/*#include "include/db/mariadb.h"
 #include "include/db/mysql.h"
 #include "include/db/odbc.h"
-#include "include/db/postgresql.h"
+#include "include/db/postgresql.h"*/
 #include "include/third-party/cJSON.h"
 #include "include/utils/memory.h"
 #include "include/utils/time.h"
