@@ -56,7 +56,7 @@ int DB_exec(
 
         case D_ORACLE: {
             q_ret = ORACLE_exec( &db->db_conn.oracle_conn, sql, *sql_len, dst_result, NULL, 0, NULL, NULL );
-        }
+        } break;
 
         case D_SQLITE: {
             q_ret = SQLITE_exec( &db->db_conn.sqlite_conn, sql, *sql_len, dst_result, NULL, 0, NULL, NULL );

@@ -93,14 +93,13 @@ int SQLITE_exec(
 
                 while( sqlite3_step( stmt ) != SQLITE_DONE ) {
                     int i = 0;
-                    int data_size = 0;
                     field_count = sqlite3_column_count( stmt );
 
                     dst_result->records = realloc( dst_result->records, ( row_count + 1 ) * sizeof( DB_RECORD ) );
                     dst_result->records[ row_count ].fields = ( DB_FIELD* )SAFEMALLOC( field_count * sizeof( DB_FIELD ), __FILE__, __LINE__ );
 
                     for( i = 0; i < field_count; i++ ) {
-                        data_size = sqlite3_column_bytes( stmt, i );
+                        int data_size = sqlite3_column_bytes( stmt, i );
                         strncpy( dst_result->records[ row_count ].fields[ i ].label, sqlite3_column_name( stmt, i ), MAX_COLUMN_NAME_LEN );
                         dst_result->records[ row_count ].fields[ i ].size = ( unsigned long )data_size;
                         dst_result->records[ row_count ].fields[ i ].value = SAFECALLOC( ( data_size + 1 ), sizeof( char ), __FILE__, __LINE__ );

@@ -31,14 +31,14 @@ Chance Data Capture([3]) solutions depends on the data sources (currently it's d
 
 ### Data sources
 DCPAM is still work in progress, with following data sources:
-|  ID  | Data source     | Type            | Support | Status      |
-|:----:|:--------------  |:---------------:|:-------:|:-----------:|
-| 1    | PostgreSQL      | Database        | Native  | Available   |
-| 2    | MySQL 8         | Database        | Native  | Available   |
-| 3    | MariaDB/MySQL 5 | Database        | Native  | Available   |
-| 4    | SQL Server      | Database        | ODBC    | Available   |
-| 5    | Oracle Database | Database        | Native  | Available   |
-| 6    | SQLite3         | Database        | Native  | Available   |
+|  ID  | Data source                        | Type            | Support | Status      |
+|:----:|:-----------------------------------|:---------------:|:-------:|:-----------:|
+| 1    | PostgreSQL      					| Database        | Native  | Available   |
+| 2    | MySQL 8         					| Database        | Native  | Available   |
+| 3    | MariaDB/MySQL 5 					| Database        | Native  | Available   |
+| 4    | SQL Server/Azure SQL Database      | Database        | ODBC    | Available   |
+| 5    | Oracle Database 					| Database        | Native  | Available   |
+| 6    | SQLite3         					| Database        | Native  | Available   |
 
 
 ### Configuration
