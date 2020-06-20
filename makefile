@@ -3,7 +3,6 @@
 # libmysqlclient-dev
 # oracle-instantclient19.6-basic-19.6.0.0.0-1.x86_64.rpm
 # oracle-instantclient19.6-devel-19.6.0.0.0-1.x86_64.rpm
-# libsqlite3-dev
 CC=clang 
 
 
