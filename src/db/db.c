@@ -68,7 +68,7 @@ int _DB_QUERY_replace_params( char *src,  const char *search, const char* const 
     int repl_count = 0;
 
     /* Duplicate source query */
-    memcpy( tmp_src, src, *dst_len );
+    memcpy( tmp_src, src, *dst_len + 1 );
 
     /* Split query by "?" */
     ptr = strtok( tmp_src, "?" );
@@ -198,7 +198,7 @@ int DB_QUERY_format( const char* src, char **dst, size_t *dst_length, const char
     int         src_params_count = 0;
     int         dcpam_nulls = 0;
 
-    LOG_print( "[%s] DB_QUERY_format:\n", TIME_get_gmt() );
+    LOG_print( "[%s] DB_QUERY_format: %s\n", TIME_get_gmt(), src );
     /* Main checks */
     if( src == NULL ) {
         LOG_print( "Error: src pointer is NULL.\n" );

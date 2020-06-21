@@ -64,8 +64,10 @@ typedef struct DB_SYSTEM_CDC_TRANSFORM {
     config.json => system[].queries[].change_data_capture.load
 */
 typedef struct DB_SYSTEM_CDC_LOAD_QUERY {
-    char                    *sql;
-    size_t                  sql_len;
+    char                    *input_data_sql;
+    size_t                  input_data_sql_len;
+    char                    *output_data_sql;
+    size_t                  output_data_sql_len;
     char                    extracted_values[ MAX_CDC_COLUMNS ][ MAX_COLUMN_NAME_LEN ];
     int                     extracted_values_len;
 } DB_SYSTEM_CDC_LOAD_QUERY;

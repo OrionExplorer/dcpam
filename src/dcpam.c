@@ -150,15 +150,18 @@ int DCPAM_load_configuration( const char* filename ) {
     
     cJSON* cfg_system_query_item_change_data_capture_load = NULL;
     cJSON* cfg_system_query_item_change_data_capture_load_inserted = NULL;
-    cJSON* cfg_system_query_item_change_data_capture_load_inserted_sql = NULL;
+    cJSON* cfg_system_query_item_change_data_capture_load_inserted_input_data_sql = NULL;
+    cJSON* cfg_system_query_item_change_data_capture_load_inserted_output_data_sql = NULL;
     cJSON* cfg_system_query_item_change_data_capture_load_inserted_extracted_values_array = NULL;
     cJSON* cfg_system_query_item_change_data_capture_load_inserted_extracted_values_item = NULL;
     cJSON* cfg_system_query_item_change_data_capture_load_deleted = NULL;
-    cJSON* cfg_system_query_item_change_data_capture_load_deleted_sql = NULL;
+    cJSON* cfg_system_query_item_change_data_capture_load_deleted_input_data_sql = NULL;
+    cJSON* cfg_system_query_item_change_data_capture_load_deleted_output_data_sql = NULL;
     cJSON* cfg_system_query_item_change_data_capture_load_deleted_extracted_values_array = NULL;
     cJSON* cfg_system_query_item_change_data_capture_load_deleted_extracted_values_item = NULL;
     cJSON* cfg_system_query_item_change_data_capture_load_modified = NULL;
-    cJSON* cfg_system_query_item_change_data_capture_load_modified_sql = NULL;
+    cJSON* cfg_system_query_item_change_data_capture_load_modified_input_data_sql = NULL;
+    cJSON* cfg_system_query_item_change_data_capture_load_modified_output_data_sql = NULL;
     cJSON* cfg_system_query_item_change_data_capture_load_modified_extracted_values_array = NULL;
     cJSON* cfg_system_query_item_change_data_capture_load_modified_extracted_values_item = NULL;
 
@@ -1074,29 +1077,48 @@ int DCPAM_load_configuration( const char* filename ) {
                             return FALSE;
                         }
                         /*
-                            change_data_capture.load.inserted.sql
+                            change_data_capture.load.inserted.input_data_sql
                         */
-                        cfg_system_query_item_change_data_capture_load_inserted_sql = cJSON_GetObjectItem( cfg_system_query_item_change_data_capture_load_inserted, "sql" );
-                        if( cfg_system_query_item_change_data_capture_load_inserted_sql == NULL ) {
-                            LOG_print( "ERROR: \"system[%d].queries[%d].change_data_capture.load.inserted.sql\" key not found.\n", i, j );
+                        cfg_system_query_item_change_data_capture_load_inserted_input_data_sql = cJSON_GetObjectItem( cfg_system_query_item_change_data_capture_load_inserted, "input_data_sql" );
+                        if( cfg_system_query_item_change_data_capture_load_inserted_input_data_sql == NULL ) {
+                            LOG_print( "ERROR: \"system[%d].queries[%d].change_data_capture.load.inserted.input_data_sql\" key not found.\n", i, j );
                             cJSON_Delete( config_json );
                             free( config_string ); config_string = NULL;
                             fclose( file );
                             return FALSE;
                         }
-                        str_len = strlen( cfg_system_query_item_change_data_capture_load_inserted_sql->valuestring );
-                        tmp_cdc.load.inserted.sql_len = str_len;
-                        tmp_cdc.load.inserted.sql = ( char * )SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
+                        str_len = strlen( cfg_system_query_item_change_data_capture_load_inserted_input_data_sql->valuestring );
+                        tmp_cdc.load.inserted.input_data_sql_len = str_len;
+                        tmp_cdc.load.inserted.input_data_sql = ( char * )SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
                         strncpy(
-                            tmp_cdc.load.inserted.sql,
-                            cfg_system_query_item_change_data_capture_load_inserted_sql->valuestring,
+                            tmp_cdc.load.inserted.input_data_sql,
+                            cfg_system_query_item_change_data_capture_load_inserted_input_data_sql->valuestring,
                             str_len
                         );
-                        /*tmp_cdc.load.inserted.sql = strdup( cfg_system_query_item_change_data_capture_load_inserted_sql->valuestring );*/
+
+                        /*
+                            change_data_capture.load.inserted.output_data_sql
+                        */
+                        cfg_system_query_item_change_data_capture_load_inserted_output_data_sql = cJSON_GetObjectItem( cfg_system_query_item_change_data_capture_load_inserted, "output_data_sql" );
+                        if( cfg_system_query_item_change_data_capture_load_inserted_output_data_sql == NULL ) {
+                            LOG_print( "ERROR: \"system[%d].queries[%d].change_data_capture.load.inserted.output_data_sql\" key not found.\n", i, j );
+                            cJSON_Delete( config_json );
+                            free( config_string ); config_string = NULL;
+                            fclose( file );
+                            return FALSE;
+                        }
+                        str_len = strlen( cfg_system_query_item_change_data_capture_load_inserted_output_data_sql->valuestring );
+                        tmp_cdc.load.inserted.output_data_sql_len = str_len;
+                        tmp_cdc.load.inserted.output_data_sql = ( char * )SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
+                        strncpy(
+                            tmp_cdc.load.inserted.output_data_sql,
+                            cfg_system_query_item_change_data_capture_load_inserted_output_data_sql->valuestring,
+                            str_len
+                        );
+
                         /*
                             change_data_capture.load.inserted.extracted_values
                         */
-
                         k = 0;
 
                         for( k = 0; k < MAX_CDC_COLUMNS; k++ ) {
@@ -1114,11 +1136,6 @@ int DCPAM_load_configuration( const char* filename ) {
                         for( k = 0; k < cJSON_GetArraySize( cfg_system_query_item_change_data_capture_load_inserted_extracted_values_array ); k++ ) {
                             cfg_system_query_item_change_data_capture_load_inserted_extracted_values_item = cJSON_GetArrayItem( cfg_system_query_item_change_data_capture_load_inserted_extracted_values_array, k );
                             snprintf( tmp_cdc.load.inserted.extracted_values[ k ], MAX_COLUMN_NAME_LEN, "%s", cfg_system_query_item_change_data_capture_load_inserted_extracted_values_item->valuestring );
-                            /*strncpy(
-                                tmp_cdc.load.inserted.extracted_values[ k ],
-                                cfg_system_query_item_change_data_capture_load_inserted_extracted_values_item->valuestring,
-                                MAX_COLUMN_NAME_LEN
-                            );*/
                             tmp_cdc.load.inserted.extracted_values_len++;
                         }
                         /*
@@ -1133,25 +1150,43 @@ int DCPAM_load_configuration( const char* filename ) {
                             return FALSE;
                         }
                         /*
-                            change_data_capture.load.deleted.sql
+                            change_data_capture.load.deleted.input_data_sql
                         */
-                        cfg_system_query_item_change_data_capture_load_deleted_sql = cJSON_GetObjectItem( cfg_system_query_item_change_data_capture_load_deleted, "sql" );
-                        if( cfg_system_query_item_change_data_capture_load_deleted_sql == NULL ) {
-                            LOG_print( "ERROR: \"system[%d].queries[%d].change_data_capture.load.deleted.sql\" key not found.\n", i, j );
+                        cfg_system_query_item_change_data_capture_load_deleted_input_data_sql = cJSON_GetObjectItem( cfg_system_query_item_change_data_capture_load_deleted, "input_data_sql" );
+                        if( cfg_system_query_item_change_data_capture_load_deleted_input_data_sql == NULL ) {
+                            LOG_print( "ERROR: \"system[%d].queries[%d].change_data_capture.load.deleted.input_data_sql\" key not found.\n", i, j );
                             cJSON_Delete( config_json );
                             free( config_string ); config_string = NULL;
                             fclose( file );
                             return FALSE;
                         }
-                        str_len = strlen( cfg_system_query_item_change_data_capture_load_deleted_sql->valuestring );
-                        tmp_cdc.load.deleted.sql_len = str_len;
-                        tmp_cdc.load.deleted.sql = ( char * )SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
+                        str_len = strlen( cfg_system_query_item_change_data_capture_load_deleted_input_data_sql->valuestring );
+                        tmp_cdc.load.deleted.input_data_sql_len = str_len;
+                        tmp_cdc.load.deleted.input_data_sql = ( char * )SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
                         strncpy(
-                            tmp_cdc.load.deleted.sql,
-                            cfg_system_query_item_change_data_capture_load_deleted_sql->valuestring,
+                            tmp_cdc.load.deleted.input_data_sql,
+                            cfg_system_query_item_change_data_capture_load_deleted_input_data_sql->valuestring,
                             str_len
                         );
-                        //tmp_cdc.load.deleted.sql = strdup( cfg_system_query_item_change_data_capture_load_deleted_sql->valuestring );
+                        /*
+                            change_data_capture.load.deleted.output_data_sql
+                        */
+                        cfg_system_query_item_change_data_capture_load_deleted_output_data_sql = cJSON_GetObjectItem( cfg_system_query_item_change_data_capture_load_deleted, "output_data_sql" );
+                        if( cfg_system_query_item_change_data_capture_load_deleted_output_data_sql == NULL ) {
+                            LOG_print( "ERROR: \"system[%d].queries[%d].change_data_capture.load.deleted.output_data_sql\" key not found.\n", i, j );
+                            cJSON_Delete( config_json );
+                            free( config_string ); config_string = NULL;
+                            fclose( file );
+                            return FALSE;
+                        }
+                        str_len = strlen( cfg_system_query_item_change_data_capture_load_deleted_output_data_sql->valuestring );
+                        tmp_cdc.load.deleted.output_data_sql_len = str_len;
+                        tmp_cdc.load.deleted.output_data_sql = ( char * )SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
+                        strncpy(
+                            tmp_cdc.load.deleted.output_data_sql,
+                            cfg_system_query_item_change_data_capture_load_deleted_output_data_sql->valuestring,
+                            str_len
+                        );
                         /*
                             change_data_capture.load.deleted.extracted_values
                         */
@@ -1170,11 +1205,6 @@ int DCPAM_load_configuration( const char* filename ) {
                         for( k = 0; k < cJSON_GetArraySize( cfg_system_query_item_change_data_capture_load_deleted_extracted_values_array ); k++ ) {
                             cfg_system_query_item_change_data_capture_load_deleted_extracted_values_item = cJSON_GetArrayItem( cfg_system_query_item_change_data_capture_load_deleted_extracted_values_array, k );
                             snprintf( tmp_cdc.load.deleted.extracted_values[ k ], MAX_COLUMN_NAME_LEN, "%s", cfg_system_query_item_change_data_capture_load_deleted_extracted_values_item->valuestring );
-                            /*strncpy(
-                                tmp_cdc.load.deleted.extracted_values[ k ],
-                                cfg_system_query_item_change_data_capture_load_deleted_extracted_values_item->valuestring,
-                                MAX_COLUMN_NAME_LEN
-                            );*/
                             tmp_cdc.load.deleted.extracted_values_len++;
                         }
                         /*
@@ -1189,25 +1219,43 @@ int DCPAM_load_configuration( const char* filename ) {
                             return FALSE;
                         }
                         /*
-                            change_data_capture.load.modified.sql
+                            change_data_capture.load.modified.input_data_sql
                         */
-                        cfg_system_query_item_change_data_capture_load_modified_sql = cJSON_GetObjectItem( cfg_system_query_item_change_data_capture_load_modified, "sql" );
-                        if( cfg_system_query_item_change_data_capture_load_modified_sql == NULL ) {
-                            LOG_print( "ERROR: \"system[%d].queries[%d].change_data_capture.load.modified.sql\" key not found.\n", i, j );
+                        cfg_system_query_item_change_data_capture_load_modified_input_data_sql = cJSON_GetObjectItem( cfg_system_query_item_change_data_capture_load_modified, "input_data_sql" );
+                        if( cfg_system_query_item_change_data_capture_load_modified_input_data_sql == NULL ) {
+                            LOG_print( "ERROR: \"system[%d].queries[%d].change_data_capture.load.modified.input_data_sql\" key not found.\n", i, j );
                             cJSON_Delete( config_json );
                             free( config_string ); config_string = NULL;
                             fclose( file );
                             return FALSE;
                         }
-                        str_len = strlen( cfg_system_query_item_change_data_capture_load_modified_sql->valuestring );
-                        tmp_cdc.load.modified.sql_len = str_len;
-                        tmp_cdc.load.modified.sql = ( char * )SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
+                        str_len = strlen( cfg_system_query_item_change_data_capture_load_modified_input_data_sql->valuestring );
+                        tmp_cdc.load.modified.input_data_sql_len = str_len;
+                        tmp_cdc.load.modified.input_data_sql = ( char * )SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
                         strncpy(
-                            tmp_cdc.load.modified.sql,
-                            cfg_system_query_item_change_data_capture_load_modified_sql->valuestring,
+                            tmp_cdc.load.modified.input_data_sql,
+                            cfg_system_query_item_change_data_capture_load_modified_input_data_sql->valuestring,
                             str_len
                         );
-                        /*tmp_cdc.load.modified.sql = strdup( cfg_system_query_item_change_data_capture_load_modified_sql->valuestring );*/
+                        /*
+                            change_data_capture.load.modified.output_data_sql
+                        */
+                        cfg_system_query_item_change_data_capture_load_modified_output_data_sql = cJSON_GetObjectItem( cfg_system_query_item_change_data_capture_load_modified, "output_data_sql" );
+                        if( cfg_system_query_item_change_data_capture_load_modified_output_data_sql == NULL ) {
+                            LOG_print( "ERROR: \"system[%d].queries[%d].change_data_capture.load.modified.output_data_sql\" key not found.\n", i, j );
+                            cJSON_Delete( config_json );
+                            free( config_string ); config_string = NULL;
+                            fclose( file );
+                            return FALSE;
+                        }
+                        str_len = strlen( cfg_system_query_item_change_data_capture_load_modified_output_data_sql->valuestring );
+                        tmp_cdc.load.modified.output_data_sql_len = str_len;
+                        tmp_cdc.load.modified.output_data_sql = ( char * )SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
+                        strncpy(
+                            tmp_cdc.load.modified.output_data_sql,
+                            cfg_system_query_item_change_data_capture_load_modified_output_data_sql->valuestring,
+                            str_len
+                        );
                         /*
                             change_data_capture.load.modified.extracted_values
                         */
@@ -1226,12 +1274,6 @@ int DCPAM_load_configuration( const char* filename ) {
                         for( k = 0; k < cJSON_GetArraySize( cfg_system_query_item_change_data_capture_load_modified_extracted_values_array ); k++ ) {
                             cfg_system_query_item_change_data_capture_load_modified_extracted_values_item = cJSON_GetArrayItem( cfg_system_query_item_change_data_capture_load_modified_extracted_values_array, k );
                             snprintf( tmp_cdc.load.modified.extracted_values[ k ], MAX_COLUMN_NAME_LEN, "%s", cfg_system_query_item_change_data_capture_load_modified_extracted_values_item->valuestring );
-                            /*strncpy(
-                                tmp_cdc.load.modified.extracted_values[ k ],
-                                //tmp_extracted_modified_values[ k ],
-                                cfg_system_query_item_change_data_capture_load_modified_extracted_values_item->valuestring,
-                                MAX_COLUMN_NAME_LEN
-                            );*/
                             tmp_cdc.load.modified.extracted_values_len++;
                         }
 
@@ -1249,11 +1291,6 @@ int DCPAM_load_configuration( const char* filename ) {
                         for( k = 0; k < cJSON_GetArraySize( cfg_system_query_item_data_types ); k++ ) {
                             cfg_system_query_item_data_types_name = cJSON_GetArrayItem( cfg_system_query_item_data_types, k );
                             snprintf( tmp_data_types[ k ], SMALL_BUFF_SIZE, "%s", cfg_system_query_item_data_types_name->valuestring );
-                            /*strncpy(
-                                tmp_data_types[ k ],
-                                cfg_system_query_item_data_types_name->valuestring,
-                                SMALL_BUFF_SIZE
-                            );*/
                             tmp_data_types_len++;
                         }
                         DATABASE_SYSTEM_QUERY_add(
