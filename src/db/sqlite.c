@@ -104,11 +104,9 @@ int SQLITE_exec(
                         dst_result->records[ row_count ].fields[ i ].size = ( unsigned long )data_size;
                         dst_result->records[ row_count ].fields[ i ].value = SAFECALLOC( ( data_size + 1 ), sizeof( char ), __FILE__, __LINE__ );
                         memcpy( dst_result->records[ row_count ].fields[ i ].value, sqlite3_column_blob( stmt, i ), data_size );
-                        LOG_print( "%s (%d), ", sqlite3_column_blob( stmt, i ), data_size );
                     }
-                    LOG_print( "\n" );
-                    row_count++;
 
+                    row_count++;
                 }
 
                 dst_result->field_count = field_count;
@@ -119,7 +117,6 @@ int SQLITE_exec(
                     sqlite3_finalize( stmt );
                     pthread_mutex_unlock( &db_exec_mutex );
                     return 0;
-
                 }
             }
 

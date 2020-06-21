@@ -6,7 +6,8 @@
 [✗] New data sources:
 	- [✓] MariaDB
 	- [✓] Oracle Database
-	- [✗] SQLite
+	- [✓] SQLite
+	- [✗] MongoDB
 	- [✗] CSV
 	- [✗] URL
 	- [✗] JSON

@@ -51,6 +51,9 @@ system.o: src/core/db/system.c
 extract.o: src/core/db/cdc/extract.c
 	$(CC) -c src/core/db/cdc/extract.c $(CFLAGS) $(ORACLE_INC)
 
+stage.o: src/core/db/cdc/stage.c
+	$(CC) -c src/core/db/cdc/stage.c $(CFLAGS) $(ORACLE_INC)
+
 transform.o: src/core/db/cdc/transform.c
 	$(CC) -c src/core/db/cdc/transform.c $(CFLAGS) $(ORACLE_INC)
 
@@ -78,6 +81,6 @@ memory.o: src/utils/memory.c
 strings.o: src/utils/strings.c
 	$(CC) -c src/utils/strings.c $(CFLAGS)
 
-dcpam: dcpam.o mysql.o mariadb.o odbc.o postgresql.o log.o time.o filesystem.o cJSON.o sqlite3.o memory.o db.o worker.o system.o extract.o transform.o load.o strings.o oracle.o sqlite.o
-	$(CC) mysql.o mariadb.o odbc.o postgresql.o dcpam.o log.o time.o filesystem.o cJSON.o sqlite3.o memory.o db.o worker.o system.o extract.o transform.o load.o strings.o oracle.o sqlite.o -o dcpam $(LIBS)
+dcpam: dcpam.o mysql.o mariadb.o odbc.o postgresql.o log.o time.o filesystem.o cJSON.o sqlite3.o memory.o db.o worker.o system.o extract.o stage.o transform.o load.o strings.o oracle.o sqlite.o
+	$(CC) mysql.o mariadb.o odbc.o postgresql.o dcpam.o log.o time.o filesystem.o cJSON.o sqlite3.o memory.o db.o worker.o system.o extract.o stage.o transform.o load.o strings.o oracle.o sqlite.o -o dcpam $(LIBS)
 	rm *.o

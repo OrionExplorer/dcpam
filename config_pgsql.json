@@ -46,6 +46,23 @@
 						"secondary_db_sql" : "SELECT t.id AS system_object_id, ta.id AS system_worklog_id, t.customer_id AS system_customer, ta.create_by AS system_agent_id, ta.time_unit AS system_accounted_time, ta.create_time AS system_created FROM time_accounting ta LEFT JOIN ticket t ON t.id = ta.ticket_id WHERE ta.change_time > '%s'"
 					}
 				},
+				"comment#00" : "##################################################################################################",
+				"comment#01" : "# Staging Area configuration - a temporary tables, where extracted data is stored and ready to Transform process.",
+				"comment#02" : "##################################################################################################",
+				"stage" : {
+					"inserted" : {
+						"sql" : "INSERT INTO stage_accounted_time (system_object_id, system_worklog_id, system_customer, system_agent_id, system_accounted_time, system_created, is_valid, system) VALUES (?, ?, '?', '?', ?, '?', 1, 'OTRS')",
+						"extracted_values" : ["system_object_id", "system_worklog_id", "system_customer", "system_agent_id", "system_accounted_time", "system_created"]
+					},
+					"deleted" : {
+						"sql" : "UPDATE stage_accounted_time SET is_valid = 0 WHERE system_worklog_id = ?",
+						"extracted_values" : ["system_worklog_id"]
+					},
+					"modified" : {
+						"sql" : "UPDATE stage_accounted_time SET system_object_id = ?, system_worklog_id = ?, system_customer = ?, system_agent_id = ?, system_accounted_time = ?, system_created = ? WHERE system_worklog_id = ?",
+						"extracted_values" : ["system_object_id", "system_worklog_id", "system_customer", "system_agent_id", "system_accounted_time", "system_created", "system_worklog_id"]
+					}
+				},
 				"transform" : {
 					"comment#00" : "##################################################################################################",
 					"comment#01" : "# Yet to be decided how to handle this.",

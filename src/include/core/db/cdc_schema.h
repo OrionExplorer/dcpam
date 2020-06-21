@@ -25,6 +25,24 @@ typedef struct DB_SYSTEM_CDC_EXTRACT {
 /******************************************************************************/
 
 /*
+    config.json => system[].queries[].change_data_capture.stage
+*/
+typedef struct DB_SYSTEM_CDC_STAGE_QUERY {
+    char                    *sql;
+    size_t                  sql_len;
+    char                    extracted_values[ MAX_CDC_COLUMNS ][ MAX_COLUMN_NAME_LEN ];
+    int                     extracted_values_len;
+} DB_SYSTEM_CDC_STAGE_QUERY;
+
+typedef struct DB_SYSTEM_CDC_STAGE {
+    DB_SYSTEM_CDC_STAGE_QUERY        inserted;
+    DB_SYSTEM_CDC_STAGE_QUERY        deleted;
+    DB_SYSTEM_CDC_STAGE_QUERY        modified;
+} DB_SYSTEM_CDC_STAGE;
+
+/******************************************************************************/
+
+/*
     config.json => system[].queries[].change_data_capture.transform
 */
 typedef struct DB_SYSTEM_CDC_TRANSFORM_QUERY {
@@ -63,6 +81,7 @@ typedef struct DB_SYSTEM_CDC_LOAD {
 */
 typedef struct DB_SYSTEM_CDC {
     DB_SYSTEM_CDC_EXTRACT   extract;
+    DB_SYSTEM_CDC_STAGE     stage;
     DB_SYSTEM_CDC_TRANSFORM transform;
     DB_SYSTEM_CDC_LOAD      load;
 } DB_SYSTEM_CDC;
