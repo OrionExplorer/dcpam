@@ -32,8 +32,9 @@ void CDC_StageGeneric( DB_SYSTEM_CDC_STAGE *stage, DB_SYSTEM_CDC_STAGE_QUERY *st
             q_formats = SAFEMALLOC( (stage_element->extracted_values_len+1) * sizeof( int ), __FILE__, __LINE__ );
 
             /* Get defined values only based on "extracted_values" in config.json */
-            for( int j = 0; j < data->field_count; j++ ) {
-                for( int k = 0; k < stage_element->extracted_values_len; k++ ) {
+            for( int k = 0; k < stage_element->extracted_values_len; k++ ) {
+                for( int j = 0; j < data->field_count; j++ ) {
+
                     if( strncmp( stage_element->extracted_values[ k ], data->records[ i ].fields[ j ].label, MAX_COLUMN_NAME_LEN ) == 0 ) {
                         if( data->records[ i ].fields[ j ].size > 0 ) {
                             q_values[ q_values_len ] = SAFECALLOC( (data->records[ i ].fields[ j ].size + 1), sizeof **q_values, __FILE__, __LINE__ );

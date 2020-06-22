@@ -228,8 +228,8 @@ int DB_QUERY_format( const char* src, char **dst, size_t *dst_length, const char
         src_params_count++;
     }
     /* Check if "?" count is equal to params_count */
-    if( src_params_count != params_count ) {
-        LOG_print( "Error: params_count and SQL template variables does not match!\n" );
+    if( src_params_count > params_count ) {
+        LOG_print( "Error: too few extracted_values! %d are set, but %d are provided!\n", src_params_count, params_count );
         LOG_print( "SQL: %s\n", src );
         return FALSE;
     }

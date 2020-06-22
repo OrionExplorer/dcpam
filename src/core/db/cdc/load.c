@@ -49,8 +49,8 @@ void CDC_LoadGeneric( DB_SYSTEM_CDC_LOAD *load, DB_SYSTEM_CDC_LOAD_QUERY *load_e
             q_formats = SAFEMALLOC( (load_element->extracted_values_len+1) * sizeof( int ), __FILE__, __LINE__ );
 
             /* Get defined values only based on "extracted_values" in config.json */
-            for( int j = 0; j < stage_data.field_count; j++ ) {
-                for( int k = 0; k < load_element->extracted_values_len; k++ ) {
+            for( int k = 0; k < load_element->extracted_values_len; k++ ) {
+                for( int j = 0; j < stage_data.field_count; j++ ) {
                     if( strncmp( load_element->extracted_values[ k ], stage_data.records[ i ].fields[ j ].label, MAX_COLUMN_NAME_LEN ) == 0 ) {
                         if( stage_data.records[ i ].fields[ j ].size > 0 ) {
                             q_values[ q_values_len ] = SAFECALLOC( ( stage_data.records[ i ].fields[ j ].size + 1), sizeof **q_values, __FILE__, __LINE__ );

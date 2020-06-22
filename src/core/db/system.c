@@ -227,29 +227,29 @@ void DATABASE_SYSTEM_QUERY_add(
 
     if( verbose > 0 ) LOG_print( "\n" );
     
-    if( verbose > 0 ) LOG_print("\t· load\n\t\t·inserted\n\t\t\t· input_data_sql: \"%.70s(...)\"\n", cdc.load.inserted.input_data_sql );
+    if( verbose > 0 ) LOG_print("\t· load\n\t\t·inserted\n\t\t\t·input_data_sql: \"%.70s(...)\"\n", cdc.load.inserted.input_data_sql );
     if( verbose > 0 ) LOG_print("\t\t\t·extracted_values: " );
     for( i = 0; i < cdc.load.inserted.extracted_values_len; i++ ) {
         if( verbose > 0 ) LOG_print("'%s', ", cdc.load.inserted.extracted_values[i]);
     }
     if( verbose > 0 ) LOG_print("\n");
-    if( verbose > 0 ) LOG_print( "\t· load\n\t\t·inserted\n\t\t\t· output_data_sql: \"%.70s(...)\"\n", cdc.load.inserted.output_data_sql );
+    if( verbose > 0 ) LOG_print( "\t\t\t·output_data_sql: \"%.70s(...)\"\n", cdc.load.inserted.output_data_sql );
 
-    if( verbose > 0 ) LOG_print("\t\t·deleted\n\t\t\t· input_data_sql: \"%.70s(...)\"\n", cdc.load.deleted.input_data_sql );
+    if( verbose > 0 ) LOG_print("\t\t·deleted\n\t\t\t·input_data_sql: \"%.70s(...)\"\n", cdc.load.deleted.input_data_sql );
     if( verbose > 0 ) LOG_print("\t\t\t·extracted_values: " );
     for( i = 0; i < cdc.load.deleted.extracted_values_len; i++ ) {
         if( verbose > 0 ) LOG_print("'%s', ", cdc.load.deleted.extracted_values[i]);
     }
     if( verbose > 0 ) LOG_print("\n");
-    if( verbose > 0 ) LOG_print( "\t\t·deleted\n\t\t\t· output_data_sql: \"%.70s(...)\"\n", cdc.load.deleted.output_data_sql );
+    if( verbose > 0 ) LOG_print( "\t\t\t·output_data_sql: \"%.70s(...)\"\n", cdc.load.deleted.output_data_sql );
 
-    if( verbose > 0 ) LOG_print("\t\t·modified\n\t\t\t· input_data_sql: \"%.70s(...)\"\n", cdc.load.modified.input_data_sql );
+    if( verbose > 0 ) LOG_print("\t\t·modified\n\t\t\t·input_data_sql: \"%.70s(...)\"\n", cdc.load.modified.input_data_sql );
     if( verbose > 0 ) LOG_print("\t\t\t·extracted_values: " );
     for( i = 0; i < cdc.load.modified.extracted_values_len; i++ ) {
         if( verbose > 0 ) LOG_print("'%s', ", cdc.load.modified.extracted_values[i]);
     }
     if( verbose > 0 ) LOG_print("\n");
-    if( verbose > 0 ) LOG_print( "\t\t·modified\n\t\t\t· output_data_sql: \"%.70s(...)\"\n", cdc.load.modified.output_data_sql );
+    if( verbose > 0 ) LOG_print( "\t\t\t·output_data_sql: \"%.70s(...)\"\n", cdc.load.modified.output_data_sql );
 
     dst->data_types_len = data_types_len;
     for( i = 0; i < data_types_len; i++ ) {

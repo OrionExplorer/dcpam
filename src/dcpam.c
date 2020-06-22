@@ -1348,8 +1348,8 @@ int DCPAM_load_configuration( const char* filename ) {
 
 
 int main( int argc, char** argv ) {
-
     char        config_file[ MAX_PATH_LENGTH + 1 ];
+
     signal( SIGINT, (__sighandler_t)&app_terminate );
 #ifndef _WIN32
     signal( SIGPIPE, SIG_IGN );

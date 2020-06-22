@@ -103,8 +103,8 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
         LOG_print("\nDB_WORKER_watcher for \"%s\" started...\n", DATA_SYSTEM->name );
 
         for( i = 0; i < DATA_SYSTEM->queries_len; i++ ) {
-            LOG_print( "\t· Query #%d: %s\n", i + 1, DATA_SYSTEM->queries[ i ].name );
 
+            LOG_print( "\t· Query #%d: %s\n", i + 1, DATA_SYSTEM->queries[ i ].name );
 
             DB_CDC_ExtractInserted( &DATA_SYSTEM->queries[ i ].change_data_capture.extract, &DATA_SYSTEM->DB, &inserted_data );
             DB_CDC_StageInserted( &DATA_SYSTEM->queries[ i ].change_data_capture.stage, &DATA_SYSTEM->DB, &inserted_data );
@@ -121,7 +121,7 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
             DB_CDC_ExtractModified( &DATA_SYSTEM->queries[ i ].change_data_capture.extract, &DATA_SYSTEM->DB, &modified_data );
             DB_CDC_StageModified( &DATA_SYSTEM->queries[ i ].change_data_capture.stage, &DATA_SYSTEM->DB, &modified_data );
             DB_CDC_TransformModified( &DATA_SYSTEM->queries[ i ].change_data_capture.transform, &DATA_SYSTEM->DB, &modified_data );
-            //DB_CDC_LoadModified( &DATA_SYSTEM->queries[ i ].change_data_capture.load, &DATA_SYSTEM->DB, &modified_data );
+            DB_CDC_LoadModified( &DATA_SYSTEM->queries[ i ].change_data_capture.load, &DATA_SYSTEM->DB, &modified_data );
             DB_QUERY_free( &modified_data );
         }
 
