@@ -142,6 +142,7 @@ int DCPAM_load_configuration( const char* filename ) {
     cJSON* cfg_system_query_item_change_data_capture_stage_modified_sql = NULL;
     cJSON* cfg_system_query_item_change_data_capture_stage_modified_extracted_values_array = NULL;
     cJSON* cfg_system_query_item_change_data_capture_stage_modified_extracted_values_item = NULL;
+    cJSON* cfg_system_query_item_change_data_capture_stage_reset = NULL;
     
     cJSON* cfg_system_query_item_change_data_capture_transform = NULL;
     cJSON* cfg_system_query_item_change_data_capture_transform_inserted = NULL;
@@ -818,7 +819,6 @@ int DCPAM_load_configuration( const char* filename ) {
                             cfg_system_query_item_change_data_capture_extract_deleted_primary_db->valuestring,
                             str_len
                         );
-                        /*tmp_cdc.extract.deleted.primary_db = strdup( cfg_system_query_item_change_data_capture_extract_deleted_primary_db->valuestring );*/
                         /*
                             change_data_capture.extract.deleted.primary_db_sql
                         */
@@ -838,7 +838,6 @@ int DCPAM_load_configuration( const char* filename ) {
                             cfg_system_query_item_change_data_capture_extract_deleted_primary_db_sql->valuestring,
                             str_len
                         );
-                        /*tmp_cdc.extract.deleted.primary_db_sql = strdup( cfg_system_query_item_change_data_capture_extract_deleted_primary_db_sql->valuestring );*/
                         /*
                             change_data_capture.extract.deleted.secondary_db
                         */
@@ -1043,6 +1042,25 @@ int DCPAM_load_configuration( const char* filename ) {
                             snprintf( tmp_cdc.stage.modified.extracted_values[ k ], MAX_COLUMN_NAME_LEN, "%s", cfg_system_query_item_change_data_capture_stage_modified_extracted_values_item->valuestring );
                             tmp_cdc.stage.modified.extracted_values_len++;
                         }
+
+                        /*
+                            change_data_capture.stage.reset
+                        */
+                        cfg_system_query_item_change_data_capture_stage_reset = cJSON_GetObjectItem( cfg_system_query_item_change_data_capture_stage, "reset" );
+                        if( cfg_system_query_item_change_data_capture_stage_reset == NULL ) {
+                            LOG_print( "ERROR: \"system[%d].queries[%d].change_data_capture.stage.reset\" key not found.\n", i, j );
+                            cJSON_Delete( config_json );
+                            free( config_string ); config_string = NULL;
+                            fclose( file );
+                            return FALSE;
+                        } 
+                        str_len = strlen( cfg_system_query_item_change_data_capture_stage_reset->valuestring );
+                        tmp_cdc.stage.reset = SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
+                        strncpy(
+                            tmp_cdc.stage.reset,
+                            cfg_system_query_item_change_data_capture_stage_reset->valuestring,
+                            str_len
+                        );
                         /********************************************/
 
                         /*

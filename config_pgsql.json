@@ -62,7 +62,8 @@
 					"modified" : {
 						"sql" : "INSERT INTO stage_accounted_time (system_object_id, system_worklog_id, system_customer, system_agent_id, system_accounted_time, system_created, is_valid, system) VALUES (?, ?, '?', '?', ?, '?', 1, 'OTRS')",
 						"extracted_values" : ["system_object_id", "system_worklog_id", "system_customer", "system_agent_id", "system_accounted_time", "system_created"]
-					}
+					},
+					"reset" : "DELETE FROM stage_accounted_time"
 				},
 				"transform" : {
 					"comment#00" : "##################################################################################################",
@@ -136,14 +137,14 @@
 				"type" : 1,
 				"internal" : false,
 				"condition" : "system",
-				"sql" : "SELECT customer, accounted_time, created, system FROM accounted_time WHERE system = '%s' WHERE is_valid = 1"
+				"sql" : "SELECT customer, accounted_time, created, system FROM accounted_time WHERE system = '%s' AND is_valid = 1"
 			}, {
 				"name" : "GET_CUSTOMER_DATA",
 				"description" : "Get all data by customer",
 				"type" : 1,
 				"internal" : false,
 				"condition" : "system_customer",
-				"sql" : "SELECT customer, accounted_time, created, system FROM accounted_time WHERE customer = '%s' WHERE is_valid = 1"
+				"sql" : "SELECT customer, accounted_time, created, system FROM accounted_time WHERE customer = '%s' AND is_valid = 1"
 			}]
 		}]
 	}

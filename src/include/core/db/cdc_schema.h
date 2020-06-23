@@ -38,6 +38,7 @@ typedef struct DB_SYSTEM_CDC_STAGE {
     DB_SYSTEM_CDC_STAGE_QUERY        inserted;
     DB_SYSTEM_CDC_STAGE_QUERY        deleted;
     DB_SYSTEM_CDC_STAGE_QUERY        modified;
+    char                             *reset;
 } DB_SYSTEM_CDC_STAGE;
 
 /******************************************************************************/
