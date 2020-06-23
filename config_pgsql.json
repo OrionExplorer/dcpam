@@ -6,7 +6,7 @@
 			"ip" : "172.17.0.199",
 			"port" : 5432,
 			"driver" : 1,
-			"driver_comment" : "Driver types: 1=PostgreSQL, 2=MySQL, 3=MariaDB, 4=ODBC 5=Oracle Database",
+			"driver_comment" : "Driver types: 1=PostgreSQL, 2=MySQL, 3=MariaDB, 4=ODBC 5=Oracle Database, 6=SQLite",
 			"user" : "otrs",
 			"db" : "otrs",
 			"connection_string" : "dbname=%s host=%s port=%d user=%s password=%s",
@@ -20,12 +20,12 @@
 			"change_data_capture" : {
 				"extract" : {
 					"comment#00" : "##################################################################################################",
-					"comment#01" : "# Sample config below works as \"SELECT id FROM secondary_db_sql WHERE id NOT IN (SELECT id FROM primary_db)\".",
-					"comment#02" : "# Another example is \"SELECT id FROM secondary_db_sql WHERE created > SELECT MAX(chaned) FROM primary_db\".",
+					"comment#01" : "# Sample config below for inserted records works as \"SELECT id FROM secondary_db WHERE id NOT IN (SELECT id FROM primary_db)\".",
+					"comment#02" : "# Another example is \"SELECT id FROM secondary_db WHERE created > SELECT MAX(chaned) FROM primary_db\" for deleted records.",
 					"comment#03" : "# In Extract subprocess, only one field name (column) is allowed in \"SELECT ... FROM primary_db\" query.",
 					"comment#04" : "# In Extract subprocess, query may finish with 0, 1 or many result rows.",
 					"comment#05" : "# The \"%s\" format specifier is used by DCPAM to insert results from primary_db query into secondary_db query SQL.",
-					"comment#06" : "# Only SELECT queries are allowed in *_sql commands.",
+					"comment#06" : "# Only SELECT queries are allowed in \"*_sql\" commands.",
 					"comment#07" : "##################################################################################################",
 					"inserted" : {
 						"primary_db" : "dcpam",
@@ -37,7 +37,7 @@
 						"primary_db" : "this",
 						"primary_db_sql" : "SELECT id AS system_worklog_id FROM time_accounting",
 						"secondary_db" : "dcpam",
-						"secondary_db_sql" : "SELECT system_worklog_id FROM accounted_time WHERE is_valid = 1 AND system_worklog_id NOT IN (%s)"
+						"secondary_db_sql" : "SELECT system_object_id, system_worklog_id, system_customer, system_agent_id, system_accounted_time, system_created, system FROM accounted_time WHERE is_valid = 1 AND system_worklog_id NOT IN (%s)"
 					},
 					"modified" : {
 						"primary_db" : "dcpam",
@@ -48,19 +48,20 @@
 				},
 				"comment#00" : "##################################################################################################",
 				"comment#01" : "# Staging Area configuration - a temporary tables, where extracted data is stored and ready to Transform process.",
-				"comment#02" : "##################################################################################################",
+				"comment#02" : "# There is no restriction on the query type in \"sql\" commands.",
+				"comment#03" : "##################################################################################################",
 				"stage" : {
 					"inserted" : {
 						"sql" : "INSERT INTO stage_accounted_time (system_object_id, system_worklog_id, system_customer, system_agent_id, system_accounted_time, system_created, is_valid, system) VALUES (?, ?, '?', '?', ?, '?', 1, 'OTRS')",
 						"extracted_values" : ["system_object_id", "system_worklog_id", "system_customer", "system_agent_id", "system_accounted_time", "system_created"]
 					},
 					"deleted" : {
-						"sql" : "UPDATE stage_accounted_time SET is_valid = 0 WHERE system_worklog_id = ?",
-						"extracted_values" : ["system_worklog_id"]
+						"sql" : "INSERT INTO stage_accounted_time (system_object_id, system_worklog_id, system_customer, system_agent_id, system_accounted_time, system_created, is_valid, system) VALUES (?, ?, '?', '?', ?, '?', 0, 'OTRS')",
+						"extracted_values" : ["system_object_id", "system_worklog_id", "system_customer", "system_agent_id", "system_accounted_time", "system_created"]
 					},
 					"modified" : {
-						"sql" : "UPDATE stage_accounted_time SET system_object_id = ?, system_worklog_id = ?, system_customer = '?', system_agent_id = ?, system_accounted_time = ?, system_created = '?' WHERE system_worklog_id = ?",
-						"extracted_values" : ["system_object_id", "system_worklog_id", "system_customer", "system_agent_id", "system_accounted_time", "system_created", "system_worklog_id"]
+						"sql" : "INSERT INTO stage_accounted_time (system_object_id, system_worklog_id, system_customer, system_agent_id, system_accounted_time, system_created, is_valid, system) VALUES (?, ?, '?', '?', ?, '?', 1, 'OTRS')",
+						"extracted_values" : ["system_object_id", "system_worklog_id", "system_customer", "system_agent_id", "system_accounted_time", "system_created"]
 					}
 				},
 				"transform" : {
@@ -95,9 +96,9 @@
 						"output_data_sql" : "UPDATE accounted_time SET is_valid = 0 WHERE system_worklog_id = '?'"
 					},
 					"modified" : {
-						"input_data_sql" : "SELECT system_object_id, system_worklog_id, system_customer, system_agent_id, system_accounted_time, system_created FROM stage_accounted_time",
-						"extracted_values" : ["system_object_id", "system_worklog_id", "system_customer", "system_agent_id", "system_accounted_time", "system_created", "system_worklog_id"],
-						"output_data_sql" : "UPDATE accounted_time SET system_object_id = ?, system_worklog_id = ?, system_customer = '?', system_agent_id = ?, system_accounted_time = ?, system_created = '?' WHERE system_worklog_id = ?"
+						"input_data_sql" : "SELECT system_object_id, system_worklog_id, system_customer, system_agent_id, system_accounted_time, system_created, is_valid FROM stage_accounted_time",
+						"extracted_values" : ["system_object_id", "system_worklog_id", "system_customer", "system_agent_id", "system_accounted_time", "system_created", "is_valid", "system_worklog_id"],
+						"output_data_sql" : "UPDATE accounted_time SET system_object_id = ?, system_worklog_id = ?, system_customer = '?', system_agent_id = '?', system_accounted_time = ?, system_created = '?', is_valid = ? WHERE system_worklog_id = ?"
 					}
 				}
 			}
@@ -110,7 +111,7 @@
 			"ip" : "127.0.0.1",
 			"port" : 5432,
 			"driver" : 1,
-			"driver_comment" : "Driver types: 1=PostgreSQL, 2=MySQL, 3=MariaDB, 4=ODBC 5=Oracle Database",
+			"driver_comment" : "Driver types: 1=PostgreSQL, 2=MySQL, 3=MariaDB, 4=ODBC 5=Oracle Database, 6=SQLite",
 			"connection_string" : "dbname=%s host=%s port=%d user=%s password=%s",
 			"user" : "dcpam",
 			"password" : "tantive-4",

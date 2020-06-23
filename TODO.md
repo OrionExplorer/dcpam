@@ -7,6 +7,7 @@
 	* [x] Rebuild configuration loading for Stage and Load.
 	* [x] Rebuild DB_WORKER to support Staging Area.
 	* [ ] Remove processed records from Staging Area after successful Load.
+* [ ] Check Stage and Load subprocesses corectness action-wise.
 * [ ] Rebuild DCPAM architecture to store each fetched record directly into Staging Area. That would completely remove memory overhead during Extract process.
 	* [ ] DB_exec must support callback function called with each fetched row of data
 * [ ] Transform subprocess (https://en.wikipedia.org/wiki/Extract,_transform,_load#Transform):

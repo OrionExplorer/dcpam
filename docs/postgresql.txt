@@ -13,7 +13,7 @@ CREATE TABLE accounted_time (
 	system_created TIMESTAMP NOT NULL,
 	system VARCHAR(64) NOT NULL,
 	is_valid SMALLINT NOT NULL,
-	changed TIMESTAMP NOT NULL
+	changed TIMESTAMP NOT NULL DEFAULT current_timestamp
 );
 
 CREATE TABLE stage_accounted_time (
@@ -26,7 +26,7 @@ CREATE TABLE stage_accounted_time (
 	system_created TIMESTAMP NOT NULL,
 	system VARCHAR(64) NOT NULL,
 	is_valid SMALLINT NOT NULL,
-	changed TIMESTAMP NOT NULL
+	changed TIMESTAMP NOT NULL DEFAULT current_timestamp
 );
 
 INSERT INTO accounted_time(system_object_id, system_worklog_id, system_customer, system_agent_id, system_accounted_time, system_created, system, is_valid, changed) VALUES (345, 1274, 'Company Ltd.', 'm.kelar', 35.00, '2020-05-14 13:22:41.653766', 'OTRS', 1, '2020-05-19 13:50:54.434662');
