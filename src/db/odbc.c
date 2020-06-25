@@ -119,7 +119,10 @@ int ODBC_exec(
     const int              params_count,
     const int              *param_lengths,
     const int              *param_formats,
-    const char* const      *param_types
+    const char* const      *param_types,
+    qec* query_exec_callback,
+    void* data_ptr1,
+    void* data_ptr2
 ) {
     SQLHSTMT        stmt;
     SQLRETURN       retcode;
@@ -235,6 +238,8 @@ int ODBC_exec(
                     if( dst_result->records != NULL ) {
                         tmp_records = dst_result->records;
                         dst_result->records[ row_count ].fields = ( DB_FIELD* )SAFEMALLOC( num_columns * sizeof( DB_FIELD ), __FILE__, __LINE__ );
+                        dst_result->records[ row_count ].field_count = num_columns;
+
                         for( int k = 0; k < num_columns; k++ ) {
                             if( column_data_len[ k ] != SQL_NULL_DATA ) {
                                 strncpy( dst_result->records[ row_count ].fields[ k ].label, (const char *)column_name[ k ], MAX_COLUMN_NAME_LEN );

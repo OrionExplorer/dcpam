@@ -16,13 +16,23 @@ void DB_QUERY_init( DB_QUERY *db_query ) {
     }
 }
 
-char* concatenate( void* varA, int tamA, void* varB, int tamB ) {
-    char* result = malloc( tamA + tamB );
+void DB_QUERY_record_free( DB_RECORD* record ) {
 
-    memcpy( result, varA, tamA );
-    memcpy( result + tamA, varB, tamB );
+    if( record ) {
+        for( int j = 0; j < record->field_count; j++ ) {
+            if( record->fields[ j ].value != NULL ) {
+                free( record->fields[ j ].value ); record->fields[ j ].value = NULL;
+            }
+        }
 
-    return result;
+        if( record->fields != NULL ) {
+            free( record->fields ); record->fields = NULL;
+        }
+
+        record->field_count = 0;
+
+        free( record ); record = NULL;
+    }
 }
 
 void DB_QUERY_free( DB_QUERY* db_query ) {
@@ -36,6 +46,10 @@ void DB_QUERY_free( DB_QUERY* db_query ) {
 
         if( db_query->row_count > 0 && db_query->field_count > 0 ) {
             for( int i = 0; i < db_query->row_count; i++ ) {
+
+                //DB_QUERY_record_free( &db_query->records[ i ] );
+                db_query->records[ i ].field_count = 0;
+
                 for( int j = 0; j < db_query->field_count; j++ ) {
                     if( db_query->records[i].fields[ j ].value != NULL ) {
                         free( db_query->records[ i ].fields[ j ].value ); db_query->records[ i ].fields[ j ].value = NULL;
@@ -251,6 +265,20 @@ int DB_QUERY_format( const char* src, char **dst, size_t *dst_length, const char
     *dst_length = dst_len;
 
     return TRUE;
+}
+
+size_t DB_QUERY_get_size( DB_QUERY* db_query ) {
+
+    size_t size = 0;
+
+    for( int i = 0; i < db_query->row_count; i++ ) {
+        for( int j = 0; j < db_query->field_count; j++ ) {
+            size += strlen( db_query->records[ i ].fields[ j ].label );
+            size += db_query->records[ i ].fields[ j ].size;
+        }
+    }
+
+    return size;
 }
 
 

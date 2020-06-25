@@ -20,7 +20,7 @@ void CDC_LoadGeneric( DB_SYSTEM_CDC_LOAD *load, DB_SYSTEM_CDC_LOAD_QUERY *load_e
         DB_QUERY    stage_data;
 
         DB_QUERY_init( &stage_data );
-        int query_ret = DB_exec( &APP.DB, load_element->input_data_sql, load_element->input_data_sql_len, &stage_data, NULL, 0, NULL, NULL, NULL );
+        int query_ret = DB_exec( &APP.DB, load_element->input_data_sql, load_element->input_data_sql_len, &stage_data, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL );
 
         if( query_ret == FALSE ) {
             LOG_print( "[%s] DB_exec error.\n", TIME_get_gmt() );
@@ -77,7 +77,7 @@ void CDC_LoadGeneric( DB_SYSTEM_CDC_LOAD *load, DB_SYSTEM_CDC_LOAD_QUERY *load_e
                 DB_QUERY    sql_res;
 
                 DB_QUERY_init( &sql_res );
-                int query_ret = DB_exec( &APP.DB, load_element->output_data_sql, load_element->output_data_sql_len, &sql_res, ( const char* const* )q_values, q_values_len, q_lengths, q_formats, NULL );
+                int query_ret = DB_exec( &APP.DB, load_element->output_data_sql, load_element->output_data_sql_len, &sql_res, ( const char* const* )q_values, q_values_len, q_lengths, q_formats, NULL, NULL, NULL, NULL );
 
                 if( query_ret == FALSE ) {
                     LOG_print( "[%s] DB_exec error.\n", TIME_get_gmt() );
@@ -102,7 +102,7 @@ void CDC_LoadGeneric( DB_SYSTEM_CDC_LOAD *load, DB_SYSTEM_CDC_LOAD_QUERY *load_e
 
 }
 
-void DB_CDC_LoadInserted( DB_SYSTEM_CDC_LOAD* load, DATABASE_SYSTEM_DB* db, DB_QUERY* data ) {
+void DB_CDC_LoadInserted( DB_SYSTEM_CDC_LOAD* load, DATABASE_SYSTEM_DB* db ) {
     if( load && db ) {
         LOG_print( "\t· [CDC - LOAD::INSERTED]:\n" );
         CDC_LoadGeneric( load, &load->inserted, db );
@@ -111,7 +111,7 @@ void DB_CDC_LoadInserted( DB_SYSTEM_CDC_LOAD* load, DATABASE_SYSTEM_DB* db, DB_Q
     }
 }
 
-void DB_CDC_LoadDeleted( DB_SYSTEM_CDC_LOAD *load, DATABASE_SYSTEM_DB *db, DB_QUERY *data ) {
+void DB_CDC_LoadDeleted( DB_SYSTEM_CDC_LOAD *load, DATABASE_SYSTEM_DB *db ) {
     if( load && db ) {
         LOG_print( "\t· [CDC - LOAD::DELETED]:\n" );
         CDC_LoadGeneric( load, &load->deleted, db );
@@ -120,7 +120,7 @@ void DB_CDC_LoadDeleted( DB_SYSTEM_CDC_LOAD *load, DATABASE_SYSTEM_DB *db, DB_QU
     }
 }
 
-void DB_CDC_LoadModified( DB_SYSTEM_CDC_LOAD *load, DATABASE_SYSTEM_DB *db, DB_QUERY *data ) {
+void DB_CDC_LoadModified( DB_SYSTEM_CDC_LOAD *load, DATABASE_SYSTEM_DB *db ) {
     if( load && db ) {
         LOG_print( "\t· [CDC - LOAD::MODIFIED]:\n" );
         CDC_LoadGeneric( load, &load->modified, db );

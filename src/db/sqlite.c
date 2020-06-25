@@ -61,7 +61,10 @@ int SQLITE_exec(
     const char* const* param_values,
     const int           params_count,
     const int* param_lengths,
-    const int* param_formats
+    const int* param_formats,
+    qec* query_exec_callback,
+    void* data_ptr1,
+    void* data_ptr2
 ) {
 
     LOG_print( "[%s]\tSQLITE_exec( <'%s'>, \"%s\", ... ).\n", TIME_get_gmt(), db_connection->id, sql );
@@ -97,6 +100,7 @@ int SQLITE_exec(
 
                     dst_result->records = realloc( dst_result->records, ( row_count + 1 ) * sizeof( DB_RECORD ) );
                     dst_result->records[ row_count ].fields = ( DB_FIELD* )SAFEMALLOC( field_count * sizeof( DB_FIELD ), __FILE__, __LINE__ );
+                    dst_result->records[ row_count ].field_count = field_count;
 
                     for( i = 0; i < field_count; i++ ) {
                         int data_size = sqlite3_column_bytes( stmt, i );

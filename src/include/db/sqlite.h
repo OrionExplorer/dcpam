@@ -12,8 +12,25 @@ typedef struct {
 } SQLITE_CONNECTION;
 
 
-int SQLITE_connect( SQLITE_CONNECTION* db_connection, const char* filename );
-int SQLITE_exec( SQLITE_CONNECTION* db_connection, const char* sql, size_t sql_length, DB_QUERY* dst_result, const char* const *param_values, const int params_count, const int *param_lengths, const int *param_formats );
+int SQLITE_connect(
+    SQLITE_CONNECTION* db_connection,
+    const char* filename
+);
+
+int SQLITE_exec(
+    SQLITE_CONNECTION* db_connection,
+    const char* sql,
+    size_t sql_length,
+    DB_QUERY* dst_result,
+    const char* const *param_values,
+    const int params_count,
+    const int *param_lengths,
+    const int *param_formats,
+    qec* query_exec_callback,
+    void* data_ptr1,
+    void* data_ptr2
+);
+
 void SQLITE_disconnect( SQLITE_CONNECTION* db_connection );
 
 #endif

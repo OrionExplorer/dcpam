@@ -7,10 +7,32 @@
 	* [x] Rebuild configuration loading for Stage and Load.
 	* [x] Rebuild DB_WORKER to support Staging Area.
 	* [x] Remove processed records from Staging Area after successful Load.
-* [x] Check Stage and Load subprocesses corectness action-wise.
+* [x] Check Stage and Load subprocesses corectness action-wise:
 	* [x] Special query for Staging Area reset after each process from ETL is completed.
 * [ ] Rebuild DCPAM architecture to store each fetched record directly into Staging Area. That would completely remove memory overhead during Extract process.
-	* [ ] DB_exec must support callback function called with each fetched row of data
+	* [x] `DB_RECORD` struct must hold field count.
+	* [x] `DB_RECORD` would be main callback parameter.
+	* [x] `DB_exec` must support callback function called with each fetched row of data.
+	* [x] Prepare callback functions:
+		* [ ] `_ExtractInserted_callback`
+		* [ ] `_ExtractDeleted_callback`
+		* [ ] `_ExtractModified_callback`
+		* [ ] `_ExtractGeneric_callback`
+	* [ ] Each database `*_exec` function must support callback function passed by `DB_exec`:
+		* [x] PostgreSQL
+		* [ ] MySQL
+		* [ ] MariaDB
+		* [ ] ODBC
+		* [ ] Oracle Database
+		* [ ] SQLite
+	* [x] `CDC_Extract*`  must support callback function to call `CDC_Stage*`.
+* [ ] Rebuild DCPAM architecture to load each fetched record directly from Staging Area into Target tables. That would completely remove memory overhead during Load process:
+	* [ ] Rebuild `CDC_LoadGeneric` internals
+	* [ ] Prepare callback functions:
+		* [ ] `_LoadInserted_callback`
+		* [ ] `_LoadDeleted_callback`
+		* [ ] `_LoadModified_callback`
+		* [ ] `_LoadGeneric_callback`
 * [ ] Transform subprocess (https://en.wikipedia.org/wiki/Extract,_transform,_load#Transform):
 	* [ ] Proposal #1: simple internal operations within dcpam.
 	* [x] Proposal #2: make use of external scripts/applications.

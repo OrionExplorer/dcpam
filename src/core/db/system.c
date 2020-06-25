@@ -20,7 +20,10 @@ int DB_exec(
     const int           params_count,
     const int           *param_lengths,
     const int           *param_formats,
-    const char          *param_types
+    const char          *param_types,
+    qec                 *query_exec_callback,
+    void                *data_ptr1,
+    void                *data_ptr2
 ) {
     char            *sql_bound = NULL;
     size_t          sql_bound_len = 0;
@@ -39,27 +42,27 @@ int DB_exec(
 
     switch( db->driver ) {
         case D_POSTGRESQL : {
-            q_ret = PG_exec( &db->db_conn.pgsql_conn, sql, *sql_len, dst_result, NULL, 0, NULL, NULL, NULL );
+            q_ret = PG_exec( &db->db_conn.pgsql_conn, sql, *sql_len, dst_result, NULL, 0, NULL, NULL, NULL, query_exec_callback, data_ptr1, data_ptr2 );
         } break;
 
         case D_MYSQL : {
-            q_ret = MYSQL_exec( &db->db_conn.mysql_conn, sql, *sql_len, dst_result, NULL, 0, NULL, NULL, NULL );
+            q_ret = MYSQL_exec( &db->db_conn.mysql_conn, sql, *sql_len, dst_result, NULL, 0, NULL, NULL, NULL, query_exec_callback, data_ptr1, data_ptr2 );
         } break;
 
         case D_MARIADB : {
-            q_ret = MARIADB_exec( &db->db_conn.mariadb_conn, sql, *sql_len, dst_result, NULL, 0, NULL, NULL, NULL );
+            q_ret = MARIADB_exec( &db->db_conn.mariadb_conn, sql, *sql_len, dst_result, NULL, 0, NULL, NULL, NULL, query_exec_callback, data_ptr1, data_ptr2 );
         } break;
 
         case D_ODBC : {
-            q_ret = ODBC_exec( &db->db_conn.odbc_conn, sql, *sql_len, dst_result, NULL, 0, NULL, NULL, NULL );
+            q_ret = ODBC_exec( &db->db_conn.odbc_conn, sql, *sql_len, dst_result, NULL, 0, NULL, NULL, NULL, query_exec_callback, data_ptr1, data_ptr2 );
         } break;
 
         case D_ORACLE: {
-            q_ret = ORACLE_exec( &db->db_conn.oracle_conn, sql, *sql_len, dst_result, NULL, 0, NULL, NULL );
+            q_ret = ORACLE_exec( &db->db_conn.oracle_conn, sql, *sql_len, dst_result, NULL, 0, NULL, NULL, query_exec_callback, data_ptr1, data_ptr2 );
         } break;
 
         case D_SQLITE: {
-            q_ret = SQLITE_exec( &db->db_conn.sqlite_conn, sql, *sql_len, dst_result, NULL, 0, NULL, NULL );
+            q_ret = SQLITE_exec( &db->db_conn.sqlite_conn, sql, *sql_len, dst_result, NULL, 0, NULL, NULL, query_exec_callback, data_ptr1, data_ptr2 );
         }
     }
 

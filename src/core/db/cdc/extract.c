@@ -6,7 +6,35 @@
 #include "../../../include/core/schema.h"
 #include "../../../include/utils/log.h"
 #include "../../../include/core/db/cdc/extract.h"
+#include "../../../include/core/db/cdc/stage.h"
 
+
+void _ExtractGeneric_callback( DB_RECORD* record, DB_SYSTEM_CDC_STAGE* stage, DB_SYSTEM_CDC_STAGE_QUERY* stage_element, DATABASE_SYSTEM_DB* db ) {
+
+    DB_CDC_StageGeneric( stage, stage_element, db, record );
+    DB_QUERY_record_free( record );
+}
+
+void _ExtractInserted_callback( DB_RECORD* record, void* data_ptr1, void* data_ptr2 ) {
+    DB_SYSTEM_CDC_STAGE* stage = ( DB_SYSTEM_CDC_STAGE* )data_ptr1;
+    DATABASE_SYSTEM_DB* db = ( DATABASE_SYSTEM_DB* )data_ptr2;
+
+    _ExtractGeneric_callback( record, stage, &stage->inserted, db );
+}
+
+void _ExtractDeleted_callback( DB_RECORD* record, void* data_ptr1, void* data_ptr2 ) {
+    DB_SYSTEM_CDC_STAGE* stage = ( DB_SYSTEM_CDC_STAGE* )data_ptr1;
+    DATABASE_SYSTEM_DB* db = ( DATABASE_SYSTEM_DB* )data_ptr2;
+
+    _ExtractGeneric_callback( record, stage, &stage->deleted, db );
+}
+
+void _ExtractModified_callback( DB_RECORD* record, void* data_ptr1, void* data_ptr2 ) {
+    DB_SYSTEM_CDC_STAGE* stage = ( DB_SYSTEM_CDC_STAGE* )data_ptr1;
+    DATABASE_SYSTEM_DB* db = ( DATABASE_SYSTEM_DB* )data_ptr2;
+
+    _ExtractGeneric_callback( record, stage, &stage->modified, db );
+}
 
 int CDC_ExtractQueryTypeValid( const char *sql ) {
 
@@ -22,7 +50,7 @@ int CDC_ExtractQueryTypeValid( const char *sql ) {
     return 1;
 }
 
-void CDC_ExtractGeneric( DB_SYSTEM_CDC_EXTRACT *extract, DB_SYSTEM_CDC_EXTRACT_QUERY *extract_element, DATABASE_SYSTEM_DB *db, DB_QUERY *data ) {
+void CDC_ExtractGeneric( DB_SYSTEM_CDC_EXTRACT *extract, DB_SYSTEM_CDC_EXTRACT_QUERY *extract_element, DATABASE_SYSTEM_DB *db, qec *query_exec_callback, void* data_ptr1, void* data_ptr2 ) {
 
     if( CDC_ExtractQueryTypeValid( extract_element->primary_db_sql ) == 0 || CDC_ExtractQueryTypeValid( extract_element->secondary_db_sql ) == 0 ) {
         LOG_print( "Fatal error: Only SELECT queries are allowed in *_sql commands.\n" );
@@ -47,7 +75,8 @@ void CDC_ExtractGeneric( DB_SYSTEM_CDC_EXTRACT *extract, DB_SYSTEM_CDC_EXTRACT_Q
         }
 
         DB_QUERY_init( &primary_db_sql_res );
-        int primary_ret = DB_exec( primary_db, extract_element->primary_db_sql, strnlen( extract_element->primary_db_sql, extract_element->primary_db_sql_len + 1 ), &primary_db_sql_res, NULL, 0, NULL, NULL, NULL );
+
+        int primary_ret = DB_exec( primary_db, extract_element->primary_db_sql, strnlen( extract_element->primary_db_sql, extract_element->primary_db_sql_len + 1 ), &primary_db_sql_res, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL );
 
         /* Check if query finished successfully. */
         if( primary_ret == TRUE ) {
@@ -98,7 +127,6 @@ void CDC_ExtractGeneric( DB_SYSTEM_CDC_EXTRACT *extract, DB_SYSTEM_CDC_EXTRACT_Q
                         for( i = 0; i < primary_db_sql_res.row_count; i++ ) {
                             str_index += snprintf( &ret_values_str[ str_index ], ret_values_len - str_index, "%s,", ret_values[ i ] );
                         }
-                        //ret_values_str[ strlen( ret_values_str ) ] = '\0';
 
                         /* Not needed anymore */
                         for( i = 0; i < primary_db_sql_res.row_count; i++ ) {
@@ -106,6 +134,7 @@ void CDC_ExtractGeneric( DB_SYSTEM_CDC_EXTRACT *extract, DB_SYSTEM_CDC_EXTRACT_Q
                         }
                         free( ret_values );
 
+                        printf("MAM: %s\n", ret_values_str );
                         /* Query result from primary_db_sql is no longer needed */
                         DB_QUERY_free( &primary_db_sql_res );
 
@@ -122,11 +151,11 @@ void CDC_ExtractGeneric( DB_SYSTEM_CDC_EXTRACT *extract, DB_SYSTEM_CDC_EXTRACT_Q
                         ret_values_str = NULL;
 
                         /* Perform DB query and store result in *data */
-                        int secondary_ret = DB_exec( secondary_db, secondary_db_sql_p, secondary_db_sql_len - 2 /* "%s" */, data, NULL, 0, NULL, NULL, NULL );
+                        int secondary_ret = DB_exec( secondary_db, secondary_db_sql_p, secondary_db_sql_len - 2 /* "%s" */, NULL, NULL, 0, NULL, NULL, NULL, query_exec_callback, data_ptr1, data_ptr2 );
 
-                        if( secondary_ret == 1 ) {
+                        /*if( secondary_ret == 1 ) {
                             LOG_print( "\t· [CDC - EXTRACT] records found: %d\n", data->row_count );
-                        }
+                        }*/
 
                         free( secondary_db_sql_p );
                         secondary_db_sql_p = NULL;
@@ -142,7 +171,7 @@ void CDC_ExtractGeneric( DB_SYSTEM_CDC_EXTRACT *extract, DB_SYSTEM_CDC_EXTRACT_Q
                     }
                 } else {
                     DB_QUERY_free( &primary_db_sql_res );
-                    DB_QUERY_free( data );
+                    /*DB_QUERY_free( data );*/
                     LOG_print( "Fatal error: query returned more than one column.\n" );
                 }
             } else {
@@ -151,33 +180,33 @@ void CDC_ExtractGeneric( DB_SYSTEM_CDC_EXTRACT *extract, DB_SYSTEM_CDC_EXTRACT_Q
         } else {
             /* In case of error, free query result struct */
             DB_QUERY_free( &primary_db_sql_res );
-            DB_QUERY_free( data );
+            /*DB_QUERY_free( data );*/
         }
     }
 }
 
-void DB_CDC_ExtractInserted( DB_SYSTEM_CDC_EXTRACT *extract, DATABASE_SYSTEM_DB *db, DB_QUERY *data ) {
-    if( extract && db && data ) {
+void DB_CDC_ExtractInserted( DB_SYSTEM_CDC_EXTRACT *extract, DATABASE_SYSTEM_DB *db, qec *query_exec_callback, void* data_ptr1, void* data_ptr2 ) {
+    if( extract && db ) {
         LOG_print( "\t· [CDC - EXTRACT::INSERTED] existing data:\n" );
-        CDC_ExtractGeneric( extract, &extract->inserted, db, data );    
+        CDC_ExtractGeneric( extract, &extract->inserted, db, query_exec_callback, data_ptr1, data_ptr2 );
     } else {
         LOG_print( "\t· [CDC - EXTRACT::INSERTED] Fatal error: not all DB_CDC_ExtractInserted parameters are valid!\n" );
     }
 }
 
-void DB_CDC_ExtractDeleted( DB_SYSTEM_CDC_EXTRACT *extract, DATABASE_SYSTEM_DB *db, DB_QUERY *data ) {
-    if( extract && db && data ) {
+void DB_CDC_ExtractDeleted( DB_SYSTEM_CDC_EXTRACT *extract, DATABASE_SYSTEM_DB *db, qec *query_exec_callback, void* data_ptr1, void* data_ptr2 ) {
+    if( extract && db ) {
         LOG_print( "\t· [CDC - EXTRACT::DELETED] existing data:\n" );
-        CDC_ExtractGeneric( extract, &extract->deleted, db, data );
+        CDC_ExtractGeneric( extract, &extract->deleted, db, query_exec_callback, data_ptr1, data_ptr2 );
     } else {
         LOG_print( "\t· [CDC - EXTRACT::DELETED] Fatal error: not all DB_CDC_ExtractDeleted parameters are valid!\n" ); 
     }
 }
 
-void DB_CDC_ExtractModified( DB_SYSTEM_CDC_EXTRACT *extract, DATABASE_SYSTEM_DB *db, DB_QUERY *data ) {
-    if( extract && db && data ) {
+void DB_CDC_ExtractModified( DB_SYSTEM_CDC_EXTRACT *extract, DATABASE_SYSTEM_DB *db, qec *query_exec_callback, void* data_ptr1, void* data_ptr2 ) {
+    if( extract && db ) {
         LOG_print( "\t· [CDC - EXTRACT::MODIFIED] existing data:\n" );
-        CDC_ExtractGeneric( extract, &extract->modified, db, data );
+        CDC_ExtractGeneric( extract, &extract->modified, db, query_exec_callback, data_ptr1, data_ptr2 );
     } else {
         LOG_print( "\t· [CDC - EXTRACT::MODIFIED] Fatal error: not all DB_CDC_ExtractModified parameters are valid!\n" );
     }

@@ -59,7 +59,10 @@ int DB_exec(
             const int               params_count,
             const int               *param_lengths,
             const int               *param_formats,
-            const char              *param_types
+            const char              *param_types,
+            qec                     *query_exec_callback,
+            void                    *data_ptr1,
+            void                    *data_ptr2
 );
 
 #endif

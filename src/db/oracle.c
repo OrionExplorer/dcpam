@@ -180,7 +180,10 @@ int ORACLE_exec(
     const char* const   *param_values,
     const int           params_count,
     const int           *param_lengths,
-    const int           *param_formats
+    const int           *param_formats,
+    qec* query_exec_callback,
+    void* data_ptr1,
+    void* data_ptr2
 ) {
     OCIStmt         *stmthp = NULL;
     ub2             stmt_type;
@@ -350,6 +353,7 @@ int ORACLE_exec(
                 if( dst_result->records ) {
                     tmp_records = dst_result->records;
                     dst_result->records[ row_count ].fields = ( DB_FIELD* )SAFEMALLOC( field_count * sizeof( DB_FIELD ), __FILE__, __LINE__ );
+                    dst_result->records[ row_count ].field_count = field_count;
 
                     for( int i = 0; i < field_count; i++ ) {
                         _real_col_width[ i ] = ( sb4 )strlen( (const char* )_col_data[ i ] );

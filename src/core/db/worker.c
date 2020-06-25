@@ -75,12 +75,8 @@ int DB_WORKER_init( void ) {
     return TRUE;
 }
 
-
 void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
     int                 i = 0;
-    DB_QUERY            inserted_data;
-    DB_QUERY            deleted_data;
-    DB_QUERY            modified_data;
     WORKER_DATA         *t_worker_data = ( WORKER_DATA* )src_WORKER_DATA;
     DATABASE_SYSTEM     *DATA_SYSTEM = t_worker_data->DATA_SYSTEM;
 
@@ -91,9 +87,9 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
     }
 
     /* Init query structs */
-    DB_QUERY_init( &inserted_data );
-    DB_QUERY_init( &deleted_data );
-    DB_QUERY_init( &modified_data );
+    qec extract_inserted_callback = ( qec )&_ExtractInserted_callback;
+    qec extract_deleted_callback = ( qec )&_ExtractDeleted_callback;
+    qec extract_modified_callback = ( qec )&_ExtractModified_callback;
 
     while( app_terminated == 0 ) {
         pthread_mutex_lock( &watcher_mutex );
@@ -106,26 +102,20 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
 
             LOG_print( "\t· Query #%d: %s\n", i + 1, DATA_SYSTEM->queries[ i ].name );
 
-            DB_CDC_ExtractInserted( &DATA_SYSTEM->queries[ i ].change_data_capture.extract, &DATA_SYSTEM->DB, &inserted_data );
-            DB_CDC_StageInserted( &DATA_SYSTEM->queries[ i ].change_data_capture.stage, &DATA_SYSTEM->DB, &inserted_data );
-            DB_CDC_TransformInserted( &DATA_SYSTEM->queries[ i ].change_data_capture.transform, &DATA_SYSTEM->DB, &inserted_data );
-            DB_CDC_LoadInserted( &DATA_SYSTEM->queries[ i ].change_data_capture.load, &DATA_SYSTEM->DB, &inserted_data );
+            DB_CDC_ExtractInserted( &DATA_SYSTEM->queries[ i ].change_data_capture.extract, &DATA_SYSTEM->DB, &extract_inserted_callback, ( void *)&DATA_SYSTEM->queries[ i ].change_data_capture.stage, ( void *)&DATA_SYSTEM->DB );
+            //DB_CDC_TransformInserted( &DATA_SYSTEM->queries[ i ].change_data_capture.transform, &DATA_SYSTEM->DB, &inserted_data );
+            DB_CDC_LoadInserted( &DATA_SYSTEM->queries[ i ].change_data_capture.load, &DATA_SYSTEM->DB );
             DB_CDC_StageReset( &DATA_SYSTEM->queries[ i ].change_data_capture.stage, &DATA_SYSTEM->DB );
-            DB_QUERY_free( &inserted_data );
 
-            DB_CDC_ExtractDeleted( &DATA_SYSTEM->queries[ i ].change_data_capture.extract, &DATA_SYSTEM->DB, &deleted_data );
-            DB_CDC_StageDeleted( &DATA_SYSTEM->queries[ i ].change_data_capture.stage, &DATA_SYSTEM->DB, &deleted_data );
-            DB_CDC_TransformDeleted( &DATA_SYSTEM->queries[ i ].change_data_capture.transform, &DATA_SYSTEM->DB, &deleted_data );
-            DB_CDC_LoadDeleted( &DATA_SYSTEM->queries[ i ].change_data_capture.load, &DATA_SYSTEM->DB, &deleted_data );
+            DB_CDC_ExtractDeleted( &DATA_SYSTEM->queries[ i ].change_data_capture.extract, &DATA_SYSTEM->DB, &extract_deleted_callback, ( void* )&DATA_SYSTEM->queries[ i ].change_data_capture.stage, ( void* )&DATA_SYSTEM->DB );
+            //DB_CDC_TransformDeleted( &DATA_SYSTEM->queries[ i ].change_data_capture.transform, &DATA_SYSTEM->DB, &deleted_data );
+            DB_CDC_LoadDeleted( &DATA_SYSTEM->queries[ i ].change_data_capture.load, &DATA_SYSTEM->DB );
             DB_CDC_StageReset( &DATA_SYSTEM->queries[ i ].change_data_capture.stage, &DATA_SYSTEM->DB );
-            DB_QUERY_free( &deleted_data );
 
-            DB_CDC_ExtractModified( &DATA_SYSTEM->queries[ i ].change_data_capture.extract, &DATA_SYSTEM->DB, &modified_data );
-            DB_CDC_StageModified( &DATA_SYSTEM->queries[ i ].change_data_capture.stage, &DATA_SYSTEM->DB, &modified_data );
-            DB_CDC_TransformModified( &DATA_SYSTEM->queries[ i ].change_data_capture.transform, &DATA_SYSTEM->DB, &modified_data );
-            DB_CDC_LoadModified( &DATA_SYSTEM->queries[ i ].change_data_capture.load, &DATA_SYSTEM->DB, &modified_data );
+            DB_CDC_ExtractModified( &DATA_SYSTEM->queries[ i ].change_data_capture.extract, &DATA_SYSTEM->DB, &extract_modified_callback, ( void* )&DATA_SYSTEM->queries[ i ].change_data_capture.stage, ( void* )&DATA_SYSTEM->DB );
+            //DB_CDC_TransformModified( &DATA_SYSTEM->queries[ i ].change_data_capture.transform, &DATA_SYSTEM->DB, &modified_data );
+            DB_CDC_LoadModified( &DATA_SYSTEM->queries[ i ].change_data_capture.load, &DATA_SYSTEM->DB );
             DB_CDC_StageReset( &DATA_SYSTEM->queries[ i ].change_data_capture.stage, &DATA_SYSTEM->DB );
-            DB_QUERY_free( &modified_data );
         }
 
         LOG_print("DB_WORKER_watcher for \"%s\" finished.\n", DATA_SYSTEM->name );

@@ -75,27 +75,32 @@ int PG_exec(
     const int           params_count,
     const int           *param_lengths,
     const int           *param_formats,
-    Oid                 *param_types 
+    Oid                 *param_types,
+    qec                 *query_exec_callback,
+    void                *data_ptr1,
+    void                *data_ptr2
 ) {
     PGresult        *pg_result = NULL;
 
     LOG_print( "[%s]\tPG_exec( <'%s'>, \"%s\", ... ).\n", TIME_get_gmt(), db_connection->id, sql );
     pthread_mutex_lock( &db_exec_mutex );
 
-    dst_result->row_count = 0;
-    dst_result->field_count = 0;
+    if( dst_result ) {
+        dst_result->row_count = 0;
+        dst_result->field_count = 0;
 
-    dst_result->sql = ( char* )SAFECALLOC( sql_length + 1, sizeof( char ), __FILE__, __LINE__ );
-    for( size_t l = 0; l < sql_length; l++ ) {
-        *( dst_result->sql + l ) = sql[ l ];
+        dst_result->sql = ( char* )SAFECALLOC( sql_length + 1, sizeof( char ), __FILE__, __LINE__ );
+        for( size_t l = 0; l < sql_length; l++ ) {
+            *( dst_result->sql + l ) = sql[ l ];
+        }
     }
 
     if( db_connection->connection ) {
         if( param_values == NULL || params_count == 0) {
-            pg_result = PQexec( db_connection->connection, dst_result->sql );
+            pg_result = PQexec( db_connection->connection, sql );
         } else {
             pg_result = PQexecParams( db_connection->connection,
-                dst_result->sql,
+                sql,
                 params_count,
                 param_types,
                 (const char * const *)param_values,
@@ -116,37 +121,83 @@ int PG_exec(
     }
     
     int row_count = PQntuples( pg_result );
-    dst_result->row_count = row_count;
+ 
+    if( dst_result ) {
+        dst_result->row_count = row_count;
+    }
+
     if( row_count > 0 ) {
-        dst_result->records = ( DB_RECORD* )SAFEMALLOC( row_count * sizeof( DB_RECORD ), __FILE__, __LINE__ );
 
         int field_count = PQnfields( pg_result );
-        dst_result->field_count = field_count;
 
-        for( int i = 0; i < row_count; i++) {
-            dst_result->records[i].fields = ( DB_FIELD* )SAFEMALLOC( field_count * sizeof( DB_FIELD ), __FILE__, __LINE__ );
-            for( int j = 0; j < field_count; j++ ) {
-                strncpy( dst_result->records[i].fields[j].label, PQfname( pg_result, j ), MAX_COLUMN_NAME_LEN );
-                int val_length = PQgetlength( pg_result, i, j );
-                if( val_length > 0 ) {
-                    dst_result->records[ i ].fields[ j ].value = SAFECALLOC( ( val_length + 1 ), sizeof( char ), __FILE__, __LINE__ );
-                    char* tmp_res = PQgetvalue( pg_result, i, j );
+        if( query_exec_callback ) {
 
-                    dst_result->records[ i ].fields[ j ].size = val_length;
-                    for( int l = 0; l < val_length; l++ ) {
-                        dst_result->records[ i ].fields[ j ].value[ l ] = tmp_res[ l ];
+            for( int i = 0; i < row_count; i++ ) {
+
+                DB_RECORD   *record = SAFEMALLOC( 1 * sizeof( DB_RECORD ), __FILE__, __LINE__ );
+
+                record->field_count = field_count;
+                record->fields = ( DB_FIELD* )SAFEMALLOC( field_count * sizeof( DB_FIELD ), __FILE__, __LINE__ );
+
+                for( int j = 0; j < field_count; j++ ) {
+                    strncpy( record->fields[ j ].label, PQfname( pg_result, j ), MAX_COLUMN_NAME_LEN );
+
+                    int val_length = PQgetlength( pg_result, i, j );
+
+                    if( val_length > 0 ) {
+
+                        record->fields[ j ].value = SAFECALLOC( ( val_length + 1 ), sizeof( char ), __FILE__, __LINE__ );
+                        char* tmp_res = PQgetvalue( pg_result, i, j );
+
+                        record->fields[ j ].size = val_length;
+
+                        for( int l = 0; l < val_length; l++ ) {
+                            record->fields[ j ].value[ l ] = tmp_res[ l ];
+                        }
+                    } else {
+                        record->fields[ j ].size = 0;
+                        record->fields[ j ].value = NULL;
                     }
-                } else {
-                    dst_result->records[ i ].fields[ j ].size = 0;
-                    dst_result->records[ i ].fields[ j ].value = NULL;
+                }
+                pthread_mutex_unlock( &db_exec_mutex );
+                ( *query_exec_callback )( record, data_ptr1, data_ptr2 );
+            }
+        }
+
+        if( dst_result ) {
+
+            dst_result->records = ( DB_RECORD* )SAFEMALLOC( row_count * sizeof( DB_RECORD ), __FILE__, __LINE__ );
+
+            dst_result->field_count = field_count;
+
+            for( int i = 0; i < row_count; i++ ) {
+                dst_result->records[ i ].fields = ( DB_FIELD* )SAFEMALLOC( field_count * sizeof( DB_FIELD ), __FILE__, __LINE__ );
+                dst_result->records[ i ].field_count = field_count;
+
+                for( int j = 0; j < field_count; j++ ) {
+                    strncpy( dst_result->records[ i ].fields[ j ].label, PQfname( pg_result, j ), MAX_COLUMN_NAME_LEN );
+                    int val_length = PQgetlength( pg_result, i, j );
+                    if( val_length > 0 ) {
+                        dst_result->records[ i ].fields[ j ].value = SAFECALLOC( ( val_length + 1 ), sizeof( char ), __FILE__, __LINE__ );
+                        char* tmp_res = PQgetvalue( pg_result, i, j );
+
+                        dst_result->records[ i ].fields[ j ].size = val_length;
+                        for( int l = 0; l < val_length; l++ ) {
+                            dst_result->records[ i ].fields[ j ].value[ l ] = tmp_res[ l ];
+                        }
+                    } else {
+                        dst_result->records[ i ].fields[ j ].size = 0;
+                        dst_result->records[ i ].fields[ j ].value = NULL;
+                    }
                 }
             }
+            LOG_print( "[%s]\tPG_exec.\n", TIME_get_gmt() );
+            //PQclear( pg_result );
+            //pthread_mutex_unlock( &db_exec_mutex );
         }
     }
 
     PQclear( pg_result );
-
-    LOG_print( "[%s]\tPG_exec.\n", TIME_get_gmt() );
     pthread_mutex_unlock( &db_exec_mutex );
 
     return 1;
