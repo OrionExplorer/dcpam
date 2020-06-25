@@ -266,22 +266,3 @@ int DB_QUERY_format( const char* src, char **dst, size_t *dst_length, const char
 
     return TRUE;
 }
-
-size_t DB_QUERY_get_size( DB_QUERY* db_query ) {
-
-    size_t size = 0;
-
-    for( int i = 0; i < db_query->row_count; i++ ) {
-        for( int j = 0; j < db_query->field_count; j++ ) {
-            size += strlen( db_query->records[ i ].fields[ j ].label );
-            size += db_query->records[ i ].fields[ j ].size;
-        }
-    }
-
-    return size;
-}
-
-
-void DB_QUERY_field_type( DB_FIELD *field, char *dst ) {
-    
-}

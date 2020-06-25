@@ -153,9 +153,9 @@ void CDC_ExtractGeneric( DB_SYSTEM_CDC_EXTRACT *extract, DB_SYSTEM_CDC_EXTRACT_Q
                         /* Perform DB query and store result in *data */
                         int secondary_ret = DB_exec( secondary_db, secondary_db_sql_p, secondary_db_sql_len - 2 /* "%s" */, NULL, NULL, 0, NULL, NULL, NULL, query_exec_callback, data_ptr1, data_ptr2 );
 
-                        /*if( secondary_ret == 1 ) {
-                            LOG_print( "\t· [CDC - EXTRACT] records found: %d\n", data->row_count );
-                        }*/
+                        if( secondary_ret == 1 ) {
+                            LOG_print( "\t· [CDC - EXTRACT] Completed.\n" );
+                        }
 
                         free( secondary_db_sql_p );
                         secondary_db_sql_p = NULL;
