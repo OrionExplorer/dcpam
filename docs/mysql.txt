@@ -13,6 +13,19 @@ CREATE TABLE accounted_time (
 	changed TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE stage_accounted_time (
+	id INT AUTO_INCREMENT PRIMARY KEY,
+	system_object_id INT NOT NULL,
+	system_worklog_id INT NOT NULL,
+	system_customer VARCHAR(255) NOT NULL,
+	system_agent_id VARCHAR(64) NOT NULL,
+	system_accounted_time DECIMAL(10,2) NOT NULL,
+	system_created TIMESTAMP NOT NULL,
+	system VARCHAR(64) NOT NULL,
+	is_valid SMALLINT NOT NULL,
+	changed TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE USER 'dcpam'@localhost IDENTIFIED BY 'tantive-4';
 GRANT ALL PRIVILEGES ON dcpam.* TO 'dcpam'@'localhost';
 FLUSH PRIVILEGES;

@@ -39,7 +39,6 @@ int DB_exec(
     sql = sql_bound ? sql_bound : ( char *)sql_template;
     sql_len = sql_bound ? &sql_bound_len : &sql_length;
 
-
     switch( db->driver ) {
         case D_POSTGRESQL : {
             q_ret = PG_exec( &db->db_conn.pgsql_conn, sql, *sql_len, dst_result, NULL, 0, NULL, NULL, NULL, query_exec_callback, data_ptr1, data_ptr2 );

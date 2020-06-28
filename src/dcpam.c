@@ -1377,6 +1377,7 @@ int main( int argc, char** argv ) {
 
     LOG_init();
 
+    memset( config_file, '\0', MAX_PATH_LENGTH );
     if( argc <= 1 ) {
         snprintf( config_file, MAX_PATH_LENGTH, "config.json" );
     } else if( argc >= 2 ) {

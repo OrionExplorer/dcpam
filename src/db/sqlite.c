@@ -70,12 +70,14 @@ int SQLITE_exec(
     LOG_print( "[%s]\tSQLITE_exec( <'%s'>, \"%s\", ... ).\n", TIME_get_gmt(), db_connection->id, sql );
     pthread_mutex_lock( &db_exec_mutex );
 
-    dst_result->row_count = 0;
-    dst_result->field_count = 0;
+    if( dst_result ) {
+        dst_result->row_count = 0;
+        dst_result->field_count = 0;
 
-    dst_result->sql = ( char* )SAFECALLOC( sql_length + 1, sizeof( char ), __FILE__, __LINE__ );
-    for( size_t l = 0; l < sql_length; l++ ) {
-        *( dst_result->sql + l ) = sql[ l ];
+        dst_result->sql = ( char* )SAFECALLOC( sql_length + 1, sizeof( char ), __FILE__, __LINE__ );
+        for( size_t l = 0; l < sql_length; l++ ) {
+            *( dst_result->sql + l ) = sql[ l ];
+        }
     }
 
     if( db_connection->connection ) {
@@ -83,13 +85,13 @@ int SQLITE_exec(
 
             sqlite3_stmt* stmt;
 
-            int result = sqlite3_prepare_v2( db_connection->connection, dst_result->sql, ( int )sql_length, &stmt, NULL );
+            int result = sqlite3_prepare_v2( db_connection->connection, sql, ( int )sql_length, &stmt, NULL );
             if( result != SQLITE_OK ) {
                 LOG_print( "Error: sqlite_prepare_v2 (%d).\n", result );
                 return 0;
             }
 
-            if( DB_QUERY_get_type( dst_result->sql ) == DQT_SELECT ) {
+            if( DB_QUERY_get_type( sql ) == DQT_SELECT ) {
 
                 int row_count = 0;
                 int field_count = 0;
@@ -98,23 +100,46 @@ int SQLITE_exec(
                     int i = 0;
                     field_count = sqlite3_column_count( stmt );
 
-                    dst_result->records = realloc( dst_result->records, ( row_count + 1 ) * sizeof( DB_RECORD ) );
-                    dst_result->records[ row_count ].fields = ( DB_FIELD* )SAFEMALLOC( field_count * sizeof( DB_FIELD ), __FILE__, __LINE__ );
-                    dst_result->records[ row_count ].field_count = field_count;
+                    if( query_exec_callback ) {
+                        DB_RECORD* record = SAFEMALLOC( 1 * sizeof( DB_RECORD ), __FILE__, __LINE__ );
 
-                    for( i = 0; i < field_count; i++ ) {
-                        int data_size = sqlite3_column_bytes( stmt, i );
-                        strncpy( dst_result->records[ row_count ].fields[ i ].label, sqlite3_column_name( stmt, i ), MAX_COLUMN_NAME_LEN );
-                        dst_result->records[ row_count ].fields[ i ].size = ( unsigned long )data_size;
-                        dst_result->records[ row_count ].fields[ i ].value = SAFECALLOC( ( data_size + 1 ), sizeof( char ), __FILE__, __LINE__ );
-                        memcpy( dst_result->records[ row_count ].fields[ i ].value, sqlite3_column_blob( stmt, i ), data_size );
+                        record->field_count = field_count;
+                        record->fields = ( DB_FIELD* )SAFEMALLOC( field_count * sizeof( DB_FIELD ), __FILE__, __LINE__ );
+
+                        for( int j = 0; j < field_count; j++ ) {
+                            int data_size = sqlite3_column_bytes( stmt, i );
+                            strncpy( record->fields[ i ].label, sqlite3_column_name( stmt, i ), MAX_COLUMN_NAME_LEN );
+                            record->fields[ i ].size = ( unsigned long )data_size;
+                            record->fields[ i ].value = SAFECALLOC( ( data_size + 1 ), sizeof( char ), __FILE__, __LINE__ );
+                            memcpy( record->fields[ i ].value, sqlite3_column_blob( stmt, i ), data_size );
+                        }
+
+                        pthread_mutex_unlock( &db_exec_mutex );
+                        ( *query_exec_callback )( record, data_ptr1, data_ptr2 );
                     }
 
-                    row_count++;
+                    if( dst_result ) {
+                        dst_result->records = realloc( dst_result->records, ( row_count + 1 ) * sizeof( DB_RECORD ) );
+                        dst_result->records[ row_count ].fields = ( DB_FIELD* )SAFEMALLOC( field_count * sizeof( DB_FIELD ), __FILE__, __LINE__ );
+                        dst_result->records[ row_count ].field_count = field_count;
+
+                        for( i = 0; i < field_count; i++ ) {
+                            int data_size = sqlite3_column_bytes( stmt, i );
+                            strncpy( dst_result->records[ row_count ].fields[ i ].label, sqlite3_column_name( stmt, i ), MAX_COLUMN_NAME_LEN );
+                            dst_result->records[ row_count ].fields[ i ].size = ( unsigned long )data_size;
+                            dst_result->records[ row_count ].fields[ i ].value = SAFECALLOC( ( data_size + 1 ), sizeof( char ), __FILE__, __LINE__ );
+                            memcpy( dst_result->records[ row_count ].fields[ i ].value, sqlite3_column_blob( stmt, i ), data_size );
+                        }
+
+                        row_count++;
+                    }
+                    
                 }
 
-                dst_result->field_count = field_count;
-                dst_result->row_count = row_count;
+                if( dst_result ) {
+                    dst_result->field_count = field_count;
+                    dst_result->row_count = row_count;
+                }
             } else {
                 if( sqlite3_step( stmt ) != SQLITE_DONE ) {
                     LOG_print( "[%s][fail] SQLITE_exec. Message: \"%s\"\n", TIME_get_gmt(), sqlite3_errmsg( db_connection->connection ) );

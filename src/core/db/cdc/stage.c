@@ -25,11 +25,11 @@ void DB_CDC_StageGeneric( DB_SYSTEM_CDC_STAGE *stage, DB_SYSTEM_CDC_STAGE_QUERY 
             int *q_formats;
 
             /* Prepare query data. PostgreSQL compatibile for now only. */
-            q_values = SAFEMALLOC( ( stage_element->extracted_values_len + 1 ) * sizeof *q_values, __FILE__, __LINE__ );
+            q_values = SAFEMALLOC( ( stage_element->extracted_values_len ) * sizeof *q_values, __FILE__, __LINE__ );
             int q_values_len = 0;
 
-            q_lengths = SAFEMALLOC( (stage_element->extracted_values_len+1) * sizeof( int ), __FILE__, __LINE__ );
-            q_formats = SAFEMALLOC( (stage_element->extracted_values_len+1) * sizeof( int ), __FILE__, __LINE__ );
+            q_lengths = SAFEMALLOC( (stage_element->extracted_values_len) * sizeof( int ), __FILE__, __LINE__ );
+            q_formats = SAFEMALLOC( (stage_element->extracted_values_len) * sizeof( int ), __FILE__, __LINE__ );
 
             /* Get defined values only based on "extracted_values" in config.json */
             for( int k = 0; k < stage_element->extracted_values_len; k++ ) {
@@ -56,8 +56,8 @@ void DB_CDC_StageGeneric( DB_SYSTEM_CDC_STAGE *stage, DB_SYSTEM_CDC_STAGE_QUERY 
             }
 
             if( q_values_len > 0 ) {
-                //DB_QUERY_init( &sql_res );
-                /* Perform DB query and store result in *data */
+                /* Perform DB query */
+
                 int query_ret = DB_exec( &APP.DB, stage_element->sql, stage_element->sql_len, NULL, ( const char* const* )q_values, q_values_len, q_lengths, q_formats, NULL, NULL, NULL, NULL );
 
                 if( query_ret == FALSE ) {
@@ -69,7 +69,6 @@ void DB_CDC_StageGeneric( DB_SYSTEM_CDC_STAGE *stage, DB_SYSTEM_CDC_STAGE_QUERY 
                     free( q_values[ i ] ); q_values[ i ] = NULL;
                 }
 
-                //DB_QUERY_free( &sql_res );
             } else {
                 LOG_print( "[%s] Error: Extract process returned data, but Load process conditions are not satisfied.\n", TIME_get_gmt() );
             }

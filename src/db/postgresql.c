@@ -191,12 +191,9 @@ int PG_exec(
                     }
                 }
             }
-            LOG_print( "[%s]\tPG_exec.\n", TIME_get_gmt() );
-            //PQclear( pg_result );
-            //pthread_mutex_unlock( &db_exec_mutex );
         }
     }
-
+    LOG_print( "[%s]\tPG_exec.\n", TIME_get_gmt() );
     PQclear( pg_result );
     pthread_mutex_unlock( &db_exec_mutex );
 

@@ -134,7 +134,6 @@ void CDC_ExtractGeneric( DB_SYSTEM_CDC_EXTRACT *extract, DB_SYSTEM_CDC_EXTRACT_Q
                         }
                         free( ret_values );
 
-                        printf("MAM: %s\n", ret_values_str );
                         /* Query result from primary_db_sql is no longer needed */
                         DB_QUERY_free( &primary_db_sql_res );
 

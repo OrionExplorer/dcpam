@@ -42,11 +42,11 @@ void CDC_LoadGeneric( DB_SYSTEM_CDC_LOAD *load, DB_SYSTEM_CDC_LOAD_QUERY *load_e
             int *q_formats;
 
             /* Prepare query data. */
-            q_values = SAFEMALLOC( (load_element->extracted_values_len+1) * sizeof *q_values, __FILE__, __LINE__ );
+            q_values = SAFEMALLOC( (load_element->extracted_values_len) * sizeof *q_values, __FILE__, __LINE__ );
             int q_values_len = 0;
 
-            q_lengths = SAFEMALLOC( (load_element->extracted_values_len+1) * sizeof( int ), __FILE__, __LINE__ );
-            q_formats = SAFEMALLOC( (load_element->extracted_values_len+1) * sizeof( int ), __FILE__, __LINE__ );
+            q_lengths = SAFEMALLOC( (load_element->extracted_values_len) * sizeof( int ), __FILE__, __LINE__ );
+            q_formats = SAFEMALLOC( (load_element->extracted_values_len) * sizeof( int ), __FILE__, __LINE__ );
 
             /* Get defined values only based on "extracted_values" in config.json */
             for( int k = 0; k < load_element->extracted_values_len; k++ ) {
@@ -72,12 +72,9 @@ void CDC_LoadGeneric( DB_SYSTEM_CDC_LOAD *load, DB_SYSTEM_CDC_LOAD_QUERY *load_e
             }
 
             if( q_values_len > 0 ) {
-                /* Perform DB query and store result in *data */
+                /* Perform DB query */
 
-                DB_QUERY    sql_res;
-
-                DB_QUERY_init( &sql_res );
-                int query_ret = DB_exec( &APP.DB, load_element->output_data_sql, load_element->output_data_sql_len, &sql_res, ( const char* const* )q_values, q_values_len, q_lengths, q_formats, NULL, NULL, NULL, NULL );
+                int query_ret = DB_exec( &APP.DB, load_element->output_data_sql, load_element->output_data_sql_len, NULL, ( const char* const* )q_values, q_values_len, q_lengths, q_formats, NULL, NULL, NULL, NULL );
 
                 if( query_ret == FALSE ) {
                     LOG_print( "[%s] DB_exec error.\n", TIME_get_gmt() );
@@ -88,7 +85,6 @@ void CDC_LoadGeneric( DB_SYSTEM_CDC_LOAD *load, DB_SYSTEM_CDC_LOAD_QUERY *load_e
                     free( q_values[ i ] ); q_values[ i ] = NULL;
                 }
 
-                DB_QUERY_free( &sql_res );
             } else {
                 LOG_print( "[%s] Error: Extract process returned data, but Load process conditions are not satisfied.\n", TIME_get_gmt() );
             }

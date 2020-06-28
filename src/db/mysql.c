@@ -86,13 +86,16 @@ int MYSQL_exec(
     LOG_print( "[%s]\tMYSQL_exec( <'%s'>, \"%s\", ... ).\n", TIME_get_gmt(), db_connection->id, sql );
     pthread_mutex_lock( &db_exec_mutex );
 
-    dst_result->row_count = 0;
-    dst_result->field_count = 0;
 
-    dst_result->sql = ( char* )SAFECALLOC( sql_length + 1, sizeof( char ), __FILE__, __LINE__ );
+    if( dst_result ) {
+        dst_result->row_count = 0;
+        dst_result->field_count = 0;
 
-    for( l = 0; l < sql_length; l++ ) {
-        *( dst_result->sql + l ) = sql[ l ];
+        dst_result->sql = ( char* )SAFECALLOC( sql_length + 1, sizeof( char ), __FILE__, __LINE__ );
+
+        for( l = 0; l < sql_length; l++ ) {
+            *( dst_result->sql + l ) = sql[ l ];
+        }
     }
 
     if( db_connection->connection ) {
@@ -101,52 +104,102 @@ int MYSQL_exec(
 
             int row_count = 0;
             int field_count = 0;
-            query_result = mysql_real_query( db_connection->connection, dst_result->sql, ( unsigned long )sql_length );
+            query_result = mysql_real_query( db_connection->connection, sql, ( unsigned long )sql_length );
 
             if( query_result == 0 ) {
                 mysql_result = mysql_store_result( db_connection->connection );
             } else {
-                LOG_print( "[%s][ERROR]\tMYSQL_exec: #%d, %s (\"%s\", len=%d)\n", TIME_get_gmt(), query_result, mysql_error( db_connection->connection ), dst_result->sql, sql_length );
+                LOG_print( "[%s][ERROR]\tMYSQL_exec: #%d, %s (\"%s\", len=%d)\n", TIME_get_gmt(), query_result, mysql_error( db_connection->connection ), sql, sql_length );
                 pthread_mutex_unlock( &db_exec_mutex );
                 return 0;
             }
 
             if( mysql_result ) {
                 field_count = ( int )mysql_num_fields( mysql_result );
-                dst_result->field_count = field_count;
+                if( dst_result ) {
+                    dst_result->field_count = field_count;
+                }
+                
                 row_count = ( int )mysql_num_rows( mysql_result );
             }
 
             if( row_count > 0 ) {
                 unsigned long val_length = 0;
-                dst_result->row_count = row_count;
-                dst_result->records = ( DB_RECORD* )SAFEMALLOC( row_count * sizeof( DB_RECORD ), __FILE__, __LINE__ );
 
-                for( int i = 0; i < row_count; i++ ) {
-                    mysql_row = mysql_fetch_row( mysql_result );
-                    lengths = mysql_fetch_lengths( mysql_result );
-                    dst_result->records[ i ].fields = ( DB_FIELD* )SAFEMALLOC( field_count * sizeof( DB_FIELD ), __FILE__, __LINE__ );
-                    dst_result->records[ i ].field_count = field_count;
+                if( query_exec_callback ) {
 
-                    for( int j = 0; j < field_count; j++ ) {
-                        val_length = lengths[ j ];
-                        if( val_length > 0 ) {
-                            dst_result->records[ i ].fields[ j ].size = val_length;
-                            dst_result->records[ i ].fields[ j ].value = SAFECALLOC( val_length + 1, sizeof( char ), __FILE__, __LINE__ );
-                            for( unsigned long k = 0; k < val_length; k++ ) {
-                                *( k + dst_result->records[ i ].fields[ j ].value ) = mysql_row[ j ][ k ];
+                    char *table_fields[ MAX_COLUMNS ];
+
+                    for( int i = 0; i < field_count; i++ ) {
+                        table_fields[ i ] = SAFECALLOC( MAX_COLUMN_NAME_LEN + 1, sizeof( char ), __FILE__, __LINE__ );
+                        mysql_field = mysql_fetch_field( mysql_result );
+                        strncpy( table_fields[ i ], mysql_field->name, MAX_COLUMN_NAME_LEN );
+                    }
+
+                    for( int i = 0; i < row_count; i++ ) {
+                        DB_RECORD* record = SAFEMALLOC( 1 * sizeof( DB_RECORD ), __FILE__, __LINE__ );
+
+                        record->field_count = field_count;
+                        record->fields = ( DB_FIELD* )SAFEMALLOC( field_count * sizeof( DB_FIELD ), __FILE__, __LINE__ );
+
+                        mysql_row = mysql_fetch_row( mysql_result );
+                        lengths = mysql_fetch_lengths( mysql_result );
+
+                        for( int j = 0; j < field_count; j++ ) {
+                            val_length = lengths[ j ];
+                            if( val_length > 0 ) {
+                                record->fields[ j ].size = val_length;
+                                record->fields[ j ].value = SAFECALLOC( val_length + 1, sizeof( char ), __FILE__, __LINE__ );
+                                for( unsigned long k = 0; k < val_length; k++ ) {
+                                    *( k + record->fields[ j ].value ) = mysql_row[ j ][ k ];
+                                }
+                            } else {
+                                record->fields[ j ].value = NULL;
+                                record->fields[ j ].size = 0;
                             }
-                        } else {
-                            dst_result->records[ i ].fields[ j ].value = NULL;
-                            dst_result->records[ i ].fields[ j ].size = 0;
+
+                            strncpy( record->fields[ j ].label, table_fields[ j ], MAX_COLUMN_NAME_LEN );
                         }
+
+                        pthread_mutex_unlock( &db_exec_mutex );
+                        ( *query_exec_callback )( record, data_ptr1, data_ptr2 );
+                    }
+
+                    for( int i = 0; i < field_count; i++ ) {
+                        free( table_fields[ i ] ); table_fields[ i ] = NULL;
                     }
                 }
 
-                for( int i = 0; i < field_count; i++ ) {
-                    mysql_field = mysql_fetch_field( mysql_result );
-                    for( int j = 0; j < row_count; j++ ) {
-                        strncpy( dst_result->records[ j ].fields[ i ].label, mysql_field->name, MAX_COLUMN_NAME_LEN );
+                if( dst_result ) {
+                    dst_result->row_count = row_count;
+                    dst_result->records = ( DB_RECORD* )SAFEMALLOC( row_count * sizeof( DB_RECORD ), __FILE__, __LINE__ );
+
+                    for( int i = 0; i < row_count; i++ ) {
+                        mysql_row = mysql_fetch_row( mysql_result );
+                        lengths = mysql_fetch_lengths( mysql_result );
+                        dst_result->records[ i ].fields = ( DB_FIELD* )SAFEMALLOC( field_count * sizeof( DB_FIELD ), __FILE__, __LINE__ );
+                        dst_result->records[ i ].field_count = field_count;
+
+                        for( int j = 0; j < field_count; j++ ) {
+                            val_length = lengths[ j ];
+                            if( val_length > 0 ) {
+                                dst_result->records[ i ].fields[ j ].size = val_length;
+                                dst_result->records[ i ].fields[ j ].value = SAFECALLOC( val_length + 1, sizeof( char ), __FILE__, __LINE__ );
+                                for( unsigned long k = 0; k < val_length; k++ ) {
+                                    *( k + dst_result->records[ i ].fields[ j ].value ) = mysql_row[ j ][ k ];
+                                }
+                            } else {
+                                dst_result->records[ i ].fields[ j ].value = NULL;
+                                dst_result->records[ i ].fields[ j ].size = 0;
+                            }
+                        }
+                    }
+
+                    for( int i = 0; i < field_count; i++ ) {
+                        mysql_field = mysql_fetch_field( mysql_result );
+                        for( int j = 0; j < row_count; j++ ) {
+                            strncpy( dst_result->records[ j ].fields[ i ].label, mysql_field->name, MAX_COLUMN_NAME_LEN );
+                        }
                     }
                 }
             }
@@ -155,67 +208,7 @@ int MYSQL_exec(
 
         } else if( params_count > 0 ) {
             /* Query with bind parameters */
-            stmt = mysql_stmt_init( db_connection->connection );
-            if( !stmt ) {
-                LOG_print( "[%s][ERROR]\tMYSQL_exec: mysql_stmt_init() out of memory.\n", TIME_get_gmt() );
-                mysql_stmt_close( stmt );
-                pthread_mutex_unlock( &db_exec_mutex );
-                return 0;
-            }
-            if( mysql_stmt_prepare( stmt, dst_result->sql, ( unsigned long )sql_length ) ) {
-                LOG_print( "[%s][ERROR]\tMYSQL_exec: mysql_stmt_prepare() SQL failed: %s\n", TIME_get_gmt(), mysql_stmt_error( stmt ) );
-                mysql_stmt_close( stmt );
-                pthread_mutex_unlock( &db_exec_mutex );
-                return 0;
-            }
-
-            int internal_params_count = mysql_stmt_param_count( stmt );
-
-            if( internal_params_count != params_count ) {
-                LOG_print( "[%s][ERROR]\tMYSQL_exec: invalid parameter count returned by MySQL.\n", TIME_get_gmt(), mysql_stmt_error( stmt ) );
-                mysql_stmt_close( stmt );
-                pthread_mutex_unlock( &db_exec_mutex );
-                return 0;
-            }
-
-            bind_param = SAFEMALLOC( internal_params_count * sizeof( MYSQL_BIND ), __FILE__, __LINE__ );
-            memset( bind_param, 0, internal_params_count * sizeof( MYSQL_BIND ) );
-
-            for( int i = 0; i < internal_params_count; i++ ) {
-                bind_param[ i ].buffer_type = MYSQL_TYPE_STRING;
-                bind_param[ i ].buffer = ( char* )param_values[ i ];
-                bind_param[ i ].buffer_length = param_lengths[ i ];
-                bind_param[ i ].is_null = 0;
-                bind_param[ i ].length = 0;
-            }
-
-            if( mysql_stmt_bind_param( stmt, bind_param ) ) {
-                LOG_print( "[%s][ERROR]\tMYSQL_exec: mysql_stmt_bind_param() failed\n" );
-                LOG_print( " %s\n", mysql_stmt_error( stmt ) );
-                free( bind_param ); bind_param = NULL;
-                mysql_stmt_close( stmt );
-                pthread_mutex_unlock( &db_exec_mutex );
-                return 0;
-            }
-
-            if( mysql_stmt_execute( stmt ) ) {
-                LOG_print( "[%s][ERROR]\tMYSQL_exec: mysql_stmt_execute() failed\n" );
-                LOG_print( " %s\n", mysql_stmt_error( stmt ) );
-                free( bind_param ); bind_param = NULL;
-                mysql_stmt_close( stmt );
-                pthread_mutex_unlock( &db_exec_mutex );
-                return 0;
-            }
-
-            /****
-            * TODO: mysql_stmt_fetch (eg. https://docs.oracle.com/cd/E17952_01/mysql-5.5-en/c-api-prepared-call-statements.html)
-            ****/
-
-            free( bind_param ); bind_param = NULL;
-            mysql_stmt_free_result( stmt );
-            mysql_stmt_close( stmt );
-
-            pthread_mutex_unlock( &db_exec_mutex );
+            LOG_print( "[%s] Warning: not yet implemented!\n", TIME_get_gmt() );
         }
 
     } else {

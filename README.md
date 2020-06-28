@@ -12,6 +12,7 @@
 ### Architecture
 #### Overview
 * DCPAM is ETL - based solution([2]).
+* Highly memory-efficient: each fetched record is instantly stored into Staging Area([3]) by Extract process. So no memory overhead caused by large queries.
 * Each Change Data Capture process operates independently within separated thread.
 * Multiple instances of DCPAM with different configuration can run on single server.
 * Most database support is provided with native libraries (see _Data sources_ and _Linux Dependencies_ in this document).
@@ -19,7 +20,7 @@
 ![Architecture overview](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/architecture.png)
 
 ####  ETL and Change Data Capture
-Chance Data Capture([3]) solutions depends on the data sources (currently it's database only):
+Chance Data Capture([4]) solutions depends on the data sources (currently it's database only):
 
 | CDC solution                            | Source        |
 |-----------------------------------------|:-------------:| 
@@ -36,10 +37,11 @@ DCPAM is still work in progress, with following data sources:
 | 1    | PostgreSQL      					| Database        | Native  | Available   |
 | 2    | MySQL 8         					| Database        | Native  | Available   |
 | 3    | MariaDB/MySQL 5 					| Database        | Native  | Available   |
-| 4    | SQL Server/Azure SQL Database      | Database        | ODBC    | Available   |
+| 4    | SQL Server/Azure SQL Database      | Database        | Native via ODBC* | Available   |
 | 5    | Oracle Database 					| Database        | Native  | Available   |
 | 6    | SQLite3         					| Database        | Native  | Available   |
 
+> \* SQL Server/Azure SQL Database: [ODBC is the primary native data access API for applications written in C and C++ for SQL Server](https://docs.microsoft.com/en-us/sql/connect/odbc/microsoft-odbc-driver-for-sql-server).
 
 ### Configuration
 File `config.json` is DCPAM foundation. It defines:
@@ -86,4 +88,5 @@ This software uses:
 
 [1]: https://en.wikipedia.org/wiki/Data_warehouse
 [2]: https://en.wikipedia.org/wiki/Extract,_transform,_load
-[3]: https://en.wikipedia.org/wiki/Change_data_capture
+[3]: https://en.wikipedia.org/wiki/Staging_(data)
+[4]: https://en.wikipedia.org/wiki/Change_data_capture

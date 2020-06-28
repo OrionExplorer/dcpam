@@ -93,14 +93,13 @@ int _DB_QUERY_replace_params( char *src,  const char *search, const char* const 
         src_part[ repl_count ] = SAFECALLOC( strlen( ptr ) + 1, sizeof( char ), __FILE__, __LINE__ );
         /* Store token as query part */
         memcpy( src_part[ repl_count ], ptr, strlen( ptr ) );
-
         ptr = strtok( NULL, "?" );
         repl_count++;
     }
 
     if( repl_count > 0 ) {
         /* Allocate temporary buffer for writing output query */
-        char* dst_buffer = SAFEMALLOC( ( *dst_len + 1 ) * sizeof( char ), __FILE__, __LINE__ );
+        char* dst_buffer = SAFECALLOC( ( *dst_len + 1 ),  sizeof( char ), __FILE__, __LINE__ );
         /* Store already written data length to dst_buffer for concatenate with memcpy */
         size_t current_buff_len = 0;
 

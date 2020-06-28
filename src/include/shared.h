@@ -32,8 +32,8 @@
 #define EXT_LEN                             8
 #define EXT_LEN_CHAR                        8*sizeof( char )
 
-#define MAX_PATH_LENGTH                     256
-#define MAX_PATH_LENGTH_CHAR                256*sizeof( char )
+#define MAX_PATH_LENGTH                     2048
+#define MAX_PATH_LENGTH_CHAR                2048*sizeof( char )
 #define MAX_CLIENTS                         FD_SETSIZE
 #define DEFAULT_PORT                        1212
 #define MAX_COLUMNS							64

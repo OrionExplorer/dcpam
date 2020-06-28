@@ -208,20 +208,23 @@ int ORACLE_exec(
     LOG_print( "[%s]\tORACLE_exec( <'%s'>, \"%s\", ... ).\n", TIME_get_gmt(), db_connection->id, sql );
     pthread_mutex_lock( &db_exec_mutex );
 
-    dst_result->row_count = 0;
-    dst_result->field_count = 0;
+    if( dst_result ) {
+        dst_result->row_count = 0;
+        dst_result->field_count = 0;
 
-    dst_result->sql = SAFECALLOC( sql_length + 1, sizeof( char ), __FILE__, __LINE__ );
-    for( unsigned long l = 0; l < sql_length; l++ ) {
-        *( dst_result->sql + l ) = sql[ l ];
+        dst_result->sql = SAFECALLOC( sql_length + 1, sizeof( char ), __FILE__, __LINE__ );
+        for( unsigned long l = 0; l < sql_length; l++ ) {
+            *( dst_result->sql + l ) = sql[ l ];
+        }
     }
+    
 
     OCIHandleAlloc( ( dvoid* )db_connection->envhp, ( dvoid** )&errhp, OCI_HTYPE_ERROR,
         ( size_t )0, ( dvoid** )0 );
 
     OCIHandleAlloc( ( dvoid* )db_connection->envhp, ( dvoid** )&stmthp,
         OCI_HTYPE_STMT, ( size_t )0, ( dvoid** )0 );
-    retcode = OCIStmtPrepare( stmthp, errhp, ( text* )dst_result->sql,
+    retcode = OCIStmtPrepare( stmthp, errhp, ( text* )sql,
         ( ub4 )sql_length,
         ( ub4 )OCI_NTV_SYNTAX, ( ub4 )OCI_DEFAULT );
     if( retcode != OCI_SUCCESS ) {
@@ -349,34 +352,63 @@ int ORACLE_exec(
                     break;
                 }
 
-                dst_result->records = ( DB_RECORD* )realloc( tmp_records, ( row_count + 1 ) * sizeof( DB_RECORD ) );
-                if( dst_result->records ) {
-                    tmp_records = dst_result->records;
-                    dst_result->records[ row_count ].fields = ( DB_FIELD* )SAFEMALLOC( field_count * sizeof( DB_FIELD ), __FILE__, __LINE__ );
-                    dst_result->records[ row_count ].field_count = field_count;
+                if( query_exec_callback ) {
+
+                    DB_RECORD   *record = SAFEMALLOC( 1 * sizeof( DB_RECORD ), __FILE__, __LINE__ );
+
+                    record->field_count = field_count;
+                    record->fields = ( DB_FIELD* )SAFEMALLOC( field_count * sizeof( DB_FIELD ), __FILE__, __LINE__ );
 
                     for( int i = 0; i < field_count; i++ ) {
-                        _real_col_width[ i ] = ( sb4 )strlen( (const char* )_col_data[ i ] );
-                        strncpy( dst_result->records[ row_count ].fields[ i ].label, column_name[ i ], MAX_COLUMN_NAME_LEN );
+                        _real_col_width[ i ] = ( sb4 )strlen( ( const char* )_col_data[ i ] );
+                        strncpy( record->fields[ i ].label, column_name[ i ], MAX_COLUMN_NAME_LEN );
 
-                        dst_result->records[ row_count ].fields[ i ].size = _real_col_width[ i ];
+                        record->fields[ i ].size = _real_col_width[ i ];
                         if( _real_col_width[ i ] > 0 ) {
-                            dst_result->records[ row_count ].fields[ i ].value = SAFECALLOC( _real_col_width[ i ] + 1, sizeof( char ), __FILE__, __LINE__ );
+                            record->fields[ i ].value = SAFECALLOC( _real_col_width[ i ] + 1, sizeof( char ), __FILE__, __LINE__ );
                             for( int j = 0; j < _real_col_width[ i ]; j++ ) {
-                                dst_result->records[ row_count ].fields[ i ].value[ j ] = _col_data[ i ][ j ];
+                                record->fields[ i ].value[ j ] = _col_data[ i ][ j ];
                             }
                         } else {
-                            dst_result->records[ row_count ].fields[ i ].value = NULL;
+                            record->fields[ i ].value = NULL;
                         }
                     }
+
+                    pthread_mutex_unlock( &db_exec_mutex );
+                    ( *query_exec_callback )( record, data_ptr1, data_ptr2 );
                 }
 
-                row_count++;
+                if( dst_result ) {
+                    dst_result->records = ( DB_RECORD* )realloc( tmp_records, ( row_count + 1 ) * sizeof( DB_RECORD ) );
+                    if( dst_result->records ) {
+                        tmp_records = dst_result->records;
+                        dst_result->records[ row_count ].fields = ( DB_FIELD* )SAFEMALLOC( field_count * sizeof( DB_FIELD ), __FILE__, __LINE__ );
+                        dst_result->records[ row_count ].field_count = field_count;
+
+                        for( int i = 0; i < field_count; i++ ) {
+                            _real_col_width[ i ] = ( sb4 )strlen( ( const char* )_col_data[ i ] );
+                            strncpy( dst_result->records[ row_count ].fields[ i ].label, column_name[ i ], MAX_COLUMN_NAME_LEN );
+
+                            dst_result->records[ row_count ].fields[ i ].size = _real_col_width[ i ];
+                            if( _real_col_width[ i ] > 0 ) {
+                                dst_result->records[ row_count ].fields[ i ].value = SAFECALLOC( _real_col_width[ i ] + 1, sizeof( char ), __FILE__, __LINE__ );
+                                for( int j = 0; j < _real_col_width[ i ]; j++ ) {
+                                    dst_result->records[ row_count ].fields[ i ].value[ j ] = _col_data[ i ][ j ];
+                                }
+                            } else {
+                                dst_result->records[ row_count ].fields[ i ].value = NULL;
+                            }
+                        }
+                    }
+                    row_count++;
+                }
             }
         }
 
-        dst_result->field_count = field_count;
-        dst_result->row_count = row_count;
+        if( dst_result ) {
+            dst_result->field_count = field_count;
+            dst_result->row_count = row_count;
+        }
 
         for( int i = 0; i < field_count; i++ ) {
             free( column_name[ i ] ); column_name[ i ] = NULL;

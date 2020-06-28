@@ -2,6 +2,7 @@
 #include "../include/utils/time.h"
 #include "../include/utils/log.h"
 #include "../include/utils/memory.h"
+#include "../include/utils/strings.h"
 #include <stdlib.h>
 #include <string.h>
 #include <sql.h>
@@ -21,7 +22,7 @@ void ODBC_get_error( char* fn, SQLHANDLE handle, SQLSMALLINT type ) {
     SQLSMALLINT text_len;
     SQLRETURN ret;
 
-    LOG_print( "Error: Driver reported the following error %s\n", fn );
+    LOG_print( "Error: Driver reported the following error - [%s]:\n", fn );
     do
     {
         ret = SQLGetDiagRec( type, handle, ++i, sql_state, &native_err,
@@ -130,8 +131,9 @@ int ODBC_exec(
     SQLWCHAR        *column_data[ MAX_COLUMNS ];
     SQLULEN         column_data_size[ MAX_COLUMNS ];
     SQLLEN          column_data_len[ MAX_COLUMNS ];
+    SQLSMALLINT     column_data_type[ MAX_COLUMNS ];
     SQLSMALLINT     column_data_nullable[ MAX_COLUMNS ];
-    SQLSMALLINT     num_columns;
+    SQLSMALLINT     num_columns = 0;
     DB_RECORD       *tmp_records = NULL;
 
     if( db_connection->active == 0 || db_connection->id == NULL ) {
@@ -141,17 +143,21 @@ int ODBC_exec(
     LOG_print( "[%s]\tODBC_exec( <'%s'>, \"%s\", ... ).\n", TIME_get_gmt(), db_connection->id, sql );
     pthread_mutex_lock( &db_exec_mutex );
 
-    dst_result->row_count = 0;
-    dst_result->field_count = 0;
+    if( dst_result ) {
+        dst_result->row_count = 0;
+        dst_result->field_count = 0;
 
-    dst_result->sql = SAFECALLOC( sql_length + 1, sizeof( char ), __FILE__, __LINE__ );
-    for( unsigned long l = 0; l < sql_length; l++ ) {
-        *( dst_result->sql + l ) = sql[ l ];
+        dst_result->sql = SAFECALLOC( sql_length + 1, sizeof( char ), __FILE__, __LINE__ );
+        for( unsigned long l = 0; l < sql_length; l++ ) {
+            *( dst_result->sql + l ) = sql[ l ];
+        }
     }
 
     if( db_connection->connection ) {
         retcode = SQLAllocHandle( SQL_HANDLE_STMT, db_connection->connection, &stmt );
         CHECK_ERROR( retcode, "SQLAllocHandle()", stmt, SQL_HANDLE_STMT, TRUE );
+
+        SQLSetStmtAttr( &stmt, SQL_ATTR_CURSOR_TYPE, ( SQLPOINTER )SQL_CURSOR_DYNAMIC, 0 );
 
         /* Simple query without binding parameters */
         if( param_values == NULL || params_count == 0 ) {
@@ -164,42 +170,44 @@ int ODBC_exec(
             retcode = SQLPrepare( stmt, ( SQLCHAR* )sql, ( SQLINTEGER )sql_length );
             CHECK_ERROR( retcode, "SQLPrepare()", stmt, SQL_HANDLE_STMT, TRUE );
 
-            retcode = SQLNumResultCols( stmt, &num_columns );
-            if( ( retcode != SQL_SUCCESS ) && ( retcode != SQL_SUCCESS_WITH_INFO ) ) {
-                ODBC_get_error( "SQLNumResultCols()", stmt, SQL_HANDLE_STMT );
-                SQLFreeHandle( SQL_HANDLE_STMT, stmt );
+            if( DB_QUERY_get_type( sql ) == DQT_SELECT ) {
+                retcode = SQLNumResultCols( stmt, &num_columns );
+                if( ( retcode != SQL_SUCCESS ) && ( retcode != SQL_SUCCESS_WITH_INFO ) ) {
+                    ODBC_get_error( "SQLNumResultCols()", stmt, SQL_HANDLE_STMT );
+                    SQLFreeHandle( SQL_HANDLE_STMT, stmt );
 
-                LOG_print( "[%s]\tODBC_exec.\n", TIME_get_gmt() );
-                pthread_mutex_unlock( &db_exec_mutex );
-                return 0;
-            }
+                    LOG_print( "[%s]\tODBC_exec.\n", TIME_get_gmt() );
+                    pthread_mutex_unlock( &db_exec_mutex );
+                    return 0;
+                }
 
-            for( int i = 0; i < num_columns; i++ ) {
-                column_name[ i ] = SAFECALLOC( MAX_COLUMN_NAME_LEN + 1, sizeof( SQLCHAR ), __FILE__, __LINE__ );
-                retcode = SQLDescribeCol(
-                    stmt,
-                    i + 1,
-                    column_name[ i ],
-                    MAX_COLUMN_NAME_LEN,
-                    NULL,
-                    NULL,
-                    &column_data_size[ i ],
-                    NULL,
-                    &column_data_nullable[ i ]
-                );
-                CHECK_ERROR( retcode, "SQLDescribeCol()", stmt, SQL_HANDLE_STMT, TRUE );
+                for( int i = 0; i < num_columns; i++ ) {
+                    column_name[ i ] = SAFECALLOC( MAX_COLUMN_NAME_LEN + 1, sizeof( SQLCHAR ), __FILE__, __LINE__ );
+                    retcode = SQLDescribeCol(
+                        stmt,
+                        i + 1,
+                        column_name[ i ],
+                        MAX_COLUMN_NAME_LEN,
+                        NULL,
+                        &column_data_type[ i ],
+                        &column_data_size[ i ],
+                        NULL,
+                        &column_data_nullable[ i ]
+                    );
+                    CHECK_ERROR( retcode, "SQLDescribeCol()", stmt, SQL_HANDLE_STMT, TRUE );
 
-                column_data[ i ] = SAFECALLOC( column_data_size[ i ] + 1, sizeof( SQLCHAR ), __FILE__, __LINE__ );
+                    column_data[ i ] = SAFECALLOC( column_data_size[ i ] + 1, sizeof( SQLCHAR ), __FILE__, __LINE__ );
 
-                retcode = SQLBindCol(
-                    stmt,
-                    i + 1,
-                    SQL_C_CHAR,
-                    column_data[ i ],
-                    column_data_size[ i ],
-                    &column_data_len[ i ]
-                );
-                CHECK_ERROR( retcode, "SQLBindCol()", stmt, SQL_HANDLE_STMT, TRUE );
+                    retcode = SQLBindCol(
+                        stmt,
+                        i + 1,
+                        SQL_C_CHAR,
+                        column_data[ i ],
+                        column_data_size[ i ],
+                        &column_data_len[ i ]
+                    );
+                    CHECK_ERROR( retcode, "SQLBindCol()", stmt, SQL_HANDLE_STMT, TRUE );
+                }
             }
 
             retcode = SQLExecute( stmt );
@@ -219,13 +227,13 @@ int ODBC_exec(
                 return 0;
             }
 
-            if( DB_QUERY_get_type( dst_result->sql ) == DQT_SELECT && num_columns > 0 ) {
+            if( DB_QUERY_get_type( sql ) == DQT_SELECT && num_columns > 0 ) {
 
                 int row_count = 0;
 
-                if( dst_result->records ) {
+                /*if( dst_result && dst_result->records ) {
                     free( dst_result->records ); dst_result->records = NULL;
-                }
+                }*/
                 while( TRUE ) {
                     retcode = SQLFetch( stmt );
                     if( retcode == SQL_NO_DATA ) {
@@ -234,34 +242,74 @@ int ODBC_exec(
 
                     CHECK_ERROR( retcode, "SQLFetch()", stmt, SQL_HANDLE_STMT, TRUE );
 
-                    dst_result->records = ( DB_RECORD* )realloc( tmp_records, ( row_count + 1 ) * sizeof( DB_RECORD ) );
-                    if( dst_result->records != NULL ) {
-                        tmp_records = dst_result->records;
-                        dst_result->records[ row_count ].fields = ( DB_FIELD* )SAFEMALLOC( num_columns * sizeof( DB_FIELD ), __FILE__, __LINE__ );
-                        dst_result->records[ row_count ].field_count = num_columns;
+                    if( query_exec_callback ) {
+
+                        DB_RECORD   *record = SAFEMALLOC( 1 * sizeof( DB_RECORD ), __FILE__, __LINE__ );
+
+                        record->field_count = num_columns;
+                        record->fields = ( DB_FIELD* )SAFEMALLOC( num_columns * sizeof( DB_FIELD ), __FILE__, __LINE__ );
 
                         for( int k = 0; k < num_columns; k++ ) {
                             if( column_data_len[ k ] != SQL_NULL_DATA ) {
-                                strncpy( dst_result->records[ row_count ].fields[ k ].label, (const char *)column_name[ k ], MAX_COLUMN_NAME_LEN );
-                                dst_result->records[ row_count ].fields[ k ].size = ( int )column_data_len[ k ];
-                                dst_result->records[ row_count ].fields[ k ].value = SAFECALLOC( ( int )column_data_len[ k ] + 1, sizeof( char ), __FILE__, __LINE__ );
-                                memcpy( dst_result->records[ row_count ].fields[ k ].value, ( char* )column_data[ k ], ( int )column_data_len[ k ] );
+                                strncpy( record->fields[ k ].label, ( const char* )column_name[ k ], MAX_COLUMN_NAME_LEN );
+                                record->fields[ k ].value = SAFECALLOC( ( size_t )column_data_len[ k ] + 1, sizeof( char ), __FILE__, __LINE__ );
+                                memcpy( record->fields[ k ].value, ( char* )column_data[ k ], ( size_t )column_data_len[ k ] + 1);
+                                record->fields[ k ].size = ( unsigned long )column_data_len[ k ];
+                                /* Special case, where datetime value length is larger by 1 than real date string size */
+                                if( column_data_type[ k ] == SQL_TYPE_TIMESTAMP ) {
+                                    memcpy( record->fields[ k ].value, rtrim( record->fields[ k ].value, ' ' ), ( size_t )column_data_len[ k ] - 1 );
+                                    record->fields[ k ].size = ( unsigned long )column_data_len[ k ] - 1;
+                                }
                             } else {
-                                strncpy( dst_result->records[ row_count ].fields[ k ].label, "(No column name)", MAX_COLUMN_NAME_LEN );
-                                dst_result->records[ row_count ].fields[ k ].size = 0;
-                                dst_result->records[ row_count ].fields[ k ].value = NULL;
+                                strncpy( record->fields[ k ].label, ( const char* )column_name[ k ], MAX_COLUMN_NAME_LEN );
+                                record->fields[ k ].size = 0;
+                                record->fields[ k ].value = NULL;
                             }
                         }
+
+                        pthread_mutex_unlock( &db_exec_mutex );
+                        ( *query_exec_callback )( record, data_ptr1, data_ptr2 );
+
                     }
 
-                    row_count++;
+                    if( dst_result ) {
+                        dst_result->records = ( DB_RECORD* )realloc( tmp_records, ( row_count + 1 ) * sizeof( DB_RECORD ) );
+                        if( dst_result->records != NULL ) {
+                            tmp_records = dst_result->records;
+                            dst_result->records[ row_count ].fields = ( DB_FIELD* )SAFEMALLOC( num_columns * sizeof( DB_FIELD ), __FILE__, __LINE__ );
+                            dst_result->records[ row_count ].field_count = num_columns;
+
+                            for( int k = 0; k < num_columns; k++ ) {
+
+                                if( column_data_len[ k ] != SQL_NULL_DATA ) {
+                                    strncpy( dst_result->records[ row_count ].fields[ k ].label, ( const char* )column_name[ k ], MAX_COLUMN_NAME_LEN );
+                                    dst_result->records[ row_count ].fields[ k ].value = SAFECALLOC( ( size_t )(column_data_len[ k ] + 1),  sizeof( char ), __FILE__, __LINE__ );
+                                    memcpy( dst_result->records[ row_count ].fields[ k ].value, ( char* )column_data[ k ], ( size_t )column_data_len[ k ] + 1);
+                                    dst_result->records[ row_count ].fields[ k ].size = ( unsigned long )column_data_len[ k ];
+                                    /* Special case, where datetime value length is larger by 1 than real date string size */
+                                    if( column_data_type[ k ] == SQL_TYPE_TIMESTAMP ) {
+                                        memcpy( dst_result->records[ row_count ].fields[ k ].value, rtrim( dst_result->records[ row_count ].fields[ k ].value, ' ' ), ( size_t )column_data_len[ k ] - 1 );
+                                        dst_result->records[ row_count ].fields[ k ].size = ( unsigned long )column_data_len[ k ] - 1;
+                                    }
+                                    
+                                } else {
+                                    strncpy( dst_result->records[ row_count ].fields[ k ].label, ( const char* )column_name[ k ], MAX_COLUMN_NAME_LEN );
+                                    dst_result->records[ row_count ].fields[ k ].size = 0;
+                                    dst_result->records[ row_count ].fields[ k ].value = NULL;
+                                }
+                            }
+                        }
+                        row_count++;
+                    }
                 }
 
-                retcode = SQLCloseCursor( stmt );
-                CHECK_ERROR( retcode, "SQLCloseCursor()", stmt, SQL_HANDLE_DBC, TRUE );
-                tmp_records = NULL;
-                dst_result->row_count = row_count;
-                dst_result->field_count = num_columns;
+                //retcode = SQLCloseCursor( stmt );
+                //CHECK_ERROR( retcode, "SQLCloseCursor()", stmt, SQL_HANDLE_DBC, TRUE ); 
+                if( dst_result ) {
+                    tmp_records = NULL;
+                    dst_result->row_count = row_count;
+                    dst_result->field_count = num_columns;
+                }
 
                 for( int i = 0; i < num_columns; i++ ) {
                     free( column_name[ i ] ); column_name[ i ] = NULL;
