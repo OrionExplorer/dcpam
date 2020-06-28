@@ -81,13 +81,15 @@ int MARIADB_exec(
     MYSQL_BIND* bind_param = NULL;
     unsigned long* lengths = NULL;
     int             query_result = -1;
-    unsigned long   l = 0;
 
     LOG_print( "[%s]\tMARIADB_exec( <'%s'>, \"%s\", ... ).\n", TIME_get_gmt(), db_connection->id, sql );
     pthread_mutex_lock( &db_exec_mutex );
 
 
     if( dst_result ) {
+
+        unsigned long   l = 0;
+
         dst_result->row_count = 0;
         dst_result->field_count = 0;
 
