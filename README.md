@@ -12,7 +12,9 @@
 ### Architecture
 #### Overview
 * DCPAM is ETL - based solution([2]).
-* Highly memory-efficient: each fetched record is instantly stored into Staging Area([3]) by Extract process. So no memory overhead caused by large queries.
+* Highly memory-efficient - no memory overhead caused by large queries:
+	* each extracted record is instantly stored into Staging Area([3]) by Extract process
+	* each staged and transformed record is instantly loaded into target tables by Load process
 * Each Change Data Capture process operates independently within separated thread.
 * Multiple instances of DCPAM with different configuration can run on single server.
 * Most database support is provided with native libraries (see _Data sources_ and _Linux Dependencies_ in this document).
@@ -32,14 +34,14 @@ Chance Data Capture([4]) solutions depends on the data sources (currently it's d
 
 ### Data sources
 DCPAM is still work in progress, with following data sources:
-|  ID  | Data source                        | Type            | Support | Status      |
-|:----:|:-----------------------------------|:---------------:|:-------:|:-----------:|
-| 1    | PostgreSQL      					| Database        | Native  | Available   |
-| 2    | MySQL 8         					| Database        | Native  | Available   |
-| 3    | MariaDB/MySQL 5 					| Database        | Native  | Available   |
+|  ID  | Data source                        | Type            | Support          | Status      |
+|:----:|:-----------------------------------|:---------------:|:----------------:|:-----------:|
+| 1    | PostgreSQL      					| Database        | Native           | Available   |
+| 2    | MySQL 8         					| Database        | Native           | Available   |
+| 3    | MariaDB/MySQL 5 					| Database        | Native           | Available   |
 | 4    | SQL Server/Azure SQL Database      | Database        | Native via ODBC* | Available   |
-| 5    | Oracle Database 					| Database        | Native  | Available   |
-| 6    | SQLite3         					| Database        | Native  | Available   |
+| 5    | Oracle Database 					| Database        | Native           | Available   |
+| 6    | SQLite3         					| Database        | Native           | Available   |
 
 > \* SQL Server/Azure SQL Database: [ODBC is the primary native data access API for applications written in C and C++ for SQL Server](https://docs.microsoft.com/en-us/sql/connect/odbc/microsoft-odbc-driver-for-sql-server).
 
@@ -47,7 +49,7 @@ DCPAM is still work in progress, with following data sources:
 File `config.json` is DCPAM foundation. It defines:
 * Data sources
 * Extract, Transform and Load process for each data source
-* DCPAM database, tabels and views (see _app.DATA_), where integrated data is stored
+* DCPAM database, tables and views (see _app.DATA_), where integrated data is stored
 
 
 #### Compilation (Linux)

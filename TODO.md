@@ -26,13 +26,10 @@
 		* [x] Oracle Database
 		* [x] SQLite
 	* [x] `CDC_Extract*`  must support callback function to call `CDC_Stage*`.
-* [ ] Rebuild DCPAM architecture to load each fetched record directly from Staging Area into Target tables. That would completely remove memory overhead during Load process:
-	* [ ] Rebuild `CDC_LoadGeneric` internals
+* [x] Rebuild DCPAM architecture to load each fetched record directly from Staging Area into Target tables. That would completely remove memory overhead during Load process:
+	* [x] Rebuild `CDC_LoadGeneric` internals
 	* [ ] Prepare callback functions:
-		* [ ] `_LoadInserted_callback`
-		* [ ] `_LoadDeleted_callback`
-		* [ ] `_LoadModified_callback`
-		* [ ] `_LoadGeneric_callback`
+		* [x] `_LoadGeneric_callback`
 * [ ] Transform subprocess (https://en.wikipedia.org/wiki/Extract,_transform,_load#Transform):
 	* [ ] Proposal #1: simple internal operations within dcpam.
 	* [x] Proposal #2: make use of external scripts/applications.

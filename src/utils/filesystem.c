@@ -27,33 +27,33 @@ short directory_exists( const char *path ) {
 
 
 char* file_get_content( const char *filename ) {
-	FILE 		*fp = NULL;
-	char 		*content = NULL;
+    FILE        *fp = NULL;
+    char        *content = NULL;
 
-	fp = fopen( filename, "rb" );
-	if( fp ) {
+    fp = fopen( filename, "rb" );
+    if( fp ) {
 
-		if( fseek( fp, 0, SEEK_END ) == 0 ) {
+        if( fseek( fp, 0, SEEK_END ) == 0 ) {
 
-			long len = ftell( fp );
+            long len = ftell( fp );
 
-			if( len > 0 && fseek( fp, 0, SEEK_SET ) == 0 ) {
-				content = SAFEMALLOC( ( size_t )len + sizeof( "" ), __FILE__, __LINE__ );
+            if( len > 0 && fseek( fp, 0, SEEK_SET ) == 0 ) {
+                content = SAFEMALLOC( ( size_t )len + sizeof( "" ), __FILE__, __LINE__ );
 
-				if( content ) {
-					size_t read_content = fread( content, sizeof( char ), ( size_t )len, fp );
+                if( content ) {
+                    size_t read_content = fread( content, sizeof( char ), ( size_t )len, fp );
 
-					if( ( long )read_content == len ) {
-						content[ read_content ] = '\0';
-					} else {
-						free( content ); content = NULL;
-					}
-				}
-			}
-		}
+                    if( ( long )read_content == len ) {
+                        content[ read_content ] = '\0';
+                    } else {
+                        free( content ); content = NULL;
+                    }
+                }
+            }
+        }
 
-		fclose( fp );
-	}
+        fclose( fp );
+    }
 
-	return content;
+    return content;
 }
