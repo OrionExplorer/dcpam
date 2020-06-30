@@ -172,10 +172,6 @@ int DCPAM_load_configuration( const char* filename ) {
     int                         k = 0;
     int                         result = 0;
 
-    DATABASE_SYSTEM_DB          *tmp_db;
-    DATABASE_SYSTEM_QUERY       **tmp_queries;
-    DB_SYSTEM_CDC               *tmp_cdc;
-
     int                         tmp_columns_len = 0;
     char*                       config_string = NULL;
 
@@ -188,7 +184,7 @@ int DCPAM_load_configuration( const char* filename ) {
         config_json = cJSON_Parse( config_string );
         if( config_json ) {
 
-            tmp_queries = SAFEMALLOC( MAX_SYSTEM_QUERIES * sizeof * tmp_queries, __FILE__, __LINE__ );
+            DATABASE_SYSTEM_QUERY **tmp_queries = SAFEMALLOC( MAX_SYSTEM_QUERIES * sizeof * tmp_queries, __FILE__, __LINE__ );
 
             size_t str_len = 0;
 
@@ -582,7 +578,7 @@ int DCPAM_load_configuration( const char* filename ) {
                     for( int j = 0; j < cJSON_GetArraySize( cfg_system_queries_array ); j++ ) {
                         cfg_system_query_item = cJSON_GetArrayItem( cfg_system_queries_array, j );
 
-                        tmp_cdc = SAFEMALLOC( sizeof(DB_SYSTEM_CDC), __FILE__, __LINE__ );
+                        DB_SYSTEM_CDC *tmp_cdc = SAFEMALLOC( sizeof(DB_SYSTEM_CDC), __FILE__, __LINE__ );
 
                         cfg_system_query_item_name = cJSON_GetObjectItem( cfg_system_query_item, "name" );
                         if( cfg_system_query_item_name == NULL ) {
@@ -1329,7 +1325,7 @@ int DCPAM_load_configuration( const char* filename ) {
                         free( tmp_cdc ); tmp_cdc = NULL;
                     }
                     /* Create temporary DATABASE_SYSTEM_DB for future use in DATABASE_SYSTEM_add */
-                    tmp_db = SAFEMALLOC( sizeof( DATABASE_SYSTEM_DB ), __FILE__, __LINE__ );
+                    DATABASE_SYSTEM_DB *tmp_db = SAFEMALLOC( sizeof( DATABASE_SYSTEM_DB ), __FILE__, __LINE__ );
                     DATABASE_SYSTEM_DB_add(
                         cfg_system_ip->valuestring,
                         cfg_system_port->valueint,
