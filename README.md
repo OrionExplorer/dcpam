@@ -2,15 +2,75 @@
  
  [![License: MIT](https://img.shields.io/badge/License-MIT-brightgreen.svg)](https://opensource.org/licenses/MIT) [![Codacy Badge](https://app.codacy.com/project/badge/Grade/f5c3afcc56ab4e14910d7f68038d732a)](https://www.codacy.com/manual/OrionExplorer/dcpam?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=OrionExplorer/dcpam&amp;utm_campaign=Badge_Grade)
 ###### _Data Construct-Populate-Access-Manage_ 
-#### Data warehouse engine
+#### Data Warehouse Engine
 ![PostgreSQL](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/postgresql102x100.png) ![MySQL ](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/mysql159x100.png) ![MariaDB ](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/mariadb100x100.png) ![Microsoft SQL Server ](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/sqlserver134x100.png) ![Oracle Database ](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/oracle100x100.png) ![ODBC ](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/odbc199x100.png) ![SQLite3 ](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/sqlite171x100.png) ![Linux ](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/linux100x100.png) ![Windows 10 ](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/windows87x100.png)
 
-* Data warehouse or data mart engine.
+* Data Warehouse or Data Mart engine.
 * DCPAM helps to create central repositories of integrated data from one or disparate sources([1]).
 * Multiplatform (Linux/Windows).
 
-### Architecture
-#### Overview
+### Table of content
+1. [Business Value.](https://github.com/OrionExplorer/dcpam#1-business-value)
+    1.1. [Extraction and Change Data Capture.](https://github.com/OrionExplorer/dcpam#1-1-extraction-and-change-data-capture)
+    1.2. [Transformation.](https://github.com/OrionExplorer/dcpam#1-2-transformation)
+    1.3. [Loading.](https://github.com/OrionExplorer/dcpam#1-3-loading)
+2. [Technology.](https://github.com/OrionExplorer/dcpam#2-technology)
+    2.1. [Architecture Overview.](https://github.com/OrionExplorer/dcpam#2-1-architecture-overview)
+    2.2. [ETL and Change Data Capture.](https://github.com/OrionExplorer/dcpam#2-2-etl-and-change-data-capture)
+    2.3. [Data Sources.](https://github.com/OrionExplorer/dcpam#2-3-data-sources)
+    2.4. [DCPAM Database](https://github.com/OrionExplorer/dcpam#2-4-dcpam-database)
+    2.5. [Configuration.](https://github.com/OrionExplorer/dcpam#2-5-configuration)
+    2.6. [Compilation (Linux).](https://github.com/OrionExplorer/dcpam#2-6-compilation-linux)
+    2.7. [Linux Dependencies.](https://github.com/OrionExplorer/dcpam#2-7-linux-dependencies)
+    2.8. [Windows Dependencies.](https://github.com/OrionExplorer/dcpam#2-8-windows-dependencies)
+
+## 1. Business Value
+**DCPAM helps to create single central repository of integrated company data**.
+That provides a single integrated view of an organisation.
+
+**All informations in the Warehouse are always up to date**.
+Managers can respond rapidly to ongoing changes in the business environment to make data-driven decisions.
+
+**Data structures are designed in a uniform way**.
+Much less effort is needed to prepare and access requested information.
+
+### 1.1. Extraction and Change Data Capture
+#### Extraction
+DCPAM is designed to perform online incremental extraction without need to implement additional logic to the source system. Three major tasks are responsible for this process:
+1. **Extract Inserted** - find and fetch only new records.
+2. **Extract Deleted** - find records that no longer exists in the source system.
+3. **Extract Modified** - find records that were modified since last extraction.
+
+> **Information**: offline extraction (flat files) will be available in the future.
+
+Extracted data is stored in the Staging Area, where transformations can be applied.
+
+#### Change Data Capture
+DCPAM allows to define change tracking conditions to deliver near real-time or on-time data into Warehouse. Efficient identification of most recently changed data is crucial, but also most challenging. Successful implementation of change tracking has enormous impact on the size of data volume to be processed.
+Two major techniques are used to track changed data:
+1. **Timestamps**
+Each table of the source system involved in Extract process *should* have timestamp column, where date and time of last modification is kept. This information stored in Warehouse is used to construct extract query.
+2. **Triggers**
+These are created in the source system. Mentioned here for informational purposes only.
+Two possible use cases:
+    * Set timestamp column values when record is modified.
+    * Call external application/script with all necessary data (ie. UDF in MySQL/MariaDB)
+
+> **Notice**: Triggers can seriously affect performance of the source system, thus should be considered carefully.
+
+### 1.2. Transformation
+DCPAM stores extracted data in the Staging Area - a group of transitional tables, where transformations are performed.
+Examples of data transformation:
+* conversions
+* recalculations
+* column values completions
+> **Information**: This section is incomplete due to lack of Transform implementation in DCPAM.
+
+### 1.3. Loading
+When all transformations in the Staging Area are completed, DCPAM load the data directly into target tables. Then Staging Area is cleared and ready for the next occurence of data extraction.
+
+## 2. Technology
+### 2.1. Architecture Overview
 * DCPAM is ETL - based solution([2]).
 * Highly memory-efficient - no memory overhead caused by large queries:
 	* each extracted record is instantly stored into Staging Area([3]) by Extract process
@@ -21,7 +81,7 @@
 
 ![Architecture overview](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/architecture.png)
 
-####  ETL and Change Data Capture
+#### 2.2. ETL and Change Data Capture
 Chance Data Capture([4]) solutions depends on the data sources (currently it's database only):
 
 | CDC solution                            | Source        |
@@ -32,7 +92,7 @@ Chance Data Capture([4]) solutions depends on the data sources (currently it's d
 
 > **Notice**: Only Extract and Load processes are available. It is yet to be decided how to handle Transform process.
 
-### Data sources
+### 2.3. Data sources
 DCPAM is still work in progress, with following data sources:
 |  ID  | Data source                        | Type            | Support          | Status      |
 |:----:|:-----------------------------------|:---------------:|:----------------:|:-----------:|
@@ -45,14 +105,18 @@ DCPAM is still work in progress, with following data sources:
 
 > \* SQL Server/Azure SQL Database: [ODBC is the primary native data access API for applications written in C and C++ for SQL Server](https://docs.microsoft.com/en-us/sql/connect/odbc/microsoft-odbc-driver-for-sql-server).
 
-### Configuration
+### 2.4. DCPAM Database
+DCPAM is designed to be as most customizable as it needs to be.
+Therefore every database listed above as available data source can also be used as DCPAM target database.
+
+### 2.5. Configuration
 File `config.json` is DCPAM foundation. It defines:
 * Data sources
 * Extract, Transform and Load process for each data source
 * DCPAM database, tables and views (see _app.DATA_), where integrated data is stored
 
 
-#### Compilation (Linux)
+#### 2.6. Compilation (Linux)
 ```
 > make
 ```
@@ -69,7 +133,7 @@ File `config.json` is DCPAM foundation. It defines:
 > valgrind --leak-check=full --show-reachable=yes --error-limit=no ./dcpam config_mysql.json
 ```
 
-##### Linux Dependencies
+##### 2.7. Linux Dependencies
 - libpq-dev (PostgreSQL)
 - libmysqlclient-dev (MySQL)
 - libmariadbclient-dev (MariaDB)
@@ -77,7 +141,7 @@ File `config.json` is DCPAM foundation. It defines:
 - oracle-instantclient19.6-basic-19.6.0.0.0-1.x86_64.rpm (Oracle Instant Client)
 - oracle-instantclient19.6-devel-19.6.0.0.0-1.x86_64.rpm (Oracle Instant Client SDK)
 
-##### Windows Dependencies
+##### 2.8. Windows Dependencies
 - MariaDB Connector C
 - MySQL Connector 8.0
 - PostgreSQL
