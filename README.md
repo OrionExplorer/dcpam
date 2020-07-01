@@ -25,19 +25,11 @@
     * [Windows Dependencies.](https://github.com/OrionExplorer/dcpam#windows-dependencies)
 
 ## Business Value
-**DCPAM helps to create single central repository of integrated company data**.
+**DCPAM helps to create single central repository of integrated company data** - that provides a single integrated view of an organisation.
 
-That provides a single integrated view of an organisation.
+**All informations in the Warehouse are always up to date** - Managers can respond rapidly to ongoing changes in the business environment to make data-driven decisions.
 
-
-**All informations in the Warehouse are always up to date**.
-
-Managers can respond rapidly to ongoing changes in the business environment to make data-driven decisions.
-
-
-**Data structures are designed in a uniform way**.
-
-Much less effort is needed to prepare and access requested information.
+**Data structures are designed in a uniform way** - much less effort is needed to prepare and access requested information.
 
 ### Extraction and Change Data Capture
 #### Extraction
