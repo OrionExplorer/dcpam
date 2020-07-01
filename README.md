@@ -54,7 +54,7 @@ Two major techniques are used to track changed data:
 > **Notice**: Triggers can seriously affect performance of the source system, thus should be considered carefully.
 
 ### Transformation
-DCPAM stores extracted data in the Staging Area - a group of transitional tables, where transformations are performed.
+DCPAM stores extracted data in the Staging Area - a group of transitional tables, where transformations are made.
 Examples of data transformation:
 * conversions
 * recalculations
@@ -62,7 +62,7 @@ Examples of data transformation:
 > **Information**: This section is incomplete. Transform process in DCPAM is yet to be implemented.
 
 ### Loading
-When all transformations in the Staging Area are completed, DCPAM load the data directly into target tables. Then Staging Area is cleared and ready for the next occurence of data extraction.
+When all transformations in the Staging Area are completed, DCPAM loads the data directly into target tables. Then Staging Area is cleared and ready for the next occurence of data extraction.
 
 ## Technology
 ### Architecture Overview
