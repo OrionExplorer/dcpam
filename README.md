@@ -10,19 +10,19 @@
 * Multiplatform (Linux/Windows).
 
 ### Table of content
-* [Business Value.](https://github.com/OrionExplorer/dcpam#business-value)
-    * [Extraction and Change Data Capture.](https://github.com/OrionExplorer/dcpam#extraction-and-change-data-capture)
-    * [Transformation.](https://github.com/OrionExplorer/dcpam#transformation)
-    * [Loading.](https://github.com/OrionExplorer/dcpam#loading)
-* [Technology.](https://github.com/OrionExplorer/dcpam#technology)
-    * [Architecture Overview.](https://github.com/OrionExplorer/dcpam#architecture-overview)
-    * [ETL and Change Data Capture.](https://github.com/OrionExplorer/dcpam#etl-and-change-data-capture)
-    * [Data Sources.](https://github.com/OrionExplorer/dcpam#data-sources)
+* [Business Value](https://github.com/OrionExplorer/dcpam#business-value)
+    * [Extraction and Change Data Capture](https://github.com/OrionExplorer/dcpam#extraction-and-change-data-capture)
+    * [Transformation](https://github.com/OrionExplorer/dcpam#transformation)
+    * [Loading](https://github.com/OrionExplorer/dcpam#loading)
+* [Technology](https://github.com/OrionExplorer/dcpam#technology)
+    * [Architecture Overview](https://github.com/OrionExplorer/dcpam#architecture-overview)
+    * [ETL and Change Data Capture](https://github.com/OrionExplorer/dcpam#etl-and-change-data-capture)
+    * [Data Sources](https://github.com/OrionExplorer/dcpam#data-sources)
     * [DCPAM Database](https://github.com/OrionExplorer/dcpam#dcpam-database)
-    * [Configuration.](https://github.com/OrionExplorer/dcpam#configuration)
-    * [Compilation (Linux).](https://github.com/OrionExplorer/dcpam#compilation-linux)
-    * [Linux Dependencies.](https://github.com/OrionExplorer/dcpam#linux-dependencies)
-    * [Windows Dependencies.](https://github.com/OrionExplorer/dcpam#windows-dependencies)
+    * [Configuration](https://github.com/OrionExplorer/dcpam#configuration)
+    * [Compilation (Linux)](https://github.com/OrionExplorer/dcpam#compilation-linux)
+    * [Linux Dependencies](https://github.com/OrionExplorer/dcpam#linux-dependencies)
+    * [Windows Dependencies](https://github.com/OrionExplorer/dcpam#windows-dependencies)
 
 ## Business Value
 **DCPAM helps to create single central repository of integrated company data** - that provides a single integrated view of an organisation.
@@ -59,7 +59,7 @@ Examples of data transformation:
 * conversions
 * recalculations
 * column values completions
-> **Information**: This section is incomplete due to lack of Transform implementation in DCPAM.
+> **Information**: This section is incomplete. Transform process in DCPAM is yet to be implemented.
 
 ### Loading
 When all transformations in the Staging Area are completed, DCPAM load the data directly into target tables. Then Staging Area is cleared and ready for the next occurence of data extraction.
