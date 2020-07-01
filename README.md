@@ -10,21 +10,21 @@
 * Multiplatform (Linux/Windows).
 
 ### Table of content
-1. [Business Value.](https://github.com/OrionExplorer/dcpam#1-business-value)
-    1.1. [Extraction and Change Data Capture.](https://github.com/OrionExplorer/dcpam#1-1-extraction-and-change-data-capture)
-    1.2. [Transformation.](https://github.com/OrionExplorer/dcpam#1-2-transformation)
-    1.3. [Loading.](https://github.com/OrionExplorer/dcpam#1-3-loading)
-2. [Technology.](https://github.com/OrionExplorer/dcpam#2-technology)
-    2.1. [Architecture Overview.](https://github.com/OrionExplorer/dcpam#2-1-architecture-overview)
-    2.2. [ETL and Change Data Capture.](https://github.com/OrionExplorer/dcpam#2-2-etl-and-change-data-capture)
-    2.3. [Data Sources.](https://github.com/OrionExplorer/dcpam#2-3-data-sources)
-    2.4. [DCPAM Database](https://github.com/OrionExplorer/dcpam#2-4-dcpam-database)
-    2.5. [Configuration.](https://github.com/OrionExplorer/dcpam#2-5-configuration)
-    2.6. [Compilation (Linux).](https://github.com/OrionExplorer/dcpam#2-6-compilation-linux)
-    2.7. [Linux Dependencies.](https://github.com/OrionExplorer/dcpam#2-7-linux-dependencies)
-    2.8. [Windows Dependencies.](https://github.com/OrionExplorer/dcpam#2-8-windows-dependencies)
+* [Business Value.](https://github.com/OrionExplorer/dcpam#business-value)
+    * [Extraction and Change Data Capture.](https://github.com/OrionExplorer/dcpam#extraction-and-change-data-capture)
+    * [Transformation.](https://github.com/OrionExplorer/dcpam#transformation)
+    * [Loading.](https://github.com/OrionExplorer/dcpam#loading)
+* [Technology.](https://github.com/OrionExplorer/dcpam#technology)
+    * [Architecture Overview.](https://github.com/OrionExplorer/dcpam#architecture-overview)
+    * [ETL and Change Data Capture.](https://github.com/OrionExplorer/dcpam#etl-and-change-data-capture)
+    * [Data Sources.](https://github.com/OrionExplorer/dcpam#data-sources)
+    * [DCPAM Database](https://github.com/OrionExplorer/dcpam#dcpam-database)
+    * [Configuration.](https://github.com/OrionExplorer/dcpam#configuration)
+    * [Compilation (Linux).](https://github.com/OrionExplorer/dcpam#compilation-linux)
+    * [Linux Dependencies.](https://github.com/OrionExplorer/dcpam#linux-dependencies)
+    * [Windows Dependencies.](https://github.com/OrionExplorer/dcpam#windows-dependencies)
 
-## 1. Business Value
+## Business Value
 **DCPAM helps to create single central repository of integrated company data**.
 That provides a single integrated view of an organisation.
 
@@ -34,7 +34,7 @@ Managers can respond rapidly to ongoing changes in the business environment to m
 **Data structures are designed in a uniform way**.
 Much less effort is needed to prepare and access requested information.
 
-### 1.1. Extraction and Change Data Capture
+### Extraction and Change Data Capture
 #### Extraction
 DCPAM is designed to perform online incremental extraction without need to implement additional logic to the source system. Three major tasks are responsible for this process:
 1. **Extract Inserted** - find and fetch only new records.
@@ -58,7 +58,7 @@ Two possible use cases:
 
 > **Notice**: Triggers can seriously affect performance of the source system, thus should be considered carefully.
 
-### 1.2. Transformation
+### Transformation
 DCPAM stores extracted data in the Staging Area - a group of transitional tables, where transformations are performed.
 Examples of data transformation:
 * conversions
@@ -66,11 +66,11 @@ Examples of data transformation:
 * column values completions
 > **Information**: This section is incomplete due to lack of Transform implementation in DCPAM.
 
-### 1.3. Loading
+### Loading
 When all transformations in the Staging Area are completed, DCPAM load the data directly into target tables. Then Staging Area is cleared and ready for the next occurence of data extraction.
 
-## 2. Technology
-### 2.1. Architecture Overview
+## Technology
+### Architecture Overview
 * DCPAM is ETL - based solution([2]).
 * Highly memory-efficient - no memory overhead caused by large queries:
 	* each extracted record is instantly stored into Staging Area([3]) by Extract process
@@ -81,7 +81,7 @@ When all transformations in the Staging Area are completed, DCPAM load the data 
 
 ![Architecture overview](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/architecture.png)
 
-#### 2.2. ETL and Change Data Capture
+#### ETL and Change Data Capture
 Chance Data Capture([4]) solutions depends on the data sources (currently it's database only):
 
 | CDC solution                            | Source        |
@@ -92,7 +92,7 @@ Chance Data Capture([4]) solutions depends on the data sources (currently it's d
 
 > **Notice**: Only Extract and Load processes are available. It is yet to be decided how to handle Transform process.
 
-### 2.3. Data sources
+### Data sources
 DCPAM is still work in progress, with following data sources:
 |  ID  | Data source                        | Type            | Support          | Status      |
 |:----:|:-----------------------------------|:---------------:|:----------------:|:-----------:|
@@ -105,18 +105,18 @@ DCPAM is still work in progress, with following data sources:
 
 > \* SQL Server/Azure SQL Database: [ODBC is the primary native data access API for applications written in C and C++ for SQL Server](https://docs.microsoft.com/en-us/sql/connect/odbc/microsoft-odbc-driver-for-sql-server).
 
-### 2.4. DCPAM Database
+### DCPAM Database
 DCPAM is designed to be as most customizable as it needs to be.
 Therefore every database listed above as available data source can also be used as DCPAM target database.
 
-### 2.5. Configuration
+### Configuration
 File `config.json` is DCPAM foundation. It defines:
 * Data sources
 * Extract, Transform and Load process for each data source
 * DCPAM database, tables and views (see _app.DATA_), where integrated data is stored
 
 
-#### 2.6. Compilation (Linux)
+#### Compilation (Linux)
 ```
 > make
 ```
@@ -133,7 +133,7 @@ File `config.json` is DCPAM foundation. It defines:
 > valgrind --leak-check=full --show-reachable=yes --error-limit=no ./dcpam config_mysql.json
 ```
 
-##### 2.7. Linux Dependencies
+##### Linux Dependencies
 - libpq-dev (PostgreSQL)
 - libmysqlclient-dev (MySQL)
 - libmariadbclient-dev (MariaDB)
@@ -141,7 +141,7 @@ File `config.json` is DCPAM foundation. It defines:
 - oracle-instantclient19.6-basic-19.6.0.0.0-1.x86_64.rpm (Oracle Instant Client)
 - oracle-instantclient19.6-devel-19.6.0.0.0-1.x86_64.rpm (Oracle Instant Client SDK)
 
-##### 2.8. Windows Dependencies
+##### Windows Dependencies
 - MariaDB Connector C
 - MySQL Connector 8.0
 - PostgreSQL
