@@ -38,7 +38,7 @@ DCPAM is designed to perform online incremental extraction without need to imple
 2. **Extract Deleted** - find records that no longer exists in the source system.
 3. **Extract Modified** - find records that were modified since last extraction.
 
-> **Information**: offline extraction (flat files) will be available in the future.
+> **Information**: offline extraction (flat files) and other online sources will be available in the future.
 
 Extracted data is stored in the Staging Area, where transformations can be applied.
 
