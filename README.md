@@ -45,14 +45,9 @@ Extracted data is stored in the Staging Area, where transformations can be appli
 #### Change Data Capture
 DCPAM allows to define change tracking conditions to deliver near real-time or on-time data into Warehouse. Efficient identification of most recently changed data is crucial, but also most challenging. Successful implementation of change tracking has enormous impact on the size of data volume to be processed.
 Two major techniques are used to track changed data:
-1. **Timestamps**
+1. **Timestamps**. Each table of the source system involved in Extract process *should* have timestamp column, where date and time of last modification is kept. This information stored in Warehouse is used to construct extract query.
 
-Each table of the source system involved in Extract process *should* have timestamp column, where date and time of last modification is kept. This information stored in Warehouse is used to construct extract query.
-
-2. **Triggers**
-
-These are created in the source system. Mentioned here for informational purposes only.
-Two possible use cases:
+2. **Triggers**. These are created in the source system. Mentioned here for informational purposes only. Two possible use cases:
     * Set timestamp column values when record is modified.
     * Call external application/script with all necessary data (ie. UDF in MySQL/MariaDB)
 
