@@ -77,7 +77,7 @@ When all transformations in the Staging Area are completed, DCPAM loads the data
 ![Architecture overview](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/architecture.png)
 
 #### ETL and Change Data Capture
-Chance Data Capture([4]) solutions depends on the data sources (currently it's database only):
+Change Data Capture([4]) solutions depends on the data sources (currently it's database only):
 
 | CDC solution                            | Source        |
 |-----------------------------------------|:-------------:| 
