@@ -7,6 +7,7 @@
 
 * Data Warehouse or Data Mart engine.
 * DCPAM helps to create central repositories of integrated data from one or disparate sources([1]).
+* DCPAM allows to perform advanced data copy between technically different datasets.
 * Multiplatform (Linux/Windows).
 
 ### Table of content
@@ -25,11 +26,13 @@
     * [Windows Dependencies](https://github.com/OrionExplorer/dcpam#windows-dependencies)
 
 ## Business Value
-**DCPAM helps to create single central repository of integrated company data** - that provides a single integrated view of an organisation.
+*[x] **DCPAM helps to create single central repository of integrated company data** - this provides a single integrated view of an organisation.
 
-**All informations in the Warehouse are always up to date** - Managers can respond rapidly to ongoing changes in the business environment to make data-driven decisions.
+*[x] **All informations  are always up to date** - Managers can respond rapidly to ongoing changes in the business environment to make data-driven decisions.
 
-**Data structures are designed in a uniform way** - much less effort is needed to prepare and access requested information.
+*[x] **Data structures are designed in a uniform way** - much less effort is needed to prepare and access requested informations.
+
+*[x] **No wide range of advanced technical knowledge is needed to make DCPAM work** - system configuration can be handled by any person with SQL background and analytic insight of company data.
 
 ### Extraction and Change Data Capture
 #### Extraction
@@ -72,7 +75,8 @@ When all transformations in the Staging Area are completed, DCPAM loads the data
 	* each staged and transformed record is instantly loaded into target tables by Load process
 * Each Change Data Capture process operates independently within separated thread.
 * Multiple instances of DCPAM with different configuration can run on single server.
-* Most database support is provided with native libraries (see _Data sources_ and _Linux Dependencies_ in this document).
+* Database support is provided with native libraries (see _Data sources_ and _Linux Dependencies_ in this document).
+* Simply put, DCPAM allows to perform advanced data copy between technically different datasets.
 
 ![Architecture overview](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/architecture.png)
 
@@ -88,15 +92,15 @@ Change Data Capture([4]) solutions depends on the data sources (currently it's d
 > **Notice**: Only Extract and Load processes are available. It is yet to be decided how to handle Transform process.
 
 ### Data sources
-DCPAM is still work in progress, with following data sources:
-|  ID  | Data source                        | Type            | Support          | Status      |
-|:----:|:-----------------------------------|:---------------:|:----------------:|:-----------:|
-| 1    | PostgreSQL      					| Database        | Native           | Available   |
-| 2    | MySQL 8         					| Database        | Native           | Available   |
-| 3    | MariaDB/MySQL 5 					| Database        | Native           | Available   |
-| 4    | SQL Server/Azure SQL Database      | Database        | Native via ODBC* | Available   |
-| 5    | Oracle Database 					| Database        | Native           | Available   |
-| 6    | SQLite3         					| Database        | Native           | Available   |
+DCPAM development is still in progress with following data sources available:
+|  ID  | Data source                        | Type            | Support          |
+|:----:|:-----------------------------------|:---------------:|:----------------:|
+| 1    | PostgreSQL      					| database        | native           |
+| 2    | MySQL 8         					| database        | native           |
+| 3    | MariaDB/MySQL 5 					| database        | native           |
+| 4    | SQL Server/Azure SQL Database      | database        | native via ODBC* |
+| 5    | Oracle Database 					| database        | native           |
+| 6    | SQLite3         					| database        | native           |
 
 > \* SQL Server/Azure SQL Database: [ODBC is the primary native data access API for applications written in C and C++ for SQL Server](https://docs.microsoft.com/en-us/sql/connect/odbc/microsoft-odbc-driver-for-sql-server).
 
