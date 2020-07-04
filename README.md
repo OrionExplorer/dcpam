@@ -38,7 +38,7 @@
 #### Extraction
 DCPAM is designed to perform online incremental extraction without need to implement additional logic to the source system. This process is SQL-based all the way, thus precise configuration of various databases transaction logs are not required. Log scanning is great non-intrusive method for Change Data Capture, but DCPAM goal is to deliver full Data Warehouse possibilities and not include or hire more engineers for this specific task.
 
-Three major tasks are responsible for this process:
+Extract process does handle of:
 1. **Extract Inserted** - find and fetch only new records.
 2. **Extract Deleted** - find records that no longer exists in the source system.
 3. **Extract Modified** - find records that were modified since last extraction.
