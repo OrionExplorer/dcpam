@@ -5,10 +5,10 @@
 #### Data Warehouse Engine
 ![PostgreSQL](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/postgresql102x100.png) ![MySQL ](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/mysql159x100.png) ![MariaDB ](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/mariadb100x100.png) ![Microsoft SQL Server ](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/sqlserver134x100.png) ![Oracle Database ](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/oracle100x100.png) ![ODBC ](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/odbc199x100.png) ![SQLite3 ](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/sqlite171x100.png) ![Linux ](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/linux100x100.png) ![Windows 10 ](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/windows87x100.png)
 
-* Data Warehouse or Data Mart engine.
 * DCPAM helps to create central repositories of integrated data from one or disparate sources([1]).
 * DCPAM allows to perform advanced data copy between technically different datasets.
-* Multiplatform (Linux/Windows).
+* DCPAM goal is to deliver full range of Data Warehouse possibilities and not include or hire more engineers for this specific task.
+* DCPAM is multiplatform (Linux/Windows).
 
 ### Table of content
 * [Business Value](https://github.com/OrionExplorer/dcpam#business-value)
@@ -36,7 +36,9 @@
 
 ### Extraction and Change Data Capture
 #### Extraction
-DCPAM is designed to perform online incremental extraction without need to implement additional logic to the source system. Three major tasks are responsible for this process:
+DCPAM is designed to perform online incremental extraction without need to implement additional logic to the source system. This process is SQL-based all the way, thus precise configuration of various databases transaction logs are not required. Log scanning is great non-intrusive method for Change Data Capture, but DCPAM goal is to deliver full Data Warehouse possibilities and not include or hire more engineers for this specific task.
+
+Three major tasks are responsible for this process:
 1. **Extract Inserted** - find and fetch only new records.
 2. **Extract Deleted** - find records that no longer exists in the source system.
 3. **Extract Modified** - find records that were modified since last extraction.
