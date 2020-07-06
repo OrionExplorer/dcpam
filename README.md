@@ -7,7 +7,7 @@
 
 * DCPAM helps to create central repositories of integrated data from one or disparate sources[[1]].
 * DCPAM allows to perform advanced data copy between technically different datasets.
-* DCPAM goal is to deliver full range of Data Warehouse possibilities and not include or hire more engineers for this specific task.
+* DCPAM goal is to deliver full range of Data Warehouse possibilities and not to include or hire more engineers for this specific task.
 * DCPAM is multiplatform (Linux/Windows).
 
 ### Table of content
@@ -36,7 +36,7 @@
 
 ### Extraction and Change Data Capture
 #### Extraction
-DCPAM is designed to perform online incremental extraction without need to implement additional logic to the source system. This process is SQL-based all the way, thus precise configuration of various databases transaction logs are not required. Log scanning is great non-intrusive method for Change Data Capture, but DCPAM goal is to deliver full Data Warehouse possibilities and not include or hire more engineers for this specific task.
+DCPAM is designed to perform online incremental extraction without need to implement additional logic to the source system. This process is SQL-based all the way, thus precise configuration of various databases transaction logs are not required. Log scanning is great non-intrusive method for Change Data Capture, but DCPAM goal is to deliver full Data Warehouse possibilities and not to include or hire more engineers for this specific task.
 
 Extract process does handle of:
 1. **Extract Inserted** - find and fetch only new records.
