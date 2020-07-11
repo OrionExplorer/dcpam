@@ -20,6 +20,7 @@
 * [Technology](https://github.com/OrionExplorer/dcpam#technology)
     * [Architecture Overview](https://github.com/OrionExplorer/dcpam#architecture-overview)
     * [ETL and Change Data Capture](https://github.com/OrionExplorer/dcpam#etl-and-change-data-capture)
+    * [Parallel Execution](https://github.com/OrionExplorer/dcpam#parallel-execution)
     * [Data Sources](https://github.com/OrionExplorer/dcpam#data-sources)
     * [DCPAM Database](https://github.com/OrionExplorer/dcpam#dcpam-database)
     * [Configuration](https://github.com/OrionExplorer/dcpam#configuration)
@@ -35,6 +36,8 @@
 * [x] **Data structures are designed in a uniform way** - much less effort is needed to prepare and access requested informations.
 
 * [x] **No wide range of advanced technical knowledge is needed to make DCPAM work** - system configuration can be handled by any person with SQL background and analytic insight of company data.
+
+* [x] **Parallel execution** - process terabytes of data within minutes.
 
 ### Extraction and Change Data Capture
 #### Extraction
@@ -92,8 +95,10 @@ Change Data Capture[[4]] solutions depends on the data sources (currently it's d
 | SQL query for timestamps (eg. MIN, MAX) | Database      |
 | SQL query for diffs (eg. IN, NOT IN)    | Database      |
 
-
 > **Notice**: Only Extract and Load processes are available. It is yet to be decided how to handle Transform process.
+
+### Parallel Execution
+It is possible to use multiple processes/threads to accomplish single task. Instead of one configuration of many queries per source system, DCPAM allows to create many configurations of the same source system with one or more queries.
 
 ### Data sources
 DCPAM development is still in progress with following data sources available:
