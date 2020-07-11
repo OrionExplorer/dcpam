@@ -37,7 +37,7 @@
 
 * [x] **No wide range of advanced technical knowledge is needed to make DCPAM work** - system configuration can be handled by any person with SQL background and analytic insight of company data.
 
-* [x] **Parallel execution** - process terabytes of data within minutes.
+* [x] **Process gigabytes of data within minutes** - benefit of parallel execution.
 
 ### Extraction and Change Data Capture
 #### Extraction
