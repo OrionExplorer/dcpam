@@ -98,25 +98,38 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
 
         LOG_print("\nDB_WORKER_watcher for \"%s\" started...\n", DATA_SYSTEM->name );
 
+        /* 1st: Extract and store data in the Staging Area */
         for( i = 0; i < DATA_SYSTEM->queries_len; i++ ) {
-
-            LOG_print( "\t· Query #%d: %s\n", i + 1, DATA_SYSTEM->queries[ i ].name );
+            LOG_print( "\t· [EXTRACT] Query #%d: %s\n", i + 1, DATA_SYSTEM->queries[ i ].name );
 
             DB_CDC_ExtractInserted( &DATA_SYSTEM->queries[ i ].change_data_capture.extract, &DATA_SYSTEM->DB, &extract_inserted_callback, ( void *)&DATA_SYSTEM->queries[ i ].change_data_capture.stage, ( void *)&DATA_SYSTEM->DB );
-            //DB_CDC_TransformInserted( &DATA_SYSTEM->queries[ i ].change_data_capture.transform, &DATA_SYSTEM->DB, &inserted_data );
-            DB_CDC_LoadInserted( &DATA_SYSTEM->queries[ i ].change_data_capture.load, &DATA_SYSTEM->DB );
-            DB_CDC_StageReset( &DATA_SYSTEM->queries[ i ].change_data_capture.stage, &DATA_SYSTEM->DB );
-
             DB_CDC_ExtractDeleted( &DATA_SYSTEM->queries[ i ].change_data_capture.extract, &DATA_SYSTEM->DB, &extract_deleted_callback, ( void* )&DATA_SYSTEM->queries[ i ].change_data_capture.stage, ( void* )&DATA_SYSTEM->DB );
-            //DB_CDC_TransformDeleted( &DATA_SYSTEM->queries[ i ].change_data_capture.transform, &DATA_SYSTEM->DB, &deleted_data );
-            DB_CDC_LoadDeleted( &DATA_SYSTEM->queries[ i ].change_data_capture.load, &DATA_SYSTEM->DB );
-            DB_CDC_StageReset( &DATA_SYSTEM->queries[ i ].change_data_capture.stage, &DATA_SYSTEM->DB );
-
             DB_CDC_ExtractModified( &DATA_SYSTEM->queries[ i ].change_data_capture.extract, &DATA_SYSTEM->DB, &extract_modified_callback, ( void* )&DATA_SYSTEM->queries[ i ].change_data_capture.stage, ( void* )&DATA_SYSTEM->DB );
+        }
+
+        /* 2nd: Transform data. */
+        for( i = 0; i < DATA_SYSTEM->queries_len; i++ ) {
+            LOG_print( "\t· [TRANSFORM] Query #%d: %s\n", i + 1, DATA_SYSTEM->queries[ i ].name );
+
+            //DB_CDC_TransformInserted( &DATA_SYSTEM->queries[ i ].change_data_capture.transform, &DATA_SYSTEM->DB, &inserted_data );
+            //DB_CDC_TransformDeleted( &DATA_SYSTEM->queries[ i ].change_data_capture.transform, &DATA_SYSTEM->DB, &deleted_data );
             //DB_CDC_TransformModified( &DATA_SYSTEM->queries[ i ].change_data_capture.transform, &DATA_SYSTEM->DB, &modified_data );
+        }
+
+        /* 3rd: Load data. */
+        for( i = 0; i < DATA_SYSTEM->queries_len; i++ ) {
+            LOG_print( "\t· [LOAD] Query #%d: %s\n", i + 1, DATA_SYSTEM->queries[ i ].name );
+
+            DB_CDC_LoadInserted( &DATA_SYSTEM->queries[ i ].change_data_capture.load, &DATA_SYSTEM->DB );
+            DB_CDC_LoadDeleted( &DATA_SYSTEM->queries[ i ].change_data_capture.load, &DATA_SYSTEM->DB );
             DB_CDC_LoadModified( &DATA_SYSTEM->queries[ i ].change_data_capture.load, &DATA_SYSTEM->DB );
+        }
+
+        /* 4rd: Clear Staging Area. */
+        for( i = 0; i < DATA_SYSTEM->queries_len; i++ ) {
             DB_CDC_StageReset( &DATA_SYSTEM->queries[ i ].change_data_capture.stage, &DATA_SYSTEM->DB );
         }
+
 
         LOG_print("DB_WORKER_watcher for \"%s\" finished.\n", DATA_SYSTEM->name );
         pthread_mutex_unlock( &watcher_mutex );

@@ -48,19 +48,23 @@
 				},
 				"comment#00" : "##################################################################################################",
 				"comment#01" : "# Staging Area configuration - a temporary tables, where extracted data is stored and ready to Transform process.",
-				"comment#02" : "# There is no restriction on the query type in \"sql\" commands.",
-				"comment#03" : "##################################################################################################",
+				"comment#02" : "# According to the documentation, inserted, deleted and modified records coexist here at the same time, so additional column \"e_type\" is used:",
+				"comment#03" : "# - 1 marks inserted records",
+				"comment#04" : "# - 2 marks deleted records",
+				"comment#05" : "# - 3 marks modified records",
+				"comment#06" : "# There is no restriction on the query type in \"sql\" commands.",
+				"comment#07" : "##################################################################################################",
 				"stage" : {
 					"inserted" : {
-						"sql" : "INSERT INTO stage_accounted_time (system_object_id, system_worklog_id, system_customer, system_agent_id, system_accounted_time, system_created, is_valid, system) VALUES (?, ?, '?', '?', ?, '?', 1, 'OTRS')",
+						"sql" : "INSERT INTO stage_accounted_time (system_object_id, system_worklog_id, system_customer, system_agent_id, system_accounted_time, system_created, is_valid, system, e_type) VALUES (?, ?, '?', '?', ?, '?', 1, 'OTRS', 1)",
 						"extracted_values" : ["system_object_id", "system_worklog_id", "system_customer", "system_agent_id", "system_accounted_time", "system_created"]
 					},
 					"deleted" : {
-						"sql" : "INSERT INTO stage_accounted_time (system_object_id, system_worklog_id, system_customer, system_agent_id, system_accounted_time, system_created, is_valid, system) VALUES (?, ?, '?', '?', ?, '?', 0, 'OTRS')",
+						"sql" : "INSERT INTO stage_accounted_time (system_object_id, system_worklog_id, system_customer, system_agent_id, system_accounted_time, system_created, is_valid, system, e_type) VALUES (?, ?, '?', '?', ?, '?', 0, 'OTRS', 2)",
 						"extracted_values" : ["system_object_id", "system_worklog_id", "system_customer", "system_agent_id", "system_accounted_time", "system_created"]
 					},
 					"modified" : {
-						"sql" : "INSERT INTO stage_accounted_time (system_object_id, system_worklog_id, system_customer, system_agent_id, system_accounted_time, system_created, is_valid, system) VALUES (?, ?, '?', '?', ?, '?', 1, 'OTRS')",
+						"sql" : "INSERT INTO stage_accounted_time (system_object_id, system_worklog_id, system_customer, system_agent_id, system_accounted_time, system_created, is_valid, system, e_type) VALUES (?, ?, '?', '?', ?, '?', 1, 'OTRS', 3)",
 						"extracted_values" : ["system_object_id", "system_worklog_id", "system_customer", "system_agent_id", "system_accounted_time", "system_created"]
 					},
 					"reset" : "DELETE FROM stage_accounted_time"
@@ -87,17 +91,17 @@
 					"comment#04" : "# There is no restriction on the query type in \"*_sql\" commands.",
 					"comment#05" : "##################################################################################################",
 					"inserted" : {
-						"input_data_sql" : "SELECT system_object_id, system_worklog_id, system_customer, system_agent_id, system_accounted_time, system_created FROM stage_accounted_time",
+						"input_data_sql" : "SELECT system_object_id, system_worklog_id, system_customer, system_agent_id, system_accounted_time, system_created FROM stage_accounted_time WHERE e_type = 1",
 						"extracted_values" : ["system_object_id", "system_worklog_id", "system_customer", "system_agent_id", "system_accounted_time", "system_created"],
 						"output_data_sql" : "INSERT INTO accounted_time (system_object_id, system_worklog_id, system_customer, system_agent_id, system_accounted_time, system_created, is_valid, system) VALUES (?, ?, '?', '?', ?, '?', 1, 'OTRS')"
 					},
 					"deleted" : {
-						"input_data_sql" : "SELECT system_worklog_id FROM stage_accounted_time",
+						"input_data_sql" : "SELECT system_worklog_id FROM stage_accounted_time WHERE e_type = 2",
 						"extracted_values" : ["system_worklog_id"],
 						"output_data_sql" : "UPDATE accounted_time SET is_valid = 0 WHERE system_worklog_id = '?'"
 					},
 					"modified" : {
-						"input_data_sql" : "SELECT system_object_id, system_worklog_id, system_customer, system_agent_id, system_accounted_time, system_created, is_valid FROM stage_accounted_time",
+						"input_data_sql" : "SELECT system_object_id, system_worklog_id, system_customer, system_agent_id, system_accounted_time, system_created, is_valid FROM stage_accounted_time WHERE e_type = 3",
 						"extracted_values" : ["system_object_id", "system_worklog_id", "system_customer", "system_agent_id", "system_accounted_time", "system_created", "is_valid", "system_worklog_id"],
 						"output_data_sql" : "UPDATE accounted_time SET system_object_id = ?, system_worklog_id = ?, system_customer = '?', system_agent_id = '?', system_accounted_time = ?, system_created = '?', is_valid = ? WHERE system_worklog_id = ?"
 					}
