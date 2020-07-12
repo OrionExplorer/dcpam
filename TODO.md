@@ -30,12 +30,17 @@
 	* [x] Rebuild `CDC_LoadGeneric` internals
 	* [x] Prepare callback functions:
 		* [x] `_LoadGeneric_callback`
-* [x] DCPAM must perform ETL process differently:
+* [x] DCPAM must perform ETL process differently (v2):
 	* [x] New workflow:
 		* [x] Extract and stage data from all configured queries for given system...
 		* [x] ...then transform all staged data...
 		* [x] ...and finally load entire dataset for given system to target tables.
 	* [x] Update JSON files for each database configuration to meet new requirements.
+* [x] DCPAM must perform ETL process differently (v3, overrides v2):
+	* [x] New workflow:
+		* [x] Extract and stage data from all configured queries for all systems...
+		* [x] ...then transform and combine all staged data across all source systems...
+		* [x] ...and finally load entire dataset for all systems to the target tables.
 * [ ] Transform subprocess (https://en.wikipedia.org/wiki/Extract,_transform,_load#Transform):
 	* [ ] Proposal #1: simple internal operations within dcpam.
 	* [x] Proposal #2: make use of external scripts/applications.

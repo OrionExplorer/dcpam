@@ -3,6 +3,12 @@
 
 #include "../../shared.h"
 
+typedef enum DB_SYSTEM_CDC_ETL_STEP {
+    ETL_EXTRACT = 1,
+    ETL_TRANSFORM,
+    ETL_LOAD
+} DB_SYSTEM_CDC_ETL_STEP;
+
 /*
     config.json => system[].queries[].change_data_capture.extract
 */

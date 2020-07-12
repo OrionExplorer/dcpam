@@ -54,20 +54,27 @@ int DB_WORKER_init( void ) {
     for( i = 0; i < DATABASE_SYSTEMS_COUNT; i++ ) {
         t_worker_data[ i ].DATA_SYSTEM = &DATABASE_SYSTEMS[ i ];
         t_worker_data[ i ].thread_id = i;
-        
+
+        /*
+            ETL process is run in separated thread for each source system.
+            But single iteration performs only one action: 1st time is Extract, 2nd is Transform and 3rd is Load. Then back to 1st again.
+            Thanks to this, each iteration gives us:
+            - 1st iteration: extracted data from all source systems
+            - 2nd iteration: possibility to transform and combine data across all source systems
+            - 3rd iteration: load transformed dataset to the target tables
+        */
         thread_s[ i ] = pthread_create( &w_watcher_thread[ i ], &attrs, DB_WORKER_watcher, ( void* )&t_worker_data[ i ] );
         if( thread_s[ i ] != 0 ) {
             LOG_print( "[%s] WORKER_init( ) failed to create DB_WORKER_watcher thread for \"%s\". Error: %d.\n", TIME_get_gmt(), DATABASE_SYSTEMS[ i ].name, thread_s[ i ] );
             mysql_library_end();
             return 0;
-        }       
-        Sleep(10);
+        }
+        Sleep( 10 );
     }
 
     for( i = 0; i < DATABASE_SYSTEMS_COUNT; i++ ) {
         pthread_join( w_watcher_thread[ i ], NULL );
     }
-
 
     mysql_library_end();
     LOG_print( "All threads are terminated.\n" );
@@ -76,9 +83,11 @@ int DB_WORKER_init( void ) {
 }
 
 void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
-    int                 i = 0;
-    WORKER_DATA         *t_worker_data = ( WORKER_DATA* )src_WORKER_DATA;
-    DATABASE_SYSTEM     *DATA_SYSTEM = t_worker_data->DATA_SYSTEM;
+    int                     i = 0;
+    WORKER_DATA             *t_worker_data = ( WORKER_DATA* )src_WORKER_DATA;
+    DATABASE_SYSTEM         *DATA_SYSTEM = t_worker_data->DATA_SYSTEM;
+    DB_SYSTEM_CDC_ETL_STEP  curr_etl_step = 1;
+    DB_SYSTEM_CDC_ETL_STEP  prev_etl_step = 1;
 
     LOG_print( "Init database connection thread for \"%s\":\n", DATA_SYSTEM->name );
     if( DATABASE_SYSTEM_DB_init( &DATA_SYSTEM->DB ) == FALSE ) {
@@ -96,42 +105,64 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
 
         worker_save_counter += WORKER_WATCHER_SLEEP;
 
-        LOG_print("\nDB_WORKER_watcher for \"%s\" started...\n", DATA_SYSTEM->name );
+        LOG_print("\nDB_WORKER_watcher for \"%s\" (%s) started...\n",
+                    DATA_SYSTEM->name,
+                    curr_etl_step == ETL_EXTRACT ? "EXTRACT" : curr_etl_step == ETL_TRANSFORM ? "TRANSFORM" : curr_etl_step == ETL_LOAD ? "LOAD" : "UNKNOWN"
+        );
 
-        /* 1st: Extract and store data in the Staging Area */
-        for( i = 0; i < DATA_SYSTEM->queries_len; i++ ) {
-            LOG_print( "\t· [EXTRACT] Query #%d: %s\n", i + 1, DATA_SYSTEM->queries[ i ].name );
+        if( curr_etl_step == ETL_EXTRACT ) {
+            /* 1st: Extract and store data in the Staging Area */
+            for( i = 0; i < DATA_SYSTEM->queries_len; i++ ) {
+                LOG_print( "\t· [EXTRACT] Query #%d: %s\n", i + 1, DATA_SYSTEM->queries[ i ].name );
 
-            DB_CDC_ExtractInserted( &DATA_SYSTEM->queries[ i ].change_data_capture.extract, &DATA_SYSTEM->DB, &extract_inserted_callback, ( void *)&DATA_SYSTEM->queries[ i ].change_data_capture.stage, ( void *)&DATA_SYSTEM->DB );
-            DB_CDC_ExtractDeleted( &DATA_SYSTEM->queries[ i ].change_data_capture.extract, &DATA_SYSTEM->DB, &extract_deleted_callback, ( void* )&DATA_SYSTEM->queries[ i ].change_data_capture.stage, ( void* )&DATA_SYSTEM->DB );
-            DB_CDC_ExtractModified( &DATA_SYSTEM->queries[ i ].change_data_capture.extract, &DATA_SYSTEM->DB, &extract_modified_callback, ( void* )&DATA_SYSTEM->queries[ i ].change_data_capture.stage, ( void* )&DATA_SYSTEM->DB );
+                DB_CDC_ExtractInserted( &DATA_SYSTEM->queries[ i ].change_data_capture.extract, &DATA_SYSTEM->DB, &extract_inserted_callback, ( void* )&DATA_SYSTEM->queries[ i ].change_data_capture.stage, ( void* )&DATA_SYSTEM->DB );
+                DB_CDC_ExtractDeleted( &DATA_SYSTEM->queries[ i ].change_data_capture.extract, &DATA_SYSTEM->DB, &extract_deleted_callback, ( void* )&DATA_SYSTEM->queries[ i ].change_data_capture.stage, ( void* )&DATA_SYSTEM->DB );
+                DB_CDC_ExtractModified( &DATA_SYSTEM->queries[ i ].change_data_capture.extract, &DATA_SYSTEM->DB, &extract_modified_callback, ( void* )&DATA_SYSTEM->queries[ i ].change_data_capture.stage, ( void* )&DATA_SYSTEM->DB );
+            }
+
+            curr_etl_step = ETL_TRANSFORM;
+            prev_etl_step = ETL_EXTRACT;
         }
 
-        /* 2nd: Transform data. */
-        for( i = 0; i < DATA_SYSTEM->queries_len; i++ ) {
-            LOG_print( "\t· [TRANSFORM] Query #%d: %s\n", i + 1, DATA_SYSTEM->queries[ i ].name );
+        else if( curr_etl_step == ETL_TRANSFORM ) {
+            /* 2nd: Transform data. */
+            for( i = 0; i < DATA_SYSTEM->queries_len; i++ ) {
+                LOG_print( "\t· [TRANSFORM] Query #%d: %s\n", i + 1, DATA_SYSTEM->queries[ i ].name );
 
-            //DB_CDC_TransformInserted( &DATA_SYSTEM->queries[ i ].change_data_capture.transform, &DATA_SYSTEM->DB, &inserted_data );
-            //DB_CDC_TransformDeleted( &DATA_SYSTEM->queries[ i ].change_data_capture.transform, &DATA_SYSTEM->DB, &deleted_data );
-            //DB_CDC_TransformModified( &DATA_SYSTEM->queries[ i ].change_data_capture.transform, &DATA_SYSTEM->DB, &modified_data );
+                //DB_CDC_TransformInserted( &DATA_SYSTEM->queries[ i ].change_data_capture.transform, &DATA_SYSTEM->DB, &inserted_data );
+                //DB_CDC_TransformDeleted( &DATA_SYSTEM->queries[ i ].change_data_capture.transform, &DATA_SYSTEM->DB, &deleted_data );
+                //DB_CDC_TransformModified( &DATA_SYSTEM->queries[ i ].change_data_capture.transform, &DATA_SYSTEM->DB, &modified_data );
+            }
+
+            curr_etl_step = ETL_LOAD;
+            prev_etl_step = ETL_TRANSFORM;
         }
 
-        /* 3rd: Load data. */
-        for( i = 0; i < DATA_SYSTEM->queries_len; i++ ) {
-            LOG_print( "\t· [LOAD] Query #%d: %s\n", i + 1, DATA_SYSTEM->queries[ i ].name );
+        else if( curr_etl_step == 3 ) {
+            /* 3rd: Load data. */
+            for( i = 0; i < DATA_SYSTEM->queries_len; i++ ) {
+                LOG_print( "\t· [LOAD] Query #%d: %s\n", i + 1, DATA_SYSTEM->queries[ i ].name );
 
-            DB_CDC_LoadInserted( &DATA_SYSTEM->queries[ i ].change_data_capture.load, &DATA_SYSTEM->DB );
-            DB_CDC_LoadDeleted( &DATA_SYSTEM->queries[ i ].change_data_capture.load, &DATA_SYSTEM->DB );
-            DB_CDC_LoadModified( &DATA_SYSTEM->queries[ i ].change_data_capture.load, &DATA_SYSTEM->DB );
+                DB_CDC_LoadInserted( &DATA_SYSTEM->queries[ i ].change_data_capture.load, &DATA_SYSTEM->DB );
+                DB_CDC_LoadDeleted( &DATA_SYSTEM->queries[ i ].change_data_capture.load, &DATA_SYSTEM->DB );
+                DB_CDC_LoadModified( &DATA_SYSTEM->queries[ i ].change_data_capture.load, &DATA_SYSTEM->DB );
+            }
+
+            /* 4rd: Clear Staging Area. */
+            for( i = 0; i < DATA_SYSTEM->queries_len; i++ ) {
+                DB_CDC_StageReset( &DATA_SYSTEM->queries[ i ].change_data_capture.stage, &DATA_SYSTEM->DB );
+            }
+
+            curr_etl_step = ETL_EXTRACT;
+            prev_etl_step = ETL_LOAD;
         }
 
-        /* 4rd: Clear Staging Area. */
-        for( i = 0; i < DATA_SYSTEM->queries_len; i++ ) {
-            DB_CDC_StageReset( &DATA_SYSTEM->queries[ i ].change_data_capture.stage, &DATA_SYSTEM->DB );
-        }
 
+        LOG_print("DB_WORKER_watcher for \"%s\" with process type \"%s\" finished.\n",
+                    DATA_SYSTEM->name,
+                    prev_etl_step == ETL_EXTRACT ? "EXTRACT" : prev_etl_step == ETL_TRANSFORM ? "TRANSFORM" : prev_etl_step == ETL_LOAD ? "LOAD" : "UNKNOWN"
+        );
 
-        LOG_print("DB_WORKER_watcher for \"%s\" finished.\n", DATA_SYSTEM->name );
         pthread_mutex_unlock( &watcher_mutex );
         Sleep( WORKER_WATCHER_SLEEP );
         if( app_terminated == 1 ) {

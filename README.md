@@ -50,7 +50,7 @@ Extract process does handle of:
 
 > **Information**: offline extraction (flat files) and other online sources will be available in the future.
 
-Extracted data is stored instantly in the Staging Area. That means inserted, deleted and modified records coexist in  transitional tables at the same time and must be properly marked. But this is another big performance boost: DCPAM can execute a number of simple SELECT queries instead of one complex SQL with many joins and other conditions, so impact on the source system is minimal.
+Extracted data is stored instantly in the Staging Area. That means inserted, deleted and modified records from all source systems coexist in transitional tables at the same time and must be properly marked. But this is another big performance boost: DCPAM can execute a number of simple SELECT queries instead of one complex SQL with many joins and other conditions, so impact on the source system is minimal.
 
 #### Change Data Capture
 DCPAM allows to define change tracking conditions to deliver near real-time or on-time data into Warehouse. Efficient identification of most recently changed data is crucial, but also most challenging. Successful implementation of change tracking has enormous impact on the size of data volume to be processed.
