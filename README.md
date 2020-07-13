@@ -17,6 +17,10 @@
     * [Extraction and Change Data Capture](https://github.com/OrionExplorer/dcpam#extraction-and-change-data-capture)
     * [Transformation](https://github.com/OrionExplorer/dcpam#transformation)
     * [Loading](https://github.com/OrionExplorer/dcpam#loading)
+* [Data Warehouse with DCPAM](https://github.com/OrionExplorer/dcpam#data-warehouse-with-dcpam)
+    * [What DCAM covers in terms of Data Warehousing?](https://github.com/OrionExplorer/dcpam#what-dcpam-covers-in-terms-of-data-warehousing)
+    * [Elements yet to be covered by DCPAM](https://github.com/OrionExplorer/dcpam#elements-yet-to-be-covered-by-dcpam)
+    * [Other elements to cover](https://github.com/OrionExplorer/dcpam#other-elements-to-cover)
 * [Technology](https://github.com/OrionExplorer/dcpam#technology)
     * [Architecture Overview](https://github.com/OrionExplorer/dcpam#architecture-overview)
     * [ETL and Change Data Capture](https://github.com/OrionExplorer/dcpam#etl-and-change-data-capture)
@@ -73,6 +77,48 @@ Examples of data transformation:
 
 ### Loading
 When all transformations in the Staging Area are completed, DCPAM loads the data directly into target tables. Then Staging Area is cleared and ready for the next occurence of data extraction.
+
+## Data Warehouse with DCPAM
+Purpose of this paragraph is to provide information about what actually DCPAM can do and what is yet to be available.
+
+### What DCPAM covers in terms of Data Warehousing?
+* JSON-based source systems configuration.
+* SQL and JSON-based configuration of the ETL processes:
+  * [x] Extract data to the Staging Area (from many sources)
+  * [ ] Transform data in the Staging Area
+  * [x] Load data from the Staging Area to target tables
+* Parallel execution:
+  * [x] Preconfigured
+  * [x] By running multiple instances of DCPAM
+* SQL and JSON-based preconfigured queries for data analysis.
+* Data Warehouse and Data Marts:
+  * One or many instances of DCAM can work as Data Warehouse (extracting and processing data from disparate sources).
+  * In the same time another DCPAM instances can use Data Warehouse to feed Data Marts with specific business-oriented data.
+
+### Elements yet to be covered by DCPAM
+* Caching mechanism for preconfigured queries.
+* DCPAM BI web application:
+  * SQL query exeution with grid-based results view
+  * Generate charts:
+    * line
+    * bar
+    * pie
+    * column
+    * area
+* DCPAM Administrator web application:
+  * Manage data sources
+  * Configure ETL processes
+  * Manage DCPAM BI users 
+
+### Other elements to cover
+* Choose Data Warehouse DBMS.
+* Consider Data Warehouse tables schema:
+  * Snowflake schema[[5]]
+  * Star schema[[6]]
+* Project data structures:
+  * Indexes
+  * Views
+
 
 ## Technology
 ### Architecture Overview
@@ -155,7 +201,7 @@ File `config.json` is DCPAM foundation. It defines:
 - PostgreSQL
 - Oracle Database
 
-
+---
 This software uses:
 * [cJSON](https://github.com/DaveGamble/cJSON "cJSON") for parsing JSON data.
 * [SQLite3](https://www.sqlite.org/ "SQLite")
@@ -164,3 +210,5 @@ This software uses:
 [2]: https://en.wikipedia.org/wiki/Extract,_transform,_load
 [3]: https://en.wikipedia.org/wiki/Staging_(data)
 [4]: https://en.wikipedia.org/wiki/Change_data_capture
+[5]: https://en.wikipedia.org/wiki/Snowflake_schema
+[6]: https://en.wikipedia.org/wiki/Star_schema
