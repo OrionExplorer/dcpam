@@ -20,7 +20,7 @@
 * [Data Warehouse with DCPAM](https://github.com/OrionExplorer/dcpam#data-warehouse-with-dcpam)
     * [What DCAM covers in terms of Data Warehousing?](https://github.com/OrionExplorer/dcpam#what-dcpam-covers-in-terms-of-data-warehousing)
     * [Elements yet to be covered by DCPAM](https://github.com/OrionExplorer/dcpam#elements-yet-to-be-covered-by-dcpam)
-    * [Other elements to cover](https://github.com/OrionExplorer/dcpam#other-elements-to-cover)
+    * [Other](https://github.com/OrionExplorer/dcpam#other)
 * [Technology](https://github.com/OrionExplorer/dcpam#technology)
     * [Architecture Overview](https://github.com/OrionExplorer/dcpam#architecture-overview)
     * [ETL and Change Data Capture](https://github.com/OrionExplorer/dcpam#etl-and-change-data-capture)
@@ -110,7 +110,7 @@ Purpose of this paragraph is to provide information about what actually DCPAM ca
   * Configure ETL processes
   * Manage DCPAM BI users 
 
-### Other elements to cover
+### Other
 * Choose Data Warehouse DBMS.
 * Consider Data Warehouse tables schema:
   * Snowflake schema[[5]]
