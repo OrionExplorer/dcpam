@@ -79,43 +79,48 @@ Examples of data transformation:
 When all transformations in the Staging Area are completed, DCPAM loads the data directly into target tables. Then Staging Area is cleared and ready for the next occurence of data extraction.
 
 ## Data Warehouse with DCPAM
-Purpose of this paragraph is to provide information about what actually DCPAM can do and what is yet to be available.
 
 ### What DCPAM covers in terms of Data Warehousing?
 * JSON-based source systems configuration.
 * SQL and JSON-based configuration of the ETL processes:
-  * [x] Extract data to the Staging Area (from many sources)
-  * [ ] Transform data in the Staging Area
-  * [x] Load data from the Staging Area to target tables
+  * [x] Data extraction and staging.
+  * [ ] Data transformation.
+  * [x] Data load from the Staging Area to target tables.
 * Parallel execution:
-  * [x] Preconfigured
-  * [x] By running multiple instances of DCPAM
+  * [x] Preconfigured.
+  * [x] By running multiple instances of DCPAM.
 * SQL and JSON-based preconfigured queries for data analysis.
 * Data Warehouse and Data Marts:
   * One or many instances of DCAM can work as Data Warehouse (extracting and processing data from disparate sources).
-  * In the same time another DCPAM instances can use Data Warehouse to feed Data Marts with specific business-oriented data.
+  * In the same time different DCPAM instances can use Data Warehouse to feed Data Marts with specific business-oriented data.
 
 ### Elements yet to be covered by DCPAM
 * Caching mechanism for preconfigured queries.
 * DCPAM BI web application:
-  * SQL query exeution with grid-based results view
-  * Generate charts:
+  * SQL query exeution with grid-based results view.
+  * Access to preconfigured queries.
+  * Charts:
     * line
     * bar
     * pie
     * column
     * area
-* DCPAM Administrator web application:
-  * Manage data sources
-  * Configure ETL processes
-  * Manage DCPAM BI users 
+  * Manage custom reports:
+    * labels, charts and grids
+    * user access control
+* DCPAM Admin web application:
+  * Manage data sources.
+  * Configure ETL processes.
+  * Manage DCPAM BI users.
 
 ### Other
-* Choose Data Warehouse DBMS.
+* Choose Data Warehouse DBMS, sufficient hardware and disk space.
 * Consider Data Warehouse tables schema:
   * Snowflake schema[[5]]
   * Star schema[[6]]
 * Project data structures:
+  * Staging Area
+  * Target tables
   * Indexes
   * Views
 
