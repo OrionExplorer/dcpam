@@ -44,6 +44,12 @@
 * [x] **Process gigabytes of data within minutes** - benefit of parallel execution.
 
 ### Extraction and Change Data Capture
+Extraction is first major ETL process. Simplified DCPAM workflow consists of 3 major steps:
+1. Data extraction from all source systems to the Staging Area.
+2. Possibility to transform and combine data across all source systems in the Staging Area.
+3. Load transformed dataset to the target tables.
+
+
 #### Extraction
 DCPAM is designed to perform online incremental extraction without need to implement additional logic to the source system. This process is SQL-based all the way, thus precise configuration of various databases transaction logs are not required. Log scanning is great non-intrusive method for Change Data Capture, but DCPAM goal is to deliver full Data Warehouse possibilities and not to include or hire more engineers for this specific task.
 
@@ -55,6 +61,7 @@ Extract process does handle of:
 > **Information**: offline extraction (flat files) and other online sources will be available in the future.
 
 Extracted data is stored instantly in the Staging Area. That means inserted, deleted and modified records from all source systems coexist in transitional tables at the same time and must be properly marked. But this is another big performance boost: DCPAM can execute a number of simple SELECT queries instead of one complex SQL with many joins and other conditions, so impact on the source system is minimal.
+
 
 #### Change Data Capture
 DCPAM allows to define change tracking conditions to deliver near real-time or on-time data into Warehouse. Efficient identification of most recently changed data is crucial, but also most challenging. Successful implementation of change tracking has enormous impact on the size of data volume to be processed.
@@ -93,6 +100,7 @@ When all transformations in the Staging Area are completed, DCPAM loads the data
 * Data Warehouse and Data Marts:
   * One or many instances of DCAM can work as Data Warehouse (extracting and processing data from disparate sources).
   * In the same time different DCPAM instances can use Data Warehouse to feed Data Marts with specific business-oriented data.
+* Access DCPAM Database with any system for analytics (Power BI, Tableau, Redash etc.).
 
 ### Elements yet to be covered by DCPAM
 * Caching mechanism for preconfigured queries.
