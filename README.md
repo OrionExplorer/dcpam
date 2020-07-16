@@ -98,7 +98,7 @@ When all transformations in the Staging Area are completed, DCPAM loads the data
   * [x] By running multiple instances of DCPAM.
 * SQL and JSON-based preconfigured queries for data analysis.
 * Data Warehouse and Data Marts:
-  * One or many instances of DCAM can work as Data Warehouse (extracting and processing data from disparate sources).
+  * One or many instances of DCPAM can work as Data Warehouse (extracting and processing data from disparate sources).
   * In the same time different DCPAM instances can use Data Warehouse to feed Data Marts with specific business-oriented data.
 * Access DCPAM Database with any system for analytics (Power BI, Tableau, Redash etc.).
 
