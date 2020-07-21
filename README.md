@@ -44,14 +44,14 @@
 * [x] **Process gigabytes of data within minutes** - benefit of parallel execution.
 
 ### Extraction and Change Data Capture
-Extraction is first major ETL process. Simplified DCPAM workflow consists of 3 major steps:
+Extraction is first major ETL process. Main DCPAM workflow consists of:
 1. Data extraction from all source systems to the Staging Area.
-2. Possibility to transform and combine data across all source systems in the Staging Area.
+2. Data transformation using all source systems in the Staging Area.
 3. Load transformed dataset to the target tables.
 
 
 #### Extraction
-DCPAM is designed to perform online incremental extraction without need to implement additional logic to the source system. This process is SQL-based all the way, thus precise configuration of various databases transaction logs are not required. Log scanning is great non-intrusive method for Change Data Capture, but DCPAM goal is to deliver full Data Warehouse possibilities and not to include or hire more engineers for this specific task.
+DCPAM is designed to perform online incremental extraction without need to implement additional logic to the source system. This process is SQL-based all the way, thus precise configuration of various transaction logs are not required. Log scanning is great non-intrusive method for Change Data Capture, but DCPAM goal is to deliver full Data Warehouse possibilities and not to include or hire more engineers for this specific task.
 
 Extract process does handle of:
 1. **Extract Inserted** - find and fetch only new records.
