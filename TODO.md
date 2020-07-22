@@ -41,12 +41,26 @@
 		* [x] Extract and stage data from all configured queries for all systems...
 		* [x] ...then transform and combine all staged data across all source systems...
 		* [x] ...and finally load entire dataset for all systems to the target tables.
+* [ ] Make Staging Area optional?
 * [ ] Transform subprocess (https://en.wikipedia.org/wiki/Extract,_transform,_load#Transform):
 	* [ ] Proposal #1: simple internal operations within dcpam.
-	* [x] Proposal #2: make use of external scripts/applications.
+	* [x] Proposal #2: make use of external scripts/applications
 	* [ ] Proposal #3: LUA scripts.
-	* [ ] Implementation
+	* [ ] Thought #1: Do we need to force usage of Transform subprocess? During Extraction we can store all necessary data in the Staging Area. Then, with Load subprocess, combine the data to the desired form in the target tables by using SQL.
+	* [ ] Implementation:
+		* [ ] Run external script/application (`popen`?).
+		* [ ] Provide all the necessary auth data to external script/application with command line arguments. 
+		* [ ] Wait for external script/application to finish with `EXIT_SUCCESS`.
+		* [ ] Proof of concept script:
+			* [ ] Python script.
+			* [ ] Remove leading and trailing spaces.
+			* [ ] Backflow of cleaned data in the original source.
 * [ ] ETL process interval can vary between system[].queries[].
+* [ ] Move DCPAM configuration to database:
+	* [ ] Table schemas based on `config.json`.
+	* [ ] Schema creation during DCPAM installation.
+	* [ ] `config.json` is still valid first-class citizen.
+
 
 ## Data sources
 * [ ] New data sources:
