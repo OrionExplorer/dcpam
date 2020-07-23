@@ -137,7 +137,7 @@ When all transformations in the Staging Area are completed or during Extract sub
 ### Architecture Overview
 * DCPAM offers either ETL[[2]] or ELT[[7]] solutions.
 * Highly memory-efficient - no memory overhead caused by large queries:
-  * each extracted record is instantly stored into Staging Area[[3]] by Extract process
+  * each extracted record is instantly stored either in the Staging Area[[3]] or target tables directly by Extract process
   * each staged and transformed record is instantly loaded into target tables by Load process
 * Each Change Data Capture process operates independently within separated thread.
 * Multiple instances of DCPAM with different configuration can run on single server.
