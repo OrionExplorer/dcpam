@@ -117,6 +117,9 @@ void SYSTEM_QUERY_free( DATABASE_SYSTEM_QUERY *dst ) {
         free( dst->change_data_capture.extract.modified.secondary_db ); dst->change_data_capture.extract.modified.secondary_db = NULL;
     }
 
+    if( dst->change_data_capture.transform ) {
+        free( dst->change_data_capture.transform ); dst->change_data_capture.transform = NULL;
+    }
     /*for( i = 0; i < MAX_TRANSFORM_ELEMENTS; i++ != NULL ) {
         if( dst->change_data_capture.transform.inserted[ i ].column != NULL != NULL ) {
             free( dst->change_data_capture.transform.inserted[ i ].column ); dst->change_data_capture.transform.inserted[ i ].column = NULL;
@@ -138,17 +141,21 @@ void SYSTEM_QUERY_free( DATABASE_SYSTEM_QUERY *dst ) {
         }
     }*/
 
-    if( dst->change_data_capture.stage.inserted.sql != NULL ) {
-        free( dst->change_data_capture.stage.inserted.sql ); dst->change_data_capture.stage.inserted.sql = NULL;
-    }
-    if( dst->change_data_capture.stage.deleted.sql != NULL ) {
-        free( dst->change_data_capture.stage.deleted.sql ); dst->change_data_capture.stage.deleted.sql = NULL;
-    }
-    if( dst->change_data_capture.stage.modified.sql != NULL ) {
-        free( dst->change_data_capture.stage.modified.sql ); dst->change_data_capture.stage.modified.sql = NULL;
-    }
-    if( dst->change_data_capture.stage.reset != NULL ) {
-        free( dst->change_data_capture.stage.reset ); dst->change_data_capture.stage.reset = NULL;
+    if( dst->change_data_capture.stage ) {
+        if( dst->change_data_capture.stage->inserted.sql != NULL ) {
+            free( dst->change_data_capture.stage->inserted.sql ); dst->change_data_capture.stage->inserted.sql = NULL;
+        }
+        if( dst->change_data_capture.stage->deleted.sql != NULL ) {
+            free( dst->change_data_capture.stage->deleted.sql ); dst->change_data_capture.stage->deleted.sql = NULL;
+        }
+        if( dst->change_data_capture.stage->modified.sql != NULL ) {
+            free( dst->change_data_capture.stage->modified.sql ); dst->change_data_capture.stage->modified.sql = NULL;
+        }
+        if( dst->change_data_capture.stage->reset != NULL ) {
+            free( dst->change_data_capture.stage->reset ); dst->change_data_capture.stage->reset = NULL;
+        }
+
+        free( dst->change_data_capture.stage ); dst->change_data_capture.stage = NULL;
     }
 
     if( dst->change_data_capture.load.inserted.input_data_sql != NULL ) {
@@ -212,27 +219,30 @@ void DATABASE_SYSTEM_QUERY_add(
     if( verbose > 0 ) LOG_print("\t\t\t·secondary_db_sql: \"%.70s(...)\"\n", cdc.extract.deleted.secondary_db_sql );
     if( verbose > 0 ) LOG_print("\t\t\t·secondary_db: \"%s\"\n", cdc.extract.deleted.secondary_db );
     
-    if( verbose > 0 ) LOG_print( "\t· stage\n\t\t·inserted\n\t\t\t·sql: \"%.70s(...)\"\n", cdc.stage.inserted.sql );
-    if( verbose > 0 ) LOG_print( "\t\t\t·extracted_values: " );
-    for( i = 0; i < cdc.stage.inserted.extracted_values_len; i++ ) {
-        if( verbose > 0 ) LOG_print( "'%s', ", cdc.stage.inserted.extracted_values[ i ] );
-    }
-    if( verbose > 0 ) LOG_print( "\n" );
-    if( verbose > 0 ) LOG_print( "\t\t·deleted\n\t\t\t·sql: \"%.70s(...)\"\n", cdc.stage.deleted.sql );
-    if( verbose > 0 ) LOG_print( "\t\t\t·extracted_values: " );
-    for( i = 0; i < cdc.stage.deleted.extracted_values_len; i++ ) {
-        if( verbose > 0 ) LOG_print( "'%s', ", cdc.stage.deleted.extracted_values[ i ] );
-    }
-    if( verbose > 0 ) LOG_print( "\n" );
-    if( verbose > 0 ) LOG_print( "\t\t·modified\n\t\t\t·sql: \"%.70s(...)\"\n", cdc.stage.modified.sql );
-    if( verbose > 0 ) LOG_print( "\t\t\t·extracted_values: " );
-    for( i = 0; i < cdc.stage.modified.extracted_values_len; i++ ) {
-        if( verbose > 0 ) LOG_print( "'%s', ", cdc.stage.modified.extracted_values[ i ] );
-    }
-    if( verbose > 0 ) LOG_print( "\n" );
+    if( cdc.stage ) {
+        if( verbose > 0 ) LOG_print( "\t· stage\n\t\t·inserted\n\t\t\t·sql: \"%.70s(...)\"\n", cdc.stage->inserted.sql );
+        if( verbose > 0 ) LOG_print( "\t\t\t·extracted_values: " );
+        for( i = 0; i < cdc.stage->inserted.extracted_values_len; i++ ) {
+            if( verbose > 0 ) LOG_print( "'%s', ", cdc.stage->inserted.extracted_values[ i ] );
+        }
+        if( verbose > 0 ) LOG_print( "\n" );
+        if( verbose > 0 ) LOG_print( "\t\t·deleted\n\t\t\t·sql: \"%.70s(...)\"\n", cdc.stage->deleted.sql );
+        if( verbose > 0 ) LOG_print( "\t\t\t·extracted_values: " );
+        for( i = 0; i < cdc.stage->deleted.extracted_values_len; i++ ) {
+            if( verbose > 0 ) LOG_print( "'%s', ", cdc.stage->deleted.extracted_values[ i ] );
+        }
+        if( verbose > 0 ) LOG_print( "\n" );
+        if( verbose > 0 ) LOG_print( "\t\t·modified\n\t\t\t·sql: \"%.70s(...)\"\n", cdc.stage->modified.sql );
+        if( verbose > 0 ) LOG_print( "\t\t\t·extracted_values: " );
+        for( i = 0; i < cdc.stage->modified.extracted_values_len; i++ ) {
+            if( verbose > 0 ) LOG_print( "'%s', ", cdc.stage->modified.extracted_values[ i ] );
+        }
 
-    if( verbose > 0 ) LOG_print( "\t\t·reset: \"%.70s(...)\"\n", cdc.stage.reset );
-    
+        if( verbose > 0 ) LOG_print( "\n" );
+
+        if( verbose > 0 ) LOG_print( "\t\t·reset: \"%.70s(...)\"\n", cdc.stage->reset );
+    }
+
     if( verbose > 0 ) LOG_print("\t· load\n\t\t·inserted\n\t\t\t·input_data_sql: \"%.70s(...)\"\n", cdc.load.inserted.input_data_sql );
     if( verbose > 0 ) LOG_print("\t\t\t·extracted_values: " );
     for( i = 0; i < cdc.load.inserted.extracted_values_len; i++ ) {

@@ -41,14 +41,21 @@
 		* [x] Extract and stage data from all configured queries for all systems...
 		* [x] ...then transform and combine all staged data across all source systems...
 		* [x] ...and finally load entire dataset for all systems to the target tables.
-* [ ] Make Staging Area optional?
+* [x] Make Staging Area optional?
+	* [x] Rebuild DCPAM config to support lack of Staging Area descriptions.
+	* [x] Extract subprocess callback can be either Stage or Load function.
 * [ ] Transform subprocess (https://en.wikipedia.org/wiki/Extract,_transform,_load#Transform):
-	* [ ] Proposal #1: simple internal operations within dcpam.
-	* [x] Proposal #2: make use of external scripts/applications
-	* [ ] Proposal #3: LUA scripts.
-	* [ ] Thought #1: Do we need to force usage of Transform subprocess? During Extraction we can store all necessary data in the Staging Area. Then, with Load subprocess, combine the data to the desired form in the target tables by using SQL.
+	* [ ] Proposal #1: simple internal operations within dcpam (NO-GO: hard-coded rules, small range of usable functions).
+	* [x] Proposal #2: make use of external scripts/applications.
+	* [ ] Proposal #3: LUA scripts (NO-GO: DCPAM engine would require major rebuild and new dependencies, also speed is concern).
+	* [x] Thought #1: Do we need to force usage of Transform subprocess? During Extraction we can store all necessary data in the Staging Area. Then, with Load subprocess, combine the data to the desired form in the target tables by using SQL.
+		* [x] Rebuild DCPAM config to support lack of Transform descriptions.
+	* [ ] Thought #2: Transformation can be performed on different server:
+		* Scripts/applications for transformation are placed here.
+		* New DCPAM tool for communication with DCPAM engine.
+		* Possible to call Transformation scripts/applications locally and remotely.
 	* [ ] Implementation:
-		* [ ] Run external script/application (`popen`?).
+		* [ ] Run external script/application (`popen` for local and sockets for remote).
 		* [ ] Provide all the necessary auth data to external script/application with command line arguments. 
 		* [ ] Wait for external script/application to finish with `EXIT_SUCCESS`.
 		* [ ] Proof of concept script:

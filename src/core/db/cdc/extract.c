@@ -11,7 +11,10 @@
 
 void _ExtractGeneric_callback( DB_RECORD* record, DB_SYSTEM_CDC_STAGE* stage, DB_SYSTEM_CDC_STAGE_QUERY* stage_element, DATABASE_SYSTEM_DB* db ) {
 
-    DB_CDC_StageGeneric( stage, stage_element, db, record );
+    if( stage ) {
+        DB_CDC_StageGeneric( stage, stage_element, db, record );
+    }
+
     DB_QUERY_record_free( record );
 }
 

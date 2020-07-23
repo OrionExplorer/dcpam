@@ -95,11 +95,6 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
         return FALSE;
     }
 
-    /* Init query structs */
-    qec extract_inserted_callback = ( qec )&_ExtractInserted_callback;
-    qec extract_deleted_callback = ( qec )&_ExtractDeleted_callback;
-    qec extract_modified_callback = ( qec )&_ExtractModified_callback;
-
     while( app_terminated == 0 ) {
         pthread_mutex_lock( &watcher_mutex );
 
@@ -113,11 +108,34 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
         if( curr_etl_step == ETL_EXTRACT ) {
             /* 1st: Extract and store data in the Staging Area */
             for( i = 0; i < DATA_SYSTEM->queries_len; i++ ) {
+                /* Init query structs */
+                qec extract_inserted_callback = DATA_SYSTEM->queries[ i ].change_data_capture.stage ? ( qec )&_ExtractInserted_callback : ( qec )&_LoadInserted_callback;
+                qec extract_deleted_callback = DATA_SYSTEM->queries[ i ].change_data_capture.stage ? ( qec )&_ExtractDeleted_callback : ( qec )&_LoadDeleted_callback;
+                qec extract_modified_callback = DATA_SYSTEM->queries[ i ].change_data_capture.stage ? ( qec )&_ExtractModified_callback : ( qec )&_LoadModified_callback;
+
                 LOG_print( "\t· [EXTRACT] Query #%d: %s\n", i + 1, DATA_SYSTEM->queries[ i ].name );
 
-                DB_CDC_ExtractInserted( &DATA_SYSTEM->queries[ i ].change_data_capture.extract, &DATA_SYSTEM->DB, &extract_inserted_callback, ( void* )&DATA_SYSTEM->queries[ i ].change_data_capture.stage, ( void* )&DATA_SYSTEM->DB );
-                DB_CDC_ExtractDeleted( &DATA_SYSTEM->queries[ i ].change_data_capture.extract, &DATA_SYSTEM->DB, &extract_deleted_callback, ( void* )&DATA_SYSTEM->queries[ i ].change_data_capture.stage, ( void* )&DATA_SYSTEM->DB );
-                DB_CDC_ExtractModified( &DATA_SYSTEM->queries[ i ].change_data_capture.extract, &DATA_SYSTEM->DB, &extract_modified_callback, ( void* )&DATA_SYSTEM->queries[ i ].change_data_capture.stage, ( void* )&DATA_SYSTEM->DB );
+                DB_CDC_ExtractInserted(
+                    &DATA_SYSTEM->queries[ i ].change_data_capture.extract,
+                    &DATA_SYSTEM->DB,
+                    &extract_inserted_callback,
+                    DATA_SYSTEM->queries[ i ].change_data_capture.stage ? ( void* )DATA_SYSTEM->queries[ i ].change_data_capture.stage : ( void* )&DATA_SYSTEM->queries[ i ].change_data_capture.load,
+                    ( void* )&DATA_SYSTEM->DB
+                );
+                DB_CDC_ExtractDeleted(
+                    &DATA_SYSTEM->queries[ i ].change_data_capture.extract,
+                    &DATA_SYSTEM->DB,
+                    &extract_deleted_callback,
+                    DATA_SYSTEM->queries[ i ].change_data_capture.stage ? ( void* )DATA_SYSTEM->queries[ i ].change_data_capture.stage : ( void* )&DATA_SYSTEM->queries[ i ].change_data_capture.load,
+                    ( void* )&DATA_SYSTEM->DB
+                );
+                DB_CDC_ExtractModified(
+                    &DATA_SYSTEM->queries[ i ].change_data_capture.extract,
+                    &DATA_SYSTEM->DB,
+                    &extract_modified_callback,
+                    DATA_SYSTEM->queries[ i ].change_data_capture.stage ? ( void* )DATA_SYSTEM->queries[ i ].change_data_capture.stage : ( void* )&DATA_SYSTEM->queries[ i ].change_data_capture.load,
+                    ( void* )&DATA_SYSTEM->DB
+                );
             }
 
             curr_etl_step = ETL_TRANSFORM;
@@ -127,18 +145,21 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
         else if( curr_etl_step == ETL_TRANSFORM ) {
             /* 2nd: Transform data. */
             for( i = 0; i < DATA_SYSTEM->queries_len; i++ ) {
-                LOG_print( "\t· [TRANSFORM] Query #%d: %s\n", i + 1, DATA_SYSTEM->queries[ i ].name );
 
-                //DB_CDC_TransformInserted( &DATA_SYSTEM->queries[ i ].change_data_capture.transform, &DATA_SYSTEM->DB, &inserted_data );
-                //DB_CDC_TransformDeleted( &DATA_SYSTEM->queries[ i ].change_data_capture.transform, &DATA_SYSTEM->DB, &deleted_data );
-                //DB_CDC_TransformModified( &DATA_SYSTEM->queries[ i ].change_data_capture.transform, &DATA_SYSTEM->DB, &modified_data );
+                if( DATA_SYSTEM->queries[ i ].change_data_capture.transform ) {
+                    LOG_print( "\t· [TRANSFORM] Query #%d: %s\n", i + 1, DATA_SYSTEM->queries[ i ].name );
+
+                    //DB_CDC_TransformInserted( &DATA_SYSTEM->queries[ i ].change_data_capture.transform, &DATA_SYSTEM->DB, &inserted_data );
+                    //DB_CDC_TransformDeleted( &DATA_SYSTEM->queries[ i ].change_data_capture.transform, &DATA_SYSTEM->DB, &deleted_data );
+                    //DB_CDC_TransformModified( &DATA_SYSTEM->queries[ i ].change_data_capture.transform, &DATA_SYSTEM->DB, &modified_data );
+                }
             }
 
             curr_etl_step = ETL_LOAD;
             prev_etl_step = ETL_TRANSFORM;
         }
 
-        else if( curr_etl_step == 3 ) {
+        else if( curr_etl_step == ETL_LOAD ) {
             /* 3rd: Load data. */
             for( i = 0; i < DATA_SYSTEM->queries_len; i++ ) {
                 LOG_print( "\t· [LOAD] Query #%d: %s\n", i + 1, DATA_SYSTEM->queries[ i ].name );
@@ -150,7 +171,9 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
 
             /* 4rd: Clear Staging Area. */
             for( i = 0; i < DATA_SYSTEM->queries_len; i++ ) {
-                DB_CDC_StageReset( &DATA_SYSTEM->queries[ i ].change_data_capture.stage, &DATA_SYSTEM->DB );
+                if( DATA_SYSTEM->queries[ i ].change_data_capture.stage ) {
+                    DB_CDC_StageReset( DATA_SYSTEM->queries[ i ].change_data_capture.stage, &DATA_SYSTEM->DB );
+                }
             }
 
             curr_etl_step = ETL_EXTRACT;
@@ -164,7 +187,10 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
         );
 
         pthread_mutex_unlock( &watcher_mutex );
-        Sleep( WORKER_WATCHER_SLEEP );
+        if( prev_etl_step == ETL_LOAD ) {
+            Sleep( WORKER_WATCHER_SLEEP );
+        }
+
         if( app_terminated == 1 ) {
             LOG_print( "[%s]\t- Thread exit handler executed for \"%s\".\n", TIME_get_gmt(), DATA_SYSTEM->name );
             DATABASE_SYSTEM_close( DATA_SYSTEM );

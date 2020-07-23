@@ -90,8 +90,8 @@ typedef struct DB_SYSTEM_CDC_LOAD {
 */
 typedef struct DB_SYSTEM_CDC {
     DB_SYSTEM_CDC_EXTRACT   extract;
-    DB_SYSTEM_CDC_STAGE     stage;
-    DB_SYSTEM_CDC_TRANSFORM transform;
+    DB_SYSTEM_CDC_STAGE     *stage;     /* Staging is optional */
+    DB_SYSTEM_CDC_TRANSFORM *transform; /* Transformation is optional */
     DB_SYSTEM_CDC_LOAD      load;
 } DB_SYSTEM_CDC;
 

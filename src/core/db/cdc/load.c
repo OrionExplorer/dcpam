@@ -80,6 +80,28 @@ void _LoadGeneric_callback( DB_RECORD *record, void *data_ptr1, void *data_ptr2 
     }
 }
 
+void _LoadInserted_callback( DB_RECORD* record, void* data_ptr1, void* data_ptr2 ) {
+    DB_SYSTEM_CDC_LOAD* load = ( DB_SYSTEM_CDC_LOAD* )data_ptr1;
+    DATABASE_SYSTEM_DB* db = ( DATABASE_SYSTEM_DB* )data_ptr2;
+
+    _LoadGeneric_callback( record, load, &load->inserted );
+}
+
+void _LoadDeleted_callback( DB_RECORD* record, void* data_ptr1, void* data_ptr2 ) {
+    DB_SYSTEM_CDC_LOAD* load = ( DB_SYSTEM_CDC_LOAD* )data_ptr1;
+    DATABASE_SYSTEM_DB* db = ( DATABASE_SYSTEM_DB* )data_ptr2;
+
+    _LoadGeneric_callback( record, load, &load->deleted );
+}
+
+void _LoadModified_callback( DB_RECORD* record, void* data_ptr1, void* data_ptr2 ) {
+    DB_SYSTEM_CDC_LOAD* load = ( DB_SYSTEM_CDC_LOAD* )data_ptr1;
+    DATABASE_SYSTEM_DB* db = ( DATABASE_SYSTEM_DB* )data_ptr2;
+
+    _LoadGeneric_callback( record, load, &load->modified );
+}
+
+
 void CDC_LoadGeneric( DB_SYSTEM_CDC_LOAD *load, DB_SYSTEM_CDC_LOAD_QUERY *load_element, DATABASE_SYSTEM_DB *db ) {
 
     if( load ) {

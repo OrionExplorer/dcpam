@@ -876,198 +876,202 @@ int DCPAM_load_configuration( const char* filename ) {
                         /**********************************************/
                         /*
                             change_data_capture.stage
+                            WARNING: Staging is optional. 
                         */
                         cfg_system_query_item_change_data_capture_stage = cJSON_GetObjectItem( cfg_system_query_item_change_data_capture, "stage" );
                         if( cfg_system_query_item_change_data_capture_stage == NULL ) {
-                            LOG_print( "ERROR: \"system[%d].queries[%d].change_data_capture.stage\" key not found.\n", i, j );
-                            cJSON_Delete( config_json );
-                            free( config_string ); config_string = NULL;
-                            fclose( file );
-                            return FALSE;
-                        }
-                        /*
-                            change_data_capture.stage.inserted
-                        */
-                        cfg_system_query_item_change_data_capture_stage_inserted = cJSON_GetObjectItem( cfg_system_query_item_change_data_capture_stage, "inserted" );
-                        if( cfg_system_query_item_change_data_capture_stage_inserted == NULL ) {
-                            LOG_print( "ERROR: \"system[%d].queries[%d].change_data_capture.stage.inserted\" key not found.\n", i, j );
-                            cJSON_Delete( config_json );
-                            free( config_string ); config_string = NULL;
-                            fclose( file );
-                            return FALSE;
-                        }
-                        /*
-                            change_data_capture.stage.inserted.sql
-                        */
-                        cfg_system_query_item_change_data_capture_stage_inserted_sql = cJSON_GetObjectItem( cfg_system_query_item_change_data_capture_stage_inserted, "sql" );
-                        if( cfg_system_query_item_change_data_capture_stage_inserted_sql == NULL ) {
-                            LOG_print( "ERROR: \"system[%d].queries[%d].change_data_capture.stage.inserted.sql\" key not found.\n", i, j );
-                            cJSON_Delete( config_json );
-                            free( config_string ); config_string = NULL;
-                            fclose( file );
-                            return FALSE;
-                        }
-                        str_len = strlen( cfg_system_query_item_change_data_capture_stage_inserted_sql->valuestring );
-                        tmp_cdc->stage.inserted.sql_len = str_len;
-                        tmp_cdc->stage.inserted.sql = ( char * )SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
-                        strncpy(
-                            tmp_cdc->stage.inserted.sql,
-                            cfg_system_query_item_change_data_capture_stage_inserted_sql->valuestring,
-                            str_len
-                        );
-                        /*
-                            change_data_capture.stage.inserted.extracted_values
-                        */
+                            LOG_print( "NOTICE: \"system[%d].queries[%d].change_data_capture.stage\" key not found.\n", i, j );
+                            tmp_cdc->stage = NULL;
+                        } else {
+                            tmp_cdc->stage = SAFEMALLOC( sizeof( DB_SYSTEM_CDC_STAGE ), __FILE__, __LINE__ );
+                            /*
+                                change_data_capture.stage.inserted
+                            */
+                            cfg_system_query_item_change_data_capture_stage_inserted = cJSON_GetObjectItem( cfg_system_query_item_change_data_capture_stage, "inserted" );
+                            if( cfg_system_query_item_change_data_capture_stage_inserted == NULL ) {
+                                LOG_print( "ERROR: \"system[%d].queries[%d].change_data_capture.stage.inserted\" key not found.\n", i, j );
+                                cJSON_Delete( config_json );
+                                free( config_string ); config_string = NULL;
+                                fclose( file );
+                                return FALSE;
+                            }
+                            /*
+                                change_data_capture.stage.inserted.sql
+                            */
+                            cfg_system_query_item_change_data_capture_stage_inserted_sql = cJSON_GetObjectItem( cfg_system_query_item_change_data_capture_stage_inserted, "sql" );
+                            if( cfg_system_query_item_change_data_capture_stage_inserted_sql == NULL ) {
+                                LOG_print( "ERROR: \"system[%d].queries[%d].change_data_capture.stage.inserted.sql\" key not found.\n", i, j );
+                                cJSON_Delete( config_json );
+                                free( config_string ); config_string = NULL;
+                                fclose( file );
+                                return FALSE;
+                            }
+                            str_len = strlen( cfg_system_query_item_change_data_capture_stage_inserted_sql->valuestring );
+                            tmp_cdc->stage->inserted.sql_len = str_len;
+                            tmp_cdc->stage->inserted.sql = ( char* )SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
+                            strncpy(
+                                tmp_cdc->stage->inserted.sql,
+                                cfg_system_query_item_change_data_capture_stage_inserted_sql->valuestring,
+                                str_len
+                            );
+                            /*
+                                change_data_capture.stage.inserted.extracted_values
+                            */
 
-                        int k = 0;
+                            int k = 0;
 
-                        for( k = 0; k < MAX_CDC_COLUMNS; k++ ) {
-                            memset( tmp_cdc->stage.inserted.extracted_values[ k ], 0, MAX_COLUMN_NAME_LEN );
-                        }
-                        tmp_cdc->stage.inserted.extracted_values_len = 0;
-                        cfg_system_query_item_change_data_capture_stage_inserted_extracted_values_array = cJSON_GetObjectItem( cfg_system_query_item_change_data_capture_stage_inserted, "extracted_values" );
-                        if( cfg_system_query_item_change_data_capture_stage_inserted_extracted_values_array == NULL ) {
-                            LOG_print( "ERROR: \"system[%d].queries[%d].change_data_capture.stage.inserted.extracted_values\" key not found.\n", i, j );
-                            cJSON_Delete( config_json );
-                            free( config_string ); config_string = NULL;
-                            fclose( file );
-                            return FALSE;
-                        }
-                        for( k = 0; k < cJSON_GetArraySize( cfg_system_query_item_change_data_capture_stage_inserted_extracted_values_array ); k++ ) {
-                            cfg_system_query_item_change_data_capture_stage_inserted_extracted_values_item = cJSON_GetArrayItem( cfg_system_query_item_change_data_capture_stage_inserted_extracted_values_array, k );
-                            snprintf( tmp_cdc->stage.inserted.extracted_values[ k ], MAX_COLUMN_NAME_LEN, "%s", cfg_system_query_item_change_data_capture_stage_inserted_extracted_values_item->valuestring );
-                            tmp_cdc->stage.inserted.extracted_values_len++;
-                        }
-                        /*
-                            change_data_capture.stage.deleted
-                        */
-                        cfg_system_query_item_change_data_capture_stage_deleted = cJSON_GetObjectItem( cfg_system_query_item_change_data_capture_stage, "deleted" );
-                        if( cfg_system_query_item_change_data_capture_stage_deleted == NULL ) {
-                            LOG_print( "ERROR: \"system[%d].queries[%d].change_data_capture.stage.deleted\" key not found.\n", i, j );
-                            cJSON_Delete( config_json );
-                            free( config_string ); config_string = NULL;
-                            fclose( file );
-                            return FALSE;
-                        }
-                        /*
-                            change_data_capture.stage.deleted.sql
-                        */
-                        cfg_system_query_item_change_data_capture_stage_deleted_sql = cJSON_GetObjectItem( cfg_system_query_item_change_data_capture_stage_deleted, "sql" );
-                        if( cfg_system_query_item_change_data_capture_stage_deleted_sql == NULL ) {
-                            LOG_print( "ERROR: \"system[%d].queries[%d].change_data_capture.stage.deleted.sql\" key not found.\n", i, j );
-                            cJSON_Delete( config_json );
-                            free( config_string ); config_string = NULL;
-                            fclose( file );
-                            return FALSE;
-                        }
-                        str_len = strlen( cfg_system_query_item_change_data_capture_stage_deleted_sql->valuestring );
-                        tmp_cdc->stage.deleted.sql_len = str_len;
-                        tmp_cdc->stage.deleted.sql = ( char * )SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
-                        strncpy(
-                            tmp_cdc->stage.deleted.sql,
-                            cfg_system_query_item_change_data_capture_stage_deleted_sql->valuestring,
-                            str_len
-                        );
-                        /*
-                            change_data_capture.stage.deleted.extracted_values
-                        */
-                        cfg_system_query_item_change_data_capture_stage_deleted_extracted_values_array = cJSON_GetObjectItem( cfg_system_query_item_change_data_capture_stage_deleted, "extracted_values" );
-                        if( cfg_system_query_item_change_data_capture_stage_deleted_extracted_values_array == NULL ) {
-                            LOG_print( "ERROR: \"system[%d].queries[%d].change_data_capture.stage.deleted.extracted_values\" key not found.\n", i, j );
-                            cJSON_Delete( config_json );
-                            free( config_string ); config_string = NULL;
-                            fclose( file );
-                            return FALSE;
-                        }
-                        for( k = 0; k < MAX_CDC_COLUMNS; k++ ) {
-                            memset( tmp_cdc->stage.deleted.extracted_values[ k ], 0, MAX_COLUMN_NAME_LEN );
-                        }
-                        tmp_cdc->stage.deleted.extracted_values_len = 0;
-                        for( k = 0; k < cJSON_GetArraySize( cfg_system_query_item_change_data_capture_stage_deleted_extracted_values_array ); k++ ) {
-                            cfg_system_query_item_change_data_capture_stage_deleted_extracted_values_item = cJSON_GetArrayItem( cfg_system_query_item_change_data_capture_stage_deleted_extracted_values_array, k );
-                            snprintf( tmp_cdc->stage.deleted.extracted_values[ k ], MAX_COLUMN_NAME_LEN, "%s", cfg_system_query_item_change_data_capture_stage_deleted_extracted_values_item->valuestring );
-                            tmp_cdc->stage.deleted.extracted_values_len++;
-                        }
-                        /*
-                            change_data_capture.stage.modified
-                        */
-                        cfg_system_query_item_change_data_capture_stage_modified = cJSON_GetObjectItem( cfg_system_query_item_change_data_capture_stage, "modified" );
-                        if( cfg_system_query_item_change_data_capture_stage_modified == NULL ) {
-                            LOG_print( "ERROR: \"system[%d].queries[%d].change_data_capture.stage.modified\" key not found.\n", i, j );
-                            cJSON_Delete( config_json );
-                            free( config_string ); config_string = NULL;
-                            fclose( file );
-                            return FALSE;
-                        }
-                        /*
-                            change_data_capture.stage.modified.sql
-                        */
-                        cfg_system_query_item_change_data_capture_stage_modified_sql = cJSON_GetObjectItem( cfg_system_query_item_change_data_capture_stage_modified, "sql" );
-                        if( cfg_system_query_item_change_data_capture_stage_modified_sql == NULL ) {
-                            LOG_print( "ERROR: \"system[%d].queries[%d].change_data_capture.stage.modified.sql\" key not found.\n", i, j );
-                            cJSON_Delete( config_json );
-                            free( config_string ); config_string = NULL;
-                            fclose( file );
-                            return FALSE;
-                        }
-                        str_len = strlen( cfg_system_query_item_change_data_capture_stage_modified_sql->valuestring );
-                        tmp_cdc->stage.modified.sql_len = str_len;
-                        tmp_cdc->stage.modified.sql = ( char * )SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
-                        strncpy(
-                            tmp_cdc->stage.modified.sql,
-                            cfg_system_query_item_change_data_capture_stage_modified_sql->valuestring,
-                            str_len
-                        );
-                        /*
-                            change_data_capture.stage.modified.extracted_values
-                        */
-                        cfg_system_query_item_change_data_capture_stage_modified_extracted_values_array = cJSON_GetObjectItem( cfg_system_query_item_change_data_capture_stage_modified, "extracted_values" );
-                        if( cfg_system_query_item_change_data_capture_stage_modified_extracted_values_array == NULL ) {
-                            LOG_print( "ERROR: \"system[%d].queries[%d].change_data_capture.stage.modified.extracted_values\" key not found.\n", i, j );
-                            cJSON_Delete( config_json );
-                            free( config_string ); config_string = NULL;
-                            fclose( file );
-                            return FALSE;
-                        }
-                        for( k = 0; k < MAX_CDC_COLUMNS; k++ ) {
-                            memset( tmp_cdc->stage.modified.extracted_values[ k ], 0, MAX_COLUMN_NAME_LEN );
-                        }
-                        tmp_cdc->stage.modified.extracted_values_len = 0;
-                        for( k = 0; k < cJSON_GetArraySize( cfg_system_query_item_change_data_capture_stage_modified_extracted_values_array ); k++ ) {
-                            cfg_system_query_item_change_data_capture_stage_modified_extracted_values_item = cJSON_GetArrayItem( cfg_system_query_item_change_data_capture_stage_modified_extracted_values_array, k );
-                            snprintf( tmp_cdc->stage.modified.extracted_values[ k ], MAX_COLUMN_NAME_LEN, "%s", cfg_system_query_item_change_data_capture_stage_modified_extracted_values_item->valuestring );
-                            tmp_cdc->stage.modified.extracted_values_len++;
-                        }
+                            for( k = 0; k < MAX_CDC_COLUMNS; k++ ) {
+                                memset( tmp_cdc->stage->inserted.extracted_values[ k ], 0, MAX_COLUMN_NAME_LEN );
+                            }
+                            tmp_cdc->stage->inserted.extracted_values_len = 0;
+                            cfg_system_query_item_change_data_capture_stage_inserted_extracted_values_array = cJSON_GetObjectItem( cfg_system_query_item_change_data_capture_stage_inserted, "extracted_values" );
+                            if( cfg_system_query_item_change_data_capture_stage_inserted_extracted_values_array == NULL ) {
+                                LOG_print( "ERROR: \"system[%d].queries[%d].change_data_capture.stage.inserted.extracted_values\" key not found.\n", i, j );
+                                cJSON_Delete( config_json );
+                                free( config_string ); config_string = NULL;
+                                fclose( file );
+                                return FALSE;
+                            }
+                            for( k = 0; k < cJSON_GetArraySize( cfg_system_query_item_change_data_capture_stage_inserted_extracted_values_array ); k++ ) {
+                                cfg_system_query_item_change_data_capture_stage_inserted_extracted_values_item = cJSON_GetArrayItem( cfg_system_query_item_change_data_capture_stage_inserted_extracted_values_array, k );
+                                snprintf( tmp_cdc->stage->inserted.extracted_values[ k ], MAX_COLUMN_NAME_LEN, "%s", cfg_system_query_item_change_data_capture_stage_inserted_extracted_values_item->valuestring );
+                                tmp_cdc->stage->inserted.extracted_values_len++;
+                            }
+                            /*
+                                change_data_capture.stage.deleted
+                            */
+                            cfg_system_query_item_change_data_capture_stage_deleted = cJSON_GetObjectItem( cfg_system_query_item_change_data_capture_stage, "deleted" );
+                            if( cfg_system_query_item_change_data_capture_stage_deleted == NULL ) {
+                                LOG_print( "ERROR: \"system[%d].queries[%d].change_data_capture.stage.deleted\" key not found.\n", i, j );
+                                cJSON_Delete( config_json );
+                                free( config_string ); config_string = NULL;
+                                fclose( file );
+                                return FALSE;
+                            }
+                            /*
+                                change_data_capture.stage.deleted.sql
+                            */
+                            cfg_system_query_item_change_data_capture_stage_deleted_sql = cJSON_GetObjectItem( cfg_system_query_item_change_data_capture_stage_deleted, "sql" );
+                            if( cfg_system_query_item_change_data_capture_stage_deleted_sql == NULL ) {
+                                LOG_print( "ERROR: \"system[%d].queries[%d].change_data_capture.stage.deleted.sql\" key not found.\n", i, j );
+                                cJSON_Delete( config_json );
+                                free( config_string ); config_string = NULL;
+                                fclose( file );
+                                return FALSE;
+                            }
+                            str_len = strlen( cfg_system_query_item_change_data_capture_stage_deleted_sql->valuestring );
+                            tmp_cdc->stage->deleted.sql_len = str_len;
+                            tmp_cdc->stage->deleted.sql = ( char* )SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
+                            strncpy(
+                                tmp_cdc->stage->deleted.sql,
+                                cfg_system_query_item_change_data_capture_stage_deleted_sql->valuestring,
+                                str_len
+                            );
+                            /*
+                                change_data_capture.stage.deleted.extracted_values
+                            */
+                            cfg_system_query_item_change_data_capture_stage_deleted_extracted_values_array = cJSON_GetObjectItem( cfg_system_query_item_change_data_capture_stage_deleted, "extracted_values" );
+                            if( cfg_system_query_item_change_data_capture_stage_deleted_extracted_values_array == NULL ) {
+                                LOG_print( "ERROR: \"system[%d].queries[%d].change_data_capture.stage.deleted.extracted_values\" key not found.\n", i, j );
+                                cJSON_Delete( config_json );
+                                free( config_string ); config_string = NULL;
+                                fclose( file );
+                                return FALSE;
+                            }
+                            for( k = 0; k < MAX_CDC_COLUMNS; k++ ) {
+                                memset( tmp_cdc->stage->deleted.extracted_values[ k ], 0, MAX_COLUMN_NAME_LEN );
+                            }
+                            tmp_cdc->stage->deleted.extracted_values_len = 0;
+                            for( k = 0; k < cJSON_GetArraySize( cfg_system_query_item_change_data_capture_stage_deleted_extracted_values_array ); k++ ) {
+                                cfg_system_query_item_change_data_capture_stage_deleted_extracted_values_item = cJSON_GetArrayItem( cfg_system_query_item_change_data_capture_stage_deleted_extracted_values_array, k );
+                                snprintf( tmp_cdc->stage->deleted.extracted_values[ k ], MAX_COLUMN_NAME_LEN, "%s", cfg_system_query_item_change_data_capture_stage_deleted_extracted_values_item->valuestring );
+                                tmp_cdc->stage->deleted.extracted_values_len++;
+                            }
+                            /*
+                                change_data_capture.stage.modified
+                            */
+                            cfg_system_query_item_change_data_capture_stage_modified = cJSON_GetObjectItem( cfg_system_query_item_change_data_capture_stage, "modified" );
+                            if( cfg_system_query_item_change_data_capture_stage_modified == NULL ) {
+                                LOG_print( "ERROR: \"system[%d].queries[%d].change_data_capture.stage.modified\" key not found.\n", i, j );
+                                cJSON_Delete( config_json );
+                                free( config_string ); config_string = NULL;
+                                fclose( file );
+                                return FALSE;
+                            }
+                            /*
+                                change_data_capture.stage.modified.sql
+                            */
+                            cfg_system_query_item_change_data_capture_stage_modified_sql = cJSON_GetObjectItem( cfg_system_query_item_change_data_capture_stage_modified, "sql" );
+                            if( cfg_system_query_item_change_data_capture_stage_modified_sql == NULL ) {
+                                LOG_print( "ERROR: \"system[%d].queries[%d].change_data_capture.stage.modified.sql\" key not found.\n", i, j );
+                                cJSON_Delete( config_json );
+                                free( config_string ); config_string = NULL;
+                                fclose( file );
+                                return FALSE;
+                            }
+                            str_len = strlen( cfg_system_query_item_change_data_capture_stage_modified_sql->valuestring );
+                            tmp_cdc->stage->modified.sql_len = str_len;
+                            tmp_cdc->stage->modified.sql = ( char* )SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
+                            strncpy(
+                                tmp_cdc->stage->modified.sql,
+                                cfg_system_query_item_change_data_capture_stage_modified_sql->valuestring,
+                                str_len
+                            );
+                            /*
+                                change_data_capture.stage.modified.extracted_values
+                            */
+                            cfg_system_query_item_change_data_capture_stage_modified_extracted_values_array = cJSON_GetObjectItem( cfg_system_query_item_change_data_capture_stage_modified, "extracted_values" );
+                            if( cfg_system_query_item_change_data_capture_stage_modified_extracted_values_array == NULL ) {
+                                LOG_print( "ERROR: \"system[%d].queries[%d].change_data_capture.stage.modified.extracted_values\" key not found.\n", i, j );
+                                cJSON_Delete( config_json );
+                                free( config_string ); config_string = NULL;
+                                fclose( file );
+                                return FALSE;
+                            }
+                            for( k = 0; k < MAX_CDC_COLUMNS; k++ ) {
+                                memset( tmp_cdc->stage->modified.extracted_values[ k ], 0, MAX_COLUMN_NAME_LEN );
+                            }
+                            tmp_cdc->stage->modified.extracted_values_len = 0;
+                            for( k = 0; k < cJSON_GetArraySize( cfg_system_query_item_change_data_capture_stage_modified_extracted_values_array ); k++ ) {
+                                cfg_system_query_item_change_data_capture_stage_modified_extracted_values_item = cJSON_GetArrayItem( cfg_system_query_item_change_data_capture_stage_modified_extracted_values_array, k );
+                                snprintf( tmp_cdc->stage->modified.extracted_values[ k ], MAX_COLUMN_NAME_LEN, "%s", cfg_system_query_item_change_data_capture_stage_modified_extracted_values_item->valuestring );
+                                tmp_cdc->stage->modified.extracted_values_len++;
+                            }
 
-                        /*
-                            change_data_capture.stage.reset
-                        */
-                        cfg_system_query_item_change_data_capture_stage_reset = cJSON_GetObjectItem( cfg_system_query_item_change_data_capture_stage, "reset" );
-                        if( cfg_system_query_item_change_data_capture_stage_reset == NULL ) {
-                            LOG_print( "ERROR: \"system[%d].queries[%d].change_data_capture.stage.reset\" key not found.\n", i, j );
-                            cJSON_Delete( config_json );
-                            free( config_string ); config_string = NULL;
-                            fclose( file );
-                            return FALSE;
-                        } 
-                        str_len = strlen( cfg_system_query_item_change_data_capture_stage_reset->valuestring );
-                        tmp_cdc->stage.reset = SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
-                        strncpy(
-                            tmp_cdc->stage.reset,
-                            cfg_system_query_item_change_data_capture_stage_reset->valuestring,
-                            str_len
-                        );
+                            /*
+                                change_data_capture.stage.reset
+                            */
+                            cfg_system_query_item_change_data_capture_stage_reset = cJSON_GetObjectItem( cfg_system_query_item_change_data_capture_stage, "reset" );
+                            if( cfg_system_query_item_change_data_capture_stage_reset == NULL ) {
+                                LOG_print( "ERROR: \"system[%d].queries[%d].change_data_capture.stage.reset\" key not found.\n", i, j );
+                                cJSON_Delete( config_json );
+                                free( config_string ); config_string = NULL;
+                                fclose( file );
+                                return FALSE;
+                            }
+                            str_len = strlen( cfg_system_query_item_change_data_capture_stage_reset->valuestring );
+                            tmp_cdc->stage->reset = SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
+                            strncpy(
+                                tmp_cdc->stage->reset,
+                                cfg_system_query_item_change_data_capture_stage_reset->valuestring,
+                                str_len
+                            );
+                        }
+                        
                         /********************************************/
 
                         /*
                             change_data_capture.transform
+                            WARNING: Transformation is optional.
                         */
                         /* TODO */cfg_system_query_item_change_data_capture_transform = cJSON_GetObjectItem( cfg_system_query_item_change_data_capture, "transform" );/* TODO */
                         if( cfg_system_query_item_change_data_capture_transform == NULL ) {
-                            LOG_print( "ERROR: \"system[%d].queries[%d].change_data_capture.transform\" key not found.\n", i, j );
-                            cJSON_Delete( config_json );
-                            return FALSE;
+                            LOG_print( "NOTICE: \"system[%d].queries[%d].change_data_capture.transform\" key not found.\n", i, j );
+                            tmp_cdc->transform = NULL;
+                        } else {
+                            tmp_cdc->transform = SAFEMALLOC( sizeof( DB_SYSTEM_CDC_EXTRACT ), __FILE__, __LINE__ );
                         }
+
                         /*
                             change_data_capture.load
                         */
