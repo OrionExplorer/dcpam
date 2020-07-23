@@ -44,10 +44,10 @@
 * [x] **Process gigabytes of data within minutes** - benefit of parallel execution.
 
 ### Extraction and Change Data Capture
-Extraction is first major ETL process. Main DCPAM workflow consists of:
-1. Data extraction from all source systems to the Staging Area.
-2. Data transformation using all source systems in the Staging Area.
-3. Load transformed dataset to the target tables.
+Extraction is first major process. Main DCPAM workflow consists of:
+1. Data extraction from all source systems to the Staging Area or target tables directly.
+2. (Optional) Data transformation using all source systems in the Staging Area.
+3. Load transformed dataset to the target tables (when Staging Area is used).
 
 
 #### Extraction
@@ -60,7 +60,7 @@ Extract process does handle of:
 
 > **Information**: offline extraction (flat files) and other online sources will be available in the future.
 
-Extracted data is stored instantly in the Staging Area. That means inserted, deleted and modified records from all source systems coexist in transitional tables at the same time and must be properly marked. But this is another big performance boost: DCPAM can execute a number of simple SELECT queries instead of one complex SQL with many joins and other conditions, so impact on the source system is minimal.
+Depending on configuration, extracted data is stored instantly either in the Staging Area or target tables directly. That means inserted, deleted and modified records from all source systems coexist in transitional tables at the same time and must be properly marked. But this is another big performance boost: DCPAM can execute a number of simple SELECT queries instead of one complex SQL with many joins and other conditions, so impact on the source system is minimal.
 
 
 #### Change Data Capture
@@ -75,7 +75,7 @@ Two major techniques are used to track changed data:
 > **Notice**: Triggers can seriously affect performance of the source system, thus should be considered carefully.
 
 ### Transformation
-DCPAM stores extracted data in the Staging Area - a group of transitional tables, where transformations are made.
+Optionally DCPAM stores extracted data in the Staging Area - a group of transitional tables, where transformations are made.
 Examples of data transformation:
 * conversions
 * recalculations
@@ -83,7 +83,7 @@ Examples of data transformation:
 > **Information**: This section is incomplete. Transform process in DCPAM is yet to be implemented.
 
 ### Loading
-When all transformations in the Staging Area are completed, DCPAM loads the data directly into target tables. Then Staging Area is cleared and ready for the next occurence of data extraction.
+When all transformations in the Staging Area are completed or during Extract subprocess, DCPAM loads the data directly into target tables. Then Staging Area is cleared and ready for the next occurence of data extraction.
 
 ## Data Warehouse with DCPAM
 
@@ -135,10 +135,10 @@ When all transformations in the Staging Area are completed, DCPAM loads the data
 
 ## Technology
 ### Architecture Overview
-* DCPAM is ETL - based solution[[2]].
+* DCPAM offers either ETL[[2]] or ELT[[7]] solutions.
 * Highly memory-efficient - no memory overhead caused by large queries:
-	* each extracted record is instantly stored into Staging Area[[3]] by Extract process
-	* each staged and transformed record is instantly loaded into target tables by Load process
+  * each extracted record is instantly stored into Staging Area[[3]] by Extract process
+  * each staged and transformed record is instantly loaded into target tables by Load process
 * Each Change Data Capture process operates independently within separated thread.
 * Multiple instances of DCPAM with different configuration can run on single server.
 * Database support is provided with native libraries (see _Data sources_ and _Linux Dependencies_ in this document).
@@ -163,12 +163,12 @@ It is possible to use multiple processes/threads to accomplish single task. Inst
 DCPAM development is still in progress with following data sources available:
 |  ID  | Data source                        | Type            | Support          |
 |:----:|:-----------------------------------|:---------------:|:----------------:|
-| 1    | PostgreSQL      					| database        | native           |
-| 2    | MySQL 8         					| database        | native           |
-| 3    | MariaDB/MySQL 5 					| database        | native           |
+| 1    | PostgreSQL               | database        | native           |
+| 2    | MySQL 8                  | database        | native           |
+| 3    | MariaDB/MySQL 5          | database        | native           |
 | 4    | SQL Server/Azure SQL Database      | database        | native via ODBC* |
-| 5    | Oracle Database 					| database        | native           |
-| 6    | SQLite3         					| database        | native           |
+| 5    | Oracle Database          | database        | native           |
+| 6    | SQLite3                  | database        | native           |
 
 > \* SQL Server/Azure SQL Database: [ODBC is the primary native data access API for applications written in C and C++ for SQL Server](https://docs.microsoft.com/en-us/sql/connect/odbc/microsoft-odbc-driver-for-sql-server).
 
@@ -225,3 +225,4 @@ This software uses:
 [4]: https://en.wikipedia.org/wiki/Change_data_capture
 [5]: https://en.wikipedia.org/wiki/Snowflake_schema
 [6]: https://en.wikipedia.org/wiki/Star_schema
+[7]: https://en.wikipedia.org/wiki/Extract,_load,_transform
