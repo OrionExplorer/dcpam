@@ -140,9 +140,21 @@ int DCPAM_load_configuration( const char* filename ) {
     cJSON* cfg_system_query_item_change_data_capture_stage_reset = NULL;
     
     cJSON* cfg_system_query_item_change_data_capture_transform = NULL;
-    cJSON* cfg_system_query_item_change_data_capture_transform_inserted = NULL;
-    cJSON* cfg_system_query_item_change_data_capture_transform_deleted = NULL;
-    cJSON* cfg_system_query_item_change_data_capture_transform_modified = NULL;
+    cJSON* cfg_system_query_item_change_data_capture_transform_inserted_array = NULL;
+    cJSON* cfg_system_query_item_change_data_capture_transform_inserted_item = NULL;
+    cJSON* cfg_system_query_item_change_data_capture_transform_inserted_module = NULL;
+    cJSON* cfg_system_query_item_change_data_capture_transform_inserted_staged_data = NULL;
+    cJSON* cfg_system_query_item_change_data_capture_transform_inserted_source_system_table = NULL;
+    cJSON* cfg_system_query_item_change_data_capture_transform_deleted_array = NULL;
+    cJSON* cfg_system_query_item_change_data_capture_transform_deleted_item = NULL;
+    cJSON* cfg_system_query_item_change_data_capture_transform_deleted_module = NULL;
+    cJSON* cfg_system_query_item_change_data_capture_transform_deleted_staged_data = NULL;
+    cJSON* cfg_system_query_item_change_data_capture_transform_deleted_source_system_table = NULL;
+    cJSON* cfg_system_query_item_change_data_capture_transform_modified_array = NULL;
+    cJSON* cfg_system_query_item_change_data_capture_transform_modified_item = NULL;
+    cJSON* cfg_system_query_item_change_data_capture_transform_modified_module = NULL;
+    cJSON* cfg_system_query_item_change_data_capture_transform_modified_staged_data = NULL;
+    cJSON* cfg_system_query_item_change_data_capture_transform_modified_source_system_table = NULL;
     
     cJSON* cfg_system_query_item_change_data_capture_load = NULL;
     cJSON* cfg_system_query_item_change_data_capture_load_inserted = NULL;
@@ -1064,12 +1076,149 @@ int DCPAM_load_configuration( const char* filename ) {
                             change_data_capture.transform
                             WARNING: Transformation is optional.
                         */
-                        /* TODO */cfg_system_query_item_change_data_capture_transform = cJSON_GetObjectItem( cfg_system_query_item_change_data_capture, "transform" );/* TODO */
+                        cfg_system_query_item_change_data_capture_transform = cJSON_GetObjectItem( cfg_system_query_item_change_data_capture, "transform" );
                         if( cfg_system_query_item_change_data_capture_transform == NULL ) {
                             LOG_print( "NOTICE: \"system[%d].queries[%d].change_data_capture.transform\" key not found.\n", i, j );
                             tmp_cdc->transform = NULL;
                         } else {
-                            tmp_cdc->transform = SAFEMALLOC( sizeof( DB_SYSTEM_CDC_EXTRACT ), __FILE__, __LINE__ );
+                            tmp_cdc->transform = SAFEMALLOC( sizeof( DB_SYSTEM_CDC_TRANSFORM ), __FILE__, __LINE__ );
+
+                            /*
+                                change_data_capture.transform.inserted
+                            */
+                            cfg_system_query_item_change_data_capture_transform_inserted_array = cJSON_GetObjectItem( cfg_system_query_item_change_data_capture_transform, "inserted" );
+                            if( cfg_system_query_item_change_data_capture_transform_inserted_array == NULL ) {
+                                LOG_print( "ERROR: \"system[%d].queries[%d].change_data_capture.transform.inserted\" key not found.\n", i, j );
+                                cJSON_Delete( config_json );
+                                free( config_string ); config_string = NULL;
+                                fclose( file );
+                                return FALSE;
+                            }
+                            tmp_cdc->transform->inserted_count = cJSON_GetArraySize( cfg_system_query_item_change_data_capture_transform_inserted_array );
+                            tmp_cdc->transform->inserted = SAFEMALLOC( sizeof( DB_SYSTEM_CDC_TRANSFORM_QUERY *) * tmp_cdc->transform->inserted_count, __FILE__, __LINE__ );
+                            for( int i = 0; i < tmp_cdc->transform->inserted_count; i++ ) {
+                                cfg_system_query_item_change_data_capture_transform_inserted_item = cJSON_GetArrayItem( cfg_system_query_item_change_data_capture_transform_inserted_array, i );
+
+                                tmp_cdc->transform->inserted[ i ] = SAFEMALLOC( sizeof( DB_SYSTEM_CDC_TRANSFORM_QUERY ), __FILE__, __LINE__ );
+
+                                cfg_system_query_item_change_data_capture_transform_inserted_module = cJSON_GetObjectItem( cfg_system_query_item_change_data_capture_transform_inserted_item, "module" );
+                                tmp_cdc->transform->inserted[ i ]->module = SAFECALLOC( str_len, sizeof( char ), __FILE__, __LINE__ );
+                                strncpy(
+                                    tmp_cdc->transform->inserted[ i ]->module,
+                                    cfg_system_query_item_change_data_capture_transform_inserted_module->valuestring,
+                                    str_len
+                                );
+
+                                cfg_system_query_item_change_data_capture_transform_inserted_staged_data = cJSON_GetObjectItem( cfg_system_query_item_change_data_capture_transform_inserted_item, "staged_data" );
+                                str_len = strlen( cfg_system_query_item_change_data_capture_transform_inserted_staged_data->valuestring );
+                                tmp_cdc->transform->inserted[ i ]->staged_data = SAFECALLOC( str_len, sizeof( char ), __FILE__, __LINE__ );
+                                strncpy(
+                                    tmp_cdc->transform->inserted[ i ]->staged_data,
+                                    cfg_system_query_item_change_data_capture_transform_inserted_staged_data->valuestring,
+                                    str_len
+                                );
+
+                                cfg_system_query_item_change_data_capture_transform_inserted_source_system_table = cJSON_GetObjectItem( cfg_system_query_item_change_data_capture_transform_inserted_item, "source_system_table" );
+                                str_len = strlen( cfg_system_query_item_change_data_capture_transform_inserted_source_system_table->valuestring );
+                                tmp_cdc->transform->inserted[ i ]->source_system_table = SAFECALLOC( str_len, sizeof( char ), __FILE__, __LINE__ );
+                                strncpy(
+                                    tmp_cdc->transform->inserted[ i ]->source_system_table,
+                                    cfg_system_query_item_change_data_capture_transform_inserted_source_system_table->valuestring,
+                                    str_len
+                                );
+                            }
+
+                            /*
+                                change_data_capture.transform.deleted
+                            */
+                            cfg_system_query_item_change_data_capture_transform_deleted_array = cJSON_GetObjectItem( cfg_system_query_item_change_data_capture_transform, "deleted" );
+                            if( cfg_system_query_item_change_data_capture_transform_deleted_array == NULL ) {
+                                LOG_print( "ERROR: \"system[%d].queries[%d].change_data_capture.transform.deleted\" key not found.\n", i, j );
+                                cJSON_Delete( config_json );
+                                free( config_string ); config_string = NULL;
+                                fclose( file );
+                                return FALSE;
+                            }
+                            tmp_cdc->transform->deleted_count = cJSON_GetArraySize( cfg_system_query_item_change_data_capture_transform_deleted_array );
+                            tmp_cdc->transform->deleted = SAFEMALLOC( sizeof( DB_SYSTEM_CDC_TRANSFORM_QUERY* ) * tmp_cdc->transform->deleted_count, __FILE__, __LINE__ );
+                            for( int i = 0; i < tmp_cdc->transform->deleted_count; i++ ) {
+                                cfg_system_query_item_change_data_capture_transform_deleted_item = cJSON_GetArrayItem( cfg_system_query_item_change_data_capture_transform_deleted_array, i );
+
+                                tmp_cdc->transform->deleted[ i ] = SAFEMALLOC( sizeof( DB_SYSTEM_CDC_TRANSFORM_QUERY ), __FILE__, __LINE__ );
+
+                                cfg_system_query_item_change_data_capture_transform_deleted_module = cJSON_GetObjectItem( cfg_system_query_item_change_data_capture_transform_deleted_item, "module" );
+                                str_len = strlen( cfg_system_query_item_change_data_capture_transform_deleted_module->valuestring );
+                                tmp_cdc->transform->deleted[ i ]->module = SAFECALLOC( str_len, sizeof( char ), __FILE__, __LINE__ );
+                                strncpy(
+                                    tmp_cdc->transform->deleted[ i ]->module,
+                                    cfg_system_query_item_change_data_capture_transform_deleted_module->valuestring,
+                                    str_len
+                                );
+
+                                cfg_system_query_item_change_data_capture_transform_deleted_staged_data = cJSON_GetObjectItem( cfg_system_query_item_change_data_capture_transform_deleted_item, "staged_data" );
+                                str_len = strlen( cfg_system_query_item_change_data_capture_transform_deleted_staged_data->valuestring );
+                                tmp_cdc->transform->deleted[ i ]->staged_data = SAFECALLOC( str_len, sizeof( char ), __FILE__, __LINE__ );
+                                strncpy(
+                                    tmp_cdc->transform->deleted[ i ]->staged_data,
+                                    cfg_system_query_item_change_data_capture_transform_deleted_staged_data->valuestring,
+                                    str_len
+                                );
+
+                                cfg_system_query_item_change_data_capture_transform_deleted_source_system_table = cJSON_GetObjectItem( cfg_system_query_item_change_data_capture_transform_deleted_item, "source_system_table" );
+                                str_len = strlen( cfg_system_query_item_change_data_capture_transform_deleted_source_system_table->valuestring );
+                                tmp_cdc->transform->deleted[ i ]->source_system_table = SAFECALLOC( str_len, sizeof( char ), __FILE__, __LINE__ );
+                                strncpy(
+                                    tmp_cdc->transform->deleted[ i ]->source_system_table,
+                                    cfg_system_query_item_change_data_capture_transform_deleted_source_system_table->valuestring,
+                                    str_len
+                                );
+                            }
+
+                            /*
+                                change_data_capture.transform.modified
+                            */
+                            cfg_system_query_item_change_data_capture_transform_modified_array = cJSON_GetObjectItem( cfg_system_query_item_change_data_capture_transform, "modified" );
+                            if( cfg_system_query_item_change_data_capture_transform_modified_array == NULL ) {
+                                LOG_print( "ERROR: \"system[%d].queries[%d].change_data_capture.transform.modified\" key not found.\n", i, j );
+                                cJSON_Delete( config_json );
+                                free( config_string ); config_string = NULL;
+                                fclose( file );
+                                return FALSE;
+                            }
+                            tmp_cdc->transform->modified_count = cJSON_GetArraySize( cfg_system_query_item_change_data_capture_transform_modified_array );
+                            tmp_cdc->transform->modified = SAFEMALLOC( sizeof( DB_SYSTEM_CDC_TRANSFORM_QUERY* ) * tmp_cdc->transform->modified_count, __FILE__, __LINE__ );
+                            for( int i = 0; i < tmp_cdc->transform->modified_count; i++ ) {
+                                cfg_system_query_item_change_data_capture_transform_modified_item = cJSON_GetArrayItem( cfg_system_query_item_change_data_capture_transform_modified_array, i );
+
+                                tmp_cdc->transform->modified[ i ] = SAFEMALLOC( sizeof( DB_SYSTEM_CDC_TRANSFORM_QUERY ), __FILE__, __LINE__ );
+
+                                cfg_system_query_item_change_data_capture_transform_modified_module = cJSON_GetObjectItem( cfg_system_query_item_change_data_capture_transform_modified_item, "module" );
+                                str_len = strlen( cfg_system_query_item_change_data_capture_transform_modified_module->valuestring );
+                                tmp_cdc->transform->modified[ i ]->module = SAFECALLOC( str_len, sizeof( char ), __FILE__, __LINE__ );
+                                strncpy(
+                                    tmp_cdc->transform->modified[ i ]->module,
+                                    cfg_system_query_item_change_data_capture_transform_modified_module->valuestring,
+                                    str_len
+                                );
+
+                                cfg_system_query_item_change_data_capture_transform_modified_staged_data = cJSON_GetObjectItem( cfg_system_query_item_change_data_capture_transform_modified_item, "staged_data" );
+                                str_len = strlen( cfg_system_query_item_change_data_capture_transform_modified_staged_data->valuestring );
+                                tmp_cdc->transform->modified[ i ]->staged_data = SAFECALLOC( str_len, sizeof( char ), __FILE__, __LINE__ );
+                                strncpy(
+                                    tmp_cdc->transform->modified[ i ]->staged_data,
+                                    cfg_system_query_item_change_data_capture_transform_modified_staged_data->valuestring,
+                                    str_len
+                                );
+
+                                cfg_system_query_item_change_data_capture_transform_modified_source_system_table = cJSON_GetObjectItem( cfg_system_query_item_change_data_capture_transform_modified_item, "source_system_table" );
+                                str_len = strlen( cfg_system_query_item_change_data_capture_transform_modified_source_system_table->valuestring );
+                                tmp_cdc->transform->modified[ i ]->source_system_table = SAFECALLOC( str_len, sizeof( char ), __FILE__, __LINE__ );
+                                strncpy(
+                                    tmp_cdc->transform->modified[ i ]->source_system_table,
+                                    cfg_system_query_item_change_data_capture_transform_modified_source_system_table->valuestring,
+                                    str_len
+                                );
+                            }
                         }
 
                         /*

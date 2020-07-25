@@ -53,14 +53,18 @@ typedef struct DB_SYSTEM_CDC_STAGE {
     config.json => system[].queries[].change_data_capture.transform
 */
 typedef struct DB_SYSTEM_CDC_TRANSFORM_QUERY {
-    char                    *column;
-    char                    *expression;
+    char                    *module;
+    char                    *staged_data;
+    char                    *source_system_table;
 } DB_SYSTEM_CDC_TRANSFORM_QUERY;
 
 typedef struct DB_SYSTEM_CDC_TRANSFORM {
-    DB_SYSTEM_CDC_TRANSFORM_QUERY       inserted[ MAX_TRANSFORM_ELEMENTS ];
-    DB_SYSTEM_CDC_TRANSFORM_QUERY       deleted[ MAX_TRANSFORM_ELEMENTS ];
-    DB_SYSTEM_CDC_TRANSFORM_QUERY       modified[ MAX_TRANSFORM_ELEMENTS ];
+    DB_SYSTEM_CDC_TRANSFORM_QUERY       **inserted;
+    int                                 inserted_count;
+    DB_SYSTEM_CDC_TRANSFORM_QUERY       **deleted;
+    int                                 deleted_count;
+    DB_SYSTEM_CDC_TRANSFORM_QUERY       **modified;
+    int                                 modified_count;
 
 } DB_SYSTEM_CDC_TRANSFORM;
 

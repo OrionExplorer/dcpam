@@ -118,28 +118,33 @@ void SYSTEM_QUERY_free( DATABASE_SYSTEM_QUERY *dst ) {
     }
 
     if( dst->change_data_capture.transform ) {
+
+        for( int i = 0; i < dst->change_data_capture.transform->inserted_count; i++ ) {
+            free( dst->change_data_capture.transform->inserted[ i ]->module ); dst->change_data_capture.transform->inserted[ i ]->module = NULL;
+            free( dst->change_data_capture.transform->inserted[ i ]->staged_data ); dst->change_data_capture.transform->inserted[ i ]->staged_data = NULL;
+            free( dst->change_data_capture.transform->inserted[ i ]->source_system_table ); dst->change_data_capture.transform->inserted[ i ]->source_system_table = NULL;
+            free( dst->change_data_capture.transform->inserted[ i ] ); dst->change_data_capture.transform->inserted[ i ] = NULL;
+        }
+        free( dst->change_data_capture.transform->inserted ); dst->change_data_capture.transform->inserted = NULL;
+
+        for( int i = 0; i < dst->change_data_capture.transform->deleted_count; i++ ) {
+            free( dst->change_data_capture.transform->deleted[ i ]->module ); dst->change_data_capture.transform->deleted[ i ]->module = NULL;
+            free( dst->change_data_capture.transform->deleted[ i ]->staged_data ); dst->change_data_capture.transform->deleted[ i ]->staged_data = NULL;
+            free( dst->change_data_capture.transform->deleted[ i ]->source_system_table ); dst->change_data_capture.transform->deleted[ i ]->source_system_table = NULL;
+            free( dst->change_data_capture.transform->deleted[ i ] ); dst->change_data_capture.transform->deleted[ i ] = NULL;
+        }
+        free( dst->change_data_capture.transform->deleted ); dst->change_data_capture.transform->deleted = NULL;
+
+        for( int i = 0; i < dst->change_data_capture.transform->modified_count; i++ ) {
+            free( dst->change_data_capture.transform->modified[ i ]->module ); dst->change_data_capture.transform->modified[ i ]->module = NULL;
+            free( dst->change_data_capture.transform->modified[ i ]->staged_data ); dst->change_data_capture.transform->modified[ i ]->staged_data = NULL;
+            free( dst->change_data_capture.transform->modified[ i ]->source_system_table ); dst->change_data_capture.transform->modified[ i ]->source_system_table = NULL;
+            free( dst->change_data_capture.transform->modified[ i ] ); dst->change_data_capture.transform->modified[ i ] = NULL;
+        }
+        free( dst->change_data_capture.transform->modified ); dst->change_data_capture.transform->modified = NULL;
+
         free( dst->change_data_capture.transform ); dst->change_data_capture.transform = NULL;
     }
-    /*for( i = 0; i < MAX_TRANSFORM_ELEMENTS; i++ != NULL ) {
-        if( dst->change_data_capture.transform.inserted[ i ].column != NULL != NULL ) {
-            free( dst->change_data_capture.transform.inserted[ i ].column ); dst->change_data_capture.transform.inserted[ i ].column = NULL;
-        }
-        if( dst->change_data_capture.transform.inserted[ i ].expression != NULL != NULL ) {
-            free( dst->change_data_capture.transform.inserted[ i ].expression ); dst->change_data_capture.transform.inserted[ i ].expression = NULL;
-        }
-        if( dst->change_data_capture.transform.deleted[ i ].column != NULL != NULL ) {
-            free( dst->change_data_capture.transform.deleted[ i ].column ); dst->change_data_capture.transform.deleted[ i ].column = NULL;
-        }
-        if( dst->change_data_capture.transform.deleted[ i ].expression != NULL != NULL ) {
-            free( dst->change_data_capture.transform.deleted[ i ].expression ); dst->change_data_capture.transform.deleted[ i ].expression = NULL;
-        }
-        if( dst->change_data_capture.transform.modified[ i ].column != NULL != NULL ) {
-            free( dst->change_data_capture.transform.modified[ i ].column ); dst->change_data_capture.transform.modified[ i ].column = NULL;
-        }
-        if( dst->change_data_capture.transform.modified[ i ].expression != NULL != NULL ) {
-            free( dst->change_data_capture.transform.modified[ i ].expression ); dst->change_data_capture.transform.modified[ i ].expression = NULL;
-        }
-    }*/
 
     if( dst->change_data_capture.stage ) {
         if( dst->change_data_capture.stage->inserted.sql != NULL ) {

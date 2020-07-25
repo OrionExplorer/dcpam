@@ -48,13 +48,14 @@
 	* [ ] Proposal #1: simple internal operations within dcpam (NO-GO: hard-coded rules, small range of usable functions).
 	* [x] Proposal #2: make use of external scripts/applications.
 	* [ ] Proposal #3: LUA scripts (NO-GO: DCPAM engine would require major rebuild and new dependencies, also speed is concern).
-	* [x] Thought #1: Do we need to force usage of Transform subprocess? During Extraction we can store all necessary data in the Staging Area. Then, with Load subprocess, combine the data to the desired form in the target tables by using SQL.
+	* [x] Thought #1: Do we need to force the usage of Transform subprocess? During Extraction we can store all necessary data in the Staging Area. Then, with Load subprocess, combine the data to the desired form in the target tables by using SQL.
 		* [x] Rebuild DCPAM config to support lack of Transform descriptions.
-	* [ ] Thought #2: Transformation can be performed on different server:
+	* [x] Thought #2: Transformation can be performed on different server:
 		* Scripts/applications for transformation are placed here.
 		* New DCPAM tool for communication with DCPAM engine.
 		* Possible to call Transformation scripts/applications locally and remotely.
 	* [ ] Implementation:
+		* [x] Rebuild DCPAM config.
 		* [ ] Run external script/application (`popen` for local and sockets for remote).
 		* [ ] Provide all the necessary auth data to external script/application with command line arguments. 
 		* [ ] Wait for external script/application to finish with `EXIT_SUCCESS`.
@@ -62,6 +63,9 @@
 			* [ ] Python script.
 			* [ ] Remove leading and trailing spaces.
 			* [ ] Backflow of cleaned data in the original source.
+		* [ ] DCPAM EXEC:
+			* [ ] Socket server application capable to deal with many connected clients.
+			* [ ] Use of `popen` to call external script/application.
 * [ ] ETL process interval can vary between system[].queries[].
 * [ ] Move DCPAM configuration to database:
 	* [ ] Table schemas based on `config.json`.

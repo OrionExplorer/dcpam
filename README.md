@@ -70,20 +70,34 @@ Two major techniques are used to track changed data:
 
 2. **Triggers**. These are created in the source system. Mentioned here for informational purposes only. Two possible use cases:
     * Set timestamp column values when record is modified.
-    * Call external application/script with all necessary data (ie. UDF in MySQL/MariaDB)
+    * Call external application/script with all necessary data (ie. with SQL User Defined Functions).
 
 > **Notice**: Triggers can seriously affect performance of the source system, thus should be considered carefully.
 
 ### Transformation
-Optionally DCPAM stores extracted data in the Staging Area - a group of transitional tables, where transformations are made.
-Examples of data transformation:
+Optionally, DCPAM stores extracted data in the Staging Area - a group of transitional tables, where transformations can be applied.
+Sample operations to perform with this process:
+* data merging
+* data cleansing
+* data validations and corrections
 * conversions
+* aggregations
 * recalculations
 * column values completions
-> **Information**: This section is incomplete. Transform process in DCPAM is yet to be implemented.
+* creation of entirely new views
+* data enrichments
+Moreover, Transform process should be able to backflow of cleaned data to the original source.
+
+DCPAM can handle data transformations with two different approaches:
+1. Locally - each transform module is executed on the same server, where DCPAM is.
+2. Remotely - transform modules are located on one or more different machines. This is recommended way for compute-intensive data transformations.
+
+DCPAM does not limit the number of transformations in any way. Furthermore, both local and remote approaches can be used simultaneously.
+
+> **Information**: This section is incomplete. Transform process in DCPAM is still under development.
 
 ### Loading
-When all transformations in the Staging Area are completed or during Extract subprocess, DCPAM loads the data directly into target tables. Then Staging Area is cleared and ready for the next occurence of data extraction.
+When all transformations in the Staging Area are completed or during Extract subprocess, DCPAM loads the data directly into target tables. Dimensions are first to load, followed by Facts. Then Staging Area is cleared and ready for the next occurence of data extraction.
 
 ## Data Warehouse with DCPAM
 
