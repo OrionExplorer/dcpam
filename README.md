@@ -86,6 +86,7 @@ Sample operations to perform with this process:
 * column values completions
 * creation of entirely new views
 * data enrichments
+
 Moreover, Transform process should be able to backflow of cleaned data to the original source.
 
 DCPAM can handle data transformations with two different approaches:
