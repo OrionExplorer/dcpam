@@ -75,7 +75,7 @@ Two major techniques are used to track changed data:
 > **Notice**: Triggers can seriously affect performance of the source system, thus should be considered carefully.
 
 ### Transformation
-Optionally, DCPAM stores extracted data in the Staging Area - a group of transitional tables, where transformations can be applied.
+Optionally, DCPAM stores extracted data in the Staging Area, where transformations can be applied. Staging Area is a group of transitional tables in DCPAM Database or external database server.
 Sample operations to perform with this process:
 * data merging
 * data cleansing

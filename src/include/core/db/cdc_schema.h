@@ -55,7 +55,7 @@ typedef struct DB_SYSTEM_CDC_STAGE {
 typedef struct DB_SYSTEM_CDC_TRANSFORM_QUERY {
     char                    *module;
     char                    *staged_data;
-    char                    *source_system_table;
+    char                    *source_system_update;
 } DB_SYSTEM_CDC_TRANSFORM_QUERY;
 
 typedef struct DB_SYSTEM_CDC_TRANSFORM {

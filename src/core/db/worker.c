@@ -39,12 +39,23 @@ int DB_WORKER_init( void ) {
 
 
     mysql_library_init( 0, NULL, NULL );
-    /* Connect to dcpam database */
+    /* Connect to DCPAM database */
     LOG_print( "Init main database connection:\n" );
     if( DATABASE_SYSTEM_DB_init( &APP.DB ) == FALSE ) {
         DATABASE_SYSTEM_DB_free( &APP.DB );
         mysql_library_end();
         return FALSE;
+    }
+
+    if( APP.STAGING ) {
+        /* Connect to DCPAM Staging Area database */
+        LOG_print( "Init Staging Area database connection:\n" );
+        if( DATABASE_SYSTEM_DB_init( APP.STAGING ) == FALSE ) {
+            DATABASE_SYSTEM_DB_free( &APP.DB );
+            DATABASE_SYSTEM_DB_free( APP.STAGING );
+            mysql_library_end();
+            return FALSE;
+        }
     }
 
     /* Connect to each database-based system */

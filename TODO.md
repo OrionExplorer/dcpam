@@ -44,6 +44,10 @@
 * [x] Make Staging Area optional?
 	* [x] Rebuild DCPAM config to support lack of Staging Area descriptions.
 	* [x] Extract subprocess callback can be either Stage or Load function.
+* [ ] Staging Area can be placed in different database.
+	* [x] Rebuild DCPAM config.
+	* [ ] Rebuild Extract subprocess callback.
+	* [ ] Rebuild Load subprocess.
 * [ ] Transform subprocess (https://en.wikipedia.org/wiki/Extract,_transform,_load#Transform):
 	* [ ] Proposal #1: simple internal operations within dcpam (NO-GO: hard-coded rules, small range of usable functions).
 	* [x] Proposal #2: make use of external scripts/applications.
