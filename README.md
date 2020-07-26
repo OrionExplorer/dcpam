@@ -12,7 +12,12 @@
 * DCPAM goal is to deliver full range of Data Warehouse possibilities and not to include or hire more engineers for this specific task.
 * DCPAM is multiplatform (Linux/Windows).
 
-### Table of content
+##### Currently under active development
+* [x] Remote Staging Area.
+* [x] Transform subprocess.
+* [x] Unique connection handler to DCPAM Database for each ETL process.
+
+### Table of contents
 * [Business Value](https://github.com/OrionExplorer/dcpam#business-value)
     * [Extraction and Change Data Capture](https://github.com/OrionExplorer/dcpam#extraction-and-change-data-capture)
     * [Transformation](https://github.com/OrionExplorer/dcpam#transformation)
@@ -76,6 +81,7 @@ Two major techniques are used to track changed data:
 
 ### Transformation
 Optionally, DCPAM stores extracted data in the Staging Area, where transformations can be applied. Staging Area is a group of transitional tables in DCPAM Database or external database server.
+
 Sample operations to perform with this process:
 * data merging
 * data cleansing
