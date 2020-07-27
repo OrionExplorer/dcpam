@@ -116,12 +116,25 @@ When all transformations in the Staging Area are completed or during Extract sub
 ### What DCPAM covers in terms of Data Warehousing?
 * JSON-based source systems configuration.
 * SQL and JSON-based configuration of the ETL processes:
-  * [x] Data extraction and staging.
-  * [ ] Data transformation.
-  * [x] Data load from the Staging Area to target tables.
+  * [x] Data extraction:
+    * [x] Inserted data
+    * [x] Deleted data
+    * [x] Modified data
+  * [x] Staging Area:
+    * [x] optional
+    * [x] locally in DCPAM Database
+    * [x] remotely in external database
+  * [ ] Data transformation:
+    * [ ] optional
+    * [ ] locally
+    * [ ] remotely
+  * [x] Data load.
 * Parallel execution:
-  * [x] By design.
-  * [x] By running multiple instances of DCPAM.
+  * [x] By design:
+    * [x] Each ETL process runs in separate thread.
+  * [x] By running multiple instances of DCPAM:
+    * [x] On the same server
+    * [x] On many disparate servers
 * SQL and JSON-based preconfigured queries for data analysis.
 * Data Warehouse and Data Marts:
   * One or many instances of DCPAM can work as Data Warehouse (extracting and processing data from disparate sources).
