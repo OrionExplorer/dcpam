@@ -128,7 +128,9 @@ When all transformations in the Staging Area are completed or during Extract sub
     * [ ] optional
     * [ ] locally
     * [ ] remotely
-  * [x] Data load.
+  * [x] Data load from:
+    * [x] local Staging Area
+    * [x] remote Staging Area 
 * Parallel execution:
   * [x] By design:
     * [x] Each ETL process runs in separate thread.
