@@ -35,6 +35,7 @@ typedef struct DATABASE_SYSTEM_DB {
     char                    *connection_string;
     char                    *db;
     DB_CONN                 db_conn;
+    char                    *name;
 } DATABASE_SYSTEM_DB;
 
 typedef struct DATABASE_SYSTEM_QUERY {
@@ -46,7 +47,9 @@ typedef struct DATABASE_SYSTEM_QUERY {
 
 typedef struct DATABASE_SYSTEM {
     char                    *name;
-    DATABASE_SYSTEM_DB      DB;
+    DATABASE_SYSTEM_DB      system_db;
+    DATABASE_SYSTEM_DB      dcpam_db;
+    DATABASE_SYSTEM_DB      *staging_db;
     DATABASE_SYSTEM_QUERY   queries[ MAX_SYSTEM_QUERIES ];
     int                     queries_len;
 } DATABASE_SYSTEM;

@@ -31,11 +31,12 @@ void SQLITE_disconnect( SQLITE_CONNECTION* db_connection ) {
 
 int SQLITE_connect(
     SQLITE_CONNECTION* db_connection,
-    const char* filename
+    const char* filename,
+    const char* name
 ) {
 
     db_connection->id = ( char* )SAFECALLOC( 1024, sizeof( char ), __FILE__, __LINE__ );
-    snprintf( db_connection->id, 1024, "[db=%s]", filename );
+    snprintf( db_connection->id, 1024, "[db=%s] (%s)", filename, name );
 
     int result = sqlite3_open( filename, &db_connection->connection );
 

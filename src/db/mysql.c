@@ -33,11 +33,12 @@ int MYSQL_connect(
     const char* dbname,
     const char* user,
     const char* password,
-    const char* connection_string
+    const char* connection_string,
+    const char* name
 ) {
 
     db_connection->id = ( char* )SAFECALLOC( 1024, sizeof( char ), __FILE__, __LINE__ );
-    snprintf( db_connection->id, 1024, "%s@%s[db=%s]", user, host, dbname );
+    snprintf( db_connection->id, 1024, "%s@%s[db=%s] (%s)", user, host, dbname, name );
 
     db_connection->connection = mysql_init( NULL );
 

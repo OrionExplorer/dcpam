@@ -9,12 +9,12 @@
 
 extern DCPAM_APP           APP;
 
-void DB_CDC_StageGeneric( DB_SYSTEM_CDC_STAGE *stage, DB_SYSTEM_CDC_STAGE_QUERY *stage_element, DATABASE_SYSTEM_DB *db, DB_RECORD *record );
+void DB_CDC_StageGeneric( DB_SYSTEM_CDC_STAGE *stage, DB_SYSTEM_CDC_STAGE_QUERY *stage_element, DATABASE_SYSTEM_DB *dcpam_db, DB_RECORD *record );
 
 
-void DB_CDC_StageGeneric( DB_SYSTEM_CDC_STAGE *stage, DB_SYSTEM_CDC_STAGE_QUERY *stage_element, DATABASE_SYSTEM_DB *db, DB_RECORD *record ) {
+void DB_CDC_StageGeneric( DB_SYSTEM_CDC_STAGE *stage, DB_SYSTEM_CDC_STAGE_QUERY *stage_element, DATABASE_SYSTEM_DB *dcpam_db, DB_RECORD *record ) {
 
-    if( stage && stage_element && db && record ) {
+    if( stage && stage_element && dcpam_db && record ) {
 
         /* Each extracted record is loaded separatedly */
         char** q_values = NULL;
@@ -55,7 +55,7 @@ void DB_CDC_StageGeneric( DB_SYSTEM_CDC_STAGE *stage, DB_SYSTEM_CDC_STAGE_QUERY 
         if( q_values_len > 0 ) {
             /* Perform DB query */
 
-            int query_ret = DB_exec( &APP.DB, stage_element->sql, stage_element->sql_len, NULL, ( const char* const* )q_values, q_values_len, q_lengths, q_formats, NULL, NULL, NULL, NULL );
+            int query_ret = DB_exec( dcpam_db, stage_element->sql, stage_element->sql_len, NULL, ( const char* const* )q_values, q_values_len, q_lengths, q_formats, NULL, NULL, NULL, NULL );
 
             if( query_ret == FALSE ) {
                 LOG_print( "[%s] DB_exec error.\n", TIME_get_gmt() );
@@ -75,15 +75,15 @@ void DB_CDC_StageGeneric( DB_SYSTEM_CDC_STAGE *stage, DB_SYSTEM_CDC_STAGE_QUERY 
     }
 }
 
-void DB_CDC_StageReset( DB_SYSTEM_CDC_STAGE* stage, DATABASE_SYSTEM_DB* db ) {
-    if( stage && db ) {
+void DB_CDC_StageReset( DB_SYSTEM_CDC_STAGE* stage, DATABASE_SYSTEM_DB* dcpam_db ) {
+    if( stage && dcpam_db ) {
 
         DB_QUERY    sql_res;
 
         LOG_print( "\t· [CDC - STAGE::RESET]:\n" );
         LOG_print( "\t\t- %s\n", stage->reset );
 
-        if( DB_exec( &APP.DB, stage->reset, strlen( stage->reset ), &sql_res, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL ) == TRUE ) {
+        if( DB_exec( dcpam_db, stage->reset, strlen( stage->reset ), &sql_res, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL ) == TRUE ) {
             LOG_print( "\t· [CDC - STAGE::RESET] Done. Staging Area cleared.\n" );
         } else {
             LOG_print( "\t· [CDC - STAGE::RESET] Error. DCPAM was unable to clear Staging Area. Check corresponding error in previous messages.\n" );
@@ -96,29 +96,29 @@ void DB_CDC_StageReset( DB_SYSTEM_CDC_STAGE* stage, DATABASE_SYSTEM_DB* db ) {
     }
 }
 
-void DB_CDC_StageInserted( DB_SYSTEM_CDC_STAGE* stage, DATABASE_SYSTEM_DB* db, DB_RECORD *record ) {
-    if( stage && db ) {
+void DB_CDC_StageInserted( DB_SYSTEM_CDC_STAGE* stage, DATABASE_SYSTEM_DB* dcpam_db, DB_RECORD *record ) {
+    if( stage && dcpam_db ) {
         LOG_print( "\t· [CDC - STAGE::INSERTED]:\n" );
-        DB_CDC_StageGeneric( stage, &stage->inserted, db, record );
+        DB_CDC_StageGeneric( stage, &stage->inserted, dcpam_db, record );
     } else {
         LOG_print( "\t· [CDC - STAGE::INSERTED] Fatal error: not all DB_CDC_StageInserted parameters are valid!\n" );
     }
     
 }
 
-void DB_CDC_StageDeleted( DB_SYSTEM_CDC_STAGE *stage, DATABASE_SYSTEM_DB *db, DB_RECORD* record ) {
-    if( stage && db ) {
+void DB_CDC_StageDeleted( DB_SYSTEM_CDC_STAGE *stage, DATABASE_SYSTEM_DB *dcpam_db, DB_RECORD* record ) {
+    if( stage && dcpam_db ) {
         LOG_print( "\t· [CDC - STAGE::DELETED]:\n" );
-        DB_CDC_StageGeneric( stage, &stage->deleted, db, record );
+        DB_CDC_StageGeneric( stage, &stage->deleted, dcpam_db, record );
     } else {
         LOG_print( "\t· [CDC - STAGE::DELETED] Fatal error: not all DB_CDC_StageDeleted parameters are valid!\n" );   
     }
 }
 
-void DB_CDC_StageModified( DB_SYSTEM_CDC_STAGE *stage, DATABASE_SYSTEM_DB *db, DB_RECORD* record ) {
-    if( stage && db ) {
+void DB_CDC_StageModified( DB_SYSTEM_CDC_STAGE *stage, DATABASE_SYSTEM_DB *dcpam_db, DB_RECORD* record ) {
+    if( stage && dcpam_db ) {
         LOG_print( "\t· [CDC - STAGE::MODIFIED]:\n" );
-        DB_CDC_StageGeneric( stage, &stage->modified, db, record );
+        DB_CDC_StageGeneric( stage, &stage->modified, dcpam_db, record );
     } else {
         LOG_print( "\t· [CDC - STAGE::MODIFIED] Fatal error: not all DB_CDC_StageModified parameters are valid!\n" );
     }

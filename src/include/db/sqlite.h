@@ -14,7 +14,8 @@ typedef struct {
 
 int SQLITE_connect(
     SQLITE_CONNECTION* db_connection,
-    const char* filename
+    const char* filename,
+    const char* name
 );
 
 int SQLITE_exec(

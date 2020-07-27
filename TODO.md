@@ -44,13 +44,14 @@
 * [x] Make Staging Area optional?
 	* [x] Rebuild DCPAM config to support lack of Staging Area descriptions.
 	* [x] Extract subprocess callback can be either Stage or Load function.
-* [ ] Each ETL process must handle unique DCPAM Database connection in order to work properly multithreaded.
-	* [ ] Update struct DATABASE_SYSTEM.
-	* [ ] Update function DATABASE_SYSTEM_DB_add.
-* [ ] Staging Area can be placed in different database.
+* [x] Each ETL process must handle unique DCPAM Database connection in order to work properly multithreaded.
+	* [x] Update struct DATABASE_SYSTEM.
+	* [x] Update function DATABASE_SYSTEM_DB_add.
+	* [x] Update ETL functions. 
+* [x] Staging Area can be placed in external database.
 	* [x] Rebuild DCPAM config.
-	* [ ] Rebuild Extract subprocess callback.
-	* [ ] Rebuild Load subprocess.
+	* [x] Rebuild Extract subprocess callback.
+	* [x] Rebuild Load subprocess.
 * [ ] Transform subprocess (https://en.wikipedia.org/wiki/Extract,_transform,_load#Transform):
 	* [ ] Proposal #1: simple internal operations within dcpam (NO-GO: hard-coded rules, small range of usable functions).
 	* [x] Proposal #2: make use of external scripts/applications.

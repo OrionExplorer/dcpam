@@ -3,6 +3,7 @@
 		"enabled" : 1,
 		"name" : "OTRS",
 		"DB" : {
+			"name" : "OTRS [source]",
 			"ip" : "172.17.0.199",
 			"port" : 5432,
 			"driver" : 1,
@@ -143,6 +144,7 @@
 		"name" : "DCPAM",
 		"version" : "0.1",
 		"DB" : {
+			"name" : "DCPAM Database",
 			"ip" : "127.0.0.1",
 			"port" : 5432,
 			"driver" : 1,
@@ -152,7 +154,8 @@
 			"password" : "tantive-4",
 			"db" : "dcpam"
 		},
-		"STAGING" : {
+		"_STAGING" : {
+			"name" : "Staging Area",
 			"ip" : "127.0.0.1",
 			"port" : 5432,
 			"driver" : 1,

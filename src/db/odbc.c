@@ -63,7 +63,8 @@ int ODBC_connect(
     const char* dbname,
     const char* user,
     const char* password,
-    const char* connection_string
+    const char* connection_string,
+    const char* name
 ) {
     SQLRETURN       retcode;
 
@@ -79,14 +80,14 @@ int ODBC_connect(
     CHECK_ERROR( retcode, "SQLAllocHandle( SQL_HANDLE_DBC, db_connection->sqlenvhandle, &db_connection->connection )", db_connection->connection, SQL_HANDLE_DBC, TRUE );
 
     if( connection_string ) {
-        /*db_connection->id = strdup( connection_string );*/
-        db_connection->id = SAFECALLOC( strlen( connection_string ) + 1, sizeof( char ), __FILE__, __LINE__ );
+        db_connection->id = SAFECALLOC( 1025, sizeof( char ), __FILE__, __LINE__ );
         if( db_connection->id ) {
-            strncpy(
+            snprintf( db_connection->id, 1024, "%s (%s)", connection_string, name );
+            /*strncpy(
                 db_connection->id,
                 connection_string,
                 strlen( connection_string )
-            );
+            );*/
         }
     } else {
         LOG_print( "error. Message: no \"connection_string\" provided in config.json\n" );

@@ -40,15 +40,15 @@ int DB_WORKER_init( void ) {
 
     mysql_library_init( 0, NULL, NULL );
     /* Connect to DCPAM database */
-    LOG_print( "Init main database connection:\n" );
+    /*LOG_print( "Init main database connection:\n" );
     if( DATABASE_SYSTEM_DB_init( &APP.DB ) == FALSE ) {
         DATABASE_SYSTEM_DB_free( &APP.DB );
         mysql_library_end();
         return FALSE;
-    }
+    }*/
 
-    if( APP.STAGING ) {
-        /* Connect to DCPAM Staging Area database */
+    /* Connect to DCPAM Staging Area database */
+    /*if( APP.STAGING ) {
         LOG_print( "Init Staging Area database connection:\n" );
         if( DATABASE_SYSTEM_DB_init( APP.STAGING ) == FALSE ) {
             DATABASE_SYSTEM_DB_free( &APP.DB );
@@ -56,7 +56,7 @@ int DB_WORKER_init( void ) {
             mysql_library_end();
             return FALSE;
         }
-    }
+    }*/
 
     /* Connect to each database-based system */
     pthread_attr_init( &attrs );
@@ -100,10 +100,26 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
     DB_SYSTEM_CDC_ETL_STEP  curr_etl_step = 1;
     DB_SYSTEM_CDC_ETL_STEP  prev_etl_step = 1;
 
-    LOG_print( "Init database connection thread for \"%s\":\n", DATA_SYSTEM->name );
-    if( DATABASE_SYSTEM_DB_init( &DATA_SYSTEM->DB ) == FALSE ) {
+    LOG_print( "Init DCPAM database connection for \"%s\":\n", DATA_SYSTEM->name );
+    if( DATABASE_SYSTEM_DB_init( &DATA_SYSTEM->dcpam_db) == FALSE ) {
         pthread_cancel( w_watcher_thread[ t_worker_data->thread_id ] );
         return FALSE;
+    }
+
+    LOG_print( "Init source system database connection for \"%s\":\n", DATA_SYSTEM->name );
+    if( DATABASE_SYSTEM_DB_init( &DATA_SYSTEM->system_db ) == FALSE ) {
+        pthread_cancel( w_watcher_thread[ t_worker_data->thread_id ] );
+        return FALSE;
+    }
+
+    if( DATA_SYSTEM->staging_db ) {
+        LOG_print( "Init Staging Area database connection for \"%s\":\n", DATA_SYSTEM->name );
+        if( DATABASE_SYSTEM_DB_init( DATA_SYSTEM->staging_db ) == FALSE ) {
+            pthread_cancel( w_watcher_thread[ t_worker_data->thread_id ] );
+            return FALSE;
+        }
+    } else {
+        LOG_print( "Staging Area is local.\n" );
     }
 
     while( app_terminated == 0 ) {
@@ -128,24 +144,27 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
 
                 DB_CDC_ExtractInserted(
                     &DATA_SYSTEM->queries[ i ].change_data_capture.extract,
-                    &DATA_SYSTEM->DB,
+                    &DATA_SYSTEM->system_db,
+                    &DATA_SYSTEM->dcpam_db,
                     &extract_inserted_callback,
                     DATA_SYSTEM->queries[ i ].change_data_capture.stage ? ( void* )DATA_SYSTEM->queries[ i ].change_data_capture.stage : ( void* )&DATA_SYSTEM->queries[ i ].change_data_capture.load,
-                    ( void* )&DATA_SYSTEM->DB
+                    DATA_SYSTEM->staging_db ? ( void* )DATA_SYSTEM->staging_db : ( void* )&DATA_SYSTEM->dcpam_db
                 );
                 DB_CDC_ExtractDeleted(
                     &DATA_SYSTEM->queries[ i ].change_data_capture.extract,
-                    &DATA_SYSTEM->DB,
+                    &DATA_SYSTEM->system_db,
+                    &DATA_SYSTEM->dcpam_db,
                     &extract_deleted_callback,
                     DATA_SYSTEM->queries[ i ].change_data_capture.stage ? ( void* )DATA_SYSTEM->queries[ i ].change_data_capture.stage : ( void* )&DATA_SYSTEM->queries[ i ].change_data_capture.load,
-                    ( void* )&DATA_SYSTEM->DB
+                    DATA_SYSTEM->staging_db ? ( void* )DATA_SYSTEM->staging_db : ( void* )&DATA_SYSTEM->dcpam_db
                 );
                 DB_CDC_ExtractModified(
                     &DATA_SYSTEM->queries[ i ].change_data_capture.extract,
-                    &DATA_SYSTEM->DB,
+                    &DATA_SYSTEM->system_db,
+                    &DATA_SYSTEM->dcpam_db,
                     &extract_modified_callback,
                     DATA_SYSTEM->queries[ i ].change_data_capture.stage ? ( void* )DATA_SYSTEM->queries[ i ].change_data_capture.stage : ( void* )&DATA_SYSTEM->queries[ i ].change_data_capture.load,
-                    ( void* )&DATA_SYSTEM->DB
+                    DATA_SYSTEM->staging_db ? ( void* )DATA_SYSTEM->staging_db : ( void* )&DATA_SYSTEM->dcpam_db
                 );
             }
 
@@ -175,15 +194,30 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
             for( i = 0; i < DATA_SYSTEM->queries_len; i++ ) {
                 LOG_print( "\t· [LOAD] Query #%d: %s\n", i + 1, DATA_SYSTEM->queries[ i ].name );
 
-                DB_CDC_LoadInserted( &DATA_SYSTEM->queries[ i ].change_data_capture.load, &DATA_SYSTEM->DB );
-                DB_CDC_LoadDeleted( &DATA_SYSTEM->queries[ i ].change_data_capture.load, &DATA_SYSTEM->DB );
-                DB_CDC_LoadModified( &DATA_SYSTEM->queries[ i ].change_data_capture.load, &DATA_SYSTEM->DB );
+                DB_CDC_LoadInserted(
+                    &DATA_SYSTEM->queries[ i ].change_data_capture.load,
+                    DATA_SYSTEM->staging_db ? DATA_SYSTEM->staging_db : &DATA_SYSTEM->dcpam_db,
+                    &DATA_SYSTEM->dcpam_db
+                );
+                DB_CDC_LoadDeleted(
+                    &DATA_SYSTEM->queries[ i ].change_data_capture.load,
+                    DATA_SYSTEM->staging_db ? DATA_SYSTEM->staging_db : &DATA_SYSTEM->dcpam_db,
+                    &DATA_SYSTEM->dcpam_db
+                );
+                DB_CDC_LoadModified(
+                    &DATA_SYSTEM->queries[ i ].change_data_capture.load,
+                    DATA_SYSTEM->staging_db ? DATA_SYSTEM->staging_db : &DATA_SYSTEM->dcpam_db,
+                    &DATA_SYSTEM->dcpam_db
+                );
             }
 
             /* 4rd: Clear Staging Area. */
             for( i = 0; i < DATA_SYSTEM->queries_len; i++ ) {
                 if( DATA_SYSTEM->queries[ i ].change_data_capture.stage ) {
-                    DB_CDC_StageReset( DATA_SYSTEM->queries[ i ].change_data_capture.stage, &DATA_SYSTEM->DB );
+                    DB_CDC_StageReset(
+                        DATA_SYSTEM->queries[ i ].change_data_capture.stage,
+                        DATA_SYSTEM->staging_db ? DATA_SYSTEM->staging_db : &DATA_SYSTEM->dcpam_db
+                    );
                 }
             }
 

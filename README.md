@@ -10,12 +10,11 @@
 * DCPAM helps to create central repositories of integrated data from one or disparate sources[[1]].
 * DCPAM allows to perform advanced data copy between technically different datasets.
 * DCPAM goal is to deliver full range of Data Warehouse possibilities and not to include or hire more engineers for this specific task.
+* DCPAM architecture is highly flexible.
 * DCPAM is multiplatform (Linux/Windows).
 
 ##### Currently under active development
-* [x] Remote Staging Area.
 * [x] Transform subprocess.
-* [x] Unique connection handler to DCPAM Database for each ETL process.
 
 ### Table of contents
 * [Business Value](https://github.com/OrionExplorer/dcpam#business-value)
@@ -40,7 +39,7 @@
 ## Business Value
 * [x] **DCPAM helps to create single central repository of integrated company data** - this provides a single integrated view of an organisation.
 
-* [x] **All informations  are always up to date** - Managers can respond rapidly to ongoing changes in the business environment to make data-driven decisions.
+* [x] **All informations are always up to date** - Managers can respond rapidly to ongoing changes in the business environment to make data-driven decisions.
 
 * [x] **Data structures are designed in a uniform way** - much less effort is needed to prepare and access requested informations.
 
@@ -65,7 +64,7 @@ Extract process does handle of:
 
 > **Information**: offline extraction (flat files) and other online sources will be available in the future.
 
-Depending on configuration, extracted data is stored instantly either in the Staging Area or target tables directly. That means inserted, deleted and modified records from all source systems coexist in transitional tables at the same time and must be properly marked. But this is another big performance boost: DCPAM can execute a number of simple SELECT queries instead of one complex SQL with many joins and other conditions, so impact on the source system is minimal.
+Depending on the configuration, extracted data is stored instantly either in the Staging Area or target tables directly. That means inserted, deleted and modified records from all source systems coexist in the transitional tables at the same time and must be properly marked. But this is another big performance boost: DCPAM can execute a number of simple SELECT queries instead of one complex SQL with many joins and other conditions, so impact on the source system is minimal.
 
 
 #### Change Data Capture
@@ -73,7 +72,11 @@ DCPAM allows to define change tracking conditions to deliver near real-time or o
 Two major techniques are used to track changed data:
 1. **Timestamps**. Each table of the source system involved in Extract process *should* have timestamp column, where date and time of last modification is kept. This information stored in Warehouse is used to construct extract query.
 
-2. **Triggers**. These are created in the source system. Mentioned here for informational purposes only. Two possible use cases:
+2. **Row versioning**.
+
+3. **Row status indicators**.
+
+4. **Triggers**. These are created in the source system. Mentioned here for informational purposes only. Two possible use cases:
     * Set timestamp column values when record is modified.
     * Call external application/script with all necessary data (ie. with SQL User Defined Functions).
 
@@ -93,13 +96,15 @@ Sample operations to perform with this process:
 * creation of entirely new views
 * data enrichments
 
-Moreover, Transform process should be able to backflow of cleaned data to the original source.
+Moreover, Transform process should be able to perform backflow of cleaned data to the original source.
 
 DCPAM can handle data transformations with two different approaches:
 1. Locally - each transform module is executed on the same server, where DCPAM is.
-2. Remotely - transform modules are located on one or more different machines. This is recommended way for compute-intensive data transformations.
+2. Remotely - transform modules are located on one or more different machines. This is recommended solution for compute-intensive data transformations.
 
 DCPAM does not limit the number of transformations in any way. Furthermore, both local and remote approaches can be used simultaneously.
+
+Data transformation in DCPAM ETL workflow is not enforced.
 
 > **Information**: This section is incomplete. Transform process in DCPAM is still under development.
 
@@ -115,7 +120,7 @@ When all transformations in the Staging Area are completed or during Extract sub
   * [ ] Data transformation.
   * [x] Data load from the Staging Area to target tables.
 * Parallel execution:
-  * [x] Preconfigured.
+  * [x] By design.
   * [x] By running multiple instances of DCPAM.
 * SQL and JSON-based preconfigured queries for data analysis.
 * Data Warehouse and Data Marts:
@@ -160,6 +165,12 @@ When all transformations in the Staging Area are completed or during Extract sub
 * Highly memory-efficient - no memory overhead caused by large queries:
   * each extracted record is instantly stored either in the Staging Area[[3]] or target tables directly by Extract process
   * each staged and transformed record is instantly loaded into target tables by Load process
+* Staging Area:
+  * fully supported in DCPAM, but not required in the ETL process
+  * possibility to keep Staging Area outside the DCPAM Database
+* Data transformation:
+  * fully supported in DCPAM, but not required in the ETL process
+  * possibility to run outside the DCPAM server
 * Each Change Data Capture process operates independently within separated thread.
 * Multiple instances of DCPAM with different configuration can run on single server.
 * Database support is provided with native libraries (see _Data sources_ and _Linux Dependencies_ in this document).
@@ -173,6 +184,7 @@ Change Data Capture[[4]] solutions depends on the data sources (currently it's d
 | CDC solution                            | Source        |
 |-----------------------------------------|:-------------:| 
 | SQL query for timestamps (eg. MIN, MAX) | Database      |
+| SQL query for indices                   | Database      |
 | SQL query for diffs (eg. IN, NOT IN)    | Database      |
 
 > **Notice**: Only Extract and Load processes are available. It is yet to be decided how to handle Transform process.

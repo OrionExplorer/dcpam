@@ -6,7 +6,9 @@
 
 void DATABASE_SYSTEM_add(
             const char              *name,
-            DATABASE_SYSTEM_DB      *db,
+            DATABASE_SYSTEM_DB      *source_db,
+            DATABASE_SYSTEM_DB      *dcpam_db,
+            DATABASE_SYSTEM_DB      *staging_db,
             DATABASE_SYSTEM_QUERY   queries[ MAX_SYSTEM_QUERIES ],
             const int               queries_len,
             short                   verbose
@@ -22,6 +24,7 @@ void DATABASE_SYSTEM_DB_add(
             const char              *db,
             const char              *connection_string,
             DATABASE_SYSTEM_DB      *dst,
+            const char              *name,
             short                   verbose
 );
 

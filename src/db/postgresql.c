@@ -36,7 +36,8 @@ int PG_connect(
     const char*     dbname,
     const char*     user,
     const char*     password,
-    const char*     connection_string
+    const char*     connection_string,
+    const char*     name
 ) {
     char        conn_str[ 1024 ];
 
@@ -47,7 +48,7 @@ int PG_connect(
         snprintf( conn_str, 1024, "dbname=%s host=%s port=%d user=%s password=%s", dbname, host, port, user, password );
     }
     
-    snprintf( db_connection->id, 1024, "%s@%s[db=%s]", user, host, dbname );
+    snprintf( db_connection->id, 1024, "%s@%s[db=%s] (%s)", user, host, dbname, name );
 
     db_connection->connection = PQconnectdb( conn_str );
 

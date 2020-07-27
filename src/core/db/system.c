@@ -195,11 +195,9 @@ void DATABASE_SYSTEM_QUERY_add(
 ) {
     int     i = 0;
 
-    if( verbose > 0 ) LOG_print( "[%s] SYSTEM_query_add(\"%s\", ... ).\n", TIME_get_gmt(), name );
+    if( verbose > 0 ) LOG_print( "[%s] DATABASE_SYSTEM_QUERY_add(\"%s\", ... ).\n", TIME_get_gmt(), name );
     size_t str_len = strlen( name );
     dst->name = ( char * )SAFECALLOC( str_len+1, sizeof( char ), __FILE__, __LINE__ );
-    //dst->name = strdup( name );
-    if( verbose > 0 ) LOG_print("\t· name=\"%s\"\n", name );
     if( dst->name ) {
         if( verbose > 0 ) LOG_print("\t· name=\"%s\"\n", name );
         strncpy(
@@ -292,16 +290,29 @@ void DATABASE_SYSTEM_DB_add(
     const char              *db,
     const char              *connection_string,
     DATABASE_SYSTEM_DB      *dst,
+    const char              *name,
     short                   verbose
 ) {
 
     size_t str_len = 0;
 
     if( verbose > 0 ) {
-        LOG_print( "[%s] SYSTEM_db_add(\"%s\", %d, \"%s\", ... ).\n", TIME_get_gmt(), ip, port, user );
+        LOG_print( "[%s] DATABASE_SYSTEM_DB_add(\"%s\", %d, \"%s\", \"%s\", ... ).\n", TIME_get_gmt(), ip, port, user, name );
         LOG_print("\t· ip=\"%s\".\n", ip );
+        LOG_print("\t· name=\"%s\".\n", name );
     }
-    dst->ip = ( char* )SAFECALLOC( TINY_BUFF_SIZE, sizeof( char ), __FILE__, __LINE__ );
+
+    str_len = strlen( name );
+    dst->name = SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
+    if( dst->name ) {
+        strncpy(
+            dst->name,
+            name,
+            str_len
+        );
+    }
+
+    dst->ip = SAFECALLOC( TINY_BUFF_SIZE, sizeof( char ), __FILE__, __LINE__ );
     if( dst->ip ) {
         strncpy(
             dst->ip,
@@ -323,10 +334,35 @@ void DATABASE_SYSTEM_DB_add(
     );
     dst->driver = ( DB_DRIVER )driver;
 
+    switch( dst->driver ) {
+        case D_POSTGRESQL: {
+            dst->db_conn.pgsql_conn.active = 0;
+        } break;
+
+        case D_MYSQL: {
+            dst->db_conn.mysql_conn.active = 0;
+        } break;
+
+        case D_MARIADB: {
+            dst->db_conn.mariadb_conn.active = 0;
+        } break;
+
+        case D_ODBC: {
+            dst->db_conn.odbc_conn.active = 0;
+        } break;
+
+        case D_ORACLE: {
+            dst->db_conn.oracle_conn.active = 0;
+        } break;
+
+        case D_SQLITE: {
+            dst->db_conn.sqlite_conn.active = 0;
+        }
+    }
+
     if( verbose > 0 ) LOG_print("\t· user=\"%s\"\n", user );
-    /*dst->user = strdup( user );*/
     str_len = strlen(user);
-    dst->user = ( char* )SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
+    dst->user = SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
     if( dst->user ) {
         strncpy(
             dst->user,
@@ -336,9 +372,8 @@ void DATABASE_SYSTEM_DB_add(
     }
 
     if( verbose > 0 ) LOG_print("\t· password=\"%.1s***\"\n", password );
-    /*dst->password = strdup( password );*/
     str_len = strlen(password);
-    dst->password = ( char* )SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
+    dst->password = SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
     if( dst->password ) {
         strncpy(
             dst->password,
@@ -348,9 +383,8 @@ void DATABASE_SYSTEM_DB_add(
     }
 
     if( verbose > 0 ) LOG_print("\t· db=\"%s\"\n", db );
-    /*dst->db = strdup( db );*/
     str_len = strlen(db);
-    dst->db = ( char* )SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
+    dst->db = SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
     if( dst->db ) {
         strncpy(
             dst->db,
@@ -361,9 +395,8 @@ void DATABASE_SYSTEM_DB_add(
 
     if( connection_string != NULL ) {
         if( verbose > 0 ) LOG_print("\t· connection_string=\"%s\"\n", connection_string );
-        /*dst->connection_string = strdup( connection_string );*/
         str_len = strlen( connection_string );
-        dst->connection_string = ( char* )SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
+        dst->connection_string = SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
         if( dst->connection_string ) {
             strncpy(
                 dst->connection_string,
@@ -393,31 +426,46 @@ void DATABASE_SYSTEM_DB_free( DATABASE_SYSTEM_DB *db ) {
     if( db->connection_string != NULL ) {
         free( db->connection_string ); db->connection_string = NULL;
     }
+    if( db->name != NULL ) {
+        free( db->name ); db->name = NULL;
+    }
 
     switch( db->driver ) {
         case D_POSTGRESQL : {
-            LOG_print( "\t· Driver: \"PostgreSQL\". Disconnecting...\n" );
-            PG_disconnect( &db->db_conn.pgsql_conn );
+            if( db->db_conn.pgsql_conn.active == 1 ) {
+                LOG_print( "\t· Driver: \"PostgreSQL\". Disconnecting...\n" );
+                PG_disconnect( &db->db_conn.pgsql_conn );
+            }
         } break;
         case D_MYSQL : {
-            LOG_print( "\t· Driver: \"MySQL\". Disconnecting...\n" );
-            MYSQL_disconnect( &db->db_conn.mysql_conn );
+            if( db->db_conn.mysql_conn.active == 1 ) {
+                LOG_print( "\t· Driver: \"MySQL\". Disconnecting...\n" );
+                MYSQL_disconnect( &db->db_conn.mysql_conn );
+            }
         } break;
          case D_MARIADB : {
-            LOG_print( "\t· Driver: \"MariaDB\". Disconnecting...\n" );
-            MARIADB_disconnect( &db->db_conn.mariadb_conn );
+             if( db->db_conn.mariadb_conn.active == 1 ) {
+                 LOG_print( "\t· Driver: \"MariaDB\". Disconnecting...\n" );
+                 MARIADB_disconnect( &db->db_conn.mariadb_conn );
+            }
         } break;
         case D_ODBC : {
-            LOG_print( "\t· Driver: \"ODBC\". Disconnecting...\n" );
-            ODBC_disconnect( &db->db_conn.odbc_conn );
+            if( db->db_conn.odbc_conn.active == 1 ) {
+                LOG_print( "\t· Driver: \"ODBC\". Disconnecting...\n" );
+                ODBC_disconnect( &db->db_conn.odbc_conn );
+            }
         } break;
         case D_ORACLE : {
-            LOG_print( "\t· Driver: \"Oracle\". Disconnecting...\n" );
-            ORACLE_disconnect( &db->db_conn.oracle_conn );
+            if( db->db_conn.oracle_conn.active == 1 ) {
+                LOG_print( "\t· Driver: \"Oracle\". Disconnecting...\n" );
+                ORACLE_disconnect( &db->db_conn.oracle_conn );
+            }
         } break;
         case D_SQLITE : {
-            LOG_print( "\t· Driver: \"SQLite3\". Disconnecting...\n" );
-            SQLITE_disconnect( &db->db_conn.sqlite_conn );
+            if( db->db_conn.sqlite_conn.active == 1 ) {
+                LOG_print( "\t· Driver: \"SQLite3\". Disconnecting...\n" );
+                SQLITE_disconnect( &db->db_conn.sqlite_conn );
+            }
         }
         default : {
         }
@@ -433,30 +481,30 @@ int DATABASE_SYSTEM_DB_init( DATABASE_SYSTEM_DB *db ) {
     switch( db->driver ) {
         case D_POSTGRESQL : {
             LOG_print( "\t· Driver: \"PostgreSQL\". Connecting..." );
-            ret = PG_connect( &db->db_conn.pgsql_conn, db->ip, db->port, db->db, db->user, db->password, db->connection_string );
+            ret = PG_connect( &db->db_conn.pgsql_conn, db->ip, db->port, db->db, db->user, db->password, db->connection_string, db->name );
         } break;
         case D_MYSQL : {
             LOG_print( "\t· Driver: \"MySQL\". Connecting..." );
-            ret = MYSQL_connect( &db->db_conn.mysql_conn, db->ip, db->port, db->db, db->user, db->password, db->connection_string );
+            ret = MYSQL_connect( &db->db_conn.mysql_conn, db->ip, db->port, db->db, db->user, db->password, db->connection_string, db->name );
         } break;
         case D_MARIADB : {
             LOG_print( "\t· Driver: \"MariaDB\". Connecting..." );
-            ret = MARIADB_connect( &db->db_conn.mariadb_conn, db->ip, db->port, db->db, db->user, db->password, db->connection_string );
+            ret = MARIADB_connect( &db->db_conn.mariadb_conn, db->ip, db->port, db->db, db->user, db->password, db->connection_string, db->name );
         } break;
         case D_ODBC : {
-            LOG_print( "\t· Driver: \"ODBC\". Connecting (%s)...", db->connection_string );
-            ret = ODBC_connect( &db->db_conn.odbc_conn, db->ip, db->port, db->db, db->user, db->password, db->connection_string );
+            LOG_print( "\t· Driver: \"ODBC\". Connecting (%s)...", db->connection_string, db->name );
+            ret = ODBC_connect( &db->db_conn.odbc_conn, db->ip, db->port, db->db, db->user, db->password, db->connection_string, db->name );
         } break;
         case D_ORACLE : {
             LOG_print( "\t· Driver: \"Oracle\". Connecting..." );
-            ret = ORACLE_connect( &db->db_conn.oracle_conn, db->ip, db->port, db->db, db->user, db->password, db->connection_string );
+            ret = ORACLE_connect( &db->db_conn.oracle_conn, db->ip, db->port, db->db, db->user, db->password, db->connection_string, db->name );
         } break;
         case D_SQLITE : {
             LOG_print( "\t· Driver: \"SQLite3\". Connecting..." );
-            ret = SQLITE_connect( &db->db_conn.sqlite_conn, db->connection_string /* As filename for now. DCPAM would download DB file in future. */);
+            ret = SQLITE_connect( &db->db_conn.sqlite_conn, db->connection_string /* As filename for now. DCPAM would download DB file in future. */, db->name );
         } break;
         default : {
-            LOG_print( "Error: unknown driver: \"%d\".\n", db->driver );
+            LOG_print( "Error: unknown driver: \"%d (%s)\".\n", db->driver, db->name );
         }
     }
 
@@ -474,17 +522,24 @@ void DATABASE_SYSTEM_close( DATABASE_SYSTEM *system ) {
         for( int i = 0; i < system->queries_len; i++ ) {
             SYSTEM_QUERY_free( &system->queries[ i ] );
         }
-        DATABASE_SYSTEM_DB_free( &system->DB );
+        DATABASE_SYSTEM_DB_free( &system->system_db );
+        DATABASE_SYSTEM_DB_free( &system->dcpam_db );
+        if( system->staging_db ) {
+            DATABASE_SYSTEM_DB_free( system->staging_db );
+            free( system->staging_db ); system->staging_db;
+        }
     }
 }
 
 
 void DATABASE_SYSTEM_add(
-    const char      *name,
-    DATABASE_SYSTEM_DB      *db,
+    const char              *name,
+    DATABASE_SYSTEM_DB      *source_db,
+    DATABASE_SYSTEM_DB      *dcpam_db,
+    DATABASE_SYSTEM_DB      *staging_db,
     DATABASE_SYSTEM_QUERY   queries[ MAX_SYSTEM_QUERIES ],
-    const int       queries_len,
-    short           verbose
+    const int               queries_len,
+    short                   verbose
 ) {
 
     if( verbose > 0 ) LOG_print( "[%s] DATABASE_SYSTEM_add( \"%s\", ... ).\n", TIME_get_gmt(), name );
@@ -519,25 +574,60 @@ void DATABASE_SYSTEM_add(
             free( queries[ j ].name ); queries[ j ].name = NULL;
         }
 
+        /* Create source system DB connection */
         DATABASE_SYSTEM_DB_add(
-            db->ip,
-            db->port,
-            db->driver,
-            db->user,
-            db->password,
-            db->db,
-            db->connection_string ? db->connection_string : NULL,
-            &DATABASE_SYSTEMS[ DATABASE_SYSTEMS_COUNT ].DB,
+            source_db->ip,
+            source_db->port,
+            source_db->driver,
+            source_db->user,
+            source_db->password,
+            source_db->db,
+            source_db->connection_string ? source_db->connection_string : NULL,
+            &DATABASE_SYSTEMS[ DATABASE_SYSTEMS_COUNT ].system_db,
+            source_db->name,
             TRUE
         );
 
-        free( db->ip ); db->ip = NULL;
-        free( db->user ); db->user = NULL;
-        free( db->password ); db->password = NULL;
-        free( db->db ); db->db = NULL;
+        /* Create new instance of DCPAM DB connection */
+        DATABASE_SYSTEM_DB_add(
+            dcpam_db->ip,
+            dcpam_db->port,
+            dcpam_db->driver,
+            dcpam_db->user,
+            dcpam_db->password,
+            dcpam_db->db,
+            dcpam_db->connection_string ? dcpam_db->connection_string : NULL,
+            &DATABASE_SYSTEMS[ DATABASE_SYSTEMS_COUNT ].dcpam_db,
+            dcpam_db->name,
+            TRUE
+        );
 
-        if( db->connection_string != NULL ) {
-            free( db->connection_string ); db->connection_string = NULL;
+        /* Create new instance od Staging Area connection */
+        if( staging_db ) {
+            DATABASE_SYSTEMS[ DATABASE_SYSTEMS_COUNT ].staging_db = SAFEMALLOC( sizeof( DATABASE_SYSTEM_DB ), __FILE__, __LINE__ );
+
+            DATABASE_SYSTEM_DB_add(
+                staging_db->ip,
+                staging_db->port,
+                staging_db->driver,
+                staging_db->user,
+                staging_db->password,
+                staging_db->db,
+                staging_db->connection_string ? staging_db->connection_string : NULL,
+                DATABASE_SYSTEMS[ DATABASE_SYSTEMS_COUNT ].staging_db,
+                staging_db->name,
+                TRUE
+            );
+        }
+
+        free( source_db->ip ); source_db->ip = NULL;
+        free( source_db->user ); source_db->user = NULL;
+        free( source_db->password ); source_db->password = NULL;
+        free( source_db->db ); source_db->db = NULL;
+        free( source_db->name ); source_db->name = NULL;
+
+        if( source_db->connection_string != NULL ) {
+            free( source_db->connection_string ); source_db->connection_string = NULL;
         }
 
         DATABASE_SYSTEMS_COUNT++;

@@ -95,7 +95,8 @@ int ORACLE_connect(
     const char*         dbname,
     const char*         user,
     const char*         password,
-    const char*         connection_string
+    const char*         connection_string,
+    const char* name
 ) {
     sword       retcode = 0;
     OCIError    *errhp;
@@ -104,7 +105,7 @@ int ORACLE_connect(
 
     db_connection->id = ( char * )SAFECALLOC( 1024, sizeof( char ), __FILE__, __LINE__ );
     
-    snprintf( db_connection->id, 1024, "%s@%s[db=%s]", user, host, dbname );
+    snprintf( db_connection->id, 1024, "%s@%s[db=%s] (%s)", user, host, dbname, name );
 
     retcode = OCIEnvCreate( ( OCIEnv** )&db_connection->envhp, ( ub4 )OCI_DEFAULT,
         ( dvoid* )0, ( dvoid * ( * )( dvoid*, size_t ) ) 0,

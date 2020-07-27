@@ -23,7 +23,8 @@ int MYSQL_connect(
     const char* dbname,
     const char* user,
     const char* password,
-    const char* connection_string
+    const char* connection_string,
+    const char* name
 );
 
 int MYSQL_exec(
