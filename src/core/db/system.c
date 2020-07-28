@@ -78,6 +78,22 @@ void SYSTEM_QUERY_free( DATABASE_SYSTEM_QUERY *dst ) {
         free( dst->name ); dst->name = NULL;
     }
 
+    if( dst->change_data_capture.pre_actions != NULL ) {
+        for( int i = 0; i < dst->change_data_capture.pre_actions_count; i++ ) {
+            free( dst->change_data_capture.pre_actions[ i ]->sql ); dst->change_data_capture.pre_actions[ i ]->sql = NULL;
+            free( dst->change_data_capture.pre_actions[ i ] ); dst->change_data_capture.pre_actions[ i ] = NULL;
+        }
+        free( dst->change_data_capture.pre_actions ); dst->change_data_capture.pre_actions = NULL;
+    }
+
+    if( dst->change_data_capture.post_actions != NULL ) {
+        for( int i = 0; i < dst->change_data_capture.post_actions_count; i++ ) {
+            free( dst->change_data_capture.post_actions[ i ]->sql ); dst->change_data_capture.post_actions[ i ]->sql = NULL;
+            free( dst->change_data_capture.post_actions[ i ] ); dst->change_data_capture.post_actions[ i ] = NULL;
+        }
+        free( dst->change_data_capture.post_actions ); dst->change_data_capture.post_actions = NULL;
+    }
+
     if( dst->change_data_capture.extract.inserted.primary_db_sql != NULL ) {
         free( dst->change_data_capture.extract.inserted.primary_db_sql ); dst->change_data_capture.extract.inserted.primary_db_sql = NULL;
     }
@@ -155,9 +171,6 @@ void SYSTEM_QUERY_free( DATABASE_SYSTEM_QUERY *dst ) {
         }
         if( dst->change_data_capture.stage->modified.sql != NULL ) {
             free( dst->change_data_capture.stage->modified.sql ); dst->change_data_capture.stage->modified.sql = NULL;
-        }
-        if( dst->change_data_capture.stage->reset != NULL ) {
-            free( dst->change_data_capture.stage->reset ); dst->change_data_capture.stage->reset = NULL;
         }
 
         free( dst->change_data_capture.stage ); dst->change_data_capture.stage = NULL;
@@ -242,8 +255,6 @@ void DATABASE_SYSTEM_QUERY_add(
         }
 
         if( verbose > 0 ) LOG_print( "\n" );
-
-        if( verbose > 0 ) LOG_print( "\t\t·reset: \"%.70s(...)\"\n", cdc.stage->reset );
     }
 
     if( verbose > 0 ) LOG_print("\t· load\n\t\t·inserted\n\t\t\t·input_data_sql: \"%.70s(...)\"\n", cdc.load.inserted.input_data_sql );

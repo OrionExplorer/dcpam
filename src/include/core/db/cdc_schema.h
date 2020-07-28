@@ -44,7 +44,6 @@ typedef struct DB_SYSTEM_CDC_STAGE {
     DB_SYSTEM_CDC_STAGE_QUERY        inserted;
     DB_SYSTEM_CDC_STAGE_QUERY        deleted;
     DB_SYSTEM_CDC_STAGE_QUERY        modified;
-    char                             *reset;
 } DB_SYSTEM_CDC_STAGE;
 
 /******************************************************************************/
@@ -89,14 +88,33 @@ typedef struct DB_SYSTEM_CDC_LOAD {
     DB_SYSTEM_CDC_LOAD_QUERY        modified;
 } DB_SYSTEM_CDC_LOAD;
 
+
+/*
+    config.json => system[].queries[].change_data_capture.pre_actions
+*/
+typedef struct DB_SYSTEM_CDC_PRE {
+    char                    *sql;
+} DB_SYSTEM_CDC_PRE;
+
+/*
+    config.json => system[].queries[].change_data_capture.post_actions
+*/
+typedef struct DB_SYSTEM_CDC_POST {
+    char                    *sql;
+} DB_SYSTEM_CDC_POST;
+
 /*
     config.json => system[].queries[].change_data_capture
 */
 typedef struct DB_SYSTEM_CDC {
+    DB_SYSTEM_CDC_PRE       **pre_actions;      /* PreCDC actions are optional */
+    int                     pre_actions_count;
     DB_SYSTEM_CDC_EXTRACT   extract;
-    DB_SYSTEM_CDC_STAGE     *stage;     /* Staging is optional */
-    DB_SYSTEM_CDC_TRANSFORM *transform; /* Transformation is optional */
+    DB_SYSTEM_CDC_STAGE     *stage;             /* Staging is optional */
+    DB_SYSTEM_CDC_TRANSFORM *transform;         /* Transformation is optional */
     DB_SYSTEM_CDC_LOAD      load;
+    DB_SYSTEM_CDC_POST      **post_actions;     /* PostCDC actions are optional */
+    int                     post_actions_count;
 } DB_SYSTEM_CDC;
 
 

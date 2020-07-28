@@ -7,13 +7,14 @@
 #### Data Warehouse Engine
 ![PostgreSQL](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/postgresql102x100.png) ![MySQL ](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/mysql159x100.png) ![MariaDB ](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/mariadb100x100.png) ![Microsoft SQL Server ](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/sqlserver134x100.png) ![Oracle Database ](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/oracle100x100.png) ![ODBC ](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/odbc199x100.png) ![SQLite3 ](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/sqlite171x100.png) ![Linux ](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/linux100x100.png) ![Windows 10 ](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/windows87x100.png)
 
-* DCPAM helps to create central repositories of integrated data from one or disparate sources[[1]].
+* DCPAM helps to create central repositories of integrated data from one or disparate sources [[1]].
 * DCPAM allows to perform advanced data copy between technically different datasets.
-* DCPAM goal is to deliver full range of Data Warehouse possibilities and not to include or hire more engineers for this specific task.
+* DCPAM goal is to deliver full range of Data Warehouse possibilities without need to include or hire more engineers for this specific task.
 * DCPAM architecture is highly flexible.
 * DCPAM is multiplatform (Linux/Windows).
 
 ##### Currently under active development
+* [x] Pre- and PostCDC queries.
 * [x] Transform subprocess.
 
 ### Table of contents
@@ -47,20 +48,22 @@
 
 * [x] **Process gigabytes of data within minutes** - benefit of parallel execution.
 
+
 ### Extraction and Change Data Capture
 Extraction is first major process. Main DCPAM workflow consists of:
 1. Data extraction from all source systems to the Staging Area or target tables directly.
 2. (Optional) Data transformation using all source systems in the Staging Area.
 3. Load transformed dataset to the target tables (when Staging Area is used).
 
+![Main Overview](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/dwh.png)
 
 #### Extraction
-DCPAM is designed to perform online incremental extraction without need to implement additional logic to the source system. This process is SQL-based all the way, thus precise configuration of various transaction logs are not required. Log scanning is great non-intrusive method for Change Data Capture, but DCPAM goal is to deliver full Data Warehouse possibilities and not to include or hire more engineers for this specific task.
+DCPAM is designed to perform both incremental and full online extraction without need to implement additional logic to the source system. This process is SQL-based all the way, thus precise configuration of various transaction logs are not required. Log scanning is great non-intrusive method for Change Data Capture, but DCPAM goal is to deliver full Data Warehouse possibilities without need to include or hire more engineers for this specific task.
 
 Extract process does handle of:
 1. **Extract Inserted** - find and fetch only new records.
 2. **Extract Deleted** - find records that no longer exists in the source system.
-3. **Extract Modified** - find records that were modified since last extraction.
+3. **Extract Modified** - find records that have been modified since last extraction.
 
 > **Information**: offline extraction (flat files) and other online sources will be available in the future.
 
@@ -109,7 +112,7 @@ Data transformation in DCPAM ETL workflow is not enforced.
 > **Information**: This section is incomplete. Transform process in DCPAM is still under development.
 
 ### Loading
-When all transformations in the Staging Area are completed or during Extract subprocess, DCPAM loads the data directly into target tables. Dimensions are first to load, followed by Facts. Then Staging Area is cleared and ready for the next occurence of data extraction.
+When all transformations in the Staging Area are completed or during the Extract subprocess, DCPAM loads the data directly into target tables. Dimensions are first to load, followed by Facts. Then Staging Area is cleared and ready for the next occurence of data extraction.
 
 ## Data Warehouse with DCPAM
 
@@ -122,12 +125,12 @@ When all transformations in the Staging Area are completed or during Extract sub
     * [x] Modified data
   * [x] Staging Area:
     * [x] optional
-    * [x] locally in DCPAM Database
-    * [x] remotely in external database
+    * [x] placed locally in DCPAM Database
+    * [x] placed in external database
   * [ ] Data transformation:
     * [ ] optional
-    * [ ] locally
-    * [ ] remotely
+    * [ ] handled locally (in relation to Staging Area)
+    * [ ] handled remotely (in relation to Staging Area)
   * [x] Data load from:
     * [x] local Staging Area
     * [x] remote Staging Area 
@@ -165,8 +168,10 @@ When all transformations in the Staging Area are completed or during Extract sub
 ### Other
 * Choose Data Warehouse DBMS, sufficient hardware and disk space.
 * Consider Data Warehouse tables schema:
-  * Snowflake schema[[5]]
-  * Star schema[[6]]
+  * Snowflake schema [[5]]
+  * Star schema [[6]]
+  * Galaxy schema
+  * Fact constellation [[8]]
 * Project data structures:
   * Staging Area
   * Target tables
@@ -176,9 +181,9 @@ When all transformations in the Staging Area are completed or during Extract sub
 
 ## Technology
 ### Architecture Overview
-* DCPAM offers either ETL[[2]] or ELT[[7]] solutions.
+* DCPAM offers either ETL [[2]] or ELT [[7]] solutions.
 * Highly memory-efficient - no memory overhead caused by large queries:
-  * each extracted record is instantly stored either in the Staging Area[[3]] or target tables directly by Extract process
+  * each extracted record is instantly stored either in the Staging Area [[3]] or target tables directly by Extract process
   * each staged and transformed record is instantly loaded into target tables by Load process
 * Staging Area:
   * fully supported in DCPAM, but not required in the ETL process
@@ -186,7 +191,7 @@ When all transformations in the Staging Area are completed or during Extract sub
 * Data transformation:
   * fully supported in DCPAM, but not required in the ETL process
   * possibility to run outside the DCPAM server
-* Each Change Data Capture process operates independently within separated thread.
+* Each Change Data Capture process operates independently in separate thread.
 * Multiple instances of DCPAM with different configuration can run on single server.
 * Database support is provided with native libraries (see _Data sources_ and _Linux Dependencies_ in this document).
 * Simply put, DCPAM allows to perform advanced data copy between technically different datasets.
@@ -194,7 +199,7 @@ When all transformations in the Staging Area are completed or during Extract sub
 ![Architecture overview](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/architecture.png)
 
 #### ETL and Change Data Capture
-Change Data Capture[[4]] solutions depends on the data sources (currently it's database only):
+Change Data Capture [[4]] solutions depends on the data sources (currently it's database only):
 
 | CDC solution                            | Source        |
 |-----------------------------------------|:-------------:| 
@@ -202,33 +207,38 @@ Change Data Capture[[4]] solutions depends on the data sources (currently it's d
 | SQL query for indices                   | Database      |
 | SQL query for diffs (eg. IN, NOT IN)    | Database      |
 
-> **Notice**: Only Extract and Load processes are available. It is yet to be decided how to handle Transform process.
+> **Notice**: Only Extract and Load processes are available. Transform process development is in progress.
 
 ### Parallel Execution
-It is possible to use multiple processes/threads to accomplish single task. Instead of one configuration of many queries per source system, DCPAM allows to create many configurations of the same source system with one or more queries.
+* It is possible to use multiple processes to accomplish single task. Instead of one configuration of many queries per source system, DCPAM allows to create many configurations of the same source system with one or more queries.
+* Many instances of DCPAM can run on one or more servers simultaneously.
 
 ### Data sources
 DCPAM development is still in progress with following data sources available:
 |  ID  | Data source                        | Type            | Support          |
 |:----:|:-----------------------------------|:---------------:|:----------------:|
-| 1    | PostgreSQL               | database        | native           |
-| 2    | MySQL 8                  | database        | native           |
-| 3    | MariaDB/MySQL 5          | database        | native           |
+| 1    | PostgreSQL                         | database        | native           |
+| 2    | MySQL 8                            | database        | native           |
+| 3    | MariaDB/MySQL 5                    | database        | native           |
 | 4    | SQL Server/Azure SQL Database      | database        | native via ODBC* |
-| 5    | Oracle Database          | database        | native           |
-| 6    | SQLite3                  | database        | native           |
+| 5    | Oracle Database                    | database        | native           |
+| 6    | SQLite3                            | database        | native           |
 
 > \* SQL Server/Azure SQL Database: [ODBC is the primary native data access API for applications written in C and C++ for SQL Server](https://docs.microsoft.com/en-us/sql/connect/odbc/microsoft-odbc-driver-for-sql-server).
+
+**Please note that DCPAM provides support for every ODBC-compliant data source**.
 
 ### DCPAM Database
 DCPAM is designed to be as most customizable as it needs to be.
 Therefore every database listed above as available data source can also be used as DCPAM target database.
 
 ### Configuration
-File `config.json` is DCPAM foundation. It defines:
-* Data sources
-* Extract, Transform and Load process for each data source
-* DCPAM database, tables and views (see _app.DATA_), where integrated data is stored
+File `config.json` is default DCPAM foundation. It defines:
+* Data sources.
+* Extract, Stage, Transform and Load process for each data source.
+* DCPAM database, tables and views (see _app.DATA_), where integrated data is stored.
+
+More `json` files can be configured to achieve more flexibile and parallel ETL processes. Each `json` file is executed by new instance of DCPAM.
 
 
 #### Compilation (Linux)
@@ -274,3 +284,4 @@ This software uses:
 [5]: https://en.wikipedia.org/wiki/Snowflake_schema
 [6]: https://en.wikipedia.org/wiki/Star_schema
 [7]: https://en.wikipedia.org/wiki/Extract,_load,_transform
+[8]: https://en.wikipedia.org/wiki/Fact_constellation

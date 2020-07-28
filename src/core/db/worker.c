@@ -133,6 +133,22 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
         );
 
         if( curr_etl_step == ETL_EXTRACT ) {
+            /* 0: Run PreCDC actions. */
+            LOG_print( "[%s] Started run of PreCDC Actions.\n", TIME_get_gmt() );
+            for( i = 0; i < DATA_SYSTEM->queries_len; i++ ) {
+                if( DATA_SYSTEM->queries[ i ].change_data_capture.pre_actions ) {
+                    for( int k = 0; k < DATA_SYSTEM->queries[ i ].change_data_capture.pre_actions_count; k++ ) {
+                        DB_exec(
+                            &DATA_SYSTEM->dcpam_db,
+                            DATA_SYSTEM->queries[ i ].change_data_capture.pre_actions[ k ]->sql,
+                            strlen( DATA_SYSTEM->queries[ i ].change_data_capture.pre_actions[ k ]->sql ),
+                            NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL
+                        );
+                    }
+                }
+            }
+            LOG_print( "[%s] Finished run of PreCDC Actions.", TIME_get_gmt() );
+
             /* 1st: Extract and store data in the Staging Area */
             for( i = 0; i < DATA_SYSTEM->queries_len; i++ ) {
                 /* Init query structs */
@@ -211,15 +227,21 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
                 );
             }
 
-            /* 4rd: Clear Staging Area. */
+            /* 4rd: Run PostCDC actions. */
+            LOG_print( "[%s] Started run of PostCDC Actions.\n", TIME_get_gmt() );
             for( i = 0; i < DATA_SYSTEM->queries_len; i++ ) {
-                if( DATA_SYSTEM->queries[ i ].change_data_capture.stage ) {
-                    DB_CDC_StageReset(
-                        DATA_SYSTEM->queries[ i ].change_data_capture.stage,
-                        DATA_SYSTEM->staging_db ? DATA_SYSTEM->staging_db : &DATA_SYSTEM->dcpam_db
-                    );
+                if( DATA_SYSTEM->queries[ i ].change_data_capture.post_actions ) {
+                    for( int k = 0; k < DATA_SYSTEM->queries[ i ].change_data_capture.post_actions_count; k++ ) {
+                        DB_exec(
+                            &DATA_SYSTEM->dcpam_db,
+                            DATA_SYSTEM->queries[ i ].change_data_capture.post_actions[ k ]->sql,
+                            strlen( DATA_SYSTEM->queries[ i ].change_data_capture.post_actions[ k ]->sql ),
+                            NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL
+                        );
+                    }
                 }
             }
+            LOG_print( "[%s] Finished run of PostCDC Actions.\n", TIME_get_gmt() );
 
             curr_etl_step = ETL_EXTRACT;
             prev_etl_step = ETL_LOAD;

@@ -19,6 +19,9 @@
 				"TIME_ACCOUNTING"
 			],
 			"change_data_capture" : {
+				"pre_actions" : [
+					"DELETE FROM stage_accounted_time"
+				],
 				"extract" : {
 					"comment#00" : "##################################################################################################",
 					"comment#01" : "# Sample config below for inserted records works as \"SELECT id FROM secondary_db WHERE id NOT IN (SELECT id FROM primary_db)\".",
@@ -136,7 +139,10 @@
 						"extracted_values" : ["system_object_id", "system_worklog_id", "system_customer", "system_agent_id", "system_accounted_time", "system_created", "is_valid", "system_worklog_id"],
 						"output_data_sql" : "UPDATE accounted_time SET system_object_id = ?, system_worklog_id = ?, system_customer = '?', system_agent_id = '?', system_accounted_time = ?, system_created = '?', is_valid = ? WHERE system_worklog_id = ?"
 					}
-				}
+				},
+				"post_actions" : [
+					"DELETE FROM stage_accounted_time"
+				]
 			}
 		}]
 	}],

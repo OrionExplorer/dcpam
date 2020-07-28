@@ -125,6 +125,8 @@ int DCPAM_load_configuration( const char* filename ) {
     cJSON* cfg_system_query_item_name = NULL;
 
     cJSON* cfg_system_query_item_change_data_capture = NULL;
+    cJSON* cfg_system_query_item_change_data_capture_pre_actions = NULL;
+    cJSON* cfg_system_query_item_change_data_capture_pre_action_item = NULL;
     cJSON* cfg_system_query_item_change_data_capture_extract = NULL;
     cJSON* cfg_system_query_item_change_data_capture_extract_inserted = NULL;
     cJSON* cfg_system_query_item_change_data_capture_extract_inserted_primary_db = NULL;
@@ -190,6 +192,8 @@ int DCPAM_load_configuration( const char* filename ) {
     cJSON* cfg_system_query_item_change_data_capture_load_modified_output_data_sql = NULL;
     cJSON* cfg_system_query_item_change_data_capture_load_modified_extracted_values_array = NULL;
     cJSON* cfg_system_query_item_change_data_capture_load_modified_extracted_values_item = NULL;
+    cJSON* cfg_system_query_item_change_data_capture_post_actions = NULL;
+    cJSON* cfg_system_query_item_change_data_capture_post_action_item = NULL;
 
     cJSON* cfg_system_query_item_columns = NULL;
     cJSON* cfg_system_query_item_columns_name = NULL;
@@ -683,6 +687,63 @@ int DCPAM_load_configuration( const char* filename ) {
                             return FALSE;
                         }
                         /*
+                            change_data_capture.pre_actions
+                        */
+                        cfg_system_query_item_change_data_capture_pre_actions = cJSON_GetObjectItem( cfg_system_query_item_change_data_capture, "pre_actions" );
+                        if( cfg_system_query_item_change_data_capture_pre_actions == NULL ) {
+                            LOG_print( "NOTICE: No PreCDC actions defined.\n" );
+                            tmp_cdc->pre_actions = NULL;
+                            tmp_cdc->pre_actions_count = 0;
+                        } else {
+                            tmp_cdc->pre_actions_count = cJSON_GetArraySize( cfg_system_query_item_change_data_capture_pre_actions );
+                            tmp_cdc->pre_actions = SAFEMALLOC( tmp_cdc->pre_actions_count * sizeof * tmp_cdc->pre_actions, __FILE__, __LINE__ );
+
+                            for( int k = 0; k < tmp_cdc->pre_actions_count; k++ ) {
+                                cfg_system_query_item_change_data_capture_pre_action_item = cJSON_GetArrayItem( cfg_system_query_item_change_data_capture_pre_actions, k );
+                                if( cfg_system_query_item_change_data_capture_pre_action_item == NULL ) {
+                                    LOG_print( "WARNING: element at position %d in PreCDC actions is invalid!\n", k );
+                                } else {
+                                    tmp_cdc->pre_actions[ k ] = SAFEMALLOC( sizeof( DB_SYSTEM_CDC_PRE ), __FILE__, __LINE__ );
+                                    size_t str_len = strlen( cfg_system_query_item_change_data_capture_pre_action_item->valuestring );
+                                    tmp_cdc->pre_actions[ k ]->sql = SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
+                                    strncpy(
+                                        tmp_cdc->pre_actions[ k ]->sql,
+                                        cfg_system_query_item_change_data_capture_pre_action_item->valuestring,
+                                        str_len
+                                    );
+                                }
+                            }
+                        }
+
+                        /*
+                            change_data_capture.post_actions
+                        */
+                        cfg_system_query_item_change_data_capture_post_actions = cJSON_GetObjectItem( cfg_system_query_item_change_data_capture, "post_actions" );
+                        if( cfg_system_query_item_change_data_capture_post_actions == NULL ) {
+                            LOG_print( "NOTICE: No PostCDC actions defined.\n" );
+                            tmp_cdc->post_actions = NULL;
+                            tmp_cdc->post_actions_count = 0;
+                        } else {
+                            tmp_cdc->post_actions_count = cJSON_GetArraySize( cfg_system_query_item_change_data_capture_post_actions );
+                            tmp_cdc->post_actions = SAFEMALLOC( tmp_cdc->post_actions_count * sizeof * tmp_cdc->post_actions, __FILE__, __LINE__ );
+
+                            for( int k = 0; k < tmp_cdc->post_actions_count; k++ ) {
+                                cfg_system_query_item_change_data_capture_post_action_item = cJSON_GetArrayItem( cfg_system_query_item_change_data_capture_post_actions, k );
+                                if( cfg_system_query_item_change_data_capture_post_action_item == NULL ) {
+                                    LOG_print( "WARNING: element at position %d in PreCDC actions is invalid!\n", k );
+                                } else {
+                                    tmp_cdc->post_actions[ k ] = SAFEMALLOC( sizeof( DB_SYSTEM_CDC_POST ), __FILE__, __LINE__ );
+                                    size_t str_len = strlen( cfg_system_query_item_change_data_capture_post_action_item->valuestring );
+                                    tmp_cdc->post_actions[ k ]->sql = SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
+                                    strncpy(
+                                        tmp_cdc->post_actions[ k ]->sql,
+                                        cfg_system_query_item_change_data_capture_post_action_item->valuestring,
+                                        str_len
+                                    );
+                                }
+                            }
+                        }
+                        /*
                             change_data_capture.extract
                         */
                         cfg_system_query_item_change_data_capture_extract = cJSON_GetObjectItem( cfg_system_query_item_change_data_capture, "extract" );
@@ -1125,25 +1186,6 @@ int DCPAM_load_configuration( const char* filename ) {
                                 snprintf( tmp_cdc->stage->modified.extracted_values[ k ], MAX_COLUMN_NAME_LEN, "%s", cfg_system_query_item_change_data_capture_stage_modified_extracted_values_item->valuestring );
                                 tmp_cdc->stage->modified.extracted_values_len++;
                             }
-
-                            /*
-                                change_data_capture.stage.reset
-                            */
-                            cfg_system_query_item_change_data_capture_stage_reset = cJSON_GetObjectItem( cfg_system_query_item_change_data_capture_stage, "reset" );
-                            if( cfg_system_query_item_change_data_capture_stage_reset == NULL ) {
-                                LOG_print( "ERROR: \"system[%d].queries[%d].change_data_capture.stage.reset\" key not found.\n", i, j );
-                                cJSON_Delete( config_json );
-                                free( config_string ); config_string = NULL;
-                                fclose( file );
-                                return FALSE;
-                            }
-                            size_t str_len3 = strlen( cfg_system_query_item_change_data_capture_stage_reset->valuestring );
-                            tmp_cdc->stage->reset = SAFECALLOC( str_len3 + 1, sizeof( char ), __FILE__, __LINE__ );
-                            strncpy(
-                                tmp_cdc->stage->reset,
-                                cfg_system_query_item_change_data_capture_stage_reset->valuestring,
-                                str_len3
-                            );
                         }
                         
                         /********************************************/

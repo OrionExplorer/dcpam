@@ -52,6 +52,14 @@
 	* [x] Rebuild DCPAM config.
 	* [x] Rebuild Extract subprocess callback.
 	* [x] Rebuild Load subprocess.
+* [x] Pre- and PostCDC queries:
+	* Would allow to full data extraction and keep previous - now historical - data (by setting record markers or states) in the Warehouse.
+	* [x] Implementation:
+		* [x] Multiple PreCDC statements for each `system.queries[].change_data_capture`.
+		* [x] Multiple PostCDC statements for each `system.queries[].change_data_capture`.
+		* [x] PreCDC actions execution.
+		* [x] PostCDC actions execution.
+		* [x] Remove `system.queries[].change_data_capture.stage.reset`.
 * [ ] Transform subprocess (https://en.wikipedia.org/wiki/Extract,_transform,_load#Transform):
 	* [ ] Proposal #1: simple internal operations within dcpam (NO-GO: hard-coded rules, small range of usable functions).
 	* [x] Proposal #2: make use of external scripts/applications.

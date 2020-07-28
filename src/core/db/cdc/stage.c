@@ -75,27 +75,6 @@ void DB_CDC_StageGeneric( DB_SYSTEM_CDC_STAGE *stage, DB_SYSTEM_CDC_STAGE_QUERY 
     }
 }
 
-void DB_CDC_StageReset( DB_SYSTEM_CDC_STAGE* stage, DATABASE_SYSTEM_DB* dcpam_db ) {
-    if( stage && dcpam_db ) {
-
-        DB_QUERY    sql_res;
-
-        LOG_print( "\t· [CDC - STAGE::RESET]:\n" );
-        LOG_print( "\t\t- %s\n", stage->reset );
-
-        if( DB_exec( dcpam_db, stage->reset, strlen( stage->reset ), &sql_res, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL ) == TRUE ) {
-            LOG_print( "\t· [CDC - STAGE::RESET] Done. Staging Area cleared.\n" );
-        } else {
-            LOG_print( "\t· [CDC - STAGE::RESET] Error. DCPAM was unable to clear Staging Area. Check corresponding error in previous messages.\n" );
-        }
-
-        DB_QUERY_free( &sql_res );
-
-    } else {
-        LOG_print( "\t· [CDC - STAGE::RESET] Fatal error: not all DB_CDC_StageReset parameters are valid!\n" );
-    }
-}
-
 void DB_CDC_StageInserted( DB_SYSTEM_CDC_STAGE* stage, DATABASE_SYSTEM_DB* dcpam_db, DB_RECORD *record ) {
     if( stage && dcpam_db ) {
         LOG_print( "\t· [CDC - STAGE::INSERTED]:\n" );
