@@ -18,7 +18,7 @@
 
 ### Table of contents
 * [Business Value](https://github.com/OrionExplorer/dcpam#business-value)
-    * [Extraction and Change Data Capture](https://github.com/OrionExplorer/dcpam#extraction-and-change-data-capture)
+    * [Extraction, Staging and Change Data Capture](https://github.com/OrionExplorer/dcpam#extraction-staging-and-change-data-capture)
     * [Transformation](https://github.com/OrionExplorer/dcpam#transformation)
     * [Loading](https://github.com/OrionExplorer/dcpam#loading)
 * [Data Warehouse with DCPAM](https://github.com/OrionExplorer/dcpam#data-warehouse-with-dcpam)
@@ -48,7 +48,7 @@
 * [x] **Process gigabytes of data within minutes** - benefit of parallel execution.
 
 
-### Extraction and Change Data Capture
+### Extraction, Staging and Change Data Capture
 Extraction is first major process. Main DCPAM workflow consists of:
 1. Data extraction from all source systems to the Staging Area or target tables directly.
 2. (Optional) Data transformation using all source systems in the Staging Area.
@@ -57,7 +57,7 @@ Extraction is first major process. Main DCPAM workflow consists of:
 ![Main Overview](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/dwh.png)
 
 #### Extraction
-DCPAM is designed to perform both incremental and full online extraction without need to implement additional logic to the source system. This process is SQL-based all the way, thus precise configuration of various transaction logs are not required. Log scanning is great non-intrusive method for Change Data Capture, but DCPAM goal is to deliver full Data Warehouse possibilities without need to include or hire more engineers for this specific task.
+DCPAM is designed to perform both incremental and full online extraction without need to implement additional logic to the source system. This process is SQL-based all the way, thus precise configuration of various transaction logs is not required. Log scanning is great non-intrusive method for Change Data Capture, but DCPAM goal is to deliver full Data Warehouse possibilities without need to include or hire more engineers for this specific task.
 
 Extract process does handle of:
 1. **Extract Inserted** - find and fetch only new records.
@@ -66,7 +66,12 @@ Extract process does handle of:
 
 > **Information**: offline extraction (flat files) and other online sources will be available in the future.
 
+Before Extract process begin, it is possible to run set of SQL queries to perform on DCPAM Database.
+
+#### Staging
 Depending on the configuration, extracted data is stored instantly either in the Staging Area or target tables directly. That means inserted, deleted and modified records from all source systems coexist in the transitional tables at the same time and must be properly marked. But this is another big performance boost: DCPAM can execute a number of simple SELECT queries instead of one complex SQL with many joins and other conditions, so impact on the source system is minimal.
+
+Staging Area is a separate area in Data Warehouse, and DCPAM **does not require** it to be located in the same database or even on the same server.
 
 
 #### Change Data Capture
@@ -112,6 +117,8 @@ Data transformation in DCPAM ETL workflow is not enforced.
 
 ### Loading
 When all transformations in the Staging Area are completed or during the Extract subprocess, DCPAM loads the data directly into target tables. Dimensions are first to load, followed by Facts. Then Staging Area is cleared and ready for the next occurence of data extraction.
+
+After Loading process is finished, it is possible to run set of SQL queries to perform on the DCPAM Database (ie. to clear Staging Area).
 
 ## Data Warehouse with DCPAM
 
