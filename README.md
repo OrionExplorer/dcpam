@@ -14,7 +14,6 @@
 * DCPAM is multiplatform (Linux/Windows).
 
 ##### Currently under active development
-* [x] Pre- and PostCDC queries.
 * [x] Transform subprocess.
 
 ### Table of contents
