@@ -7,7 +7,7 @@
 			"ip" : "172.17.0.199",
 			"port" : 5432,
 			"driver" : 1,
-			"driver_comment" : "Driver types: 1=PostgreSQL, 2=MySQL, 3=MariaDB, 4=ODBC 5=Oracle Database, 6=SQLite",
+			"driver_comment" : "Driver types: 1=PostgreSQL, 2=MySQL, 3=MariaDB, 4=ODBC, 5=Oracle Database, 6=SQLite",
 			"user" : "otrs",
 			"db" : "otrs",
 			"connection_string" : "dbname=%s host=%s port=%d user=%s password=%s",
@@ -18,10 +18,17 @@
 			"data_types" : [
 				"TIME_ACCOUNTING"
 			],
-			"change_data_capture" : {
+			"etl" : {
+
+				"comment#00" : "##################################################################################################",
+				"comment#01" : "# PreCDC Actions configuration. Use it to perform any set of queries in DCPAM Database before ETL",
+				"comment#02" : "# process is started (ie. to clear the Staging Area).",
+				"comment#03" : "##################################################################################################",
 				"pre_actions" : [
 					"DELETE FROM stage_accounted_time"
 				],
+
+
 				"extract" : {
 					"comment#00" : "##################################################################################################",
 					"comment#01" : "# Sample config below for inserted records works as \"SELECT id FROM secondary_db WHERE id NOT IN (SELECT id FROM primary_db)\".",
@@ -50,6 +57,8 @@
 						"secondary_db_sql" : "SELECT t.id AS system_object_id, ta.id AS system_worklog_id, t.customer_id AS system_customer, ta.create_by AS system_agent_id, ta.time_unit AS system_accounted_time, ta.create_time AS system_created FROM time_accounting ta LEFT JOIN ticket t ON t.id = ta.ticket_id WHERE ta.change_time > '%s'"
 					}
 				},
+
+
 				"comment#00" : "##################################################################################################",
 				"comment#01" : "# Staging Area configuration - a temporary tables, where extracted data is stored and ready to Transform process.",
 				"comment#02" : "# According to the documentation, inserted, deleted and modified records coexist here at the same time, so additional column \"e_type\" is used:",
@@ -70,9 +79,10 @@
 					"modified" : {
 						"sql" : "INSERT INTO stage_accounted_time (system_object_id, system_worklog_id, system_customer, system_agent_id, system_accounted_time, system_created, is_valid, system, e_type) VALUES (?, ?, '?', '?', ?, '?', 1, 'OTRS', 3)",
 						"extracted_values" : ["system_object_id", "system_worklog_id", "system_customer", "system_agent_id", "system_accounted_time", "system_created"]
-					},
-					"reset" : "DELETE FROM stage_accounted_time"
+					}
 				},
+
+
 				"transform" : {
 					"comment#00" : "##################################################################################################",
 					"comment#01" : "# Transform subprocess configuration. DCPAM calls external modules to perform data transformation.",
@@ -116,6 +126,8 @@
 						"source_system_update" : "UPDATE time_accounting SET %s WHERE %s"
 					}]
 				},
+
+
 				"load" : {
 					"comment#00" : "##################################################################################################",
 					"comment#01" : "# Query executed with \"output_data_sql\" is fed by the records fetched with \"input_data_sql\" from Staging Area or",
@@ -140,32 +152,48 @@
 						"output_data_sql" : "UPDATE accounted_time SET system_object_id = ?, system_worklog_id = ?, system_customer = '?', system_agent_id = '?', system_accounted_time = ?, system_created = '?', is_valid = ? WHERE system_worklog_id = ?"
 					}
 				},
+
+				"comment#00" : "##################################################################################################",
+				"comment#01" : "# PostCDC Actions configuration. Use it to perform any set of queries in DCPAM Database after ETL",
+				"comment#02" : "# process finished (ie. to clear the Staging Area).",
+				"comment#03" : "##################################################################################################",
 				"post_actions" : [
 					"DELETE FROM stage_accounted_time"
 				]
+
 			}
 		}]
 	}],
 	"app" : {
 		"name" : "DCPAM",
 		"version" : "0.1",
+		"run_once" : true,
+		"run_once_comment#00" : "##################################################################################################",
+		"run_once_comment#01" : "# Set this param with \"true\" value to run DCPAM in \"On Schedule\" mode (ie. with CRON). ",
+		"run_once_comment#02" : "# Remove this param or set with \"false\" value to run DCPAM in \"Persistent\" mode (daemon-like).",
+		"run_once_comment#03" : "##################################################################################################",
 		"DB" : {
 			"name" : "DCPAM Database",
 			"ip" : "127.0.0.1",
 			"port" : 5432,
 			"driver" : 1,
-			"driver_comment" : "Driver types: 1=PostgreSQL, 2=MySQL, 3=MariaDB, 4=ODBC 5=Oracle Database, 6=SQLite",
+			"driver_comment" : "Driver types: 1=PostgreSQL, 2=MySQL, 3=MariaDB, 4=ODBC, 5=Oracle Database, 6=SQLite",
 			"connection_string" : "dbname=%s host=%s port=%d user=%s password=%s",
 			"user" : "dcpam",
 			"password" : "tantive-4",
 			"db" : "dcpam"
 		},
 		"_STAGING" : {
+			"comment#00" : "##################################################################################################",
+			"comment#01" : "# Staging Area configuration.",
+			"comment#02" : "# This step is optional. Use it to define remote database where extracted data is stored.",
+			"comment#03" : "# When not set, DCPAM Database is used to store extracted data in transitional tables.",
+			"comment#00" : "##################################################################################################",
 			"name" : "Staging Area",
 			"ip" : "127.0.0.1",
 			"port" : 5432,
 			"driver" : 1,
-			"driver_comment" : "Driver types: 1=PostgreSQL, 2=MySQL, 3=MariaDB, 4=ODBC 5=Oracle Database, 6=SQLite",
+			"driver_comment" : "Driver types: 1=PostgreSQL, 2=MySQL, 3=MariaDB, 4=ODBC, 5=Oracle Database, 6=SQLite",
 			"connection_string" : "dbname=%s host=%s port=%d user=%s password=%s",
 			"user" : "dcpam",
 			"password" : "tantive-4",

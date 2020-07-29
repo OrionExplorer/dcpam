@@ -255,7 +255,11 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
 
         pthread_mutex_unlock( &watcher_mutex );
         if( prev_etl_step == ETL_LOAD ) {
-            Sleep( WORKER_WATCHER_SLEEP );
+            if( APP.run_once == 1 ) {
+                app_terminated = 1;
+            } else {
+                Sleep( WORKER_WATCHER_SLEEP );
+            }
         }
 
         if( app_terminated == 1 ) {

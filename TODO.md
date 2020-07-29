@@ -72,6 +72,8 @@
 		* Possible to call Transformation scripts/applications locally and remotely.
 	* [ ] Implementation:
 		* [x] Rebuild DCPAM config.
+		* [ ] Socket-based network layer (client):
+			* [] Protocol.
 		* [ ] Run external script/application (`popen` for local and sockets for remote).
 		* [ ] Provide all the necessary auth data to external script/application with command line arguments. 
 		* [ ] Wait for external script/application to finish with `EXIT_SUCCESS`.
@@ -82,6 +84,7 @@
 		* [ ] DCPAM EXEC:
 			* [ ] Socket server application capable to deal with many connected clients.
 			* [ ] Use of `popen` to call external script/application.
+* [x] Allow DCPAM to run once and exit (for scheduled CRON tasks).
 * [ ] ETL process interval can vary between system[].queries[].
 * [ ] Move DCPAM configuration to database:
 	* [ ] Table schemas based on `config.json`.

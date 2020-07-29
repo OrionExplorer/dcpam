@@ -35,6 +35,7 @@ typedef struct DCPAM_DATA {
 typedef struct DCPAM_APP {
     char                    *version;
     char                    *name;
+    int                     run_once;
     DATABASE_SYSTEM_DB      DB;
     DATABASE_SYSTEM_DB      *STAGING;
     DCPAM_DATA              DATA[ MAX_DCPAM_DATA_ITEMS ];
