@@ -35,6 +35,7 @@
     * [Compilation (Linux)](https://github.com/OrionExplorer/dcpam#compilation-linux)
     * [Linux Dependencies](https://github.com/OrionExplorer/dcpam#linux-dependencies)
     * [Windows Dependencies](https://github.com/OrionExplorer/dcpam#windows-dependencies)
+* [Roadmap](https://github.com/OrionExplorer/dcpam#roadmap)
 
 ## Business Value
 * [x] **DCPAM helps to create single central repository of integrated company data** - this provides a single integrated view of an organisation.
@@ -197,9 +198,8 @@ After Loading process is finished, it is possible to run set of SQL queries to p
 * Data transformation:
   * fully supported in DCPAM, but not required in the ETL process
   * possibility to run outside the DCPAM server
-* Each ETL process operates independently in separate thread.
-* DCPAM can work in persistent (daemon-like) or scheduled mode.
-* Multiple instances of DCPAM with different configurations can run on single server.
+* Each Change Data Capture process operates independently in separate thread.
+* Multiple instances of DCPAM with different configuration can run on single server.
 * Database support is provided with native libraries (see _Data sources_ and _Linux Dependencies_ in this document).
 * Simply put, DCPAM allows to perform advanced data copy between technically different datasets.
 
@@ -279,6 +279,12 @@ More `json` files can be configured to achieve more flexibile and parallel ETL p
 - PostgreSQL
 - Oracle Database
 
+## Roadmap
+| 2020                          | 2021                              |
+|:------------------------------|:----------------------------------|
+| [ ] Transform process         | [ ] DCPAM Admin web application   |
+| [ ] Data Caching              | [ ] DCPAM AI platform
+| [ ] DCPAM BI web application  |
 ---
 This software uses:
 * [cJSON](https://github.com/DaveGamble/cJSON "cJSON") for parsing JSON data.
