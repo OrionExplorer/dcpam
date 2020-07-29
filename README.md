@@ -282,9 +282,9 @@ More `json` files can be configured to achieve more flexibile and parallel ETL p
 ## Roadmap
 | 2020                          | 2021                              |
 |:------------------------------|:----------------------------------|
-| [ ] Transform process         | [ ] DCPAM Admin web application   |
-| [ ] Data Caching              | [ ] DCPAM AI platform
-| [ ] DCPAM BI web application  |
+| Transform process             | DCPAM Admin web application       |
+| Data Caching                  | DCPAM AI platform                 |
+| DCPAM BI web application      |                                   |
 ---
 This software uses:
 * [cJSON](https://github.com/DaveGamble/cJSON "cJSON") for parsing JSON data.
