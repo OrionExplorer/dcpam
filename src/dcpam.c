@@ -677,7 +677,7 @@ int DCPAM_load_configuration( const char* filename ) {
                     for( int j = 0; j < cJSON_GetArraySize( cfg_system_queries_array ); j++ ) {
                         cfg_system_query_item = cJSON_GetArrayItem( cfg_system_queries_array, j );
 
-                        DB_SYSTEM_CDC *tmp_cdc = SAFEMALLOC( sizeof(DB_SYSTEM_CDC), __FILE__, __LINE__ );
+                        DB_SYSTEM_ETL *tmp_cdc = SAFEMALLOC( sizeof(DB_SYSTEM_ETL), __FILE__, __LINE__ );
 
                         cfg_system_query_item_name = cJSON_GetObjectItem( cfg_system_query_item, "name" );
                         if( cfg_system_query_item_name == NULL ) {
@@ -713,7 +713,7 @@ int DCPAM_load_configuration( const char* filename ) {
                                 if( cfg_system_query_item_etl_pre_action_item == NULL ) {
                                     LOG_print( "WARNING: element at position %d in PreCDC actions is invalid!\n", k );
                                 } else {
-                                    tmp_cdc->pre_actions[ k ] = SAFEMALLOC( sizeof( DB_SYSTEM_CDC_PRE ), __FILE__, __LINE__ );
+                                    tmp_cdc->pre_actions[ k ] = SAFEMALLOC( sizeof( DB_SYSTEM_ETL_PRE ), __FILE__, __LINE__ );
                                     size_t str_len = strlen( cfg_system_query_item_etl_pre_action_item->valuestring );
                                     tmp_cdc->pre_actions[ k ]->sql = SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
                                     strncpy(
@@ -742,7 +742,7 @@ int DCPAM_load_configuration( const char* filename ) {
                                 if( cfg_system_query_item_etl_post_action_item == NULL ) {
                                     LOG_print( "WARNING: element at position %d in PreCDC actions is invalid!\n", k );
                                 } else {
-                                    tmp_cdc->post_actions[ k ] = SAFEMALLOC( sizeof( DB_SYSTEM_CDC_POST ), __FILE__, __LINE__ );
+                                    tmp_cdc->post_actions[ k ] = SAFEMALLOC( sizeof( DB_SYSTEM_ETL_POST ), __FILE__, __LINE__ );
                                     size_t str_len = strlen( cfg_system_query_item_etl_post_action_item->valuestring );
                                     tmp_cdc->post_actions[ k ]->sql = SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
                                     strncpy(
@@ -1044,7 +1044,7 @@ int DCPAM_load_configuration( const char* filename ) {
                             LOG_print( "NOTICE: \"system[%d].queries[%d].etl.stage\" key not found.\n", i, j );
                             tmp_cdc->stage = NULL;
                         } else {
-                            tmp_cdc->stage = SAFEMALLOC( sizeof( DB_SYSTEM_CDC_STAGE ), __FILE__, __LINE__ );
+                            tmp_cdc->stage = SAFEMALLOC( sizeof( DB_SYSTEM_ETL_STAGE ), __FILE__, __LINE__ );
                             /*
                                 etl.stage.inserted
                             */
@@ -1209,7 +1209,7 @@ int DCPAM_load_configuration( const char* filename ) {
                             LOG_print( "NOTICE: \"system[%d].queries[%d].etl.transform\" key not found.\n", i, j );
                             tmp_cdc->transform = NULL;
                         } else {
-                            tmp_cdc->transform = SAFEMALLOC( sizeof( DB_SYSTEM_CDC_TRANSFORM ), __FILE__, __LINE__ );
+                            tmp_cdc->transform = SAFEMALLOC( sizeof( DB_SYSTEM_ETL_TRANSFORM ), __FILE__, __LINE__ );
 
                             /*
                                 etl.transform.inserted
@@ -1226,7 +1226,7 @@ int DCPAM_load_configuration( const char* filename ) {
                             tmp_cdc->transform->inserted = SAFEMALLOC( tmp_cdc->transform->inserted_count * sizeof * tmp_cdc->transform->inserted, __FILE__, __LINE__ );
                             for( int k = 0; k < tmp_cdc->transform->inserted_count; k++ ) {
                                 cfg_system_query_item_etl_transform_inserted_item = cJSON_GetArrayItem( cfg_system_query_item_etl_transform_inserted_array, k );
-                                tmp_cdc->transform->inserted[ k ] = SAFEMALLOC( sizeof( DB_SYSTEM_CDC_TRANSFORM_QUERY ), __FILE__, __LINE__ );
+                                tmp_cdc->transform->inserted[ k ] = SAFEMALLOC( sizeof( DB_SYSTEM_ETL_TRANSFORM_QUERY ), __FILE__, __LINE__ );
 
                                 cfg_system_query_item_etl_transform_inserted_module = cJSON_GetObjectItem( cfg_system_query_item_etl_transform_inserted_item, "module" );
                                 size_t str_len = strlen( cfg_system_query_item_etl_transform_inserted_module->valuestring );
@@ -1273,7 +1273,7 @@ int DCPAM_load_configuration( const char* filename ) {
                             for( int k = 0; k < tmp_cdc->transform->deleted_count; k++ ) {
                                 cfg_system_query_item_etl_transform_deleted_item = cJSON_GetArrayItem( cfg_system_query_item_etl_transform_deleted_array, k );
 
-                                tmp_cdc->transform->deleted[ k ] = SAFEMALLOC( sizeof( DB_SYSTEM_CDC_TRANSFORM_QUERY ), __FILE__, __LINE__ );
+                                tmp_cdc->transform->deleted[ k ] = SAFEMALLOC( sizeof( DB_SYSTEM_ETL_TRANSFORM_QUERY ), __FILE__, __LINE__ );
 
                                 cfg_system_query_item_etl_transform_deleted_module = cJSON_GetObjectItem( cfg_system_query_item_etl_transform_deleted_item, "module" );
                                 size_t str_len = strlen( cfg_system_query_item_etl_transform_deleted_module->valuestring );
@@ -1320,7 +1320,7 @@ int DCPAM_load_configuration( const char* filename ) {
                             for( int k = 0; k < tmp_cdc->transform->modified_count; k++ ) {
                                 cfg_system_query_item_etl_transform_modified_item = cJSON_GetArrayItem( cfg_system_query_item_etl_transform_modified_array, k );
 
-                                tmp_cdc->transform->modified[ k ] = SAFEMALLOC( sizeof( DB_SYSTEM_CDC_TRANSFORM_QUERY ), __FILE__, __LINE__ );
+                                tmp_cdc->transform->modified[ k ] = SAFEMALLOC( sizeof( DB_SYSTEM_ETL_TRANSFORM_QUERY ), __FILE__, __LINE__ );
 
                                 cfg_system_query_item_etl_transform_modified_module = cJSON_GetObjectItem( cfg_system_query_item_etl_transform_modified_item, "module" );
                                 size_t str_len = strlen( cfg_system_query_item_etl_transform_modified_module->valuestring );

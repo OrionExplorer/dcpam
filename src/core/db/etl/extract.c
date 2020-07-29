@@ -5,11 +5,11 @@
 #include "../../../include/utils/memory.h"
 #include "../../../include/core/schema.h"
 #include "../../../include/utils/log.h"
-#include "../../../include/core/db/cdc/extract.h"
-#include "../../../include/core/db/cdc/stage.h"
+#include "../../../include/core/db/etl/extract.h"
+#include "../../../include/core/db/etl/stage.h"
 
 
-void _ExtractGeneric_callback( DB_RECORD* record, DB_SYSTEM_CDC_STAGE* stage, DB_SYSTEM_CDC_STAGE_QUERY* stage_element, DATABASE_SYSTEM_DB* db ) {
+void _ExtractGeneric_callback( DB_RECORD* record, DB_SYSTEM_ETL_STAGE* stage, DB_SYSTEM_ETL_STAGE_QUERY* stage_element, DATABASE_SYSTEM_DB* db ) {
 
     if( stage ) {
         DB_CDC_StageGeneric( stage, stage_element, db, record );
@@ -19,21 +19,21 @@ void _ExtractGeneric_callback( DB_RECORD* record, DB_SYSTEM_CDC_STAGE* stage, DB
 }
 
 void _ExtractInserted_callback( DB_RECORD* record, void* data_ptr1, void* data_ptr2 ) {
-    DB_SYSTEM_CDC_STAGE* stage = ( DB_SYSTEM_CDC_STAGE* )data_ptr1;
+    DB_SYSTEM_ETL_STAGE* stage = ( DB_SYSTEM_ETL_STAGE* )data_ptr1;
     DATABASE_SYSTEM_DB* db = ( DATABASE_SYSTEM_DB* )data_ptr2;
 
     _ExtractGeneric_callback( record, stage, &stage->inserted, db );
 }
 
 void _ExtractDeleted_callback( DB_RECORD* record, void* data_ptr1, void* data_ptr2 ) {
-    DB_SYSTEM_CDC_STAGE* stage = ( DB_SYSTEM_CDC_STAGE* )data_ptr1;
+    DB_SYSTEM_ETL_STAGE* stage = ( DB_SYSTEM_ETL_STAGE* )data_ptr1;
     DATABASE_SYSTEM_DB* db = ( DATABASE_SYSTEM_DB* )data_ptr2;
 
     _ExtractGeneric_callback( record, stage, &stage->deleted, db );
 }
 
 void _ExtractModified_callback( DB_RECORD* record, void* data_ptr1, void* data_ptr2 ) {
-    DB_SYSTEM_CDC_STAGE* stage = ( DB_SYSTEM_CDC_STAGE* )data_ptr1;
+    DB_SYSTEM_ETL_STAGE* stage = ( DB_SYSTEM_ETL_STAGE* )data_ptr1;
     DATABASE_SYSTEM_DB* db = ( DATABASE_SYSTEM_DB* )data_ptr2;
 
     _ExtractGeneric_callback( record, stage, &stage->modified, db );
@@ -53,7 +53,7 @@ int CDC_ExtractQueryTypeValid( const char *sql ) {
     return 1;
 }
 
-void CDC_ExtractGeneric( DB_SYSTEM_CDC_EXTRACT *extract, DB_SYSTEM_CDC_EXTRACT_QUERY *extract_element, DATABASE_SYSTEM_DB *system_db, DATABASE_SYSTEM_DB* dcpam_db, qec *query_exec_callback, void* data_ptr1, void* data_ptr2 ) {
+void CDC_ExtractGeneric( DB_SYSTEM_ETL_EXTRACT *extract, DB_SYSTEM_ETL_EXTRACT_QUERY *extract_element, DATABASE_SYSTEM_DB *system_db, DATABASE_SYSTEM_DB* dcpam_db, qec *query_exec_callback, void* data_ptr1, void* data_ptr2 ) {
 
     if( CDC_ExtractQueryTypeValid( extract_element->primary_db_sql ) == 0 || CDC_ExtractQueryTypeValid( extract_element->secondary_db_sql ) == 0 ) {
         LOG_print( "Fatal error: Only SELECT queries are allowed in *_sql commands.\n" );
@@ -187,7 +187,7 @@ void CDC_ExtractGeneric( DB_SYSTEM_CDC_EXTRACT *extract, DB_SYSTEM_CDC_EXTRACT_Q
     }
 }
 
-void DB_CDC_ExtractInserted( DB_SYSTEM_CDC_EXTRACT *extract, DATABASE_SYSTEM_DB *system_db, DATABASE_SYSTEM_DB* dcpam_db, qec *query_exec_callback, void* data_ptr1, void* data_ptr2 ) {
+void DB_CDC_ExtractInserted( DB_SYSTEM_ETL_EXTRACT *extract, DATABASE_SYSTEM_DB *system_db, DATABASE_SYSTEM_DB* dcpam_db, qec *query_exec_callback, void* data_ptr1, void* data_ptr2 ) {
     if( extract && system_db && dcpam_db ) {
         LOG_print( "\t· [CDC - EXTRACT::INSERTED] existing data:\n" );
         CDC_ExtractGeneric( extract, &extract->inserted, system_db, dcpam_db, query_exec_callback, data_ptr1, data_ptr2 );
@@ -196,7 +196,7 @@ void DB_CDC_ExtractInserted( DB_SYSTEM_CDC_EXTRACT *extract, DATABASE_SYSTEM_DB 
     }
 }
 
-void DB_CDC_ExtractDeleted( DB_SYSTEM_CDC_EXTRACT *extract, DATABASE_SYSTEM_DB *system_db, DATABASE_SYSTEM_DB* dcpam_db, qec *query_exec_callback, void* data_ptr1, void* data_ptr2 ) {
+void DB_CDC_ExtractDeleted( DB_SYSTEM_ETL_EXTRACT *extract, DATABASE_SYSTEM_DB *system_db, DATABASE_SYSTEM_DB* dcpam_db, qec *query_exec_callback, void* data_ptr1, void* data_ptr2 ) {
     if( extract && system_db && dcpam_db ) {
         LOG_print( "\t· [CDC - EXTRACT::DELETED] existing data:\n" );
         CDC_ExtractGeneric( extract, &extract->deleted, system_db, dcpam_db, query_exec_callback, data_ptr1, data_ptr2 );
@@ -205,7 +205,7 @@ void DB_CDC_ExtractDeleted( DB_SYSTEM_CDC_EXTRACT *extract, DATABASE_SYSTEM_DB *
     }
 }
 
-void DB_CDC_ExtractModified( DB_SYSTEM_CDC_EXTRACT *extract, DATABASE_SYSTEM_DB *system_db, DATABASE_SYSTEM_DB* dcpam_db, qec *query_exec_callback, void* data_ptr1, void* data_ptr2 ) {
+void DB_CDC_ExtractModified( DB_SYSTEM_ETL_EXTRACT *extract, DATABASE_SYSTEM_DB *system_db, DATABASE_SYSTEM_DB* dcpam_db, qec *query_exec_callback, void* data_ptr1, void* data_ptr2 ) {
     if( extract && system_db && dcpam_db ) {
         LOG_print( "\t· [CDC - EXTRACT::MODIFIED] existing data:\n" );
         CDC_ExtractGeneric( extract, &extract->modified, system_db, dcpam_db, query_exec_callback, data_ptr1, data_ptr2 );

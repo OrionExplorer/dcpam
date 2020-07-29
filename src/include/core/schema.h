@@ -7,7 +7,7 @@
 #define MAX_DATA_SYSTEMS                    4
 #define MAX_CDC_COLUMNS                     32
 
-#include "db/cdc_schema.h"
+#include "db/etl_schema.h"
 #include "db/system_schema.h"
 #include "app_schema.h"
 

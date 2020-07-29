@@ -200,7 +200,7 @@ void SYSTEM_QUERY_free( DATABASE_SYSTEM_QUERY *dst ) {
 
 void DATABASE_SYSTEM_QUERY_add(
     const char          *name,
-    DB_SYSTEM_CDC   cdc,
+    DB_SYSTEM_ETL   cdc,
     const char          data_types[SMALL_BUFF_SIZE][SMALL_BUFF_SIZE],
     const int           data_types_len,
     DATABASE_SYSTEM_QUERY       *dst,

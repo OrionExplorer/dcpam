@@ -4,18 +4,18 @@
 #include "../../../include/utils/memory.h"
 #include "../../../include/core/schema.h"
 #include "../../../include/utils/log.h"
-#include "../../../include/core/db/cdc/transform.h"
+#include "../../../include/core/db/etl/transform.h"
 
 extern DCPAM_APP           APP;
 
-void CDC_TransformGeneric( DB_SYSTEM_CDC_TRANSFORM *transform, DB_SYSTEM_CDC_TRANSFORM_QUERY *transform_element, DATABASE_SYSTEM_DB *db, DB_QUERY *data );
+void CDC_TransformGeneric( DB_SYSTEM_ETL_TRANSFORM *transform, DB_SYSTEM_ETL_TRANSFORM_QUERY *transform_element, DATABASE_SYSTEM_DB *db, DB_QUERY *data );
 
 
-void CDC_TransformGeneric( DB_SYSTEM_CDC_TRANSFORM *transform, DB_SYSTEM_CDC_TRANSFORM_QUERY *transform_element, DATABASE_SYSTEM_DB *db, DB_QUERY *data ) {
+void CDC_TransformGeneric( DB_SYSTEM_ETL_TRANSFORM *transform, DB_SYSTEM_ETL_TRANSFORM_QUERY *transform_element, DATABASE_SYSTEM_DB *db, DB_QUERY *data ) {
 }
 
 
-void DB_CDC_TransformInserted( DB_SYSTEM_CDC_TRANSFORM *transform, DATABASE_SYSTEM_DB *db, DB_QUERY *data ) {
+void DB_CDC_TransformInserted( DB_SYSTEM_ETL_TRANSFORM *transform, DATABASE_SYSTEM_DB *db, DB_QUERY *data ) {
     if( transform && db && data ) {
         LOG_print( "\t· [CDC - TRANSFORM::INSERTED (%d rows)]:\n", data->row_count );
         if( data->row_count == 0 ) {
@@ -29,7 +29,7 @@ void DB_CDC_TransformInserted( DB_SYSTEM_CDC_TRANSFORM *transform, DATABASE_SYST
 
 }
 
-void DB_CDC_TransformDeleted( DB_SYSTEM_CDC_TRANSFORM *transform, DATABASE_SYSTEM_DB *db, DB_QUERY *data ) {
+void DB_CDC_TransformDeleted( DB_SYSTEM_ETL_TRANSFORM *transform, DATABASE_SYSTEM_DB *db, DB_QUERY *data ) {
     if( transform && db && data ) {
         LOG_print( "\t· [CDC - TRANSFORM::DELETED (%d rows)]:\n", data->row_count );
         if( data->row_count == 0 ) {
@@ -42,7 +42,7 @@ void DB_CDC_TransformDeleted( DB_SYSTEM_CDC_TRANSFORM *transform, DATABASE_SYSTE
     }
 }
 
-void DB_CDC_TransformModified( DB_SYSTEM_CDC_TRANSFORM *transform, DATABASE_SYSTEM_DB *db, DB_QUERY *data ) {
+void DB_CDC_TransformModified( DB_SYSTEM_ETL_TRANSFORM *transform, DATABASE_SYSTEM_DB *db, DB_QUERY *data ) {
     if( transform && db && data ) {
         LOG_print( "\t· [CDC - TRANSFORM::MODIFIED (%d rows)]:\n", data->row_count );
         if( data->row_count == 0 ) {

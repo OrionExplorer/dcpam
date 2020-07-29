@@ -5,14 +5,14 @@
 #include "../../../include/core/schema.h"
 #include "../../../include/core/db/system.h"
 #include "../../../include/utils/log.h"
-#include "../../../include/core/db/cdc/stage.h"
+#include "../../../include/core/db/etl/stage.h"
 
 extern DCPAM_APP           APP;
 
-void DB_CDC_StageGeneric( DB_SYSTEM_CDC_STAGE *stage, DB_SYSTEM_CDC_STAGE_QUERY *stage_element, DATABASE_SYSTEM_DB *dcpam_db, DB_RECORD *record );
+void DB_CDC_StageGeneric( DB_SYSTEM_ETL_STAGE *stage, DB_SYSTEM_ETL_STAGE_QUERY *stage_element, DATABASE_SYSTEM_DB *dcpam_db, DB_RECORD *record );
 
 
-void DB_CDC_StageGeneric( DB_SYSTEM_CDC_STAGE *stage, DB_SYSTEM_CDC_STAGE_QUERY *stage_element, DATABASE_SYSTEM_DB *dcpam_db, DB_RECORD *record ) {
+void DB_CDC_StageGeneric( DB_SYSTEM_ETL_STAGE *stage, DB_SYSTEM_ETL_STAGE_QUERY *stage_element, DATABASE_SYSTEM_DB *dcpam_db, DB_RECORD *record ) {
 
     if( stage && stage_element && dcpam_db && record ) {
 
@@ -75,7 +75,7 @@ void DB_CDC_StageGeneric( DB_SYSTEM_CDC_STAGE *stage, DB_SYSTEM_CDC_STAGE_QUERY 
     }
 }
 
-void DB_CDC_StageInserted( DB_SYSTEM_CDC_STAGE* stage, DATABASE_SYSTEM_DB* dcpam_db, DB_RECORD *record ) {
+void DB_CDC_StageInserted( DB_SYSTEM_ETL_STAGE* stage, DATABASE_SYSTEM_DB* dcpam_db, DB_RECORD *record ) {
     if( stage && dcpam_db ) {
         LOG_print( "\t· [CDC - STAGE::INSERTED]:\n" );
         DB_CDC_StageGeneric( stage, &stage->inserted, dcpam_db, record );
@@ -85,7 +85,7 @@ void DB_CDC_StageInserted( DB_SYSTEM_CDC_STAGE* stage, DATABASE_SYSTEM_DB* dcpam
     
 }
 
-void DB_CDC_StageDeleted( DB_SYSTEM_CDC_STAGE *stage, DATABASE_SYSTEM_DB *dcpam_db, DB_RECORD* record ) {
+void DB_CDC_StageDeleted( DB_SYSTEM_ETL_STAGE *stage, DATABASE_SYSTEM_DB *dcpam_db, DB_RECORD* record ) {
     if( stage && dcpam_db ) {
         LOG_print( "\t· [CDC - STAGE::DELETED]:\n" );
         DB_CDC_StageGeneric( stage, &stage->deleted, dcpam_db, record );
@@ -94,7 +94,7 @@ void DB_CDC_StageDeleted( DB_SYSTEM_CDC_STAGE *stage, DATABASE_SYSTEM_DB *dcpam_
     }
 }
 
-void DB_CDC_StageModified( DB_SYSTEM_CDC_STAGE *stage, DATABASE_SYSTEM_DB *dcpam_db, DB_RECORD* record ) {
+void DB_CDC_StageModified( DB_SYSTEM_ETL_STAGE *stage, DATABASE_SYSTEM_DB *dcpam_db, DB_RECORD* record ) {
     if( stage && dcpam_db ) {
         LOG_print( "\t· [CDC - STAGE::MODIFIED]:\n" );
         DB_CDC_StageGeneric( stage, &stage->modified, dcpam_db, record );

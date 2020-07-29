@@ -5,15 +5,15 @@
 #include "../../../include/core/schema.h"
 #include "../../../include/core/db/system.h"
 #include "../../../include/utils/log.h"
-#include "../../../include/core/db/cdc/load.h"
+#include "../../../include/core/db/etl/load.h"
 
 extern DCPAM_APP           APP;
 
-void CDC_LoadGeneric( DB_SYSTEM_CDC_LOAD *load, DB_SYSTEM_CDC_LOAD_QUERY *load_element, DATABASE_SYSTEM_DB *source_db, DATABASE_SYSTEM_DB *dcpam_db );
+void CDC_LoadGeneric( DB_SYSTEM_ETL_LOAD *load, DB_SYSTEM_ETL_LOAD_QUERY *load_element, DATABASE_SYSTEM_DB *source_db, DATABASE_SYSTEM_DB *dcpam_db );
 
 
 void _LoadGeneric_callback( DB_RECORD *record, void *data_ptr1, void *data_ptr2 ) {
-    DB_SYSTEM_CDC_LOAD_QUERY* load_element = ( DB_SYSTEM_CDC_LOAD_QUERY* )data_ptr1;
+    DB_SYSTEM_ETL_LOAD_QUERY* load_element = ( DB_SYSTEM_ETL_LOAD_QUERY* )data_ptr1;
     DATABASE_SYSTEM_DB* dcpam_db = ( DATABASE_SYSTEM_DB* )data_ptr2;
 
     if( load_element && dcpam_db && record ) {
@@ -81,25 +81,25 @@ void _LoadGeneric_callback( DB_RECORD *record, void *data_ptr1, void *data_ptr2 
 }
 
 void _LoadInserted_callback( DB_RECORD* record, void* data_ptr1, void* data_ptr2 ) {
-    DB_SYSTEM_CDC_LOAD* load = ( DB_SYSTEM_CDC_LOAD* )data_ptr1;
+    DB_SYSTEM_ETL_LOAD* load = ( DB_SYSTEM_ETL_LOAD* )data_ptr1;
 
     _LoadGeneric_callback( record, load, &load->inserted );
 }
 
 void _LoadDeleted_callback( DB_RECORD* record, void* data_ptr1, void* data_ptr2 ) {
-    DB_SYSTEM_CDC_LOAD* load = ( DB_SYSTEM_CDC_LOAD* )data_ptr1;
+    DB_SYSTEM_ETL_LOAD* load = ( DB_SYSTEM_ETL_LOAD* )data_ptr1;
 
     _LoadGeneric_callback( record, load, &load->deleted );
 }
 
 void _LoadModified_callback( DB_RECORD* record, void* data_ptr1, void* data_ptr2 ) {
-    DB_SYSTEM_CDC_LOAD* load = ( DB_SYSTEM_CDC_LOAD* )data_ptr1;
+    DB_SYSTEM_ETL_LOAD* load = ( DB_SYSTEM_ETL_LOAD* )data_ptr1;
 
     _LoadGeneric_callback( record, load, &load->modified );
 }
 
 
-void CDC_LoadGeneric( DB_SYSTEM_CDC_LOAD *load, DB_SYSTEM_CDC_LOAD_QUERY *load_element, DATABASE_SYSTEM_DB *source_db, DATABASE_SYSTEM_DB *dcpam_db ) {
+void CDC_LoadGeneric( DB_SYSTEM_ETL_LOAD *load, DB_SYSTEM_ETL_LOAD_QUERY *load_element, DATABASE_SYSTEM_DB *source_db, DATABASE_SYSTEM_DB *dcpam_db ) {
 
     if( load && source_db && dcpam_db ) {
 
@@ -116,7 +116,7 @@ void CDC_LoadGeneric( DB_SYSTEM_CDC_LOAD *load, DB_SYSTEM_CDC_LOAD_QUERY *load_e
 
 }
 
-void DB_CDC_LoadInserted( DB_SYSTEM_CDC_LOAD* load, DATABASE_SYSTEM_DB* source_db, DATABASE_SYSTEM_DB* dcpam_db ) {
+void DB_CDC_LoadInserted( DB_SYSTEM_ETL_LOAD* load, DATABASE_SYSTEM_DB* source_db, DATABASE_SYSTEM_DB* dcpam_db ) {
     if( load && source_db && dcpam_db ) {
         LOG_print( "\t· [CDC - LOAD::INSERTED]:\n" );
         CDC_LoadGeneric( load, &load->inserted, source_db, dcpam_db );
@@ -125,7 +125,7 @@ void DB_CDC_LoadInserted( DB_SYSTEM_CDC_LOAD* load, DATABASE_SYSTEM_DB* source_d
     }
 }
 
-void DB_CDC_LoadDeleted( DB_SYSTEM_CDC_LOAD *load, DATABASE_SYSTEM_DB* source_db, DATABASE_SYSTEM_DB *dcpam_db ) {
+void DB_CDC_LoadDeleted( DB_SYSTEM_ETL_LOAD *load, DATABASE_SYSTEM_DB* source_db, DATABASE_SYSTEM_DB *dcpam_db ) {
     if( load && source_db && dcpam_db ) {
         LOG_print( "\t· [CDC - LOAD::DELETED]:\n" );
         CDC_LoadGeneric( load, &load->deleted, source_db, dcpam_db );
@@ -134,7 +134,7 @@ void DB_CDC_LoadDeleted( DB_SYSTEM_CDC_LOAD *load, DATABASE_SYSTEM_DB* source_db
     }
 }
 
-void DB_CDC_LoadModified( DB_SYSTEM_CDC_LOAD *load, DATABASE_SYSTEM_DB* source_db, DATABASE_SYSTEM_DB *dcpam_db ) {
+void DB_CDC_LoadModified( DB_SYSTEM_ETL_LOAD *load, DATABASE_SYSTEM_DB* source_db, DATABASE_SYSTEM_DB *dcpam_db ) {
     if( load && source_db && dcpam_db ) {
         LOG_print( "\t· [CDC - LOAD::MODIFIED]:\n" );
         CDC_LoadGeneric( load, &load->modified, source_db, dcpam_db );

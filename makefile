@@ -48,17 +48,17 @@ worker.o: src/core/db/worker.c
 system.o: src/core/db/system.c
 	$(CC) -c src/core/db/system.c $(CFLAGS) $(ORACLE_INC)
 
-extract.o: src/core/db/cdc/extract.c
-	$(CC) -c src/core/db/cdc/extract.c $(CFLAGS) $(ORACLE_INC)
+extract.o: src/core/db/etl/extract.c
+	$(CC) -c src/core/db/etl/extract.c $(CFLAGS) $(ORACLE_INC)
 
-stage.o: src/core/db/cdc/stage.c
-	$(CC) -c src/core/db/cdc/stage.c $(CFLAGS) $(ORACLE_INC)
+stage.o: src/core/db/etl/stage.c
+	$(CC) -c src/core/db/etl/stage.c $(CFLAGS) $(ORACLE_INC)
 
-transform.o: src/core/db/cdc/transform.c
-	$(CC) -c src/core/db/cdc/transform.c $(CFLAGS) $(ORACLE_INC)
+transform.o: src/core/db/etl/transform.c
+	$(CC) -c src/core/db/etl/transform.c $(CFLAGS) $(ORACLE_INC)
 
-load.o: src/core/db/cdc/load.c
-	$(CC) -c src/core/db/cdc/load.c $(CFLAGS) $(ORACLE_INC)
+load.o: src/core/db/etl/load.c
+	$(CC) -c src/core/db/etl/load.c $(CFLAGS) $(ORACLE_INC)
 
 time.o: src/utils/time.c
 	$(CC) -c src/utils/time.c $(CFLAGS)

@@ -7,10 +7,10 @@
 #include "../../include/core/schema.h"
 #include "../../include/utils/log.h"
 #include "../../include/core/db/system.h"
-#include "../../include/core/db/cdc/extract.h"
-#include "../../include/core/db/cdc/stage.h"
-#include "../../include/core/db/cdc/transform.h"
-#include "../../include/core/db/cdc/load.h"
+#include "../../include/core/db/etl/extract.h"
+#include "../../include/core/db/etl/stage.h"
+#include "../../include/core/db/etl/transform.h"
+#include "../../include/core/db/etl/load.h"
 
 pthread_t                   w_watcher_thread[ MAX_DATA_SYSTEMS ];
 static pthread_mutex_t      watcher_mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -97,8 +97,8 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
     int                     i = 0;
     WORKER_DATA             *t_worker_data = ( WORKER_DATA* )src_WORKER_DATA;
     DATABASE_SYSTEM         *DATA_SYSTEM = t_worker_data->DATA_SYSTEM;
-    DB_SYSTEM_CDC_ETL_STEP  curr_etl_step = 1;
-    DB_SYSTEM_CDC_ETL_STEP  prev_etl_step = 1;
+    DB_SYSTEM_ETL_STEP  curr_etl_step = 1;
+    DB_SYSTEM_ETL_STEP  prev_etl_step = 1;
 
     LOG_print( "Init DCPAM database connection for \"%s\":\n", DATA_SYSTEM->name );
     if( DATABASE_SYSTEM_DB_init( &DATA_SYSTEM->dcpam_db) == FALSE ) {
