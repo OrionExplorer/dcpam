@@ -10,7 +10,7 @@
 * DCPAM helps to create central repositories of integrated data from one or disparate sources [[1]].
 * DCPAM allows to perform advanced data copy between technically different datasets.
 * DCPAM goal is to deliver full range of Data Warehouse possibilities without need to include or hire more engineers for this specific task.
-* DCPAM architecture is highly flexible.
+* DCPAM architecture is highly flexible and provides unlimited scaling possibilities.
 * DCPAM is multiplatform (Linux/Windows).
 
 ##### Currently under active development
@@ -154,7 +154,6 @@ After Loading process is finished, it is possible to run set of SQL queries to p
 * Access DCPAM Database with any system for analytics (Power BI, Tableau, Redash etc.).
 
 ### Elements yet to be covered by DCPAM
-* Caching mechanism for preconfigured queries.
 * DCPAM BI web application:
   * SQL query exeution with grid-based results view.
   * Access to preconfigured queries.
@@ -164,9 +163,14 @@ After Loading process is finished, it is possible to run set of SQL queries to p
     * pie
     * column
     * area
+    * bubble
+    * scatter
+    * tree map
   * Manage custom reports:
     * labels, charts and grids
     * user access control
+* DCPAM Access:
+  * Caching mechanism for preconfigured queries.
 * DCPAM Admin web application:
   * Manage data sources.
   * Configure ETL processes.
@@ -249,6 +253,7 @@ More `json` files can be configured to achieve more flexibile and parallel ETL p
 
 
 #### Compilation (Linux)
+> Before attempt to compile, please adjust `ORACLE_DEP` paths in `makefile`.
 ```
 > make
 ```
@@ -280,11 +285,12 @@ More `json` files can be configured to achieve more flexibile and parallel ETL p
 - Oracle Database
 
 ## Roadmap
-| 2020                          | 2021                              |
-|:------------------------------|:----------------------------------|
-| Transform process             | DCPAM Admin web application       |
-| Data Caching                  | DCPAM AI platform                 |
-| DCPAM BI web application      |                                   |
+| 2020                              | 2021                                    |
+|:----------------------------------|:----------------------------------------|
+| Transform process                 | DCPAM Construct (admin web application) |
+| DCPAM Populate (data caching)     | DCPAM AI platform                       |
+| DCPAM Access (BI web application) |                                         |
+
 ---
 This software uses:
 * [cJSON](https://github.com/DaveGamble/cJSON "cJSON") for parsing JSON data.

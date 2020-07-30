@@ -8,8 +8,8 @@ CC=clang
 
 #CFLAGS=-std=c11 -fexpensive-optimizations -Wshadow -Winit-self -Wredundant-decls -Wcast-align -Wundef -Wfloat-equal -Winline -Wunreachable-code -Wmissing-declarations -Wmissing-include-dirs -Wswitch-enum -Wswitch-default -Wmain -pedantic-errors -pedantic -w -Wfatal-errors -Wextra -Wall -Os -O3 -O2 -O1
 CFLAGS=-std=c11 -fexpensive-optimizations -Wshadow -Winit-self -Wredundant-decls -Wcast-align -Wundef -Wfloat-equal -Winline -Wunreachable-code -Wmissing-declarations -Wmissing-include-dirs -Wswitch-enum -Wswitch-default -Wmain -pedantic-errors -pedantic -w -Wfatal-errors -Wextra -Wall -g3 -O0
-LIBS=-lm -lpthread -lpq -lodbc -lmariadbclient -ldl -L/usr/lib/oracle/19.6/client64/lib/ -lclntsh
-ORACLE_INC= -I/usr/include/oracle/19.6/client64/
+LIBS=-lm -lpthread -lpq -lodbc -lmariadbclient -ldl -lclntsh
+ORACLE_DEP= -I/usr/include/oracle/19.6/client64/ -L/usr/lib/oracle/19.6/client64/lib/
 
 
 all: dcpam
@@ -31,34 +31,34 @@ odbc.o: src/db/odbc.c
 	$(CC) -c src/db/odbc.c $(CFLAGS)
 
 oracle.o: src/db/oracle.c
-	$(CC) -c src/db/oracle.c $(CFLAGS) $(ORACLE_INC)
+	$(CC) -c src/db/oracle.c $(CFLAGS) $(ORACLE_DEP)
 
 sqlite.o: src/db/sqlite.c
 	$(CC) -c src/db/sqlite.c $(CFLAGS)
 
 dcpam.o: src/dcpam.c
-	$(CC) -c src/dcpam.c $(CFLAGS) $(ORACLE_INC)
+	$(CC) -c src/dcpam.c $(CFLAGS) $(ORACLE_DEP)
 
 log.o: src/utils/log.c
 	$(CC) -c src/utils/log.c $(CFLAGS)
 
 worker.o: src/core/db/worker.c
-	$(CC) -c src/core/db/worker.c $(CFLAGS) $(ORACLE_INC)
+	$(CC) -c src/core/db/worker.c $(CFLAGS) $(ORACLE_DEP)
 
 system.o: src/core/db/system.c
-	$(CC) -c src/core/db/system.c $(CFLAGS) $(ORACLE_INC)
+	$(CC) -c src/core/db/system.c $(CFLAGS) $(ORACLE_DEP)
 
 extract.o: src/core/db/etl/extract.c
-	$(CC) -c src/core/db/etl/extract.c $(CFLAGS) $(ORACLE_INC)
+	$(CC) -c src/core/db/etl/extract.c $(CFLAGS) $(ORACLE_DEP)
 
 stage.o: src/core/db/etl/stage.c
-	$(CC) -c src/core/db/etl/stage.c $(CFLAGS) $(ORACLE_INC)
+	$(CC) -c src/core/db/etl/stage.c $(CFLAGS) $(ORACLE_DEP)
 
 transform.o: src/core/db/etl/transform.c
-	$(CC) -c src/core/db/etl/transform.c $(CFLAGS) $(ORACLE_INC)
+	$(CC) -c src/core/db/etl/transform.c $(CFLAGS) $(ORACLE_DEP)
 
 load.o: src/core/db/etl/load.c
-	$(CC) -c src/core/db/etl/load.c $(CFLAGS) $(ORACLE_INC)
+	$(CC) -c src/core/db/etl/load.c $(CFLAGS) $(ORACLE_DEP)
 
 time.o: src/utils/time.c
 	$(CC) -c src/utils/time.c $(CFLAGS)
