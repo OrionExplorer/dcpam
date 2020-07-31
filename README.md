@@ -4,7 +4,7 @@
  
  Copyright © 2020 Marcin Kelar
 ###### _Data Construct-Populate-Access-Manage_ 
-#### Data Warehouse Engine
+#### Data Warehouse
 ![PostgreSQL](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/postgresql102x100.png) ![MySQL ](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/mysql159x100.png) ![MariaDB ](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/mariadb100x100.png) ![Microsoft SQL Server ](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/sqlserver134x100.png) ![Oracle Database ](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/oracle100x100.png) ![ODBC ](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/odbc199x100.png) ![SQLite3 ](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/sqlite171x100.png) ![Linux ](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/linux100x100.png) ![Windows 10 ](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/windows87x100.png)
 
 * DCPAM helps to create central repositories of integrated data from one or disparate sources [[1]].
@@ -27,6 +27,7 @@
     * [Other](https://github.com/OrionExplorer/dcpam#other)
 * [Technology](https://github.com/OrionExplorer/dcpam#technology)
     * [Architecture Overview](https://github.com/OrionExplorer/dcpam#architecture-overview)
+      * [DCPAM Components](https://github.com/OrionExplorer/dcpam#dcpam-components)
     * [ETL and Change Data Capture](https://github.com/OrionExplorer/dcpam#etl-and-change-data-capture)
     * [Parallel Execution](https://github.com/OrionExplorer/dcpam#parallel-execution)
     * [Data Sources](https://github.com/OrionExplorer/dcpam#data-sources)
@@ -207,6 +208,12 @@ After Loading process is finished, it is possible to run set of SQL queries to p
 * Database support is provided with native libraries (see _Data sources_ and _Linux Dependencies_ in this document).
 * Simply put, DCPAM allows to perform advanced data copy between technically different datasets.
 
+#### DCPAM Components
+  * DCPAM ETL - main ETL engine.
+  * DCPAM Construct - system administration.
+  * DCPAM Populate - memory caching system.
+  * DCPAM Access - Bussiness Inteligence web application.
+
 ![Architecture overview](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/architecture.png)
 
 #### ETL and Change Data Capture
@@ -257,17 +264,25 @@ More `json` files can be configured to achieve more flexibile and parallel ETL p
 ```
 > make
 ```
-- run
+- run DCPAM ETL
 ```
-> ./dcpam
+> ./dcpam-etl
 ```
 - run with Valgrind (with suppression of Oracle OCI errors) and default `config.json`.
 ```
-> valgrind --leak-check=full --show-reachable=yes --error-limit=no --suppressions=valgrind_oci.supp ./dcpam
+> valgrind --leak-check=full --show-reachable=yes --error-limit=no --suppressions=valgrind_oci.supp ./dcpam-etl
 ```
 - run with Valgrind and `config_mysql.json` (where MySQL is DCPAM main database)
 ```
-> valgrind --leak-check=full --show-reachable=yes --error-limit=no ./dcpam config_mysql.json
+> valgrind --leak-check=full --show-reachable=yes --error-limit=no ./dcpam-etl config_mysql.json
+```
+- run DCPAM Populate
+```
+> ./dcpam-populate
+```
+- run with `populate_config_pgsql.json` (where PostgreSQL is DCPAM main database)
+```
+> ./dcpam-populate populate_config_pgsql.json
 ```
 
 ##### Linux Dependencies

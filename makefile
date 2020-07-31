@@ -12,7 +12,7 @@ ORACLE_DEP= -I/usr/include/oracle/19.6/client64/ -L/usr/lib/oracle/19.6/client64
 LIBS=-lm -lpthread -lpq -lodbc -lmariadbclient $(ORACLE_DEP) -ldl -lclntsh
 
 
-all: dcpam dcpam-populate
+all: dcpam-etl dcpam-populate
 
 
 db.o: src/db/db.c
@@ -36,8 +36,8 @@ oracle.o: src/db/oracle.c
 sqlite.o: src/db/sqlite.c
 	$(CC) -c src/db/sqlite.c $(CFLAGS)
 
-dcpam.o: src/dcpam.c
-	$(CC) -c src/dcpam.c $(CFLAGS) $(ORACLE_DEP)
+dcpam-etl.o: src/dcpam-etl.c
+	$(CC) -c src/dcpam-etl.c $(CFLAGS) $(ORACLE_DEP)
 
 dcpam-populate.o: src/dcpam-populate.c
 	$(CC) -c src/dcpam-populate.c $(CFLAGS) $(ORACLE_DEP)
@@ -84,8 +84,8 @@ memory.o: src/utils/memory.c
 strings.o: src/utils/strings.c
 	$(CC) -c src/utils/strings.c $(CFLAGS)
 
-dcpam: dcpam.o mysql.o mariadb.o odbc.o postgresql.o log.o time.o filesystem.o cJSON.o sqlite3.o memory.o db.o worker.o system.o extract.o stage.o transform.o load.o strings.o oracle.o sqlite.o
-	$(CC) mysql.o mariadb.o odbc.o postgresql.o dcpam.o log.o time.o filesystem.o cJSON.o sqlite3.o memory.o db.o worker.o system.o extract.o stage.o transform.o load.o strings.o oracle.o sqlite.o -o dcpam $(LIBS)
+dcpam-etl: dcpam-etl.o mysql.o mariadb.o odbc.o postgresql.o log.o time.o filesystem.o cJSON.o sqlite3.o memory.o db.o worker.o system.o extract.o stage.o transform.o load.o strings.o oracle.o sqlite.o
+	$(CC) mysql.o mariadb.o odbc.o postgresql.o dcpam-etl.o log.o time.o filesystem.o cJSON.o sqlite3.o memory.o db.o worker.o system.o extract.o stage.o transform.o load.o strings.o oracle.o sqlite.o -o dcpam-etl $(LIBS)
 
 dcpam-populate: dcpam-populate.o mysql.o mariadb.o odbc.o postgresql.o log.o time.o filesystem.o cJSON.o sqlite3.o memory.o db.o worker.o system.o extract.o stage.o transform.o load.o strings.o oracle.o sqlite.o
 	$(CC) mysql.o mariadb.o odbc.o postgresql.o dcpam-populate.o log.o time.o filesystem.o cJSON.o sqlite3.o memory.o db.o worker.o system.o extract.o stage.o transform.o load.o strings.o oracle.o sqlite.o -o dcpam-populate $(LIBS)
