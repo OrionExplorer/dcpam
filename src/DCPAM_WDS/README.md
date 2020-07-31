@@ -46,9 +46,6 @@ For DCPAM WDS `wds_config.json` file is the main configuration. It defines:
 * DCPAM database.
 * Tables and views (see _app.DATA_), where integrated data is stored.
 
-More than one `json` configuration file can be configured to achieve more flexibile and parallel execution of configured processes. Each `json` file is executed by new instance of DCPAM WDS.
-
-
 #### Compilation (Linux)
 > Before attempt to compile, please adjust `ORACLE_DEP` paths in `makefile`.
 ```
