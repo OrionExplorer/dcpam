@@ -1,0 +1,46 @@
+{
+	"app" : {
+		"name" : "DCPAM Populate",
+		"version" : "0.1",
+		"DB" : {
+			"name" : "DCPAM Database",
+			"ip" : "127.0.0.1",
+			"port" : 5432,
+			"driver" : 1,
+			"driver_comment" : "Driver types: 1=PostgreSQL, 2=MySQL, 3=MariaDB, 4=ODBC, 5=Oracle Database, 6=SQLite",
+			"connection_string" : "dbname=%s host=%s port=%d user=%s password=%s",
+			"user" : "dcpam",
+			"password" : "tantive-4",
+			"db" : "dcpam"
+		},
+		"DATA" : [{
+			"id" : "TIME_ACCOUNTING",
+			"name" : "Accounted time data",
+			"db_table_name" : "accounted_time",
+			"columns" : ["system_object_id", "system_worklog_id", "system_customer", "system_agent_id", "accounted_time", "created", "system", "is_valid"],
+			"description" : "All accounted time data",
+			"actions" : [{
+				"name" : "GET_DATA",
+				"description" : "Get all data",
+				"type" : 1,
+				"internal" : false,
+				"condition" : "",
+				"sql" : "SELECT customer, accounted_time, created, system FROM accounted_time WHERE is_valid = 1"
+			}, {
+				"name" : "GET_SYSTEM_DATA",
+				"description" : "Get all data by system",
+				"type" : 1,
+				"internal" : false,
+				"condition" : "system",
+				"sql" : "SELECT customer, accounted_time, created, system FROM accounted_time WHERE system = '%s' AND is_valid = 1"
+			}, {
+				"name" : "GET_CUSTOMER_DATA",
+				"description" : "Get all data by customer",
+				"type" : 1,
+				"internal" : false,
+				"condition" : "system_customer",
+				"sql" : "SELECT customer, accounted_time, created, system FROM accounted_time WHERE customer = '%s' AND is_valid = 1"
+			}]
+		}]
+	}
+}

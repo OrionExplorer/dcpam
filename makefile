@@ -8,11 +8,11 @@ CC=clang
 
 #CFLAGS=-std=c11 -fexpensive-optimizations -Wshadow -Winit-self -Wredundant-decls -Wcast-align -Wundef -Wfloat-equal -Winline -Wunreachable-code -Wmissing-declarations -Wmissing-include-dirs -Wswitch-enum -Wswitch-default -Wmain -pedantic-errors -pedantic -w -Wfatal-errors -Wextra -Wall -Os -O3 -O2 -O1
 CFLAGS=-std=c11 -fexpensive-optimizations -Wshadow -Winit-self -Wredundant-decls -Wcast-align -Wundef -Wfloat-equal -Winline -Wunreachable-code -Wmissing-declarations -Wmissing-include-dirs -Wswitch-enum -Wswitch-default -Wmain -pedantic-errors -pedantic -w -Wfatal-errors -Wextra -Wall -g3 -O0
-LIBS=-lm -lpthread -lpq -lodbc -lmariadbclient -ldl -lclntsh
 ORACLE_DEP= -I/usr/include/oracle/19.6/client64/ -L/usr/lib/oracle/19.6/client64/lib/
+LIBS=-lm -lpthread -lpq -lodbc -lmariadbclient $(ORACLE_DEP) -ldl -lclntsh
 
 
-all: dcpam
+all: dcpam dcpam-populate
 
 
 db.o: src/db/db.c
@@ -38,6 +38,9 @@ sqlite.o: src/db/sqlite.c
 
 dcpam.o: src/dcpam.c
 	$(CC) -c src/dcpam.c $(CFLAGS) $(ORACLE_DEP)
+
+dcpam-populate.o: src/dcpam-populate.c
+	$(CC) -c src/dcpam-populate.c $(CFLAGS) $(ORACLE_DEP)
 
 log.o: src/utils/log.c
 	$(CC) -c src/utils/log.c $(CFLAGS)
@@ -83,4 +86,7 @@ strings.o: src/utils/strings.c
 
 dcpam: dcpam.o mysql.o mariadb.o odbc.o postgresql.o log.o time.o filesystem.o cJSON.o sqlite3.o memory.o db.o worker.o system.o extract.o stage.o transform.o load.o strings.o oracle.o sqlite.o
 	$(CC) mysql.o mariadb.o odbc.o postgresql.o dcpam.o log.o time.o filesystem.o cJSON.o sqlite3.o memory.o db.o worker.o system.o extract.o stage.o transform.o load.o strings.o oracle.o sqlite.o -o dcpam $(LIBS)
+
+dcpam-populate: dcpam-populate.o mysql.o mariadb.o odbc.o postgresql.o log.o time.o filesystem.o cJSON.o sqlite3.o memory.o db.o worker.o system.o extract.o stage.o transform.o load.o strings.o oracle.o sqlite.o
+	$(CC) mysql.o mariadb.o odbc.o postgresql.o dcpam-populate.o log.o time.o filesystem.o cJSON.o sqlite3.o memory.o db.o worker.o system.o extract.o stage.o transform.o load.o strings.o oracle.o sqlite.o -o dcpam-populate $(LIBS)
 	rm *.o
