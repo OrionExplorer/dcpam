@@ -13,6 +13,8 @@
 * DCPAM architecture is highly flexible and provides unlimited scaling possibilities.
 * DCPAM is multiplatform (Linux/Windows).
 
+![Main Overview](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/dwh.png)
+
 ##### Currently under active development
 * [x] Transform subprocess.
 
