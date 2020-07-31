@@ -19,7 +19,7 @@ extern int              app_terminated = 0;
 
 extern DATABASE_SYSTEM  DATABASE_SYSTEMS[ MAX_DATA_SYSTEMS ];
 extern int              DATABASE_SYSTEMS_COUNT;
-extern DCPAM_APP       APP;
+extern P_DCPAM_APP      P_APP;
 
 void DCPAM_free_configuration( void );
 
@@ -38,22 +38,22 @@ void app_terminate( void ) {
 
 void DCPAM_free_configuration( void ) {
 
-    DATABASE_SYSTEM_DB_free( &APP.DB );
+    DATABASE_SYSTEM_DB_free( &P_APP.DB );
 
-    if( APP.version != NULL ) { free( APP.version ); APP.version = NULL; }
-    if( APP.name != NULL ) { free( APP.name ); APP.name = NULL; }
+    if( P_APP.version != NULL ) { free( P_APP.version ); P_APP.version = NULL; }
+    if( P_APP.name != NULL ) { free( P_APP.name ); P_APP.name = NULL; }
 
-    for( int i = 0; i < APP.DATA_len; i++ ) {
-        if( APP.DATA[ i ].id != NULL ) { free( APP.DATA[ i ].id ); APP.DATA[ i ].id = NULL; }
-        if( APP.DATA[ i ].name != NULL ) { free( APP.DATA[ i ].name ); APP.DATA[ i ].name = NULL; }
-        if( APP.DATA[ i ].db_table_name != NULL ) { free( APP.DATA[ i ].db_table_name ); APP.DATA[ i ].db_table_name = NULL; }
-        if( APP.DATA[ i ].description != NULL ) { free( APP.DATA[ i ].description ); APP.DATA[ i ].description = NULL; }
+    for( int i = 0; i < P_APP.DATA_len; i++ ) {
+        if( P_APP.DATA[ i ].id != NULL ) { free( P_APP.DATA[ i ].id ); P_APP.DATA[ i ].id = NULL; }
+        if( P_APP.DATA[ i ].name != NULL ) { free( P_APP.DATA[ i ].name ); P_APP.DATA[ i ].name = NULL; }
+        if( P_APP.DATA[ i ].db_table_name != NULL ) { free( P_APP.DATA[ i ].db_table_name ); P_APP.DATA[ i ].db_table_name = NULL; }
+        if( P_APP.DATA[ i ].description != NULL ) { free( P_APP.DATA[ i ].description ); P_APP.DATA[ i ].description = NULL; }
 
-        for( int j = 0; j < APP.DATA[ i ].actions_len; j++ ) {
-            if( APP.DATA[ i ].actions[ j ].name != NULL ) { free( APP.DATA[ i ].actions[ j ].name ); APP.DATA[ i ].actions[ j ].name = NULL; }
-            if( APP.DATA[ i ].actions[ j ].description != NULL ) { free( APP.DATA[ i ].actions[ j ].description ); APP.DATA[ i ].actions[ j ].description = NULL; }
-            if( APP.DATA[ i ].actions[ j ].condition != NULL ) { free( APP.DATA[ i ].actions[ j ].condition ); APP.DATA[ i ].actions[ j ].condition = NULL; }
-            if( APP.DATA[ i ].actions[ j ].sql != NULL ) { free( APP.DATA[ i ].actions[ j ].sql ); APP.DATA[ i ].actions[ j ].sql = NULL; }
+        for( int j = 0; j < P_APP.DATA[ i ].actions_len; j++ ) {
+            if( P_APP.DATA[ i ].actions[ j ].name != NULL ) { free( P_APP.DATA[ i ].actions[ j ].name ); P_APP.DATA[ i ].actions[ j ].name = NULL; }
+            if( P_APP.DATA[ i ].actions[ j ].description != NULL ) { free( P_APP.DATA[ i ].actions[ j ].description ); P_APP.DATA[ i ].actions[ j ].description = NULL; }
+            if( P_APP.DATA[ i ].actions[ j ].condition != NULL ) { free( P_APP.DATA[ i ].actions[ j ].condition ); P_APP.DATA[ i ].actions[ j ].condition = NULL; }
+            if( P_APP.DATA[ i ].actions[ j ].sql != NULL ) { free( P_APP.DATA[ i ].actions[ j ].sql ); P_APP.DATA[ i ].actions[ j ].sql = NULL; }
         }
     }
 }
@@ -124,8 +124,8 @@ int DCPAM_load_configuration( const char* filename ) {
                 cfg_app_name = cJSON_GetObjectItem( cfg_app, "name" );
                 if( cfg_app_name ) {
                     size_t str_len = strlen( cfg_app_name->valuestring );
-                    APP.name = SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
-                    snprintf( APP.name, str_len + 1, cfg_app_name->valuestring );
+                    P_APP.name = SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
+                    snprintf( P_APP.name, str_len + 1, cfg_app_name->valuestring );
                 } else {
                     LOG_print( "ERROR: \"app.name\" key not found.\n" );
                     cJSON_Delete( config_json );
@@ -137,9 +137,9 @@ int DCPAM_load_configuration( const char* filename ) {
                 cfg_app_version = cJSON_GetObjectItem( cfg_app, "version" );
                 if( cfg_app_version ) {
                     size_t str_len = strlen( cfg_app_version->valuestring );
-                    APP.version = SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
-                    snprintf( APP.version, str_len + 1, cfg_app_version->valuestring );
-                    LOG_print( "v%s.\n", APP.version );
+                    P_APP.version = SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
+                    snprintf( P_APP.version, str_len + 1, cfg_app_version->valuestring );
+                    LOG_print( "v%s.\n", P_APP.version );
                 } else {
                     LOG_print( "ERROR: \"app.version\" key not found.\n" );
                     cJSON_Delete( config_json );
@@ -199,7 +199,7 @@ int DCPAM_load_configuration( const char* filename ) {
                         cfg_app_db_password->valuestring,
                         cfg_app_db_db->valuestring,
                         cfg_app_db_connection_string->valuestring,
-                        &APP.DB,
+                        &P_APP.DB,
                         cfg_app_db_name->valuestring,
                         TRUE
                     );
@@ -214,8 +214,8 @@ int DCPAM_load_configuration( const char* filename ) {
                 LOG_print( "[%s] Loading app.DATA item ", TIME_get_gmt() );
                 cfg_app_data = cJSON_GetObjectItem( cfg_app, "DATA" );
                 if( cfg_app_data ) {
-                    APP.DATA_len = cJSON_GetArraySize( cfg_app_data );
-                    for( int i = 0; i < APP.DATA_len; i++ ) {
+                    P_APP.DATA_len = cJSON_GetArraySize( cfg_app_data );
+                    for( int i = 0; i < P_APP.DATA_len; i++ ) {
                         cfg_app_data_item = cJSON_GetArrayItem( cfg_app_data, i );
 
                         cfg_app_data_item_id = cJSON_GetObjectItem( cfg_app_data_item, "id" );
@@ -227,9 +227,9 @@ int DCPAM_load_configuration( const char* filename ) {
                             return FALSE;
                         }
                         size_t str_len = strlen( cfg_app_data_item_id->valuestring );
-                        APP.DATA[ i ].id = SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
-                        snprintf( APP.DATA[ i ].id, str_len + 1, cfg_app_data_item_id->valuestring );
-                        LOG_print( "#%d: \"%s\"\n", i + 1, APP.DATA[ i ].id );
+                        P_APP.DATA[ i ].id = SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
+                        snprintf( P_APP.DATA[ i ].id, str_len + 1, cfg_app_data_item_id->valuestring );
+                        LOG_print( "#%d: \"%s\"\n", i + 1, P_APP.DATA[ i ].id );
 
                         cfg_app_data_item_name = cJSON_GetObjectItem( cfg_app_data_item, "name" );
                         if( cfg_app_data_item_name == NULL ) {
@@ -240,9 +240,9 @@ int DCPAM_load_configuration( const char* filename ) {
                             return FALSE;
                         }
                         size_t str_len2 = strlen( cfg_app_data_item_name->valuestring );
-                        APP.DATA[ i ].name = SAFECALLOC( str_len2 + 1, sizeof( char ), __FILE__, __LINE__ );
-                        snprintf( APP.DATA[ i ].name, str_len2+1, cfg_app_data_item_name->valuestring );
-                        LOG_print( "\t· name=\"%s\"\n", APP.DATA[ i ].name );
+                        P_APP.DATA[ i ].name = SAFECALLOC( str_len2 + 1, sizeof( char ), __FILE__, __LINE__ );
+                        snprintf( P_APP.DATA[ i ].name, str_len2+1, cfg_app_data_item_name->valuestring );
+                        LOG_print( "\t· name=\"%s\"\n", P_APP.DATA[ i ].name );
 
                         cfg_app_data_item_db_table_name = cJSON_GetObjectItem( cfg_app_data_item, "db_table_name" );
                         if( cfg_app_data_item_db_table_name == NULL ) {
@@ -253,20 +253,20 @@ int DCPAM_load_configuration( const char* filename ) {
                             return FALSE;
                         }
                         size_t str_len3 = strlen( cfg_app_data_item_db_table_name->valuestring );
-                        APP.DATA[ i ].db_table_name = SAFECALLOC( str_len3 + 1, sizeof( char ), __FILE__, __LINE__ );
-                        snprintf( APP.DATA[ i ].db_table_name, str_len3+1, cfg_app_data_item_db_table_name->valuestring );
-                        LOG_print( "\t· db_table_name=\"%s\"\n", APP.DATA[ i ].db_table_name );
+                        P_APP.DATA[ i ].db_table_name = SAFECALLOC( str_len3 + 1, sizeof( char ), __FILE__, __LINE__ );
+                        snprintf( P_APP.DATA[ i ].db_table_name, str_len3+1, cfg_app_data_item_db_table_name->valuestring );
+                        LOG_print( "\t· db_table_name=\"%s\"\n", P_APP.DATA[ i ].db_table_name );
 
-                        APP.DATA[ i ].columns_len = 0;
+                        P_APP.DATA[ i ].columns_len = 0;
                         cfg_app_data_actions_item_columns = cJSON_GetObjectItem( cfg_app_data_item, "columns" );
                         if( cfg_app_data_actions_item_columns ) {
                             LOG_print( "\t· columns=[" );
                             for( int k = 0; k < cJSON_GetArraySize( cfg_app_data_actions_item_columns ); k++ ) {
                                 cfg_app_data_actions_item_columns_name = cJSON_GetArrayItem( cfg_app_data_actions_item_columns, k );
-                                memset( APP.DATA[ i ].columns[ k ], 0, MAX_COLUMN_NAME_LEN );
-                                snprintf( APP.DATA[ i ].columns[ k ], MAX_COLUMN_NAME_LEN, "%s", cfg_app_data_actions_item_columns_name->valuestring );
+                                memset( P_APP.DATA[ i ].columns[ k ], 0, MAX_COLUMN_NAME_LEN );
+                                snprintf( P_APP.DATA[ i ].columns[ k ], MAX_COLUMN_NAME_LEN, "%s", cfg_app_data_actions_item_columns_name->valuestring );
                                 LOG_print( "\"%s\", ", cfg_app_data_actions_item_columns_name->valuestring );
-                                APP.DATA[ i ].columns_len++;
+                                P_APP.DATA[ i ].columns_len++;
                             }
                             LOG_print( "]\n" );
                         } else {
@@ -286,14 +286,14 @@ int DCPAM_load_configuration( const char* filename ) {
                             return FALSE;
                         }
                         size_t str_len4 = strlen( cfg_app_data_item_description->valuestring );
-                        APP.DATA[ i ].description = SAFECALLOC( str_len4 + 1, sizeof( char ), __FILE__, __LINE__ );
-                        snprintf( APP.DATA[ i ].description, str_len4+1, cfg_app_data_item_description->valuestring );
-                        LOG_print( "\t· description=\"%s\"\n", APP.DATA[ i ].description );
+                        P_APP.DATA[ i ].description = SAFECALLOC( str_len4 + 1, sizeof( char ), __FILE__, __LINE__ );
+                        snprintf( P_APP.DATA[ i ].description, str_len4+1, cfg_app_data_item_description->valuestring );
+                        LOG_print( "\t· description=\"%s\"\n", P_APP.DATA[ i ].description );
 
                         cfg_app_data_actions = cJSON_GetObjectItem( cfg_app_data_item, "actions" );
                         if( cfg_app_data_actions ) {
-                            APP.DATA[ i ].actions_len = cJSON_GetArraySize( cfg_app_data_actions );
-                            for( int j = 0; j < APP.DATA[ i ].actions_len; j++ ) {
+                            P_APP.DATA[ i ].actions_len = cJSON_GetArraySize( cfg_app_data_actions );
+                            for( int j = 0; j < P_APP.DATA[ i ].actions_len; j++ ) {
                                 cfg_app_data_actions_item = cJSON_GetArrayItem( cfg_app_data_actions, j );
 
                                 cfg_app_data_actions_item_name = cJSON_GetObjectItem( cfg_app_data_actions_item, "name" );
@@ -303,9 +303,9 @@ int DCPAM_load_configuration( const char* filename ) {
                                     return FALSE;
                                 }
                                 size_t str_len = strlen( cfg_app_data_actions_item_name->valuestring );
-                                APP.DATA[ i ].actions[ j ].name = SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
-                                snprintf( APP.DATA[ i ].actions[ j ].name, str_len + 1, cfg_app_data_actions_item_name->valuestring );
-                                LOG_print( "\t· action #%d: \"%s\"\n", j + 1, APP.DATA[ i ].actions[ j ].name );
+                                P_APP.DATA[ i ].actions[ j ].name = SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
+                                snprintf( P_APP.DATA[ i ].actions[ j ].name, str_len + 1, cfg_app_data_actions_item_name->valuestring );
+                                LOG_print( "\t· action #%d: \"%s\"\n", j + 1, P_APP.DATA[ i ].actions[ j ].name );
 
                                 cfg_app_data_actions_item_description = cJSON_GetObjectItem( cfg_app_data_actions_item, "description" );
                                 if( cfg_app_data_item_description == NULL ) {
@@ -314,9 +314,9 @@ int DCPAM_load_configuration( const char* filename ) {
                                     return FALSE;
                                 }
                                 size_t str_len2 = strlen( cfg_app_data_actions_item_description->valuestring );
-                                APP.DATA[ i ].actions[ j ].description = SAFECALLOC( str_len2 + 1, sizeof( char ), __FILE__, __LINE__ );
-                                snprintf( APP.DATA[ i ].actions[ j ].description, str_len2+1, cfg_app_data_actions_item_description->valuestring );
-                                LOG_print( "\t\t· description=\"%s\"\n", APP.DATA[ i ].actions[ j ].description );
+                                P_APP.DATA[ i ].actions[ j ].description = SAFECALLOC( str_len2 + 1, sizeof( char ), __FILE__, __LINE__ );
+                                snprintf( P_APP.DATA[ i ].actions[ j ].description, str_len2+1, cfg_app_data_actions_item_description->valuestring );
+                                LOG_print( "\t\t· description=\"%s\"\n", P_APP.DATA[ i ].actions[ j ].description );
 
                                 cfg_app_data_actions_item_type = cJSON_GetObjectItem( cfg_app_data_actions_item, "type" );
                                 if( cfg_app_data_actions_item_type == NULL ) {
@@ -324,8 +324,8 @@ int DCPAM_load_configuration( const char* filename ) {
                                     cJSON_Delete( config_json );
                                     return FALSE;
                                 }
-                                APP.DATA[ i ].actions[ j ].type = cfg_app_data_actions_item_type->valueint;
-                                LOG_print( "\t\t· type=\"%s\"\n", APP.DATA[ i ].actions[ j ].type == AT_READ ? "READ" : "WRITE" );
+                                P_APP.DATA[ i ].actions[ j ].type = cfg_app_data_actions_item_type->valueint;
+                                LOG_print( "\t\t· type=\"%s\"\n", P_APP.DATA[ i ].actions[ j ].type == AT_READ ? "READ" : "WRITE" );
 
                                 cfg_app_data_actions_item_internal = cJSON_GetObjectItem( cfg_app_data_actions_item, "internal" );
                                 if( cfg_app_data_actions_item_internal == NULL ) {
@@ -333,8 +333,8 @@ int DCPAM_load_configuration( const char* filename ) {
                                     cJSON_Delete( config_json );
                                     return FALSE;
                                 }
-                                APP.DATA[ i ].actions[ j ].internal = cfg_app_data_actions_item_internal->valueint;
-                                LOG_print( "\t\t· internal=%s\n", APP.DATA[ i ].actions[ j ].internal == 1 ? "TRUE" : "FALSE" );
+                                P_APP.DATA[ i ].actions[ j ].internal = cfg_app_data_actions_item_internal->valueint;
+                                LOG_print( "\t\t· internal=%s\n", P_APP.DATA[ i ].actions[ j ].internal == 1 ? "TRUE" : "FALSE" );
 
                                 cfg_app_data_actions_item_condition = cJSON_GetObjectItem( cfg_app_data_actions_item, "condition" );
                                 if( cfg_app_data_actions_item_condition == NULL ) {
@@ -343,9 +343,9 @@ int DCPAM_load_configuration( const char* filename ) {
                                     return FALSE;
                                 }
                                 size_t str_len3 = strlen( cfg_app_data_actions_item_condition->valuestring );
-                                APP.DATA[ i ].actions[ j ].condition = SAFECALLOC( str_len3 + 1, sizeof( char ), __FILE__, __LINE__ );
-                                snprintf( APP.DATA[ i ].actions[ j ].condition, str_len3+1, cfg_app_data_actions_item_condition->valuestring );
-                                LOG_print( "\t\t· condition=\"%s\"\n", APP.DATA[ i ].actions[ j ].condition );
+                                P_APP.DATA[ i ].actions[ j ].condition = SAFECALLOC( str_len3 + 1, sizeof( char ), __FILE__, __LINE__ );
+                                snprintf( P_APP.DATA[ i ].actions[ j ].condition, str_len3+1, cfg_app_data_actions_item_condition->valuestring );
+                                LOG_print( "\t\t· condition=\"%s\"\n", P_APP.DATA[ i ].actions[ j ].condition );
 
                                 cfg_app_data_actions_item_sql = cJSON_GetObjectItem( cfg_app_data_actions_item, "sql" );
                                 if( cfg_app_data_actions_item_sql == NULL ) {
@@ -354,9 +354,9 @@ int DCPAM_load_configuration( const char* filename ) {
                                     return FALSE;
                                 }
                                 size_t str_len4 = strlen( cfg_app_data_actions_item_sql->valuestring );
-                                APP.DATA[ i ].actions[ j ].sql = SAFECALLOC( str_len4 + 1, sizeof( char ), __FILE__, __LINE__ );
-                                strncpy( APP.DATA[ i ].actions[ j ].sql, cfg_app_data_actions_item_sql->valuestring, str_len4+1 );
-                                LOG_print( "\t\t· sql=\"%s\"\n", APP.DATA[ i ].actions[ j ].sql );
+                                P_APP.DATA[ i ].actions[ j ].sql = SAFECALLOC( str_len4 + 1, sizeof( char ), __FILE__, __LINE__ );
+                                strncpy( P_APP.DATA[ i ].actions[ j ].sql, cfg_app_data_actions_item_sql->valuestring, str_len4+1 );
+                                LOG_print( "\t\t· sql=\"%s\"\n", P_APP.DATA[ i ].actions[ j ].sql );
                             }
                         } else {
                             LOG_print( "ERROR: \"app.DATA[%d].actions\" key not found.\n", i );
@@ -409,11 +409,11 @@ int main( int argc, char** argv ) {
 
     memset( config_file, '\0', MAX_PATH_LENGTH );
     if( argc <= 1 ) {
-        snprintf( config_file, MAX_PATH_LENGTH, "config.json" );
+        snprintf( config_file, MAX_PATH_LENGTH, "populate_config.json" );
     } else if( argc >= 2 ) {
         if( strlen( argv[ 1 ] ) > MAX_PATH_LENGTH ) {
             LOG_print( "[%s] Notice: \"%s\" is not valid config file name.\n", TIME_get_gmt(), argv[ 1 ] );
-            snprintf( config_file, MAX_PATH_LENGTH, "config.json" );
+            snprintf( config_file, MAX_PATH_LENGTH, "populate_config.json" );
         } else {
             snprintf( config_file, MAX_PATH_LENGTH, "%s", argv[ 1 ] );
         }
