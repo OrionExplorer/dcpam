@@ -24,7 +24,6 @@
     * [Compilation (Linux)](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL#compilation-linux)
     * [Linux Dependencies](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL#linux-dependencies)
     * [Windows Dependencies](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL#windows-dependencies)
-* [Roadmap](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL#roadmap)
 
 ## Extraction, Staging and Change Data Capture
 Extraction is first major process. Main DCPAM ETL workflow consists of:
@@ -90,7 +89,7 @@ DCPAM ETL can handle data transformations with two different approaches:
 
 DCPAM ETL does not limit the number of transformations in any way. Furthermore, both local and remote approaches can be used simultaneously.
 
-Data transformation in DCPAM ETL workflow is not enforced.
+Data transformation in DCPAM ETL pipeline is not enforced.
 
 > **Information**: This section is incomplete. Transform process in DCPAM is still under development.
 
@@ -105,6 +104,10 @@ After Loading process is finished, it is possible to run set of SQL queries to p
 * Highly memory-efficient - no memory overhead caused by large queries:
   * each extracted record is instantly stored either in the Staging Area [[3]] or target tables directly by Extract process
   * each staged and transformed record is instantly loaded into target tables by Load process
+* Highly scalable:
+  * multiple instances of DCPAM ETL with different configuration can run on single server
+  * many of the DCPAM ETL instances can run across many servers
+  * data transformations can run across many servers
 * Staging Area:
   * fully supported, but not required in the ETL process
   * possibility to keep Staging Area outside the DCPAM Database
@@ -112,7 +115,7 @@ After Loading process is finished, it is possible to run set of SQL queries to p
   * fully supported, but not required in the ETL process
   * possibility to run outside the DCPAM server
 * Each Change Data Capture process operates independently in separate thread.
-* Multiple instances of DCPAM ETL with different configuration can run on single server.
+* 
 * Database support is provided with native libraries (see _Data sources_ and _Linux Dependencies_ in this document).
 * Simply put, DCPAM ETL allows to perform advanced data copy between technically different datasets.
 

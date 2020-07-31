@@ -10,13 +10,13 @@
 * DCPAM helps to create central repositories of integrated data from one or disparate sources [[1]].
 * DCPAM allows to perform advanced data copy between technically different datasets.
 * DCPAM goal is to deliver full range of Data Warehouse possibilities without need to include or hire more engineers for this specific task.
-* DCPAM architecture is highly flexible and provides unlimited scaling possibilities.
-* DCPAM is multiplatform (Linux/Windows).
+* DCPAM architecture is [highly flexible and provides unlimited scaling possibilities](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL#architecture-overview).
+* DCPAM is multiplatform (Linux/Windows/Cloud).
 
 ![Main Overview](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/dwh.png)
 
 ##### Currently under active development
-* [x] Transform subprocess.
+* [x] Transform subprocess in [DCPAM ETL](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL).
 
 ### Table of contents
 * [Business Value](https://github.com/OrionExplorer/dcpam#business-value)
@@ -32,19 +32,21 @@
 * [Roadmap](https://github.com/OrionExplorer/dcpam#roadmap)
 
 ## Business Value
+* [x] **Open source, cost-effective**.
+
 * [x] **DCPAM helps to create single central repository of integrated company data** - this provides a single integrated view of an organisation.
 
 * [x] **All informations are always up to date** - Managers can respond rapidly to ongoing changes in the business environment to make data-driven decisions.
 
 * [x] **Data structures are designed in a uniform way** - much less effort is needed to prepare and access requested informations.
 
-* [x] **No wide range of advanced technical knowledge is needed to make DCPAM work** - system configuration can be handled by any person with SQL background and analytic insight of company data.
+* [x] **No wide range of advanced technical knowledge is needed to make DCPAM work** - installation is straightforward and system configuration can be handled by any person with SQL background and analytic insight of company data.
 
 * [x] **Process gigabytes of data within minutes** - benefit of parallel execution.
 
 
 ### Extract, Transform and Load
-For detailed information about ETL and ELT, please refer to [DCPAM ETL documentation](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL).
+For detailed information about ETL and ELT pipelines, please refer to [DCPAM ETL documentation](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL).
 
 ## Data Warehouse with DCPAM
 
@@ -113,6 +115,7 @@ For detailed information about ETL and ELT, please refer to [DCPAM ETL documenta
   * Target tables
   * Indexes
   * Views
+* ...and much more.
 
 
 ## Technology
