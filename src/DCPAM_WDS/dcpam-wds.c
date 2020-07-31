@@ -105,7 +105,6 @@ int DCPAM_load_configuration( const char* filename ) {
     cJSON* array_value = NULL;
     int                         result = 0;
 
-    int                         tmp_columns_len = 0;
     char*                       config_string = NULL;
 
 
@@ -299,7 +298,7 @@ int DCPAM_load_configuration( const char* filename ) {
                                 LOG_print( "\t· action #%d: \"%s\"\n", j + 1, P_APP.DATA[ i ].actions[ j ].name );
 
                                 cfg_app_data_actions_item_description = cJSON_GetObjectItem( cfg_app_data_actions_item, "description" );
-                                if( cfg_app_data_item_description == NULL ) {
+                                if( cfg_app_data_actions_item_description == NULL ) {
                                     LOG_print( "ERROR: \"app.DATA[%d].actions[%d].description\" key not found.\n", i, j );
                                     cJSON_Delete( config_json );
                                     return FALSE;
