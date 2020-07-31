@@ -115,7 +115,6 @@ After Loading process is finished, it is possible to run set of SQL queries to p
   * fully supported, but not required in the ETL process
   * possibility to run outside the DCPAM server
 * Each Change Data Capture process operates independently in separate thread.
-* 
 * Database support is provided with native libraries (see _Data sources_ and _Linux Dependencies_ in this document).
 * Simply put, DCPAM ETL allows to perform advanced data copy between technically different datasets.
 
