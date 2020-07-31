@@ -79,7 +79,7 @@ For detailed information about ETL and ELT, please refer to [DCPAM ETL documenta
 * Access DCPAM Database with any system for analytics (Power BI, Tableau, Redash etc.).
 
 ### Elements yet to be covered by DCPAM
-* DCPAM BI web application:
+* DCPAM Access (BI web application):
   * SQL query exeution with grid-based results view.
   * Access to preconfigured queries.
   * Charts:
@@ -94,7 +94,7 @@ For detailed information about ETL and ELT, please refer to [DCPAM ETL documenta
   * Manage custom reports:
     * labels, charts and grids
     * user access control
-* DCPAM Access:
+* DCPAM WDS:
   * Caching mechanism for preconfigured queries.
 * DCPAM Admin web application:
   * Manage data sources.
