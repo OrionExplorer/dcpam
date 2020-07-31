@@ -13,6 +13,7 @@
 ### Table of contents
 * [Technology](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_WDS#technology)
     * [Data Sources](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_WDS#data-sources)
+    * [DCPAM Database](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_WDS#dcpam-database)
     * [Configuration](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_WDS#configuration)
     * [Compilation (Linux)](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_WDS#compilation-linux)
     * [Linux Dependencies](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_WDS#linux-dependencies)
@@ -35,8 +36,13 @@ DCPAM WDS development has just begun as the result of functionality extraction f
 
 **Please note that DCPAM WDS provides support for every ODBC-compliant data source**.
 
+### DCPAM Database
+DCPAM is designed to be as most customizable as it needs to be.
+Therefore every database listed above as available data source can also be used as DCPAM target database.
+
+
 ### Configuration
-For DCPAM WDS `wds_config.json` file is main configuration. It defines:
+For DCPAM WDS `wds_config.json` file is the main configuration. It defines:
 * DCPAM database.
 * Tables and views (see _app.DATA_), where integrated data is stored.
 
