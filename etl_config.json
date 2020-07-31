@@ -188,7 +188,7 @@
 			"comment#01" : "# Staging Area configuration.",
 			"comment#02" : "# This step is optional. Use it to define remote database where extracted data is stored.",
 			"comment#03" : "# When not set, DCPAM Database is used to store extracted data in transitional tables.",
-			"comment#00" : "##################################################################################################",
+			"comment#04" : "##################################################################################################",
 			"name" : "Staging Area",
 			"ip" : "127.0.0.1",
 			"port" : 5432,
