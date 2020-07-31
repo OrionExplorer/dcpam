@@ -59,7 +59,6 @@ void DCPAM_free_configuration( void ) {
 }
 
 int DCPAM_load_configuration( const char* filename ) {
-    FILE* file = NULL;
     cJSON* config_json = NULL;
 
     cJSON* cfg_app = NULL;
@@ -130,7 +129,6 @@ int DCPAM_load_configuration( const char* filename ) {
                     LOG_print( "ERROR: \"app.name\" key not found.\n" );
                     cJSON_Delete( config_json );
                     free( config_string ); config_string = NULL;
-                    fclose( file );
                     return FALSE;
                 }
 
@@ -144,7 +142,6 @@ int DCPAM_load_configuration( const char* filename ) {
                     LOG_print( "ERROR: \"app.version\" key not found.\n" );
                     cJSON_Delete( config_json );
                     free( config_string ); config_string = NULL;
-                    fclose( file );
                     return FALSE;
                 }
 
@@ -207,7 +204,6 @@ int DCPAM_load_configuration( const char* filename ) {
                     LOG_print( "ERROR: \"app.DB\" key not found.\n" );
                     cJSON_Delete( config_json );
                     free( config_string ); config_string = NULL;
-                    fclose( file );
                     return FALSE;
                 }
 
@@ -223,7 +219,6 @@ int DCPAM_load_configuration( const char* filename ) {
                             LOG_print( "ERROR: \"app.DATA[%d].id\" key not found.\n", i );
                             cJSON_Delete( config_json );
                             free( config_string ); config_string = NULL;
-                            fclose( file );
                             return FALSE;
                         }
                         size_t str_len = strlen( cfg_app_data_item_id->valuestring );
@@ -236,7 +231,6 @@ int DCPAM_load_configuration( const char* filename ) {
                             LOG_print( "ERROR: \"app.DATA[%d].name\" key not found.\n", i );
                             cJSON_Delete( config_json );
                             free( config_string ); config_string = NULL;
-                            fclose( file );
                             return FALSE;
                         }
                         size_t str_len2 = strlen( cfg_app_data_item_name->valuestring );
@@ -249,7 +243,6 @@ int DCPAM_load_configuration( const char* filename ) {
                             LOG_print( "ERROR: \"app.DATA[%d].db_table_name\" key not found.\n", i );
                             cJSON_Delete( config_json );
                             free( config_string ); config_string = NULL;
-                            fclose( file );
                             return FALSE;
                         }
                         size_t str_len3 = strlen( cfg_app_data_item_db_table_name->valuestring );
@@ -273,7 +266,6 @@ int DCPAM_load_configuration( const char* filename ) {
                             LOG_print( "ERROR: \"app.DATA[%d].columns\" key not found.\n", i );
                             cJSON_Delete( config_json );
                             free( config_string ); config_string = NULL;
-                            fclose( file );
                             return FALSE;
                         }
 
@@ -282,7 +274,6 @@ int DCPAM_load_configuration( const char* filename ) {
                             LOG_print( "ERROR: \"app.DATA[%d].description\" key not found.\n", i );
                             cJSON_Delete( config_json );
                             free( config_string ); config_string = NULL;
-                            fclose( file );
                             return FALSE;
                         }
                         size_t str_len4 = strlen( cfg_app_data_item_description->valuestring );
@@ -362,7 +353,6 @@ int DCPAM_load_configuration( const char* filename ) {
                             LOG_print( "ERROR: \"app.DATA[%d].actions\" key not found.\n", i );
                             cJSON_Delete( config_json );
                             free( config_string ); config_string = NULL;
-                            fclose( file );
                             return FALSE;
                         }
                     }
@@ -370,14 +360,12 @@ int DCPAM_load_configuration( const char* filename ) {
                     LOG_print( "ERROR: \"app.DATA\" key not found.\n " );
                     cJSON_Delete( config_json );
                     free( config_string ); config_string = NULL;
-                    fclose( file );
                     return FALSE;
                 }
             } else {
                 LOG_print( "ERROR: \"app\" key not found.\n " );
                 cJSON_Delete( config_json );
                 free( config_string ); config_string = NULL;
-                fclose( file );
                 return FALSE;
             }
 

@@ -65,7 +65,6 @@ void DCPAM_free_configuration( void ) {
 }
 
 int DCPAM_load_configuration( const char* filename ) {
-    FILE* file = NULL;
     cJSON* config_json = NULL;
 
     cJSON* cfg_app = NULL;
@@ -215,7 +214,6 @@ int DCPAM_load_configuration( const char* filename ) {
                     LOG_print( "ERROR: \"app.name\" key not found.\n" );
                     cJSON_Delete( config_json );
                     free( config_string ); config_string = NULL;
-                    fclose( file );
                     return FALSE;
                 }
 
@@ -238,7 +236,6 @@ int DCPAM_load_configuration( const char* filename ) {
                     LOG_print( "ERROR: \"app.version\" key not found.\n" );
                     cJSON_Delete( config_json );
                     free( config_string ); config_string = NULL;
-                    fclose( file );
                     return FALSE;
                 }
 
@@ -301,7 +298,6 @@ int DCPAM_load_configuration( const char* filename ) {
                     LOG_print( "ERROR: \"app.DB\" key not found.\n" );
                     cJSON_Delete( config_json );
                     free( config_string ); config_string = NULL;
-                    fclose( file );
                     return FALSE;
                 }
 
@@ -368,14 +364,12 @@ int DCPAM_load_configuration( const char* filename ) {
                     LOG_print( "NOTICE: \"app.STAGING\" key not found. Staging Area is local.\n" );
                     /*cJSON_Delete( config_json );
                     free( config_string ); config_string = NULL;
-                    fclose( file );
                     return FALSE;*/
                 }
             } else {
                 LOG_print( "ERROR: \"app\" key not found.\n " );
                 cJSON_Delete( config_json );
                 free( config_string ); config_string = NULL;
-                fclose( file );
                 return FALSE;
             }
 
@@ -390,7 +384,6 @@ int DCPAM_load_configuration( const char* filename ) {
                         LOG_print( "ERROR: \"system[%d].enabled\" key not found.\n", i );
                         cJSON_Delete( config_json );
                         free( config_string ); config_string = NULL;
-                        fclose( file );
                         return FALSE;
                     } else {
                         if( cfg_system_enabled->valueint == 0 ) {
@@ -403,7 +396,6 @@ int DCPAM_load_configuration( const char* filename ) {
                         LOG_print( "ERROR: \"system[%d].name\" key not found.\n", i );
                         cJSON_Delete( config_json );
                         free( config_string ); config_string = NULL;
-                        fclose( file );
                         return FALSE;
                     }
                     LOG_print( "\n[%s] Loading system data: %s.\n", TIME_get_gmt(), cfg_system_name->valuestring );
@@ -413,7 +405,6 @@ int DCPAM_load_configuration( const char* filename ) {
                         LOG_print( "ERROR: \"system[%d].DB\" key not found.\n", i );
                         cJSON_Delete( config_json );
                         free( config_string ); config_string = NULL;
-                        fclose( file );
                         return FALSE;
                     }
 
@@ -422,7 +413,6 @@ int DCPAM_load_configuration( const char* filename ) {
                         LOG_print( "ERROR: \"system[%d].DB.ip\" key not found.\n", i );
                         cJSON_Delete( config_json );
                         free( config_string ); config_string = NULL;
-                        fclose( file );
                         return FALSE;
                     }
                     cfg_system_port = cJSON_GetObjectItem( cfg_system_info, "port" );
@@ -430,7 +420,6 @@ int DCPAM_load_configuration( const char* filename ) {
                         LOG_print( "ERROR: \"system[%d].DB.port\" key not found.\n", i );
                         cJSON_Delete( config_json );
                         free( config_string ); config_string = NULL;
-                        fclose( file );
                         return FALSE;
                     }
                     cfg_system_driver = cJSON_GetObjectItem( cfg_system_info, "driver" );
@@ -438,7 +427,6 @@ int DCPAM_load_configuration( const char* filename ) {
                         LOG_print( "ERROR: \"system[%d].DB.driver\" key not found.\n", i );
                         cJSON_Delete( config_json );
                         free( config_string ); config_string = NULL;
-                        fclose( file );
                         return FALSE;
                     }
                     cfg_system_user = cJSON_GetObjectItem( cfg_system_info, "user" );
@@ -446,7 +434,6 @@ int DCPAM_load_configuration( const char* filename ) {
                         LOG_print( "ERROR: \"system[%d].DB.user\" key not found.\n", i );
                         cJSON_Delete( config_json );
                         free( config_string ); config_string = NULL;
-                        fclose( file );
                         return FALSE;
                     }
                     cfg_system_db = cJSON_GetObjectItem( cfg_system_info, "db" );
@@ -454,7 +441,6 @@ int DCPAM_load_configuration( const char* filename ) {
                         LOG_print( "ERROR: \"system[%d].DB.db\" key not found.\n", i );
                         cJSON_Delete( config_json );
                         free( config_string ); config_string = NULL;
-                        fclose( file );
                         return FALSE;
                     }
                     cfg_system_password = cJSON_GetObjectItem( cfg_system_info, "password" );
@@ -462,7 +448,6 @@ int DCPAM_load_configuration( const char* filename ) {
                         LOG_print( "ERROR: \"system[%d].DB.password\" key not found.\n", i );
                         cJSON_Delete( config_json );
                         free( config_string ); config_string = NULL;
-                        fclose( file );
                         return FALSE;
                     }
                     cfg_system_connection_string = cJSON_GetObjectItem( cfg_system_info, "connection_string" );
@@ -470,7 +455,6 @@ int DCPAM_load_configuration( const char* filename ) {
                         LOG_print( "ERROR: \"system[%d].DB.connection_string\" key not found.\n", i );
                         cJSON_Delete( config_json );
                         free( config_string ); config_string = NULL;
-                        fclose( file );
                         return FALSE;
                     }
 
@@ -479,7 +463,6 @@ int DCPAM_load_configuration( const char* filename ) {
                         LOG_print( "ERROR: \"system[%d].DB.name\" key not found.\n", i );
                         cJSON_Delete( config_json );
                         free( config_string ); config_string = NULL;
-                        fclose( file );
                         return FALSE;
                     }
 
@@ -491,7 +474,6 @@ int DCPAM_load_configuration( const char* filename ) {
                         LOG_print( "ERROR: \"system[%d].queries\" key not found.\n", i );
                         cJSON_Delete( config_json );
                         free( config_string ); config_string = NULL;
-                        fclose( file );
                         return FALSE;
                     }
                     for( int j = 0; j < cJSON_GetArraySize( cfg_system_queries_array ); j++ ) {
@@ -504,7 +486,6 @@ int DCPAM_load_configuration( const char* filename ) {
                             LOG_print( "ERROR: \"system[%d].queries[%d].name\" key not found.\n", i, j );
                             cJSON_Delete( config_json );
                             free( config_string ); config_string = NULL;
-                            fclose( file );
                             return FALSE;
                         }
 
@@ -513,7 +494,6 @@ int DCPAM_load_configuration( const char* filename ) {
                             LOG_print( "ERROR: \"system[%d].queries[%d].etl\" key not found.\n", i, j );
                             cJSON_Delete( config_json );
                             free( config_string ); config_string = NULL;
-                            fclose( file );
                             return FALSE;
                         }
                         /*
@@ -581,7 +561,6 @@ int DCPAM_load_configuration( const char* filename ) {
                             LOG_print( "ERROR: \"system[%d].queries[%d].etl.extract\" key not found.\n", i, j );
                             cJSON_Delete( config_json );
                             free( config_string ); config_string = NULL;
-                            fclose( file );
                             return FALSE;
                         }
                         /*
@@ -592,7 +571,6 @@ int DCPAM_load_configuration( const char* filename ) {
                             LOG_print( "ERROR: \"system[%d].queries[%d].etl.extract.inserted\" key not found.\n", i, j );
                             cJSON_Delete( config_json );
                             free( config_string ); config_string = NULL;
-                            fclose( file );
                             return FALSE;
                         }
                         /*
@@ -603,7 +581,6 @@ int DCPAM_load_configuration( const char* filename ) {
                             LOG_print( "ERROR: \"system[%d].queries[%d].etl.extract.inserted.primary_db\" key not found.\n", i, j );
                             cJSON_Delete( config_json );
                             free( config_string ); config_string = NULL;
-                            fclose( file );
                             return FALSE;
                         }
                         size_t str_len = strlen( cfg_system_query_item_etl_extract_inserted_primary_db->valuestring );
@@ -623,7 +600,6 @@ int DCPAM_load_configuration( const char* filename ) {
                             LOG_print( "ERROR: \"system[%d].queries[%d].etl.extract.inserted.primary_db_sql\" key not found.\n", i, j );
                             cJSON_Delete( config_json );
                             free( config_string ); config_string = NULL;
-                            fclose( file );
                             return FALSE;
                         }
                         size_t str_len2 = strlen( cfg_system_query_item_etl_extract_inserted_primary_db_sql->valuestring );
@@ -642,7 +618,6 @@ int DCPAM_load_configuration( const char* filename ) {
                             LOG_print( "ERROR: \"system[%d].queries[%d].etl.extract.inserted.secondary_db\" key not found.\n", i, j );
                             cJSON_Delete( config_json );
                             free( config_string ); config_string = NULL;
-                            fclose( file );
                             return FALSE;
                         }
                         size_t str_len3 = strlen( cfg_system_query_item_etl_extract_inserted_secondary_db->valuestring );
@@ -662,7 +637,6 @@ int DCPAM_load_configuration( const char* filename ) {
                             LOG_print( "ERROR: \"system[%d].queries[%d].etl.extract.inserted.secondary_db_sql\" key not found.\n", i, j );
                             cJSON_Delete( config_json );
                             free( config_string ); config_string = NULL;
-                            fclose( file );
                             return FALSE;
                         }
                         size_t str_len4 = strlen( cfg_system_query_item_etl_extract_inserted_secondary_db_sql->valuestring );
@@ -682,7 +656,6 @@ int DCPAM_load_configuration( const char* filename ) {
                             LOG_print( "ERROR: \"system[%d].queries[%d].etl.extract.modified\" key not found.\n", i, j );
                             cJSON_Delete( config_json );
                             free( config_string ); config_string = NULL;
-                            fclose( file );
                             return FALSE;
                         }
                         /*
@@ -693,7 +666,6 @@ int DCPAM_load_configuration( const char* filename ) {
                             LOG_print( "ERROR: \"system[%d].queries[%d].etl.extract.modified.primary_db\" key not found.\n", i, j );
                             cJSON_Delete( config_json );
                             free( config_string ); config_string = NULL;
-                            fclose( file );
                             return FALSE;
                         }
                         size_t str_len5 = strlen( cfg_system_query_item_etl_extract_modified_primary_db->valuestring );
@@ -713,7 +685,6 @@ int DCPAM_load_configuration( const char* filename ) {
                             LOG_print( "ERROR: \"system[%d].queries[%d].etl.extract.modified.primary_db_sql\" key not found.\n", i, j );
                             cJSON_Delete( config_json );
                             free( config_string ); config_string = NULL;
-                            fclose( file );
                             return FALSE;
                         }
                         size_t str_len6 = strlen( cfg_system_query_item_etl_extract_modified_primary_db_sql->valuestring );
@@ -733,7 +704,6 @@ int DCPAM_load_configuration( const char* filename ) {
                             LOG_print( "ERROR: \"system[%d].queries[%d].etl.extract.modified.secondary_db\" key not found.\n", i, j );
                             cJSON_Delete( config_json );
                             free( config_string ); config_string = NULL;
-                            fclose( file );
                             return FALSE;
                         }
                         size_t str_len7 = strlen( cfg_system_query_item_etl_extract_modified_secondary_db->valuestring );
@@ -753,7 +723,6 @@ int DCPAM_load_configuration( const char* filename ) {
                             LOG_print( "ERROR: \"system[%d].queries[%d].etl.extract.modified.secondary_db_sql\" key not found.\n", i, j );
                             cJSON_Delete( config_json );
                             free( config_string ); config_string = NULL;
-                            fclose( file );
                             return FALSE;
                         }
                         size_t str_len8 = strlen( cfg_system_query_item_etl_extract_modified_secondary_db_sql->valuestring );
@@ -773,7 +742,6 @@ int DCPAM_load_configuration( const char* filename ) {
                             LOG_print( "ERROR: \"system[%d].queries[%d].etl.extract.deleted\" key not found.\n", i, j );
                             cJSON_Delete( config_json );
                             free( config_string ); config_string = NULL;
-                            fclose( file );
                             return FALSE;
                         }
                         /*
@@ -784,7 +752,6 @@ int DCPAM_load_configuration( const char* filename ) {
                             LOG_print( "ERROR: \"system[%d].queries[%d].etl.extract.deleted.primary_db\" key not found.\n", i, j );
                             cJSON_Delete( config_json );
                             free( config_string ); config_string = NULL;
-                            fclose( file );
                             return FALSE;
                         }
                         size_t str_len9 = strlen( cfg_system_query_item_etl_extract_deleted_primary_db->valuestring );
@@ -803,7 +770,6 @@ int DCPAM_load_configuration( const char* filename ) {
                             LOG_print( "ERROR: \"system[%d].queries[%d].etl.extract.deleted.primary_db_sql\" key not found.\n", i, j );
                             cJSON_Delete( config_json );
                             free( config_string ); config_string = NULL;
-                            fclose( file );
                             return FALSE;
                         }
                         size_t str_len10 = strlen( cfg_system_query_item_etl_extract_deleted_primary_db_sql->valuestring );
@@ -822,7 +788,6 @@ int DCPAM_load_configuration( const char* filename ) {
                             LOG_print( "ERROR: \"system[%d].queries[%d].etl.extract.deleted.secondary_db\" key not found.\n", i, j );
                             cJSON_Delete( config_json );
                             free( config_string ); config_string = NULL;
-                            fclose( file );
                             return FALSE;
                         }
                         size_t str_len11 = strlen( cfg_system_query_item_etl_extract_deleted_secondary_db->valuestring );
@@ -842,7 +807,6 @@ int DCPAM_load_configuration( const char* filename ) {
                             LOG_print( "ERROR: \"system[%d].queries[%d].etl.extract.deleted.secondary_db_sql\" key not found.\n", i, j );
                             cJSON_Delete( config_json );
                             free( config_string ); config_string = NULL;
-                            fclose( file );
                             return FALSE;
                         }
                         size_t str_len12 = strlen( cfg_system_query_item_etl_extract_deleted_secondary_db_sql->valuestring );
@@ -873,7 +837,6 @@ int DCPAM_load_configuration( const char* filename ) {
                                 LOG_print( "ERROR: \"system[%d].queries[%d].etl.stage.inserted\" key not found.\n", i, j );
                                 cJSON_Delete( config_json );
                                 free( config_string ); config_string = NULL;
-                                fclose( file );
                                 return FALSE;
                             }
                             /*
@@ -884,7 +847,6 @@ int DCPAM_load_configuration( const char* filename ) {
                                 LOG_print( "ERROR: \"system[%d].queries[%d].etl.stage.inserted.sql\" key not found.\n", i, j );
                                 cJSON_Delete( config_json );
                                 free( config_string ); config_string = NULL;
-                                fclose( file );
                                 return FALSE;
                             }
                             size_t str_len14 = strlen( cfg_system_query_item_etl_stage_inserted_sql->valuestring );
@@ -908,7 +870,6 @@ int DCPAM_load_configuration( const char* filename ) {
                                 LOG_print( "ERROR: \"system[%d].queries[%d].etl.stage.inserted.extracted_values\" key not found.\n", i, j );
                                 cJSON_Delete( config_json );
                                 free( config_string ); config_string = NULL;
-                                fclose( file );
                                 return FALSE;
                             }
                             for( int k = 0; k < cJSON_GetArraySize( cfg_system_query_item_etl_stage_inserted_extracted_values_array ); k++ ) {
@@ -924,7 +885,6 @@ int DCPAM_load_configuration( const char* filename ) {
                                 LOG_print( "ERROR: \"system[%d].queries[%d].etl.stage.deleted\" key not found.\n", i, j );
                                 cJSON_Delete( config_json );
                                 free( config_string ); config_string = NULL;
-                                fclose( file );
                                 return FALSE;
                             }
                             /*
@@ -935,7 +895,6 @@ int DCPAM_load_configuration( const char* filename ) {
                                 LOG_print( "ERROR: \"system[%d].queries[%d].etl.stage.deleted.sql\" key not found.\n", i, j );
                                 cJSON_Delete( config_json );
                                 free( config_string ); config_string = NULL;
-                                fclose( file );
                                 return FALSE;
                             }
                             size_t str_len = strlen( cfg_system_query_item_etl_stage_deleted_sql->valuestring );
@@ -954,7 +913,6 @@ int DCPAM_load_configuration( const char* filename ) {
                                 LOG_print( "ERROR: \"system[%d].queries[%d].etl.stage.deleted.extracted_values\" key not found.\n", i, j );
                                 cJSON_Delete( config_json );
                                 free( config_string ); config_string = NULL;
-                                fclose( file );
                                 return FALSE;
                             }
                             for( int k = 0; k < MAX_CDC_COLUMNS; k++ ) {
@@ -974,7 +932,6 @@ int DCPAM_load_configuration( const char* filename ) {
                                 LOG_print( "ERROR: \"system[%d].queries[%d].etl.stage.modified\" key not found.\n", i, j );
                                 cJSON_Delete( config_json );
                                 free( config_string ); config_string = NULL;
-                                fclose( file );
                                 return FALSE;
                             }
                             /*
@@ -985,7 +942,6 @@ int DCPAM_load_configuration( const char* filename ) {
                                 LOG_print( "ERROR: \"system[%d].queries[%d].etl.stage.modified.sql\" key not found.\n", i, j );
                                 cJSON_Delete( config_json );
                                 free( config_string ); config_string = NULL;
-                                fclose( file );
                                 return FALSE;
                             }
                             size_t str_len2 = strlen( cfg_system_query_item_etl_stage_modified_sql->valuestring );
@@ -1004,7 +960,6 @@ int DCPAM_load_configuration( const char* filename ) {
                                 LOG_print( "ERROR: \"system[%d].queries[%d].etl.stage.modified.extracted_values\" key not found.\n", i, j );
                                 cJSON_Delete( config_json );
                                 free( config_string ); config_string = NULL;
-                                fclose( file );
                                 return FALSE;
                             }
                             for( int k = 0; k < MAX_CDC_COLUMNS; k++ ) {
@@ -1039,7 +994,6 @@ int DCPAM_load_configuration( const char* filename ) {
                                 LOG_print( "ERROR: \"system[%d].queries[%d].etl.transform.inserted\" key not found.\n", i, j );
                                 cJSON_Delete( config_json );
                                 free( config_string ); config_string = NULL;
-                                fclose( file );
                                 return FALSE;
                             }
                             tmp_cdc->transform->inserted_count = cJSON_GetArraySize( cfg_system_query_item_etl_transform_inserted_array );
@@ -1085,7 +1039,6 @@ int DCPAM_load_configuration( const char* filename ) {
                                 LOG_print( "ERROR: \"system[%d].queries[%d].etl.transform.deleted\" key not found.\n", i, j );
                                 cJSON_Delete( config_json );
                                 free( config_string ); config_string = NULL;
-                                fclose( file );
                                 return FALSE;
                             }
                             tmp_cdc->transform->deleted_count = cJSON_GetArraySize( cfg_system_query_item_etl_transform_deleted_array );
@@ -1132,7 +1085,6 @@ int DCPAM_load_configuration( const char* filename ) {
                                 LOG_print( "ERROR: \"system[%d].queries[%d].etl.transform.modified\" key not found.\n", i, j );
                                 cJSON_Delete( config_json );
                                 free( config_string ); config_string = NULL;
-                                fclose( file );
                                 return FALSE;
                             }
                             tmp_cdc->transform->modified_count = cJSON_GetArraySize( cfg_system_query_item_etl_transform_modified_array );
@@ -1180,7 +1132,6 @@ int DCPAM_load_configuration( const char* filename ) {
                             LOG_print( "ERROR: \"system[%d].queries[%d].etl.load\" key not found.\n", i, j );
                             cJSON_Delete( config_json );
                             free( config_string ); config_string = NULL;
-                            fclose( file );
                             return FALSE;
                         }
                         /*
@@ -1191,7 +1142,6 @@ int DCPAM_load_configuration( const char* filename ) {
                             LOG_print( "ERROR: \"system[%d].queries[%d].etl.load.inserted\" key not found.\n", i, j );
                             cJSON_Delete( config_json );
                             free( config_string ); config_string = NULL;
-                            fclose( file );
                             return FALSE;
                         }
                         /*
@@ -1202,7 +1152,6 @@ int DCPAM_load_configuration( const char* filename ) {
                             LOG_print( "ERROR: \"system[%d].queries[%d].etl.load.inserted.input_data_sql\" key not found.\n", i, j );
                             cJSON_Delete( config_json );
                             free( config_string ); config_string = NULL;
-                            fclose( file );
                             return FALSE;
                         }
                         size_t str_len14 = strlen( cfg_system_query_item_etl_load_inserted_input_data_sql->valuestring );
@@ -1222,7 +1171,6 @@ int DCPAM_load_configuration( const char* filename ) {
                             LOG_print( "ERROR: \"system[%d].queries[%d].etl.load.inserted.output_data_sql\" key not found.\n", i, j );
                             cJSON_Delete( config_json );
                             free( config_string ); config_string = NULL;
-                            fclose( file );
                             return FALSE;
                         }
                         size_t str_len15 = strlen( cfg_system_query_item_etl_load_inserted_output_data_sql->valuestring );
@@ -1247,7 +1195,6 @@ int DCPAM_load_configuration( const char* filename ) {
                             LOG_print( "ERROR: \"system[%d].queries[%d].etl.load.inserted.extracted_values\" key not found.\n", i, j );
                             cJSON_Delete( config_json );
                             free( config_string ); config_string = NULL;
-                            fclose( file );
                             return FALSE;
                         }
                         for( int k = 0; k < cJSON_GetArraySize( cfg_system_query_item_etl_load_inserted_extracted_values_array ); k++ ) {
@@ -1263,7 +1210,6 @@ int DCPAM_load_configuration( const char* filename ) {
                             LOG_print( "ERROR: \"system[%d].queries[%d].etl.load.deleted\" key not found.\n", i, j );
                             cJSON_Delete( config_json );
                             free( config_string ); config_string = NULL;
-                            fclose( file );
                             return FALSE;
                         }
                         /*
@@ -1274,7 +1220,6 @@ int DCPAM_load_configuration( const char* filename ) {
                             LOG_print( "ERROR: \"system[%d].queries[%d].etl.load.deleted.input_data_sql\" key not found.\n", i, j );
                             cJSON_Delete( config_json );
                             free( config_string ); config_string = NULL;
-                            fclose( file );
                             return FALSE;
                         }
                         size_t str_len16 = strlen( cfg_system_query_item_etl_load_deleted_input_data_sql->valuestring );
@@ -1293,7 +1238,6 @@ int DCPAM_load_configuration( const char* filename ) {
                             LOG_print( "ERROR: \"system[%d].queries[%d].etl.load.deleted.output_data_sql\" key not found.\n", i, j );
                             cJSON_Delete( config_json );
                             free( config_string ); config_string = NULL;
-                            fclose( file );
                             return FALSE;
                         }
                         size_t str_len17 = strlen( cfg_system_query_item_etl_load_deleted_output_data_sql->valuestring );
@@ -1312,7 +1256,6 @@ int DCPAM_load_configuration( const char* filename ) {
                             LOG_print( "ERROR: \"system[%d].queries[%d].etl.load.deleted.extracted_values\" key not found.\n", i, j );
                             cJSON_Delete( config_json );
                             free( config_string ); config_string = NULL;
-                            fclose( file );
                             return FALSE;
                         }
                         for( int k = 0; k < MAX_CDC_COLUMNS; k++ ) {
@@ -1332,7 +1275,6 @@ int DCPAM_load_configuration( const char* filename ) {
                             LOG_print( "ERROR: \"system[%d].queries[%d].etl.load.modified\" key not found.\n", i, j );
                             cJSON_Delete( config_json );
                             free( config_string ); config_string = NULL;
-                            fclose( file );
                             return FALSE;
                         }
                         /*
@@ -1343,7 +1285,6 @@ int DCPAM_load_configuration( const char* filename ) {
                             LOG_print( "ERROR: \"system[%d].queries[%d].etl.load.modified.input_data_sql\" key not found.\n", i, j );
                             cJSON_Delete( config_json );
                             free( config_string ); config_string = NULL;
-                            fclose( file );
                             return FALSE;
                         }
                         size_t str_len18 = strlen( cfg_system_query_item_etl_load_modified_input_data_sql->valuestring );
@@ -1362,7 +1303,6 @@ int DCPAM_load_configuration( const char* filename ) {
                             LOG_print( "ERROR: \"system[%d].queries[%d].etl.load.modified.output_data_sql\" key not found.\n", i, j );
                             cJSON_Delete( config_json );
                             free( config_string ); config_string = NULL;
-                            fclose( file );
                             return FALSE;
                         }
                         size_t str_len19 = strlen( cfg_system_query_item_etl_load_modified_output_data_sql->valuestring );
@@ -1381,7 +1321,6 @@ int DCPAM_load_configuration( const char* filename ) {
                             LOG_print( "ERROR: \"system[%d].queries[%d].etl.load.modified.extracted_values\" key not found.\n", i, j );
                             cJSON_Delete( config_json );
                             free( config_string ); config_string = NULL;
-                            fclose( file );
                             return FALSE;
                         }
                         for( int k = 0; k < MAX_CDC_COLUMNS; k++ ) {
@@ -1399,7 +1338,6 @@ int DCPAM_load_configuration( const char* filename ) {
                             LOG_print( "ERROR: \"system[%d].queries[%d].data_types\" key not found.\n", i, j );
                             cJSON_Delete( config_json );
                             free( config_string ); config_string = NULL;
-                            fclose( file );
                             return FALSE;
                         }
 

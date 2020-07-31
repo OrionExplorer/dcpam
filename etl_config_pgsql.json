@@ -153,10 +153,10 @@
 					}
 				},
 
-				"comment#00" : "##################################################################################################",
-				"comment#01" : "# PostCDC Actions configuration. Use it to perform any set of queries in DCPAM Database after ETL",
-				"comment#02" : "# process finished (ie. to clear the Staging Area).",
-				"comment#03" : "##################################################################################################",
+				"comment#04" : "##################################################################################################",
+				"comment#05" : "# PostCDC Actions configuration. Use it to perform any set of queries in DCPAM Database after ETL",
+				"comment#06" : "# process finished (ie. to clear the Staging Area).",
+				"comment#07" : "##################################################################################################",
 				"post_actions" : [
 					"DELETE FROM stage_accounted_time"
 				]
