@@ -2,15 +2,15 @@
 #include <stdio.h>
 #include <signal.h>
 #include <string.h>
-#include "include/utils/log.h"
-#include "include/core/db/worker.h"
-#include "include/core/schema.h"
-#include "include/third-party/cJSON.h"
-#include "include/utils/memory.h"
-#include "include/utils/time.h"
-#include "include/utils/strings.h"
-#include "include/utils/filesystem.h"
-#include "include/core/db/system.h"
+#include "../include/utils/log.h"
+#include "../include/core/db/worker.h"
+#include "../include/core/schema.h"
+#include "../include/third-party/cJSON.h"
+#include "../include/utils/memory.h"
+#include "../include/utils/time.h"
+#include "../include/utils/strings.h"
+#include "../include/utils/filesystem.h"
+#include "../include/core/db/system.h"
 
 #pragma warning( disable : 6031 )
 
@@ -1497,11 +1497,11 @@ int main( int argc, char** argv ) {
 
     memset( config_file, '\0', MAX_PATH_LENGTH );
     if( argc <= 1 ) {
-        snprintf( config_file, MAX_PATH_LENGTH, "config.json" );
+        snprintf( config_file, MAX_PATH_LENGTH, "etl_config.json" );
     } else if( argc >= 2 ) {
         if( strlen( argv[ 1 ] ) > MAX_PATH_LENGTH ) {
             LOG_print( "[%s] Notice: \"%s\" is not valid config file name.\n", TIME_get_gmt(), argv[ 1 ] );
-            snprintf( config_file, MAX_PATH_LENGTH, "config.json" );
+            snprintf( config_file, MAX_PATH_LENGTH, "etl_config.json" );
         } else {
             snprintf( config_file, MAX_PATH_LENGTH, "%s", argv[ 1 ] );
         }
