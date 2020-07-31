@@ -85,11 +85,14 @@
 			* [ ] Socket server application capable to deal with many connected clients.
 			* [ ] Use of `popen` to call external script/application.
 * [x] Allow DCPAM to run once and exit (for scheduled CRON tasks).
-* [ ] `app.DATA` from `config.json` should be accessed by new subsystem - DCPAM Populate:
+* [x] `app.DATA` from `config.json` should be accessed by new subsystem - DCPAM Populate:
 	* DCPAM Populate is dedicated memory caching system for DCPAM BI backend.
 	* All the caching is handled by DCPAM Populate.
-	* [ ] Remove `app.DATA` handlers from DCPAM.
-	* [ ] Remove `app.DATA` from `config.json`.
+	* [x] Remove `app.DATA` handlers from DCPAM.
+	* [x] Remove `app.DATA` from `config.json`.
+	* [x] Create `app.DATA` handlers in DCPAM Populate.
+	* [x] Create `app.DATA` in `populate_config.json`.
+* [ ] DCPAM must not know about P_DCPAM_APP and DPCAM Populate about DCPAM_APP.
 * [ ] ETL process interval can vary between system[].queries[].
 * [ ] Move DCPAM configuration to database:
 	* [ ] Table schemas based on `config.json`.
