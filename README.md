@@ -42,7 +42,7 @@
 
 
 ### Extract, Transform and Load
-For detailed information about ETL and ELT, please refer to [DCPAM ETL documentation](https://github.com/OrionExplorer/dcpam/src/DCPAM_ETL).
+For detailed information about ETL and ELT, please refer to [DCPAM ETL documentation](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL).
 
 ## Data Warehouse with DCPAM
 

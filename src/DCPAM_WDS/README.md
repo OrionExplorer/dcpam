@@ -11,12 +11,12 @@
 * [ ] DCPAM WDS development is about to begin.
 
 ### Table of contents
-* [Technology](https://github.com/OrionExplorer/dcpam/src/DCPAM_WDS#technology)
-    * [Data Sources](https://github.com/OrionExplorer/dcpam/src/DCPAM_WDS#data-sources)
-    * [Configuration](https://github.com/OrionExplorer/dcpam/src/DCPAM_WDS#configuration)
-    * [Compilation (Linux)](https://github.com/OrionExplorer/dcpam/src/DCPAM_WDS#compilation-linux)
-    * [Linux Dependencies](https://github.com/OrionExplorer/dcpam/src/DCPAM_WDS#linux-dependencies)
-    * [Windows Dependencies](https://github.com/OrionExplorer/dcpam/src/DCPAM_WDS#windows-dependencies)
+* [Technology](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_WDS#technology)
+    * [Data Sources](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_WDS#data-sources)
+    * [Configuration](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_WDS#configuration)
+    * [Compilation (Linux)](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_WDS#compilation-linux)
+    * [Linux Dependencies](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_WDS#linux-dependencies)
+    * [Windows Dependencies](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_WDS#windows-dependencies)
 
 ## Technology
 

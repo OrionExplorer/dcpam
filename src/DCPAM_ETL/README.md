@@ -11,20 +11,20 @@
 * [x] Transform subprocess.
 
 ### Table of contents
-* [Extraction, Staging and Change Data Capture](https://github.com/OrionExplorer/dcpam/src/DCPAM_ETL#extraction-staging-and-change-data-capture)
-* [Transformation](https://github.com/OrionExplorer/dcpam/src/DCPAM_ETL#transformation)
-* [Loading](https://github.com/OrionExplorer/dcpam/src/DCPAM_ETL#loading)
-* [Technology](https://github.com/OrionExplorer/dcpam/src/DCPAM_ETL#technology)
-    * [Architecture Overview](https://github.com/OrionExplorer/dcpam/src/DCPAM_ETL#architecture-overview)
-    * [ETL and Change Data Capture](https://github.com/OrionExplorer/dcpam/src/DCPAM_ETL#etl-and-change-data-capture)
-    * [Parallel Execution](https://github.com/OrionExplorer/dcpam/src/DCPAM_ETL#parallel-execution)
-    * [Data Sources](https://github.com/OrionExplorer/dcpam/src/DCPAM_ETL#data-sources)
-    * [DCPAM Database](https://github.com/OrionExplorer/dcpam/src/DCPAM_ETL#dcpam-database)
-    * [Configuration](https://github.com/OrionExplorer/dcpam/src/DCPAM_ETL#configuration)
-    * [Compilation (Linux)](https://github.com/OrionExplorer/dcpam/src/DCPAM_ETL#compilation-linux)
-    * [Linux Dependencies](https://github.com/OrionExplorer/dcpam/src/DCPAM_ETL#linux-dependencies)
-    * [Windows Dependencies](https://github.com/OrionExplorer/dcpam/src/DCPAM_ETL#windows-dependencies)
-* [Roadmap](https://github.com/OrionExplorer/dcpam/src/DCPAM_ETL#roadmap)
+* [Extraction, Staging and Change Data Capture](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL#extraction-staging-and-change-data-capture)
+* [Transformation](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL#transformation)
+* [Loading](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL#loading)
+* [Technology](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL#technology)
+    * [Architecture Overview](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL#architecture-overview)
+    * [ETL and Change Data Capture](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL#etl-and-change-data-capture)
+    * [Parallel Execution](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL#parallel-execution)
+    * [Data Sources](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL#data-sources)
+    * [DCPAM Database](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL#dcpam-database)
+    * [Configuration](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL#configuration)
+    * [Compilation (Linux)](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL#compilation-linux)
+    * [Linux Dependencies](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL#linux-dependencies)
+    * [Windows Dependencies](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL#windows-dependencies)
+* [Roadmap](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL#roadmap)
 
 ## Extraction, Staging and Change Data Capture
 Extraction is first major process. Main DCPAM ETL workflow consists of:
