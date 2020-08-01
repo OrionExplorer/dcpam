@@ -123,7 +123,7 @@ For detailed information about data extraction (ETL and ELT pipelines), please r
 
 ## Technology
 ### DCPAM Components
-  * [DCPAM ETL](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL) - main ETL engine.
+  * [DCPAM ETL](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL) - main ETL/ELT engine.
   * [DCPAM WDS](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_WDS) - warehouse data server with memory caching system.
   * DCPAM Construct - system administration.
   * DCPAM Access - Bussiness Inteligence web application.
