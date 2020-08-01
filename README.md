@@ -15,9 +15,6 @@
 
 ![Main Overview](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/dwh.png)
 
-##### Currently under active development
-* [x] Transform subprocess in [DCPAM ETL](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL).
-
 ### Table of contents
 * [Business Value](https://github.com/OrionExplorer/dcpam#business-value)
     * [Extract, Transform and Load](https://github.com/OrionExplorer/dcpam#extract-transform-and-load)
@@ -46,7 +43,7 @@
 
 
 ### Extract, Transform and Load
-For detailed information about ETL and ELT pipelines, please refer to [DCPAM ETL documentation](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL).
+For detailed information about data extraction (ETL and ELT pipelines), please refer to [DCPAM ETL documentation](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL).
 
 ## Data Warehouse with DCPAM
 
@@ -78,6 +75,8 @@ For detailed information about ETL and ELT pipelines, please refer to [DCPAM ETL
 * Data Warehouse and Data Marts:
   * One or many instances of DCPAM can work as Data Warehouse (extracting and processing data from disparate sources).
   * In the same time different DCPAM instances can use Data Warehouse to feed Data Marts with specific business-oriented data.
+* Data sources:
+  * [x] [Databases](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL#data-sources)
 * Access DCPAM Database with any system for analytics (Power BI, Tableau, Redash etc.).
 
 ### Elements yet to be covered by DCPAM
@@ -102,6 +101,10 @@ For detailed information about ETL and ELT pipelines, please refer to [DCPAM ETL
   * Manage data sources.
   * Configure ETL processes.
   * Manage DCPAM BI users.
+* Data sources:
+  * Local and remote flat files (csv, json)
+  * LDAP
+  * API
 
 ### Other
 * Choose Data Warehouse DBMS, sufficient hardware and disk space.
@@ -145,6 +148,9 @@ DCPAM development is still in progress with following data sources available:
 ### DCPAM Database
 DCPAM is designed to be as most customizable as it needs to be.
 Therefore every database listed above as available data source can also be used as DCPAM target database.
+
+##### Currently under active development
+* [x] Transform subprocess in [DCPAM ETL](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL).
 
 ## Roadmap
 | 2020                              | 2021                                    |

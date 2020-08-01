@@ -46,9 +46,8 @@ void DATABASE_SYSTEM_close(
 
 void DATABASE_SYSTEM_QUERY_add(
             const char              *name,
-            DB_SYSTEM_ETL           cdc,
-            const char              data_types[ SMALL_BUFF_SIZE ][ SMALL_BUFF_SIZE ],
-            const int               data_types_len,
+            DB_SYSTEM_MODE          mode,
+            DB_SYSTEM_ETL           etl,
             DATABASE_SYSTEM_QUERY   *dst,
             short                   verbose
 );

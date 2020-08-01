@@ -106,6 +106,7 @@ int DCPAM_load_configuration( const char* filename ) {
     cJSON* cfg_system_queries_array = NULL;
     cJSON* cfg_system_query_item = NULL;
     cJSON* cfg_system_query_item_name = NULL;
+    cJSON* cfg_system_query_item_mode = NULL;
 
     cJSON* cfg_system_query_item_etl = NULL;
     cJSON* cfg_system_query_item_etl_pre_actions = NULL;
@@ -180,15 +181,13 @@ int DCPAM_load_configuration( const char* filename ) {
 
     cJSON* cfg_system_query_item_columns = NULL;
     cJSON* cfg_system_query_item_columns_name = NULL;
-    cJSON* cfg_system_query_item_data_types = NULL;
-    cJSON* cfg_system_query_item_data_types_name = NULL;
 
     cJSON* cfg_system_info = NULL;
 
     cJSON* array_value = NULL;
     int                         result = 0;
 
-    int                         tmp_columns_len = 0;
+
     char*                       config_string = NULL;
 
 
@@ -484,6 +483,14 @@ int DCPAM_load_configuration( const char* filename ) {
                         cfg_system_query_item_name = cJSON_GetObjectItem( cfg_system_query_item, "name" );
                         if( cfg_system_query_item_name == NULL ) {
                             LOG_print( "ERROR: \"system[%d].queries[%d].name\" key not found.\n", i, j );
+                            cJSON_Delete( config_json );
+                            free( config_string ); config_string = NULL;
+                            return FALSE;
+                        }
+
+                        cfg_system_query_item_mode = cJSON_GetObjectItem( cfg_system_query_item, "mode" );
+                        if( cfg_system_query_item_mode == NULL ) {
+                            LOG_print( "NOTICE: \"system[%d].queries[%d].mode\" key not found. Default mode is \"ETL\" (1).\n", i, j );
                             cJSON_Delete( config_json );
                             free( config_string ); config_string = NULL;
                             return FALSE;
@@ -1333,29 +1340,12 @@ int DCPAM_load_configuration( const char* filename ) {
                             tmp_cdc->load.modified.extracted_values_len++;
                         }
 
-                        cfg_system_query_item_data_types = cJSON_GetObjectItem( cfg_system_query_item, "data_types" );
-                        if( cfg_system_query_item_data_types == NULL ) {
-                            LOG_print( "ERROR: \"system[%d].queries[%d].data_types\" key not found.\n", i, j );
-                            cJSON_Delete( config_json );
-                            free( config_string ); config_string = NULL;
-                            return FALSE;
-                        }
-
-                        char tmp_data_types[ SMALL_BUFF_SIZE ][ SMALL_BUFF_SIZE ];
-
-                        for( int k = 0; k < cJSON_GetArraySize( cfg_system_query_item_data_types ); k++ ) {
-                            cfg_system_query_item_data_types_name = cJSON_GetArrayItem( cfg_system_query_item_data_types, k );
-                            snprintf( tmp_data_types[ k ], SMALL_BUFF_SIZE, "%s", cfg_system_query_item_data_types_name->valuestring );
-                            tmp_data_types_len++;
-                        }
-
                         tmp_queries[ tmp_queries_count ] = SAFEMALLOC( sizeof( DATABASE_SYSTEM_QUERY ), __FILE__, __LINE__ );
 
                         DATABASE_SYSTEM_QUERY_add(
                             cfg_system_query_item_name->valuestring,
+                            cfg_system_query_item_mode ? cfg_system_query_item_mode->valueint : M_ETL,
                             *tmp_cdc,
-                            tmp_data_types,
-                            tmp_data_types_len,
                             tmp_queries[ tmp_queries_count ],
                             FALSE
                         );

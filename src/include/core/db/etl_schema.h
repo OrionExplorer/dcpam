@@ -9,6 +9,11 @@ typedef enum DB_SYSTEM_ETL_STEP {
     ETL_LOAD
 } DB_SYSTEM_ETL_STEP;
 
+typedef enum DB_SYSTEM_MODE {
+    M_ETL = 1,
+    M_ELT
+} DB_SYSTEM_MODE;
+
 /*
     config.json => system[].queries[].change_data_capture.extract
 */

@@ -78,6 +78,8 @@ void SYSTEM_QUERY_free( DATABASE_SYSTEM_QUERY *dst ) {
         free( dst->name ); dst->name = NULL;
     }
 
+    dst->mode = M_ETL;
+
     if( dst->change_data_capture.pre_actions != NULL ) {
         for( int i = 0; i < dst->change_data_capture.pre_actions_count; i++ ) {
             free( dst->change_data_capture.pre_actions[ i ]->sql ); dst->change_data_capture.pre_actions[ i ]->sql = NULL;
@@ -199,12 +201,11 @@ void SYSTEM_QUERY_free( DATABASE_SYSTEM_QUERY *dst ) {
 
 
 void DATABASE_SYSTEM_QUERY_add(
-    const char          *name,
-    DB_SYSTEM_ETL   cdc,
-    const char          data_types[SMALL_BUFF_SIZE][SMALL_BUFF_SIZE],
-    const int           data_types_len,
-    DATABASE_SYSTEM_QUERY       *dst,
-    short               verbose
+    const char              *name,
+    DB_SYSTEM_MODE          mode,
+    DB_SYSTEM_ETL           etl,
+    DATABASE_SYSTEM_QUERY   *dst,
+    short                   verbose
 ) {
     int     i = 0;
 
@@ -220,76 +221,66 @@ void DATABASE_SYSTEM_QUERY_add(
         );
     }
 
-    dst->change_data_capture = cdc;
+    dst->change_data_capture = etl;
 
-    if( verbose > 0 ) LOG_print("\t· extract\n\t\t·inserted\n\t\t\t·primary_db_sql: \"%.70s(...)\"\n", cdc.extract.inserted.primary_db_sql );
-    if( verbose > 0 ) LOG_print("\t\t\t·primary_db: \"%s\"\n", cdc.extract.inserted.primary_db );
-    if( verbose > 0 ) LOG_print("\t\t\t·secondary_db_sql: \"%.70s(...)\"\n", cdc.extract.inserted.secondary_db_sql );
-    if( verbose > 0 ) LOG_print("\t\t\t·secondary_db: \"%s\"\n", cdc.extract.inserted.secondary_db );
-    if( verbose > 0 ) LOG_print("\t\t·modified\n\t\t\t·primary_db_sql: \"%.70s(...)\"\n", cdc.extract.modified.primary_db_sql );
-    if( verbose > 0 ) LOG_print("\t\t\t·primary_db: \"%s\"\n", cdc.extract.modified.primary_db );
-    if( verbose > 0 ) LOG_print("\t\t\t·secondary_db_sql: \"%.70s(...)\"\n", cdc.extract.modified.secondary_db_sql );
-    if( verbose > 0 ) LOG_print("\t\t\t·secondary_db: \"%s\"\n", cdc.extract.modified.secondary_db );
-    if( verbose > 0 ) LOG_print("\t\t·deleted\n\t\t\t·primary_db_sql: \"%.70s(...)\"\n", cdc.extract.deleted.primary_db_sql );
-    if( verbose > 0 ) LOG_print("\t\t\t·primary_db: \"%s\"\n", cdc.extract.deleted.primary_db );
-    if( verbose > 0 ) LOG_print("\t\t\t·secondary_db_sql: \"%.70s(...)\"\n", cdc.extract.deleted.secondary_db_sql );
-    if( verbose > 0 ) LOG_print("\t\t\t·secondary_db: \"%s\"\n", cdc.extract.deleted.secondary_db );
+    if( verbose > 0 ) LOG_print("\t· extract\n\t\t·inserted\n\t\t\t·primary_db_sql: \"%.70s(...)\"\n", etl.extract.inserted.primary_db_sql );
+    if( verbose > 0 ) LOG_print("\t\t\t·primary_db: \"%s\"\n", etl.extract.inserted.primary_db );
+    if( verbose > 0 ) LOG_print("\t\t\t·secondary_db_sql: \"%.70s(...)\"\n", etl.extract.inserted.secondary_db_sql );
+    if( verbose > 0 ) LOG_print("\t\t\t·secondary_db: \"%s\"\n", etl.extract.inserted.secondary_db );
+    if( verbose > 0 ) LOG_print("\t\t·modified\n\t\t\t·primary_db_sql: \"%.70s(...)\"\n", etl.extract.modified.primary_db_sql );
+    if( verbose > 0 ) LOG_print("\t\t\t·primary_db: \"%s\"\n", etl.extract.modified.primary_db );
+    if( verbose > 0 ) LOG_print("\t\t\t·secondary_db_sql: \"%.70s(...)\"\n", etl.extract.modified.secondary_db_sql );
+    if( verbose > 0 ) LOG_print("\t\t\t·secondary_db: \"%s\"\n", etl.extract.modified.secondary_db );
+    if( verbose > 0 ) LOG_print("\t\t·deleted\n\t\t\t·primary_db_sql: \"%.70s(...)\"\n", etl.extract.deleted.primary_db_sql );
+    if( verbose > 0 ) LOG_print("\t\t\t·primary_db: \"%s\"\n", etl.extract.deleted.primary_db );
+    if( verbose > 0 ) LOG_print("\t\t\t·secondary_db_sql: \"%.70s(...)\"\n", etl.extract.deleted.secondary_db_sql );
+    if( verbose > 0 ) LOG_print("\t\t\t·secondary_db: \"%s\"\n", etl.extract.deleted.secondary_db );
     
-    if( cdc.stage ) {
-        if( verbose > 0 ) LOG_print( "\t· stage\n\t\t·inserted\n\t\t\t·sql: \"%.70s(...)\"\n", cdc.stage->inserted.sql );
+    if( etl.stage ) {
+        if( verbose > 0 ) LOG_print( "\t· stage\n\t\t·inserted\n\t\t\t·sql: \"%.70s(...)\"\n", etl.stage->inserted.sql );
         if( verbose > 0 ) LOG_print( "\t\t\t·extracted_values: " );
-        for( i = 0; i < cdc.stage->inserted.extracted_values_len; i++ ) {
-            if( verbose > 0 ) LOG_print( "'%s', ", cdc.stage->inserted.extracted_values[ i ] );
+        for( i = 0; i < etl.stage->inserted.extracted_values_len; i++ ) {
+            if( verbose > 0 ) LOG_print( "'%s', ", etl.stage->inserted.extracted_values[ i ] );
         }
         if( verbose > 0 ) LOG_print( "\n" );
-        if( verbose > 0 ) LOG_print( "\t\t·deleted\n\t\t\t·sql: \"%.70s(...)\"\n", cdc.stage->deleted.sql );
+        if( verbose > 0 ) LOG_print( "\t\t·deleted\n\t\t\t·sql: \"%.70s(...)\"\n", etl.stage->deleted.sql );
         if( verbose > 0 ) LOG_print( "\t\t\t·extracted_values: " );
-        for( i = 0; i < cdc.stage->deleted.extracted_values_len; i++ ) {
-            if( verbose > 0 ) LOG_print( "'%s', ", cdc.stage->deleted.extracted_values[ i ] );
+        for( i = 0; i < etl.stage->deleted.extracted_values_len; i++ ) {
+            if( verbose > 0 ) LOG_print( "'%s', ", etl.stage->deleted.extracted_values[ i ] );
         }
         if( verbose > 0 ) LOG_print( "\n" );
-        if( verbose > 0 ) LOG_print( "\t\t·modified\n\t\t\t·sql: \"%.70s(...)\"\n", cdc.stage->modified.sql );
+        if( verbose > 0 ) LOG_print( "\t\t·modified\n\t\t\t·sql: \"%.70s(...)\"\n", etl.stage->modified.sql );
         if( verbose > 0 ) LOG_print( "\t\t\t·extracted_values: " );
-        for( i = 0; i < cdc.stage->modified.extracted_values_len; i++ ) {
-            if( verbose > 0 ) LOG_print( "'%s', ", cdc.stage->modified.extracted_values[ i ] );
+        for( i = 0; i < etl.stage->modified.extracted_values_len; i++ ) {
+            if( verbose > 0 ) LOG_print( "'%s', ", etl.stage->modified.extracted_values[ i ] );
         }
 
         if( verbose > 0 ) LOG_print( "\n" );
     }
 
-    if( verbose > 0 ) LOG_print("\t· load\n\t\t·inserted\n\t\t\t·input_data_sql: \"%.70s(...)\"\n", cdc.load.inserted.input_data_sql );
+    if( verbose > 0 ) LOG_print("\t· load\n\t\t·inserted\n\t\t\t·input_data_sql: \"%.70s(...)\"\n", etl.load.inserted.input_data_sql );
     if( verbose > 0 ) LOG_print("\t\t\t·extracted_values: " );
-    for( i = 0; i < cdc.load.inserted.extracted_values_len; i++ ) {
-        if( verbose > 0 ) LOG_print("'%s', ", cdc.load.inserted.extracted_values[i]);
+    for( i = 0; i < etl.load.inserted.extracted_values_len; i++ ) {
+        if( verbose > 0 ) LOG_print("'%s', ", etl.load.inserted.extracted_values[i]);
     }
     if( verbose > 0 ) LOG_print("\n");
-    if( verbose > 0 ) LOG_print( "\t\t\t·output_data_sql: \"%.70s(...)\"\n", cdc.load.inserted.output_data_sql );
+    if( verbose > 0 ) LOG_print( "\t\t\t·output_data_sql: \"%.70s(...)\"\n", etl.load.inserted.output_data_sql );
 
-    if( verbose > 0 ) LOG_print("\t\t·deleted\n\t\t\t·input_data_sql: \"%.70s(...)\"\n", cdc.load.deleted.input_data_sql );
+    if( verbose > 0 ) LOG_print("\t\t·deleted\n\t\t\t·input_data_sql: \"%.70s(...)\"\n", etl.load.deleted.input_data_sql );
     if( verbose > 0 ) LOG_print("\t\t\t·extracted_values: " );
-    for( i = 0; i < cdc.load.deleted.extracted_values_len; i++ ) {
-        if( verbose > 0 ) LOG_print("'%s', ", cdc.load.deleted.extracted_values[i]);
+    for( i = 0; i < etl.load.deleted.extracted_values_len; i++ ) {
+        if( verbose > 0 ) LOG_print("'%s', ", etl.load.deleted.extracted_values[i]);
     }
     if( verbose > 0 ) LOG_print("\n");
-    if( verbose > 0 ) LOG_print( "\t\t\t·output_data_sql: \"%.70s(...)\"\n", cdc.load.deleted.output_data_sql );
+    if( verbose > 0 ) LOG_print( "\t\t\t·output_data_sql: \"%.70s(...)\"\n", etl.load.deleted.output_data_sql );
 
-    if( verbose > 0 ) LOG_print("\t\t·modified\n\t\t\t·input_data_sql: \"%.70s(...)\"\n", cdc.load.modified.input_data_sql );
+    if( verbose > 0 ) LOG_print("\t\t·modified\n\t\t\t·input_data_sql: \"%.70s(...)\"\n", etl.load.modified.input_data_sql );
     if( verbose > 0 ) LOG_print("\t\t\t·extracted_values: " );
-    for( i = 0; i < cdc.load.modified.extracted_values_len; i++ ) {
-        if( verbose > 0 ) LOG_print("'%s', ", cdc.load.modified.extracted_values[i]);
+    for( i = 0; i < etl.load.modified.extracted_values_len; i++ ) {
+        if( verbose > 0 ) LOG_print("'%s', ", etl.load.modified.extracted_values[i]);
     }
     if( verbose > 0 ) LOG_print("\n");
-    if( verbose > 0 ) LOG_print( "\t\t\t·output_data_sql: \"%.70s(...)\"\n", cdc.load.modified.output_data_sql );
-
-    dst->data_types_len = data_types_len;
-    for( i = 0; i < data_types_len; i++ ) {
-        if( verbose > 0 ) LOG_print("\t· data_types[%d]=\"%s\"\n", i, data_types[ i ] );
-        strncpy(
-            dst->data_types[ i ],
-            data_types[ i ],
-            SMALL_BUFF_SIZE
-        );
-    }
+    if( verbose > 0 ) LOG_print( "\t\t\t·output_data_sql: \"%.70s(...)\"\n", etl.load.modified.output_data_sql );
 }
 
 void DATABASE_SYSTEM_DB_add(
@@ -573,9 +564,8 @@ void DATABASE_SYSTEM_add(
         for( j = 0; j < queries_len; j++ ) {
             DATABASE_SYSTEM_QUERY_add(
                 queries[ j ].name,
+                queries[ j ].mode,
                 queries[ j ].change_data_capture,
-                queries[ j ].data_types,
-                queries[ j ].data_types_len,
                 &DATABASE_SYSTEMS[ DATABASE_SYSTEMS_COUNT ].queries[ j ],
                 TRUE
             );

@@ -15,13 +15,10 @@
 		},
 		"queries" : [{
 			"name" : "GET_ACCOUNTED_TIME",
-			"data_types" : [
-				"TIME_ACCOUNTING"
-			],
 			"etl" : {
 
 				"comment#00" : "##################################################################################################",
-				"comment#01" : "# PreCDC Actions configuration. Use it to perform any set of queries in DCPAM Database before ETL",
+				"comment#01" : "# PreETL Actions configuration. Use it to perform any set of queries in DCPAM Database before ETL",
 				"comment#02" : "# process is started (ie. to clear the Staging Area).",
 				"comment#03" : "##################################################################################################",
 				"pre_actions" : [
@@ -154,7 +151,7 @@
 				},
 
 				"comment#12" : "##################################################################################################",
-				"comment#13" : "# PostCDC Actions configuration. Use it to perform any set of queries in DCPAM Database after ETL",
+				"comment#13" : "# PostETL Actions configuration. Use it to perform any set of queries in DCPAM Database after ETL",
 				"comment#14" : "# process finished (ie. to clear the Staging Area).",
 				"comment#15" : "##################################################################################################",
 				"post_actions" : [

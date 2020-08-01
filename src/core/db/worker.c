@@ -79,8 +79,8 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
     int                     i = 0;
     WORKER_DATA             *t_worker_data = ( WORKER_DATA* )src_WORKER_DATA;
     DATABASE_SYSTEM         *DATA_SYSTEM = t_worker_data->DATA_SYSTEM;
-    DB_SYSTEM_ETL_STEP  curr_etl_step = 1;
-    DB_SYSTEM_ETL_STEP  prev_etl_step = 1;
+    DB_SYSTEM_ETL_STEP      curr_etl_step = ETL_EXTRACT;
+    DB_SYSTEM_ETL_STEP      prev_etl_step = ETL_EXTRACT;
 
     LOG_print( "Init DCPAM database connection for \"%s\":\n", DATA_SYSTEM->name );
     if( DATABASE_SYSTEM_DB_init( &DATA_SYSTEM->dcpam_db) == FALSE ) {
