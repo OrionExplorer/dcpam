@@ -17,8 +17,8 @@
 			"name" : "GET_ACCOUNTED_TIME",
 			"mode_comment#00" : "##################################################################################################",
 			"mode_comment#01" : "# Define pipeline to work as Extract-Transform-Load (mode : 1) or Extract-Load-Transform (mode: 2).",
-			"mode_comment#01" : "# Default value is 1.",
-			"mode_comment#02" : "##################################################################################################",
+			"mode_comment#02" : "# Default value is 1.",
+			"mode_comment#03" : "##################################################################################################",
 			"mode" : 1,
 			"etl" : {
 

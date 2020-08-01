@@ -37,9 +37,6 @@ int DB_WORKER_init( void ) {
     WORKER_DATA             t_worker_data[ MAX_DATA_SYSTEMS ];
     int                     i = 0;
     pthread_attr_t          attrs;
-    DB_SYSTEM_ETL_STEP      curr_etl_step = ETL_EXTRACT;
-    DB_SYSTEM_ETL_STEP      prev_etl_step = ETL_EXTRACT;
-
 
     mysql_library_init( 0, NULL, NULL );
 
