@@ -491,9 +491,6 @@ int DCPAM_load_configuration( const char* filename ) {
                         cfg_system_query_item_mode = cJSON_GetObjectItem( cfg_system_query_item, "mode" );
                         if( cfg_system_query_item_mode == NULL ) {
                             LOG_print( "NOTICE: \"system[%d].queries[%d].mode\" key not found. Default mode is \"ETL\" (1).\n", i, j );
-                            cJSON_Delete( config_json );
-                            free( config_string ); config_string = NULL;
-                            return FALSE;
                         }
 
                         cfg_system_query_item_etl = cJSON_GetObjectItem( cfg_system_query_item, "etl" );

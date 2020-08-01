@@ -41,9 +41,7 @@ typedef struct DATABASE_SYSTEM_DB {
 typedef struct DATABASE_SYSTEM_QUERY {
     char                    *name;
     DB_SYSTEM_MODE          mode;
-    DB_SYSTEM_ETL           change_data_capture;
-    char                    data_types[ MAX_CDC_COLUMNS ][ 32 ];
-    int                     data_types_len;
+    DB_SYSTEM_ETL           etl_config;
 } DATABASE_SYSTEM_QUERY;
 
 typedef struct DATABASE_SYSTEM {

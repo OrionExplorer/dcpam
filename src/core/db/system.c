@@ -80,121 +80,121 @@ void SYSTEM_QUERY_free( DATABASE_SYSTEM_QUERY *dst ) {
 
     dst->mode = M_ETL;
 
-    if( dst->change_data_capture.pre_actions != NULL ) {
-        for( int i = 0; i < dst->change_data_capture.pre_actions_count; i++ ) {
-            free( dst->change_data_capture.pre_actions[ i ]->sql ); dst->change_data_capture.pre_actions[ i ]->sql = NULL;
-            free( dst->change_data_capture.pre_actions[ i ] ); dst->change_data_capture.pre_actions[ i ] = NULL;
+    if( dst->etl_config.pre_actions != NULL ) {
+        for( int i = 0; i < dst->etl_config.pre_actions_count; i++ ) {
+            free( dst->etl_config.pre_actions[ i ]->sql ); dst->etl_config.pre_actions[ i ]->sql = NULL;
+            free( dst->etl_config.pre_actions[ i ] ); dst->etl_config.pre_actions[ i ] = NULL;
         }
-        free( dst->change_data_capture.pre_actions ); dst->change_data_capture.pre_actions = NULL;
+        free( dst->etl_config.pre_actions ); dst->etl_config.pre_actions = NULL;
     }
 
-    if( dst->change_data_capture.post_actions != NULL ) {
-        for( int i = 0; i < dst->change_data_capture.post_actions_count; i++ ) {
-            free( dst->change_data_capture.post_actions[ i ]->sql ); dst->change_data_capture.post_actions[ i ]->sql = NULL;
-            free( dst->change_data_capture.post_actions[ i ] ); dst->change_data_capture.post_actions[ i ] = NULL;
+    if( dst->etl_config.post_actions != NULL ) {
+        for( int i = 0; i < dst->etl_config.post_actions_count; i++ ) {
+            free( dst->etl_config.post_actions[ i ]->sql ); dst->etl_config.post_actions[ i ]->sql = NULL;
+            free( dst->etl_config.post_actions[ i ] ); dst->etl_config.post_actions[ i ] = NULL;
         }
-        free( dst->change_data_capture.post_actions ); dst->change_data_capture.post_actions = NULL;
+        free( dst->etl_config.post_actions ); dst->etl_config.post_actions = NULL;
     }
 
-    if( dst->change_data_capture.extract.inserted.primary_db_sql != NULL ) {
-        free( dst->change_data_capture.extract.inserted.primary_db_sql ); dst->change_data_capture.extract.inserted.primary_db_sql = NULL;
+    if( dst->etl_config.extract.inserted.primary_db_sql != NULL ) {
+        free( dst->etl_config.extract.inserted.primary_db_sql ); dst->etl_config.extract.inserted.primary_db_sql = NULL;
     }
-    if( dst->change_data_capture.extract.inserted.secondary_db_sql != NULL ) {
-        free( dst->change_data_capture.extract.inserted.secondary_db_sql ); dst->change_data_capture.extract.inserted.secondary_db_sql = NULL;
+    if( dst->etl_config.extract.inserted.secondary_db_sql != NULL ) {
+        free( dst->etl_config.extract.inserted.secondary_db_sql ); dst->etl_config.extract.inserted.secondary_db_sql = NULL;
     }
-    if( dst->change_data_capture.extract.inserted.primary_db != NULL ) {
-        free( dst->change_data_capture.extract.inserted.primary_db ); dst->change_data_capture.extract.inserted.primary_db = NULL;
+    if( dst->etl_config.extract.inserted.primary_db != NULL ) {
+        free( dst->etl_config.extract.inserted.primary_db ); dst->etl_config.extract.inserted.primary_db = NULL;
     }
-    if( dst->change_data_capture.extract.inserted.secondary_db != NULL ) {
-        free( dst->change_data_capture.extract.inserted.secondary_db ); dst->change_data_capture.extract.inserted.secondary_db = NULL;
-    }
-
-    if( dst->change_data_capture.extract.deleted.primary_db_sql != NULL ) {
-        free( dst->change_data_capture.extract.deleted.primary_db_sql ); dst->change_data_capture.extract.deleted.primary_db_sql = NULL;
-    }
-    if( dst->change_data_capture.extract.deleted.secondary_db_sql != NULL ) {
-        free( dst->change_data_capture.extract.deleted.secondary_db_sql ); dst->change_data_capture.extract.deleted.secondary_db_sql = NULL;
-    }
-    if( dst->change_data_capture.extract.deleted.primary_db != NULL ) {
-        free( dst->change_data_capture.extract.deleted.primary_db ); dst->change_data_capture.extract.deleted.primary_db = NULL;
-    }
-    if( dst->change_data_capture.extract.deleted.secondary_db != NULL ) {
-        free( dst->change_data_capture.extract.deleted.secondary_db ); dst->change_data_capture.extract.deleted.secondary_db = NULL;
+    if( dst->etl_config.extract.inserted.secondary_db != NULL ) {
+        free( dst->etl_config.extract.inserted.secondary_db ); dst->etl_config.extract.inserted.secondary_db = NULL;
     }
 
-    if( dst->change_data_capture.extract.modified.primary_db_sql != NULL ) {
-        free( dst->change_data_capture.extract.modified.primary_db_sql ); dst->change_data_capture.extract.modified.primary_db_sql = NULL;
+    if( dst->etl_config.extract.deleted.primary_db_sql != NULL ) {
+        free( dst->etl_config.extract.deleted.primary_db_sql ); dst->etl_config.extract.deleted.primary_db_sql = NULL;
     }
-    if( dst->change_data_capture.extract.modified.secondary_db_sql != NULL ) {
-        free( dst->change_data_capture.extract.modified.secondary_db_sql ); dst->change_data_capture.extract.modified.secondary_db_sql = NULL;
+    if( dst->etl_config.extract.deleted.secondary_db_sql != NULL ) {
+        free( dst->etl_config.extract.deleted.secondary_db_sql ); dst->etl_config.extract.deleted.secondary_db_sql = NULL;
     }
-    if( dst->change_data_capture.extract.modified.primary_db != NULL ) {
-        free( dst->change_data_capture.extract.modified.primary_db ); dst->change_data_capture.extract.modified.primary_db = NULL;
+    if( dst->etl_config.extract.deleted.primary_db != NULL ) {
+        free( dst->etl_config.extract.deleted.primary_db ); dst->etl_config.extract.deleted.primary_db = NULL;
     }
-    if( dst->change_data_capture.extract.modified.secondary_db != NULL ) {
-        free( dst->change_data_capture.extract.modified.secondary_db ); dst->change_data_capture.extract.modified.secondary_db = NULL;
+    if( dst->etl_config.extract.deleted.secondary_db != NULL ) {
+        free( dst->etl_config.extract.deleted.secondary_db ); dst->etl_config.extract.deleted.secondary_db = NULL;
     }
 
-    if( dst->change_data_capture.transform ) {
+    if( dst->etl_config.extract.modified.primary_db_sql != NULL ) {
+        free( dst->etl_config.extract.modified.primary_db_sql ); dst->etl_config.extract.modified.primary_db_sql = NULL;
+    }
+    if( dst->etl_config.extract.modified.secondary_db_sql != NULL ) {
+        free( dst->etl_config.extract.modified.secondary_db_sql ); dst->etl_config.extract.modified.secondary_db_sql = NULL;
+    }
+    if( dst->etl_config.extract.modified.primary_db != NULL ) {
+        free( dst->etl_config.extract.modified.primary_db ); dst->etl_config.extract.modified.primary_db = NULL;
+    }
+    if( dst->etl_config.extract.modified.secondary_db != NULL ) {
+        free( dst->etl_config.extract.modified.secondary_db ); dst->etl_config.extract.modified.secondary_db = NULL;
+    }
 
-        for( int i = 0; i < dst->change_data_capture.transform->inserted_count; i++ ) {
-            free( dst->change_data_capture.transform->inserted[ i ]->module ); dst->change_data_capture.transform->inserted[ i ]->module = NULL;
-            free( dst->change_data_capture.transform->inserted[ i ]->staged_data ); dst->change_data_capture.transform->inserted[ i ]->staged_data = NULL;
-            free( dst->change_data_capture.transform->inserted[ i ]->source_system_update ); dst->change_data_capture.transform->inserted[ i ]->source_system_update = NULL;
-            free( dst->change_data_capture.transform->inserted[ i ] ); dst->change_data_capture.transform->inserted[ i ] = NULL;
+    if( dst->etl_config.transform ) {
+
+        for( int i = 0; i < dst->etl_config.transform->inserted_count; i++ ) {
+            free( dst->etl_config.transform->inserted[ i ]->module ); dst->etl_config.transform->inserted[ i ]->module = NULL;
+            free( dst->etl_config.transform->inserted[ i ]->staged_data ); dst->etl_config.transform->inserted[ i ]->staged_data = NULL;
+            free( dst->etl_config.transform->inserted[ i ]->source_system_update ); dst->etl_config.transform->inserted[ i ]->source_system_update = NULL;
+            free( dst->etl_config.transform->inserted[ i ] ); dst->etl_config.transform->inserted[ i ] = NULL;
         }
-        free( dst->change_data_capture.transform->inserted ); dst->change_data_capture.transform->inserted = NULL;
+        free( dst->etl_config.transform->inserted ); dst->etl_config.transform->inserted = NULL;
 
-        for( int i = 0; i < dst->change_data_capture.transform->deleted_count; i++ ) {
-            free( dst->change_data_capture.transform->deleted[ i ]->module ); dst->change_data_capture.transform->deleted[ i ]->module = NULL;
-            free( dst->change_data_capture.transform->deleted[ i ]->staged_data ); dst->change_data_capture.transform->deleted[ i ]->staged_data = NULL;
-            free( dst->change_data_capture.transform->deleted[ i ]->source_system_update ); dst->change_data_capture.transform->deleted[ i ]->source_system_update = NULL;
-            free( dst->change_data_capture.transform->deleted[ i ] ); dst->change_data_capture.transform->deleted[ i ] = NULL;
+        for( int i = 0; i < dst->etl_config.transform->deleted_count; i++ ) {
+            free( dst->etl_config.transform->deleted[ i ]->module ); dst->etl_config.transform->deleted[ i ]->module = NULL;
+            free( dst->etl_config.transform->deleted[ i ]->staged_data ); dst->etl_config.transform->deleted[ i ]->staged_data = NULL;
+            free( dst->etl_config.transform->deleted[ i ]->source_system_update ); dst->etl_config.transform->deleted[ i ]->source_system_update = NULL;
+            free( dst->etl_config.transform->deleted[ i ] ); dst->etl_config.transform->deleted[ i ] = NULL;
         }
-        free( dst->change_data_capture.transform->deleted ); dst->change_data_capture.transform->deleted = NULL;
+        free( dst->etl_config.transform->deleted ); dst->etl_config.transform->deleted = NULL;
 
-        for( int i = 0; i < dst->change_data_capture.transform->modified_count; i++ ) {
-            free( dst->change_data_capture.transform->modified[ i ]->module ); dst->change_data_capture.transform->modified[ i ]->module = NULL;
-            free( dst->change_data_capture.transform->modified[ i ]->staged_data ); dst->change_data_capture.transform->modified[ i ]->staged_data = NULL;
-            free( dst->change_data_capture.transform->modified[ i ]->source_system_update ); dst->change_data_capture.transform->modified[ i ]->source_system_update = NULL;
-            free( dst->change_data_capture.transform->modified[ i ] ); dst->change_data_capture.transform->modified[ i ] = NULL;
+        for( int i = 0; i < dst->etl_config.transform->modified_count; i++ ) {
+            free( dst->etl_config.transform->modified[ i ]->module ); dst->etl_config.transform->modified[ i ]->module = NULL;
+            free( dst->etl_config.transform->modified[ i ]->staged_data ); dst->etl_config.transform->modified[ i ]->staged_data = NULL;
+            free( dst->etl_config.transform->modified[ i ]->source_system_update ); dst->etl_config.transform->modified[ i ]->source_system_update = NULL;
+            free( dst->etl_config.transform->modified[ i ] ); dst->etl_config.transform->modified[ i ] = NULL;
         }
-        free( dst->change_data_capture.transform->modified ); dst->change_data_capture.transform->modified = NULL;
+        free( dst->etl_config.transform->modified ); dst->etl_config.transform->modified = NULL;
 
-        free( dst->change_data_capture.transform ); dst->change_data_capture.transform = NULL;
+        free( dst->etl_config.transform ); dst->etl_config.transform = NULL;
     }
 
-    if( dst->change_data_capture.stage ) {
-        if( dst->change_data_capture.stage->inserted.sql != NULL ) {
-            free( dst->change_data_capture.stage->inserted.sql ); dst->change_data_capture.stage->inserted.sql = NULL;
+    if( dst->etl_config.stage ) {
+        if( dst->etl_config.stage->inserted.sql != NULL ) {
+            free( dst->etl_config.stage->inserted.sql ); dst->etl_config.stage->inserted.sql = NULL;
         }
-        if( dst->change_data_capture.stage->deleted.sql != NULL ) {
-            free( dst->change_data_capture.stage->deleted.sql ); dst->change_data_capture.stage->deleted.sql = NULL;
+        if( dst->etl_config.stage->deleted.sql != NULL ) {
+            free( dst->etl_config.stage->deleted.sql ); dst->etl_config.stage->deleted.sql = NULL;
         }
-        if( dst->change_data_capture.stage->modified.sql != NULL ) {
-            free( dst->change_data_capture.stage->modified.sql ); dst->change_data_capture.stage->modified.sql = NULL;
+        if( dst->etl_config.stage->modified.sql != NULL ) {
+            free( dst->etl_config.stage->modified.sql ); dst->etl_config.stage->modified.sql = NULL;
         }
 
-        free( dst->change_data_capture.stage ); dst->change_data_capture.stage = NULL;
+        free( dst->etl_config.stage ); dst->etl_config.stage = NULL;
     }
 
-    if( dst->change_data_capture.load.inserted.input_data_sql != NULL ) {
-        free( dst->change_data_capture.load.inserted.input_data_sql ); dst->change_data_capture.load.inserted.input_data_sql = NULL;
+    if( dst->etl_config.load.inserted.input_data_sql != NULL ) {
+        free( dst->etl_config.load.inserted.input_data_sql ); dst->etl_config.load.inserted.input_data_sql = NULL;
     }
-    if( dst->change_data_capture.load.inserted.output_data_sql != NULL ) {
-        free( dst->change_data_capture.load.inserted.output_data_sql ); dst->change_data_capture.load.inserted.output_data_sql = NULL;
+    if( dst->etl_config.load.inserted.output_data_sql != NULL ) {
+        free( dst->etl_config.load.inserted.output_data_sql ); dst->etl_config.load.inserted.output_data_sql = NULL;
     }
-    if( dst->change_data_capture.load.deleted.input_data_sql!= NULL ) {
-        free( dst->change_data_capture.load.deleted.input_data_sql ); dst->change_data_capture.load.deleted.input_data_sql = NULL;
+    if( dst->etl_config.load.deleted.input_data_sql!= NULL ) {
+        free( dst->etl_config.load.deleted.input_data_sql ); dst->etl_config.load.deleted.input_data_sql = NULL;
     }
-    if( dst->change_data_capture.load.deleted.output_data_sql != NULL ) {
-        free( dst->change_data_capture.load.deleted.output_data_sql ); dst->change_data_capture.load.deleted.output_data_sql = NULL;
+    if( dst->etl_config.load.deleted.output_data_sql != NULL ) {
+        free( dst->etl_config.load.deleted.output_data_sql ); dst->etl_config.load.deleted.output_data_sql = NULL;
     }
-    if( dst->change_data_capture.load.modified.input_data_sql!= NULL ) {
-        free( dst->change_data_capture.load.modified.input_data_sql ); dst->change_data_capture.load.modified.input_data_sql= NULL;
+    if( dst->etl_config.load.modified.input_data_sql!= NULL ) {
+        free( dst->etl_config.load.modified.input_data_sql ); dst->etl_config.load.modified.input_data_sql= NULL;
     }
-    if( dst->change_data_capture.load.modified.output_data_sql != NULL ) {
-        free( dst->change_data_capture.load.modified.output_data_sql ); dst->change_data_capture.load.modified.output_data_sql = NULL;
+    if( dst->etl_config.load.modified.output_data_sql != NULL ) {
+        free( dst->etl_config.load.modified.output_data_sql ); dst->etl_config.load.modified.output_data_sql = NULL;
     }
 
 }
@@ -221,7 +221,8 @@ void DATABASE_SYSTEM_QUERY_add(
         );
     }
 
-    dst->change_data_capture = etl;
+    dst->mode = mode;
+    dst->etl_config = etl;
 
     if( verbose > 0 ) LOG_print("\t· extract\n\t\t·inserted\n\t\t\t·primary_db_sql: \"%.70s(...)\"\n", etl.extract.inserted.primary_db_sql );
     if( verbose > 0 ) LOG_print("\t\t\t·primary_db: \"%s\"\n", etl.extract.inserted.primary_db );
@@ -409,6 +410,61 @@ void DATABASE_SYSTEM_DB_add(
     }
 }
 
+void DATABASE_SYSTEM_DB_close( DATABASE_SYSTEM_DB* db ) {
+
+    if( db->ip != NULL ) {
+        LOG_print( "[%s] DATABASE_SYSTEM_DB_close( %s@%s:%d )...\n", TIME_get_gmt(), db->user, db->ip, db->port );
+    }
+
+    switch( db->driver ) {
+        case D_POSTGRESQL:
+        {
+            if( db->db_conn.pgsql_conn.active == 1 ) {
+                LOG_print( "\t· Driver: \"PostgreSQL\". Disconnecting...\n" );
+                PG_disconnect( &db->db_conn.pgsql_conn );
+            }
+        } break;
+        case D_MYSQL:
+        {
+            if( db->db_conn.mysql_conn.active == 1 ) {
+                LOG_print( "\t· Driver: \"MySQL\". Disconnecting...\n" );
+                MYSQL_disconnect( &db->db_conn.mysql_conn );
+            }
+        } break;
+        case D_MARIADB:
+        {
+            if( db->db_conn.mariadb_conn.active == 1 ) {
+                LOG_print( "\t· Driver: \"MariaDB\". Disconnecting...\n" );
+                MARIADB_disconnect( &db->db_conn.mariadb_conn );
+            }
+        } break;
+        case D_ODBC:
+        {
+            if( db->db_conn.odbc_conn.active == 1 ) {
+                LOG_print( "\t· Driver: \"ODBC\". Disconnecting...\n" );
+                ODBC_disconnect( &db->db_conn.odbc_conn );
+            }
+        } break;
+        case D_ORACLE:
+        {
+            if( db->db_conn.oracle_conn.active == 1 ) {
+                LOG_print( "\t· Driver: \"Oracle\". Disconnecting...\n" );
+                ORACLE_disconnect( &db->db_conn.oracle_conn );
+            }
+        } break;
+        case D_SQLITE:
+        {
+            if( db->db_conn.sqlite_conn.active == 1 ) {
+                LOG_print( "\t· Driver: \"SQLite3\". Disconnecting...\n" );
+                SQLITE_disconnect( &db->db_conn.sqlite_conn );
+            }
+        }
+        default:
+        {
+        }
+    }
+}
+
 
 void DATABASE_SYSTEM_DB_free( DATABASE_SYSTEM_DB *db ) {
 
@@ -565,7 +621,7 @@ void DATABASE_SYSTEM_add(
             DATABASE_SYSTEM_QUERY_add(
                 queries[ j ].name,
                 queries[ j ].mode,
-                queries[ j ].change_data_capture,
+                queries[ j ].etl_config,
                 &DATABASE_SYSTEMS[ DATABASE_SYSTEMS_COUNT ].queries[ j ],
                 TRUE
             );

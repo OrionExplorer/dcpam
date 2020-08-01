@@ -38,6 +38,9 @@ void DATABASE_SYSTEM_DB_free(
             DATABASE_SYSTEM_DB      *db
 );
 
+void DATABASE_SYSTEM_DB_close(
+            DATABASE_SYSTEM_DB      *db
+);
 
 void DATABASE_SYSTEM_close(
             DATABASE_SYSTEM         *system
