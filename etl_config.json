@@ -15,6 +15,11 @@
 		},
 		"queries" : [{
 			"name" : "GET_ACCOUNTED_TIME",
+			"mode_comment#00" : "##################################################################################################",
+			"mode_comment#01" : "# Define pipeline to work as Extract-Transform-Load (mode : 1) or Extract-Load-Transform (mode: 2).",
+			"mode_comment#01" : "# Default value is 1.",
+			"mode_comment#02" : "##################################################################################################",
+			"mode" : 1,
 			"etl" : {
 
 				"comment#00" : "##################################################################################################",
@@ -164,7 +169,7 @@
 	"app" : {
 		"name" : "DCPAM",
 		"version" : "0.1",
-		"run_once" : true,
+		"run_once" : false,
 		"run_once_comment#00" : "##################################################################################################",
 		"run_once_comment#01" : "# Set this param with \"true\" value to run DCPAM in \"On Schedule\" mode (ie. with CRON). ",
 		"run_once_comment#02" : "# Remove this param or set with \"false\" value to run DCPAM in \"Persistent\" mode (daemon-like).",
