@@ -75,7 +75,7 @@ int DB_WORKER_init( void ) {
             t_worker_data[ i ].thread_id = i;
             t_worker_data[ i ].step = ETL_TRANSFORM;
 
-            LOG_print( "===========================================================\n[%s] DB_WORKER_init: spawning TRANSFORM thread %d/%d...\n", TIME_get_gmt(), i + 1, DATABASE_SYSTEMS_COUNT );
+            LOG_print( "===========================================================\n[%s] DB_WORKER_init: spawning TRANSFORM/LOAD thread %d/%d...\n", TIME_get_gmt(), i + 1, DATABASE_SYSTEMS_COUNT );
             thread_s[ i ] = pthread_create( &w_watcher_thread[ i ], &attrs, DB_WORKER_watcher, ( void* )&t_worker_data[ i ] );
             if( thread_s[ i ] != 0 ) {
                 LOG_print( "[%s] WORKER_init( ) failed to create DB_WORKER_watcher thread for \"%s\". Error: %d.\n", TIME_get_gmt(), DATABASE_SYSTEMS[ i ].name, thread_s[ i ] );
@@ -88,7 +88,7 @@ int DB_WORKER_init( void ) {
         for( i = 0; i < DATABASE_SYSTEMS_COUNT; i++ ) {
             pthread_join( w_watcher_thread[ i ], NULL );
         }
-        LOG_print( "[%s] DB_WORKER_init: all TRANSFORM threads are completed.\n", TIME_get_gmt() );
+        LOG_print( "[%s] DB_WORKER_init: all TRANSFORM/LOAD threads are completed.\n", TIME_get_gmt() );
 
         /*
             Spawn all Load processes.
@@ -98,7 +98,7 @@ int DB_WORKER_init( void ) {
             t_worker_data[ i ].thread_id = i;
             t_worker_data[ i ].step = ETL_LOAD;
 
-            LOG_print( "===========================================================\n[%s] DB_WORKER_init: spawning LOAD thread %d/%d...\n", TIME_get_gmt(), i + 1, DATABASE_SYSTEMS_COUNT );
+            LOG_print( "===========================================================\n[%s] DB_WORKER_init: spawning LOAD/TRANSFORM thread %d/%d...\n", TIME_get_gmt(), i + 1, DATABASE_SYSTEMS_COUNT );
             thread_s[ i ] = pthread_create( &w_watcher_thread[ i ], &attrs, DB_WORKER_watcher, ( void* )&t_worker_data[ i ] );
             if( thread_s[ i ] != 0 ) {
                 LOG_print( "[%s] WORKER_init( ) failed to create DB_WORKER_watcher thread for \"%s\". Error: %d.\n", TIME_get_gmt(), DATABASE_SYSTEMS[ i ].name, thread_s[ i ] );
@@ -111,7 +111,7 @@ int DB_WORKER_init( void ) {
         for( i = 0; i < DATABASE_SYSTEMS_COUNT; i++ ) {
             pthread_join( w_watcher_thread[ i ], NULL );
         }
-        LOG_print( "[%s] DB_WORKER_init: all LOAD threads are completed.\n", TIME_get_gmt() );
+        LOG_print( "[%s] DB_WORKER_init: all LOAD/TRANSFORM threads are completed.\n", TIME_get_gmt() );
     }
 
     mysql_library_end();
@@ -128,7 +128,7 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
 
     LOG_print( "\nDB_WORKER_watcher for \"%s\" (%s) started...\n",
         DATA_SYSTEM->name,
-        curr_etl_step == ETL_EXTRACT ? "EXTRACT" : curr_etl_step == ETL_TRANSFORM ? "TRANSFORM" : curr_etl_step == ETL_LOAD ? "LOAD" : "UNKNOWN"
+        curr_etl_step == ETL_EXTRACT ? "EXTRACT" : curr_etl_step == ETL_TRANSFORM ? "TRANSFORM/LOAD" : curr_etl_step == ETL_LOAD ? "LOAD/TRANSFORM" : "UNKNOWN"
     );
 
     LOG_print( "Init DCPAM database connection for \"%s\":\n", DATA_SYSTEM->name );
@@ -137,7 +137,7 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
         return FALSE;
     }
 
-    LOG_print( "Init source system database connection for \"%s\":\n", DATA_SYSTEM->name );
+    LOG_print( "Init \"%s\" database connection...", DATA_SYSTEM->name );
     if( DATABASE_SYSTEM_DB_init( &DATA_SYSTEM->system_db ) == FALSE ) {
         pthread_cancel( w_watcher_thread[ t_worker_data->thread_id ] );
         return FALSE;
@@ -158,7 +158,7 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
     worker_save_counter += WORKER_WATCHER_SLEEP;
 
     if( curr_etl_step == ETL_EXTRACT ) {
-        /* 0: Run PreCDC actions. */
+        /* Run PreCDC actions. */
         LOG_print( "[%s] Started run of PreCDC Actions.\n", TIME_get_gmt() );
         for( i = 0; i < DATA_SYSTEM->queries_len; i++ ) {
             if( DATA_SYSTEM->queries[ i ].etl_config.pre_actions ) {
@@ -174,8 +174,9 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
         }
         LOG_print( "[%s] Finished run of PreCDC Actions.\n", TIME_get_gmt() );
 
-        /* 1st: Extract and store data in the Staging Area */
+        /* Extract and store data in the Staging Area / target tables. */
         for( i = 0; i < DATA_SYSTEM->queries_len; i++ ) {
+
             /* Init query structs */
             qec extract_inserted_callback = DATA_SYSTEM->queries[ i ].etl_config.stage ? ( qec )&_ExtractInserted_callback : ( qec )&_LoadInserted_callback;
             qec extract_deleted_callback = DATA_SYSTEM->queries[ i ].etl_config.stage ? ( qec )&_ExtractDeleted_callback : ( qec )&_LoadDeleted_callback;
@@ -245,7 +246,7 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
                     &DATA_SYSTEM->dcpam_db
                 );
 
-                /* 4rd: Run PostCDC actions. */
+                /* Run PostCDC actions. */
                 LOG_print( "[%s] Started run of PostCDC Actions.\n", TIME_get_gmt() );
                 for( int j = 0; j < DATA_SYSTEM->queries_len; j++ ) {
                     if( DATA_SYSTEM->queries[ j ].etl_config.post_actions ) {
@@ -268,7 +269,7 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
 
     LOG_print("DB_WORKER_watcher for \"%s\" with process type \"%s\" finished.\n",
                 DATA_SYSTEM->name,
-                curr_etl_step == ETL_EXTRACT ? "EXTRACT" : curr_etl_step == ETL_TRANSFORM ? "TRANSFORM" : curr_etl_step == ETL_LOAD ? "LOAD" : "UNKNOWN"
+                curr_etl_step == ETL_EXTRACT ? "EXTRACT" : curr_etl_step == ETL_TRANSFORM ? "TRANSFORM/LOAD" : curr_etl_step == ETL_LOAD ? "LOAD/TRANSFORM" : "UNKNOWN"
     );
 
     pthread_mutex_unlock( &watcher_mutex );

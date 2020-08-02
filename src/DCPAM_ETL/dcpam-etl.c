@@ -1385,8 +1385,7 @@ int DCPAM_load_configuration( const char* filename ) {
                     free( tmp_queries ); tmp_queries = NULL;
 
                     free( tmp_db );
-                    LOG_print( "[%s] Finished loading system %s.\n", TIME_get_gmt(), cfg_system_name->valuestring );
-                    LOG_print( "===========================\n" );
+                    LOG_print( "[%s] Finished loading system %s.\n\n", TIME_get_gmt(), cfg_system_name->valuestring );
                 }
             } else {
                 LOG_print( "ERROR: \"system\" key not found.\n" );
