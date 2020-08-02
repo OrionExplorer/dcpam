@@ -26,7 +26,7 @@
     * [Windows Dependencies](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL#windows-dependencies)
 
 ## Extraction, Staging and Change Data Capture
-Extraction is first major process. Main DCPAM ETL workflow consists of:
+Extraction is first major process. Main DCPAM ETL/ELT workflow consists of:
 1. Data extraction from all source systems to the Staging Area or target tables directly.
 2. (Optional) Data transformation using all source systems in the Staging Area.
 3. Load transformed dataset to the target tables (when Staging Area is used).
@@ -109,12 +109,12 @@ After Loading process is finished, it is possible to run set of SQL queries to p
   * many of the DCPAM ETL instances can run across many servers
   * data transformations can run across many servers
 * Staging Area:
-  * fully supported, but not required in the ETL process
+  * fully supported, but not required in the ETL/ELT process
   * possibility to keep Staging Area outside the DCPAM Database
 * Data transformation:
-  * fully supported, but not required in the ETL process
+  * fully supported, but not required in the ETL/ELT process
   * possibility to run outside the DCPAM server
-* Each Change Data Capture process operates independently in separate thread.
+* Each ETL/ELT process operates independently in separate thread.
 * Database support is provided with native libraries (see _Data sources_ and _Linux Dependencies_ in this document).
 * Simply put, DCPAM ETL allows to perform advanced data copy between technically different datasets.
 
