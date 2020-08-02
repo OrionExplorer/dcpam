@@ -42,7 +42,7 @@ Therefore every database listed above as available data source can also be used 
 
 
 ### Configuration
-For DCPAM WDS `wds_config.json` file is the main configuration. It defines:
+For DCPAM WDS `wds_config.json` is the main configuration file. It defines:
 * DCPAM database.
 * Tables and views (see _app.DATA_), where integrated data is stored.
 

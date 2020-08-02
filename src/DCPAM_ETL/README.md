@@ -155,10 +155,11 @@ DCPAM is designed to be as most customizable as it needs to be.
 Therefore every database listed above as available data source can also be used as DCPAM target database.
 
 ### Configuration
-For DCPAM ETL `etl_config.json` file is the main configuration. It defines:
+For DCPAM ETL `etl_config.json` is the main configuration file. It defines:
 * DCPAM database.
 * Data sources.
 * Extract, Stage, Transform and Load process for each data source.
+* ETL or ELT mode.
 * Pre- and PostETL actions.
 
 More than one `json` configuration file can be configured to achieve more flexibile and parallel execution of configured processes. Each `json` file is executed by new instance of DCPAM ETL module.
