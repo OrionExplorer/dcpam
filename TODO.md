@@ -105,6 +105,7 @@
 	* [x] MariaDB
 	* [x] Oracle Database
 	* [x] SQLite
+	* [ ] IBM Db2
 	* [ ] MongoDB
 	* [ ] CSV
 	* [ ] URL
