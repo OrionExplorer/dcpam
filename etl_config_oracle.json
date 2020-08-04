@@ -59,10 +59,16 @@
 						"secondary_db_sql" : "SELECT t.id AS system_object_id, ta.id AS system_worklog_id, t.customer_id AS system_customer, ta.create_by AS system_agent_id, ta.time_unit AS system_accounted_time, ta.create_time AS system_created FROM time_accounting ta LEFT JOIN ticket t ON t.id = ta.ticket_id WHERE ta.change_time > '%s'"
 					}
 				},
-				"comment#00" : "##################################################################################################",
-				"comment#01" : "# Staging Area configuration - a temporary tables, where extracted data is stored and ready to Transform process.",
-				"comment#02" : "# There is no restriction on the query type in \"sql\" commands.",
-				"comment#03" : "##################################################################################################",
+
+
+				"comment#04" : "##################################################################################################",
+				"comment#05" : "# Staging Area configuration - a temporary tables, where extracted data is stored and ready to Transform process.",
+				"comment#06" : "# According to the documentation, inserted, deleted and modified records coexist here at the same time, so additional column \"e_type\" is used:",
+				"comment#07" : "# - 1 marks inserted records",
+				"comment#08" : "# - 2 marks deleted records",
+				"comment#09" : "# - 3 marks modified records",
+				"comment#10" : "# There is no restriction on the query type in \"sql\" commands.",
+				"comment#11" : "##################################################################################################",
 				"stage" : {
 					"inserted" : {
 						"sql" : "INSERT INTO sys.stage_accounted_time (system_object_id, system_worklog_id, system_customer, system_agent_id, system_accounted_time, system_created, is_valid, system, e_type) VALUES (?, ?, '?', '?', ?, '?', 1, 'OTRS', 1)",
@@ -75,9 +81,9 @@
 					"modified" : {
 						"sql" : "INSERT INTO sys.stage_accounted_time (system_object_id, system_worklog_id, system_customer, system_agent_id, system_accounted_time, system_created, is_valid, system, e_type) VALUES (?, ?, '?', '?', ?, '?', 1, 'OTRS', 3)",
 						"extracted_values" : ["system_object_id", "system_worklog_id", "system_customer", "system_agent_id", "system_accounted_time", "system_created"]
-					},
-					"reset" : "DELETE FROM sys.stage_accounted_time"
+					}
 				},
+
 				"transform" : {
 					"comment#00" : "##################################################################################################",
 					"comment#01" : "# Transform subprocess configuration. DCPAM calls external modules to perform data transformation.",
@@ -121,6 +127,8 @@
 						"source_system_update" : "UPDATE time_accounting SET %s WHERE %s"
 					}]
 				},
+
+
 				"load" : {
 					"comment#00" : "##################################################################################################",
 					"comment#01" : "# Query executed with \"output_data_sql\" is fed by the records fetched with \"input_data_sql\" from Staging Area.",
@@ -143,7 +151,16 @@
 						"extracted_values" : ["system_object_id", "system_worklog_id", "system_customer", "system_agent_id", "system_accounted_time", "system_created", "is_valid", "system_worklog_id"],
 						"output_data_sql" : "UPDATE sys.accounted_time SET system_object_id = ?, system_worklog_id = ?, system_customer = '?', system_agent_id = '?', system_accounted_time = ?, system_created = '?', is_valid = ? WHERE system_worklog_id = ?"
 					}
-				}
+				},
+
+				"comment#12" : "##################################################################################################",
+				"comment#13" : "# PostETL Actions configuration. Use it to perform any set of queries in DCPAM Database after ETL",
+				"comment#14" : "# process finished (ie. to clear the Staging Area).",
+				"comment#15" : "##################################################################################################",
+				"post_actions" : [
+					"DELETE FROM stage_accounted_time"
+				]
+
 			}
 		}]
 	}],
@@ -151,6 +168,7 @@
 		"name" : "DCPAM",
 		"version" : "0.1",
 		"DB" : {
+			"name" : "DCPAM Database",
 			"ip" : "127.0.0.1",
 			"port" : 1521,
 			"driver" : 5,
@@ -160,34 +178,21 @@
 			"password" : "tantive4",
 			"db" : "xe"
 		},
-		"DATA" : [{
-			"id" : "TIME_ACCOUNTING",
-			"name" : "Accounted time data",
-			"db_table_name" : "sys.accounted_time",
-			"columns" : ["system_object_id", "system_worklog_id", "system_customer", "system_agent_id", "sys.accounted_time", "created", "system", "is_valid"],
-			"description" : "All accounted time data",
-			"actions" : [{
-				"name" : "GET_DATA",
-				"description" : "Get all data",
-				"type" : 1,
-				"internal" : false,
-				"condition" : "",
-				"sql" : "SELECT customer, sys.accounted_time, created, system FROM sys.accounted_time WHERE is_valid = 1"
-			}, {
-				"name" : "GET_SYSTEM_DATA",
-				"description" : "Get all data by system",
-				"type" : 1,
-				"internal" : false,
-				"condition" : "system",
-				"sql" : "SELECT customer, sys.accounted_time, created, system FROM sys.accounted_time WHERE system = '%s' WHERE is_valid = 1"
-			}, {
-				"name" : "GET_CUSTOMER_DATA",
-				"description" : "Get all data by customer",
-				"type" : 1,
-				"internal" : false,
-				"condition" : "system_customer",
-				"sql" : "SELECT customer, sys.accounted_time, created, system FROM sys.accounted_time WHERE customer = '%s' WHERE is_valid = 1"
-			}]
-		}]
+		"STAGING" : {
+			"comment#00" : "##################################################################################################",
+			"comment#01" : "# Staging Area configuration.",
+			"comment#02" : "# This step is optional. Use it to define remote database where extracted data is stored.",
+			"comment#03" : "# When not set, DCPAM Database is used to store extracted data in transitional tables.",
+			"comment#04" : "##################################################################################################",
+			"name" : "DCPAM Database",
+			"ip" : "127.0.0.1",
+			"port" : 1521,
+			"driver" : 5,
+			"driver_comment" : "Driver types: 1=PostgreSQL, 2=MySQL, 3=MariaDB, 4=ODBC, 5=Oracle Database",
+			"connection_string" : "ORION.mshome.net:1521/XE",
+			"user" : "c##dcpam",
+			"password" : "tantive4",
+			"db" : "xe"
+		}
 	}
 }
