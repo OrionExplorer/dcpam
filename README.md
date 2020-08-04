@@ -43,7 +43,7 @@
 
 
 ### Extract, Transform and Load
-For detailed information about data extraction (ETL and ELT pipelines), please refer to [DCPAM ETL documentation](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL).
+For detailed information about ETL and ELT pipelines, please refer to [DCPAM ETL documentation](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL).
 
 ## Data Warehouse with DCPAM
 
@@ -60,8 +60,8 @@ For detailed information about data extraction (ETL and ELT pipelines), please r
     * [x] placed in external database
   * [ ] Data transformation:
     * [ ] optional
-    * [ ] handled locally (in relation to Staging Area)
-    * [ ] handled remotely (in relation to Staging Area)
+    * [ ] handled locally (in relation to the Staging Area)
+    * [ ] handled remotely (in relation to the Staging Area)
   * [x] Data load from:
     * [x] local Staging Area
     * [x] remote Staging Area 
