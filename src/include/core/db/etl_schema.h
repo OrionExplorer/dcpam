@@ -2,6 +2,7 @@
 #define DB_ETL_SCHEMA_H
 
 #include "../../shared.h"
+#include "../network/client.h"
 
 typedef enum DB_SYSTEM_ETL_STEP {
     ETL_EXTRACT = 1,
@@ -41,7 +42,7 @@ typedef struct DB_SYSTEM_ETL_EXTRACT {
 typedef struct DB_SYSTEM_ETL_STAGE_QUERY {
     char                    *sql;
     size_t                  sql_len;
-    char                    extracted_values[ MAX_CDC_COLUMNS ][ MAX_COLUMN_NAME_LEN ];
+    char                    extracted_values[ MAX_ETL_COLUMNS ][ MAX_COLUMN_NAME_LEN ];
     int                     extracted_values_len;
 } DB_SYSTEM_ETL_STAGE_QUERY;
 
@@ -60,6 +61,8 @@ typedef struct DB_SYSTEM_ETL_TRANSFORM_QUERY {
     char                    *module;
     char                    *staged_data;
     char                    *source_system_update;
+    NET_CONN                *connection;
+    
 } DB_SYSTEM_ETL_TRANSFORM_QUERY;
 
 typedef struct DB_SYSTEM_ETL_TRANSFORM {
@@ -83,7 +86,7 @@ typedef struct DB_SYSTEM_ETL_LOAD_QUERY {
     size_t                  input_data_sql_len;
     char                    *output_data_sql;
     size_t                  output_data_sql_len;
-    char                    extracted_values[ MAX_CDC_COLUMNS ][ MAX_COLUMN_NAME_LEN ];
+    char                    extracted_values[ MAX_ETL_COLUMNS ][ MAX_COLUMN_NAME_LEN ];
     int                     extracted_values_len;
 } DB_SYSTEM_ETL_LOAD_QUERY;
 

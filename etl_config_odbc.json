@@ -3,10 +3,11 @@
 		"enabled" : 1,
 		"name" : "OTRS",
 		"DB" : {
+			"name" : "OTRS [source]",
 			"ip" : "172.17.0.199",
 			"port" : 5432,
 			"driver" : 1,
-			"driver_comment" : "Driver types: 1=PostgreSQL, 2=MySQL, 3=MariaDB, 4=ODBC 5=Oracle Database, 6=SQLite",
+			"driver_comment" : "Driver types: 1=PostgreSQL, 2=MySQL, 3=MariaDB, 4=ODBC, 5=Oracle Database, 6=SQLite",
 			"user" : "otrs",
 			"db" : "otrs",
 			"connection_string" : "dbname=%s host=%s port=%d user=%s password=%s",
@@ -14,17 +15,29 @@
 		},
 		"queries" : [{
 			"name" : "GET_ACCOUNTED_TIME",
-			"data_types" : [
-				"TIME_ACCOUNTING"
-			],
-			"change_data_capture" : {
+			"mode_comment#00" : "##################################################################################################",
+			"mode_comment#01" : "# Define pipeline to work as Extract-Transform-Load (mode : 1) or Extract-Load-Transform (mode: 2).",
+			"mode_comment#02" : "# Default value is 1.",
+			"mode_comment#03" : "##################################################################################################",
+			"mode" : 1,
+			"etl" : {
+
+				"comment#00" : "##################################################################################################",
+				"comment#01" : "# PreETL Actions configuration. Use it to perform any set of queries in DCPAM Database before ETL",
+				"comment#02" : "# process is started (ie. to clear the Staging Area).",
+				"comment#03" : "##################################################################################################",
+				"pre_actions" : [
+					"DELETE FROM stage_accounted_time"
+				],
+
+
 				"extract" : {
 					"comment#00" : "##################################################################################################",
 					"comment#01" : "# Sample config below for inserted records works as \"SELECT id FROM secondary_db WHERE id NOT IN (SELECT id FROM primary_db)\".",
 					"comment#02" : "# Another example is \"SELECT id FROM secondary_db WHERE created > SELECT MAX(chaned) FROM primary_db\" for deleted records.",
 					"comment#03" : "# In Extract subprocess, only one field name (column) is allowed in \"SELECT ... FROM primary_db\" query.",
 					"comment#04" : "# In Extract subprocess, query may finish with 0, 1 or many result rows.",
-					"comment#05" : "# The \"%s\" format specifier is used by DCPAM to insert results from primary_db query into secondary_db query SQL.",
+					"comment#05" : "# The \"%%s\" format specifier is used by DCPAM to insert results from primary_db query into secondary_db query SQL.",
 					"comment#06" : "# Only SELECT queries are allowed in \"*_sql\" commands.",
 					"comment#07" : "##################################################################################################",
 					"inserted" : {
@@ -46,10 +59,16 @@
 						"secondary_db_sql" : "SELECT t.id AS system_object_id, ta.id AS system_worklog_id, t.customer_id AS system_customer, ta.create_by AS system_agent_id, ta.time_unit AS system_accounted_time, ta.create_time AS system_created FROM time_accounting ta LEFT JOIN ticket t ON t.id = ta.ticket_id WHERE ta.change_time > '%s'"
 					}
 				},
-				"comment#00" : "##################################################################################################",
-				"comment#01" : "# Staging Area configuration - a temporary tables, where extracted data is stored and ready to Transform process.",
-				"comment#02" : "# There is no restriction on the query type in \"sql\" commands.",
-				"comment#03" : "##################################################################################################",
+
+
+				"comment#04" : "##################################################################################################",
+				"comment#05" : "# Staging Area configuration - a temporary tables, where extracted data is stored and ready to Transform process.",
+				"comment#06" : "# According to the documentation, inserted, deleted and modified records coexist here at the same time, so additional column \"e_type\" is used:",
+				"comment#07" : "# - 1 marks inserted records",
+				"comment#08" : "# - 2 marks deleted records",
+				"comment#09" : "# - 3 marks modified records",
+				"comment#10" : "# There is no restriction on the query type in \"sql\" commands.",
+				"comment#11" : "##################################################################################################",
 				"stage" : {
 					"inserted" : {
 						"sql" : "INSERT INTO stage_accounted_time (system_object_id, system_worklog_id, system_customer, system_agent_id, system_accounted_time, system_created, is_valid, system, e_type) VALUES (?, ?, '?', '?', ?, '?', 1, 'OTRS', 1)",
@@ -62,30 +81,63 @@
 					"modified" : {
 						"sql" : "INSERT INTO stage_accounted_time (system_object_id, system_worklog_id, system_customer, system_agent_id, system_accounted_time, system_created, is_valid, system, e_type) VALUES (?, ?, '?', '?', ?, '?', 1, 'OTRS', 3)",
 						"extracted_values" : ["system_object_id", "system_worklog_id", "system_customer", "system_agent_id", "system_accounted_time", "system_created"]
-					},
-					"reset" : "DELETE FROM stage_accounted_time"
+					}
 				},
+
+
 				"transform" : {
 					"comment#00" : "##################################################################################################",
-					"comment#01" : "# Yet to be decided how to handle this.",
-					"comment#02" : "##################################################################################################",
+					"comment#01" : "# Transform subprocess configuration. DCPAM calls external modules to perform data transformation.",
+					"comment#02" : "# Transform modules can be placed both on the local machine and remote servers. The latter approach",
+					"comment#03" : "# is recommended to handle compute-intensive transformations.",
+					"comment#04" : "# When transform module is local script or application, standard system path must be specified.",
+					"comment#05" : "# When transform module is placed on the remote server, dcpam:// URL must be specified. It is",
+					"comment#06" : "# required then to run DCPAM EXEC daemon on the remote server.",
+					"comment#07" : "# DCPAM calls external modules with additional, required params:",
+					"comment#08" : "# - dhost: DCPAM database server address (auto)",
+					"comment#09" : "# - dport: DCPAM database server port (auto)",
+					"comment#10" : "# - duser: DCPAM database user (auto)",
+					"comment#11" : "# - dpass: DCPAM database user password (auto)",
+					"comment#12" : "# - ddriver: DCPAM database type (auto)",
+					"comment#13" : "# - OR tconn: DCPAM database connection string (auto)",
+					"comment#14" : "# - shost: original source server address (auto)",
+					"comment#15" : "# - sport: original source server port (auto)",
+					"comment#16" : "# - suser: original source user (auto)",
+					"comment#17" : "# - spass: original source user password (auto)",
+					"comment#18" : "# - sdriver: original source type (auto)",
+					"comment#19" : "# - OR sconn: original source connection string (auto)",
+					"comment#20" : "# - sql: query used by transform module to fetch data for transformation (specified here)",
+					"comment#21" : "# No other data is exchanged between DCPAM and transform module invoker (DCPAM EXEC). Transform",
+					"comment#22" : "# module is responsible for all data updates in the Staging Area and source system (optionally).",
+					"comment#23" : "# Transform modules must be executable files.",
+					"comment#24" : "# Running Transform subprocess is optional in DCPAM.",
+					"comment#25" : "##################################################################################################",
 					"inserted" : [{
-						"column" : "accounted_time",
-						"expression" : "%f * 1"
+						"module" : "./transform-scripts/trailing-spaces.py",
+						"staged_data" : "SELECT * FROM stage_accounted_time",
+						"source_system_update" : "UPDATE time_accounting SET %s WHERE %s"
 					}],
-					"deleted" : [],
+					"deleted" : [{
+						"module" : "dcpam://127.0.0.1:9091/whitespaces/trailing-spaces.py",
+						"staged_data" : "SELECT * FROM stage_accounted_time",
+						"source_system_update" : "UPDATE time_accounting SET %s WHERE %s"
+					}],
 					"modified" : [{
-						"column" : "accounted_time",
-						"expression" : "%f * 1"
+						"module" : "./transform-scripts/trailing-spaces.py",
+						"staged_data" : "SELECT * FROM stage_accounted_time",
+						"source_system_update" : "UPDATE time_accounting SET %s WHERE %s"
 					}]
 				},
+
+
 				"load" : {
 					"comment#00" : "##################################################################################################",
-					"comment#01" : "# Query executed with \"output_data_sql\" is fed by the records fetched with \"input_data_sql\" from Staging Area.",
-					"comment#02" : "# These are records extracted and transformed in previous steps.",
-					"comment#03" : "# It is possible to decide on which columns are to be loaded or updated.",
-					"comment#04" : "# There is no restriction on the query type in \"*_sql\" commands.",
-					"comment#05" : "##################################################################################################",
+					"comment#01" : "# Query executed with \"output_data_sql\" is fed by the records fetched with \"input_data_sql\" from Staging Area or",
+					"comment#02" : "# \"output_data_sql\" is used directly by Extract subprocess when Staging Area is disabled.\n",
+					"comment#03" : "# These are records extracted and transformed in previous steps.",
+					"comment#04" : "# It is possible to decide on which columns are to be loaded or updated.",
+					"comment#05" : "# There is no restriction on the query type in \"*_sql\" commands.",
+					"comment#06" : "##################################################################################################",
 					"inserted" : {
 						"input_data_sql" : "SELECT system_object_id, system_worklog_id, system_customer, system_agent_id, system_accounted_time, system_created FROM stage_accounted_time WHERE e_type = 1",
 						"extracted_values" : ["system_object_id", "system_worklog_id", "system_customer", "system_agent_id", "system_accounted_time", "system_created"],
@@ -101,14 +153,29 @@
 						"extracted_values" : ["system_object_id", "system_worklog_id", "system_customer", "system_agent_id", "system_accounted_time", "system_created", "is_valid", "system_worklog_id"],
 						"output_data_sql" : "UPDATE accounted_time SET system_object_id = ?, system_worklog_id = ?, system_customer = '?', system_agent_id = '?', system_accounted_time = ?, system_created = '?', is_valid = ? WHERE system_worklog_id = ?"
 					}
-				}
+				},
+
+				"comment#12" : "##################################################################################################",
+				"comment#13" : "# PostETL Actions configuration. Use it to perform any set of queries in DCPAM Database after ETL",
+				"comment#14" : "# process finished (ie. to clear the Staging Area).",
+				"comment#15" : "##################################################################################################",
+				"post_actions" : [
+					"DELETE FROM stage_accounted_time"
+				]
+
 			}
 		}]
 	}],
 	"app" : {
 		"name" : "DCPAM",
 		"version" : "0.1",
+		"run_once" : false,
+		"run_once_comment#00" : "##################################################################################################",
+		"run_once_comment#01" : "# Set this param with \"true\" value to run DCPAM in \"On Schedule\" mode (ie. with CRON). ",
+		"run_once_comment#02" : "# Remove this param or set with \"false\" value to run DCPAM in \"Persistent\" mode (daemon-like).",
+		"run_once_comment#03" : "##################################################################################################",
 		"DB" : {
+			"name" : "DCPAM Database",
 			"ip" : "127.0.0.1",
 			"port" : 1433,
 			"driver" : 4,
@@ -122,34 +189,25 @@
 			"password" : "tantive-4",
 			"db" : "dcpam"
 		},
-		"DATA" : [{
-			"id" : "TIME_ACCOUNTING",
-			"name" : "Accounted time data",
-			"db_table_name" : "accounted_time",
-			"columns" : ["system_object_id", "system_worklog_id", "system_customer", "system_agent_id", "accounted_time", "created", "system", "is_valid"],
-			"description" : "All accounted time data",
-			"actions" : [{
-				"name" : "GET_DATA",
-				"description" : "Get all data",
-				"type" : 1,
-				"internal" : false,
-				"condition" : "",
-				"sql" : "SELECT customer, accounted_time, created, system FROM accounted_time WHERE is_valid = 1"
-			}, {
-				"name" : "GET_SYSTEM_DATA",
-				"description" : "Get all data by system",
-				"type" : 1,
-				"internal" : false,
-				"condition" : "system",
-				"sql" : "SELECT customer, accounted_time, created, system FROM accounted_time WHERE system = '%s' WHERE is_valid = 1"
-			}, {
-				"name" : "GET_CUSTOMER_DATA",
-				"description" : "Get all data by customer",
-				"type" : 1,
-				"internal" : false,
-				"condition" : "system_customer",
-				"sql" : "SELECT customer, accounted_time, created, system FROM accounted_time WHERE customer = '%s' WHERE is_valid = 1"
-			}]
-		}]
+		"STAGING" : {
+			"comment#00" : "##################################################################################################",
+			"comment#01" : "# Staging Area configuration.",
+			"comment#02" : "# This step is optional. Use it to define remote database where extracted data is stored.",
+			"comment#03" : "# When not set, DCPAM Database is used to store extracted data in transitional tables.",
+			"comment#04" : "##################################################################################################",
+			"name" : "Staging Area",
+			"ip" : "127.0.0.1",
+			"port" : 1433,
+			"driver" : 4,
+			"driver_comment" : "Driver types: 1=PostgreSQL, 2=MySQL, 3=MariaDB, 4=ODBC, 5=Oracle Database",
+			"comment#00" : "##################################################################################################",
+			"commnet#01" : "# Remember to use \"Mars_Connection=yes\" in your connection string.",
+			"commnet#02" : "# Otherwise, parallel reads and writes from Staging Area to target tables would not be possible.",
+			"comment#03" : "##################################################################################################",
+			"connection_string" : "Driver={ODBC Driver 17 for SQL Server};SERVER=payme2.pl;DATABASE=cr90c;UID=cr90c;PWD=tantive-4;Mars_Connection=yes",
+			"user" : "dcpam",
+			"password" : "tantive-4",
+			"db" : "dcpam"
+		}
 	}
 }

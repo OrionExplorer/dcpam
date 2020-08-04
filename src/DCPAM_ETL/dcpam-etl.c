@@ -865,7 +865,7 @@ int DCPAM_load_configuration( const char* filename ) {
                                 etl.stage.inserted.extracted_values
                             */
 
-                            for( int k = 0; k < MAX_CDC_COLUMNS; k++ ) {
+                            for( int k = 0; k < MAX_ETL_COLUMNS; k++ ) {
                                 memset( tmp_cdc->stage->inserted.extracted_values[ k ], 0, MAX_COLUMN_NAME_LEN );
                             }
                             tmp_cdc->stage->inserted.extracted_values_len = 0;
@@ -919,7 +919,7 @@ int DCPAM_load_configuration( const char* filename ) {
                                 free( config_string ); config_string = NULL;
                                 return FALSE;
                             }
-                            for( int k = 0; k < MAX_CDC_COLUMNS; k++ ) {
+                            for( int k = 0; k < MAX_ETL_COLUMNS; k++ ) {
                                 memset( tmp_cdc->stage->deleted.extracted_values[ k ], 0, MAX_COLUMN_NAME_LEN );
                             }
                             tmp_cdc->stage->deleted.extracted_values_len = 0;
@@ -966,7 +966,7 @@ int DCPAM_load_configuration( const char* filename ) {
                                 free( config_string ); config_string = NULL;
                                 return FALSE;
                             }
-                            for( int k = 0; k < MAX_CDC_COLUMNS; k++ ) {
+                            for( int k = 0; k < MAX_ETL_COLUMNS; k++ ) {
                                 memset( tmp_cdc->stage->modified.extracted_values[ k ], 0, MAX_COLUMN_NAME_LEN );
                             }
                             tmp_cdc->stage->modified.extracted_values_len = 0;
@@ -1190,7 +1190,7 @@ int DCPAM_load_configuration( const char* filename ) {
                             etl.load.inserted.extracted_values
                         */
 
-                        for( int k = 0; k < MAX_CDC_COLUMNS; k++ ) {
+                        for( int k = 0; k < MAX_ETL_COLUMNS; k++ ) {
                             memset( tmp_cdc->load.inserted.extracted_values[ k ], 0, MAX_COLUMN_NAME_LEN );
                         }
                         tmp_cdc->load.inserted.extracted_values_len = 0;
@@ -1262,7 +1262,7 @@ int DCPAM_load_configuration( const char* filename ) {
                             free( config_string ); config_string = NULL;
                             return FALSE;
                         }
-                        for( int k = 0; k < MAX_CDC_COLUMNS; k++ ) {
+                        for( int k = 0; k < MAX_ETL_COLUMNS; k++ ) {
                             memset( tmp_cdc->load.deleted.extracted_values[ k ], 0, MAX_COLUMN_NAME_LEN );
                         }
                         tmp_cdc->load.deleted.extracted_values_len = 0;
@@ -1327,7 +1327,7 @@ int DCPAM_load_configuration( const char* filename ) {
                             free( config_string ); config_string = NULL;
                             return FALSE;
                         }
-                        for( int k = 0; k < MAX_CDC_COLUMNS; k++ ) {
+                        for( int k = 0; k < MAX_ETL_COLUMNS; k++ ) {
                             memset( tmp_cdc->load.modified.extracted_values[ k ], 0, MAX_COLUMN_NAME_LEN );
                         }
                         tmp_cdc->load.modified.extracted_values_len = 0;

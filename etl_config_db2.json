@@ -42,7 +42,7 @@
 					"comment#07" : "##################################################################################################",
 					"inserted" : {
 						"primary_db" : "dcpam",
-						"primary_db_sql" : "SELECT system_worklog_id FROM sys.accounted_time WHERE system = 'OTRS'",
+						"primary_db_sql" : "SELECT system_worklog_id FROM accounted_time WHERE system = 'OTRS'",
 						"secondary_db" : "this",
 						"secondary_db_sql" : "SELECT t.id AS system_object_id, ta.id AS system_worklog_id, t.customer_id AS system_customer, ta.create_by AS system_agent_id, ta.time_unit AS system_accounted_time, ta.create_time AS system_created FROM time_accounting ta LEFT JOIN ticket t ON t.id = ta.ticket_id WHERE ta.id NOT IN (%s)"
 					},
@@ -50,34 +50,41 @@
 						"primary_db" : "this",
 						"primary_db_sql" : "SELECT id AS system_worklog_id FROM time_accounting",
 						"secondary_db" : "dcpam",
-						"secondary_db_sql" : "SELECT system_object_id, system_worklog_id, system_customer, system_agent_id, system_accounted_time, system_created, system FROM sys.accounted_time WHERE is_valid = 1 AND system_worklog_id NOT IN (%s)"
+						"secondary_db_sql" : "SELECT system_object_id, system_worklog_id, system_customer, system_agent_id, system_accounted_time, system_created, system FROM accounted_time WHERE is_valid = 1 AND system_worklog_id NOT IN (%s)"
 					},
 					"modified" : {
 						"primary_db" : "dcpam",
-						"primary_db_sql" : "SELECT MAX(changed) AS changed FROM sys.accounted_time WHERE is_valid = 1 AND SYSTEM = 'OTRS'",
+						"primary_db_sql" : "SELECT MAX(changed) AS changed FROM accounted_time WHERE is_valid = 1 AND SYSTEM = 'OTRS'",
 						"secondary_db" : "this",
 						"secondary_db_sql" : "SELECT t.id AS system_object_id, ta.id AS system_worklog_id, t.customer_id AS system_customer, ta.create_by AS system_agent_id, ta.time_unit AS system_accounted_time, ta.create_time AS system_created FROM time_accounting ta LEFT JOIN ticket t ON t.id = ta.ticket_id WHERE ta.change_time > '%s'"
 					}
 				},
-				"comment#00" : "##################################################################################################",
-				"comment#01" : "# Staging Area configuration - a temporary tables, where extracted data is stored and ready to Transform process.",
-				"comment#02" : "# There is no restriction on the query type in \"sql\" commands.",
-				"comment#03" : "##################################################################################################",
+
+
+				"comment#04" : "##################################################################################################",
+				"comment#05" : "# Staging Area configuration - a temporary tables, where extracted data is stored and ready to Transform process.",
+				"comment#06" : "# According to the documentation, inserted, deleted and modified records coexist here at the same time, so additional column \"e_type\" is used:",
+				"comment#07" : "# - 1 marks inserted records",
+				"comment#08" : "# - 2 marks deleted records",
+				"comment#09" : "# - 3 marks modified records",
+				"comment#10" : "# There is no restriction on the query type in \"sql\" commands.",
+				"comment#11" : "##################################################################################################",
 				"stage" : {
 					"inserted" : {
-						"sql" : "INSERT INTO sys.stage_accounted_time (system_object_id, system_worklog_id, system_customer, system_agent_id, system_accounted_time, system_created, is_valid, system, e_type) VALUES (?, ?, '?', '?', ?, '?', 1, 'OTRS', 1)",
+						"sql" : "INSERT INTO stage_accounted_time (system_object_id, system_worklog_id, system_customer, system_agent_id, system_accounted_time, system_created, is_valid, system, e_type) VALUES (?, ?, '?', '?', ?, '?', 1, 'OTRS', 1)",
 						"extracted_values" : ["system_object_id", "system_worklog_id", "system_customer", "system_agent_id", "system_accounted_time", "system_created"]
 					},
 					"deleted" : {
-						"sql" : "INSERT INTO sys.stage_accounted_time (system_object_id, system_worklog_id, system_customer, system_agent_id, system_accounted_time, system_created, is_valid, system, e_type) VALUES (?, ?, '?', '?', ?, '?', 0, 'OTRS', 2)",
+						"sql" : "INSERT INTO stage_accounted_time (system_object_id, system_worklog_id, system_customer, system_agent_id, system_accounted_time, system_created, is_valid, system, e_type) VALUES (?, ?, '?', '?', ?, '?', 0, 'OTRS', 2)",
 						"extracted_values" : ["system_object_id", "system_worklog_id", "system_customer", "system_agent_id", "system_accounted_time", "system_created"]
 					},
 					"modified" : {
-						"sql" : "INSERT INTO sys.stage_accounted_time (system_object_id, system_worklog_id, system_customer, system_agent_id, system_accounted_time, system_created, is_valid, system, e_type) VALUES (?, ?, '?', '?', ?, '?', 1, 'OTRS', 3)",
+						"sql" : "INSERT INTO stage_accounted_time (system_object_id, system_worklog_id, system_customer, system_agent_id, system_accounted_time, system_created, is_valid, system, e_type) VALUES (?, ?, '?', '?', ?, '?', 1, 'OTRS', 3)",
 						"extracted_values" : ["system_object_id", "system_worklog_id", "system_customer", "system_agent_id", "system_accounted_time", "system_created"]
-					},
-					"reset" : "DELETE FROM sys.stage_accounted_time"
+					}
 				},
+
+
 				"transform" : {
 					"comment#00" : "##################################################################################################",
 					"comment#01" : "# Transform subprocess configuration. DCPAM calls external modules to perform data transformation.",
@@ -121,6 +128,8 @@
 						"source_system_update" : "UPDATE time_accounting SET %s WHERE %s"
 					}]
 				},
+
+
 				"load" : {
 					"comment#00" : "##################################################################################################",
 					"comment#01" : "# Query executed with \"output_data_sql\" is fed by the records fetched with \"input_data_sql\" from Staging Area.",
@@ -129,19 +138,19 @@
 					"comment#04" : "# There is no restriction on the query type in \"*_sql\" commands.",
 					"comment#05" : "##################################################################################################",
 					"inserted" : {
-						"input_data_sql" : "SELECT system_object_id, system_worklog_id, system_customer, system_agent_id, system_accounted_time, system_created FROM sys.stage_accounted_time WHERE e_type = 1",
+						"input_data_sql" : "SELECT system_object_id, system_worklog_id, system_customer, system_agent_id, system_accounted_time, system_created FROM stage_accounted_time WHERE e_type = 1",
 						"extracted_values" : ["system_object_id", "system_worklog_id", "system_customer", "system_agent_id", "system_accounted_time", "system_created"],
-						"output_data_sql" : "INSERT INTO sys.accounted_time (system_object_id, system_worklog_id, system_customer, system_agent_id, system_accounted_time, system_created, is_valid, system) VALUES (?, ?, '?', '?', ?, '?', 1, 'OTRS')"
+						"output_data_sql" : "INSERT INTO accounted_time (system_object_id, system_worklog_id, system_customer, system_agent_id, system_accounted_time, system_created, is_valid, system) VALUES (?, ?, '?', '?', ?, '?', 1, 'OTRS')"
 					},
 					"deleted" : {
-						"input_data_sql" : "SELECT system_worklog_id FROM sys.stage_accounted_time WHERE e_type = 2",
+						"input_data_sql" : "SELECT system_worklog_id FROM stage_accounted_time WHERE e_type = 2",
 						"extracted_values" : ["system_worklog_id"],
-						"output_data_sql" : "UPDATE sys.accounted_time SET is_valid = 0 WHERE system_worklog_id = '?'"
+						"output_data_sql" : "UPDATE accounted_time SET is_valid = 0 WHERE system_worklog_id = '?'"
 					},
 					"modified" : {
-						"input_data_sql" : "SELECT system_object_id, system_worklog_id, system_customer, system_agent_id, system_accounted_time, system_created, is_valid FROM sys.stage_accounted_time WHERE e_type = 3",
+						"input_data_sql" : "SELECT system_object_id, system_worklog_id, system_customer, system_agent_id, system_accounted_time, system_created, is_valid FROM stage_accounted_time WHERE e_type = 3",
 						"extracted_values" : ["system_object_id", "system_worklog_id", "system_customer", "system_agent_id", "system_accounted_time", "system_created", "is_valid", "system_worklog_id"],
-						"output_data_sql" : "UPDATE sys.accounted_time SET system_object_id = ?, system_worklog_id = ?, system_customer = '?', system_agent_id = '?', system_accounted_time = ?, system_created = '?', is_valid = ? WHERE system_worklog_id = ?"
+						"output_data_sql" : "UPDATE accounted_time SET system_object_id = ?, system_worklog_id = ?, system_customer = '?', system_agent_id = '?', system_accounted_time = ?, system_created = '?', is_valid = ? WHERE system_worklog_id = ?"
 					}
 				}
 			}
@@ -150,44 +159,45 @@
 	"app" : {
 		"name" : "DCPAM",
 		"version" : "0.1",
+		"run_once" : false,
+		"run_once_comment#00" : "##################################################################################################",
+		"run_once_comment#01" : "# Set this param with \"true\" value to run DCPAM in \"On Schedule\" mode (ie. with CRON). ",
+		"run_once_comment#02" : "# Remove this param or set with \"false\" value to run DCPAM in \"Persistent\" mode (daemon-like).",
+		"run_once_comment#03" : "##################################################################################################",
 		"DB" : {
 			"ip" : "127.0.0.1",
-			"port" : 1521,
-			"driver" : 5,
+			"name" : "DCPAM Database",
+			"port" : 1433,
+			"driver" : 4,
 			"driver_comment" : "Driver types: 1=PostgreSQL, 2=MySQL, 3=MariaDB, 4=ODBC, 5=Oracle Database",
-			"connection_string" : "ORION.mshome.net:1521/XE",
-			"user" : "c##dcpam",
-			"password" : "tantive4",
-			"db" : "xe"
+			"comment#00" : "##################################################################################################",
+			"commnet#01" : "# Remember to use \"Mars_Connection=yes\" in your connection string.",
+			"commnet#02" : "# Otherwise, parallel reads and writes from Staging Area to target tables would not be possible.",
+			"comment#03" : "##################################################################################################",
+			"connection_string" : "Driver={IBM DB2 ODBC DRIVER};SERVER=localhost;DATABASE=dcpam;UID=db2admin;PWD=1plokeswa;Mars_Connection=yes",
+			"user" : "dcpam",
+			"password" : "tantive-4",
+			"db" : "dcpam"
 		},
-		"DATA" : [{
-			"id" : "TIME_ACCOUNTING",
-			"name" : "Accounted time data",
-			"db_table_name" : "sys.accounted_time",
-			"columns" : ["system_object_id", "system_worklog_id", "system_customer", "system_agent_id", "sys.accounted_time", "created", "system", "is_valid"],
-			"description" : "All accounted time data",
-			"actions" : [{
-				"name" : "GET_DATA",
-				"description" : "Get all data",
-				"type" : 1,
-				"internal" : false,
-				"condition" : "",
-				"sql" : "SELECT customer, sys.accounted_time, created, system FROM sys.accounted_time WHERE is_valid = 1"
-			}, {
-				"name" : "GET_SYSTEM_DATA",
-				"description" : "Get all data by system",
-				"type" : 1,
-				"internal" : false,
-				"condition" : "system",
-				"sql" : "SELECT customer, sys.accounted_time, created, system FROM sys.accounted_time WHERE system = '%s' WHERE is_valid = 1"
-			}, {
-				"name" : "GET_CUSTOMER_DATA",
-				"description" : "Get all data by customer",
-				"type" : 1,
-				"internal" : false,
-				"condition" : "system_customer",
-				"sql" : "SELECT customer, sys.accounted_time, created, system FROM sys.accounted_time WHERE customer = '%s' WHERE is_valid = 1"
-			}]
-		}]
+		"STAGING" : {
+			"comment#00" : "##################################################################################################",
+			"comment#01" : "# Staging Area configuration.",
+			"comment#02" : "# This step is optional. Use it to define remote database where extracted data is stored.",
+			"comment#03" : "# When not set, DCPAM Database is used to store extracted data in transitional tables.",
+			"comment#04" : "##################################################################################################",
+			"ip" : "127.0.0.1",
+			"name" : "DCPAM Database",
+			"port" : 1433,
+			"driver" : 4,
+			"driver_comment" : "Driver types: 1=PostgreSQL, 2=MySQL, 3=MariaDB, 4=ODBC, 5=Oracle Database",
+			"comment#05" : "##################################################################################################",
+			"commnet#06" : "# Remember to use \"Mars_Connection=yes\" in your connection string.",
+			"commnet#07" : "# Otherwise, parallel reads and writes from Staging Area to target tables would not be possible.",
+			"comment#08" : "##################################################################################################",
+			"connection_string" : "Driver={IBM DB2 ODBC DRIVER};SERVER=localhost;DATABASE=dcpam;UID=db2admin;PWD=1plokeswa;Mars_Connection=yes",
+			"user" : "dcpam",
+			"password" : "tantive-4",
+			"db" : "dcpam"
+		}
 	}
 }

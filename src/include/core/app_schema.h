@@ -22,7 +22,7 @@ typedef struct DCPAM_DATA {
     char                    *id;
     char                    *name;
     char                    *db_table_name;
-    char                    columns[ MAX_CDC_COLUMNS ][ 32 ];
+    char                    columns[ MAX_ETL_COLUMNS ][ 32 ];
     int                     columns_len;
     char                    *description;
     DCPAM_DATA_ACTION       actions[ MAX_DCPAM_DATA_ACTIONS ];
