@@ -40,7 +40,7 @@ void CDC_TransformGeneric( DB_SYSTEM_ETL_TRANSFORM_QUERY *transform_element ) {
             return;
         }
         res_len = fread( res, sizeof( char ), 16, script );
-        if( res_len <= 0 ) {
+        if( res_len == 0 ) {
             LOG_print( "error. No data returned from script.\n" );
             pclose( script );
             return;
