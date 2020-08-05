@@ -17,15 +17,17 @@ int NET_CONN_connect( NET_CONN *connection, const char *host, const int port ) {
     connection->server.sin_family = AF_INET;
     connection->server.sin_port = htons( port );
 
+    connection->response = NULL;
+
+    connection->host = SAFECALLOC( 256, sizeof( char ), __FILE__, __LINE__ );
+    snprintf( connection->host, 255, host );
+    connection->port = port;
+
     LOG_print( "[%s] Connecting...", TIME_get_gmt() );
     if (connect( connection->socket , (struct sockaddr *)&connection->server , sizeof( connection->server ) ) < 0 ) {
         LOG_print( "error.\n" );
         return 0;
     }
-
-    connection->host = SAFECALLOC( 256, sizeof( char ), __FILE__, __LINE__ );
-    snprintf( connection->host, 255, host );
-    connection->port = port;
 
     LOG_print("ok.\n");
     return 0;
@@ -36,6 +38,8 @@ int NET_CONN_disconnect( NET_CONN *connection ) {
 
     free( connection->host ); connection->host = NULL;
     free( connection->response ); connection->response = NULL;
+
+    LOG_print( "ok.\n" );
 
     return closesocket( connection->socket );
 }

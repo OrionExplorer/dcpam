@@ -116,9 +116,13 @@
 						"module" : "./transform-scripts/trailing-spaces.py",
 						"staged_data" : "SELECT * FROM stage_accounted_time",
 						"source_system_update" : "UPDATE time_accounting SET %s WHERE %s"
+					}, {
+						"module" : "./transform-scripts/large-numbers.py",
+						"staged_data" : "SELECT * FROM stage_accounted_time",
+						"source_system_update" : "UPDATE time_accounting SET %s WHERE %s"
 					}],
 					"deleted" : [{
-						"module" : "dcpam://127.0.0.1:9091/whitespaces/trailing-spaces.py",
+						"module" : "127.0.0.1:9091/whitespaces/trailing-spaces.py",
 						"staged_data" : "SELECT * FROM stage_accounted_time",
 						"source_system_update" : "UPDATE time_accounting SET %s WHERE %s"
 					}],

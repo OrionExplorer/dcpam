@@ -137,7 +137,7 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
         return FALSE;
     }
 
-    LOG_print( "Init \"%s\" database connection...", DATA_SYSTEM->name );
+    LOG_print( "Init \"%s\" database connection...\n", DATA_SYSTEM->name );
     if( DATABASE_SYSTEM_DB_init( &DATA_SYSTEM->system_db ) == FALSE ) {
         pthread_cancel( w_watcher_thread[ t_worker_data->thread_id ] );
         return FALSE;
@@ -158,8 +158,8 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
     worker_save_counter += WORKER_WATCHER_SLEEP;
 
     if( curr_etl_step == ETL_EXTRACT ) {
-        /* Run PreCDC actions. */
-        LOG_print( "[%s] Started run of PreCDC Actions.\n", TIME_get_gmt() );
+        /* Run PreETL actions. */
+        LOG_print( "[%s] Started run of PreETL Actions.\n", TIME_get_gmt() );
         for( i = 0; i < DATA_SYSTEM->queries_len; i++ ) {
             if( DATA_SYSTEM->queries[ i ].etl_config.pre_actions ) {
                 for( int k = 0; k < DATA_SYSTEM->queries[ i ].etl_config.pre_actions_count; k++ ) {
@@ -172,7 +172,7 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
                 }
             }
         }
-        LOG_print( "[%s] Finished run of PreCDC Actions.\n", TIME_get_gmt() );
+        LOG_print( "[%s] Finished run of PreETL Actions.\n", TIME_get_gmt() );
 
         /* Extract and store data in the Staging Area / target tables. */
         for( i = 0; i < DATA_SYSTEM->queries_len; i++ ) {
@@ -220,9 +220,9 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
                 if( DATA_SYSTEM->queries[ i ].etl_config.transform ) {
                     LOG_print( "\t· [TRANSFORM] Query #%d: %s\n", i + 1, DATA_SYSTEM->queries[ i ].name );
 
-                    //DB_CDC_TransformInserted( &DATA_SYSTEM->queries[ i ].change_data_capture.transform, &DATA_SYSTEM->DB, &inserted_data );
-                    //DB_CDC_TransformDeleted( &DATA_SYSTEM->queries[ i ].change_data_capture.transform, &DATA_SYSTEM->DB, &deleted_data );
-                    //DB_CDC_TransformModified( &DATA_SYSTEM->queries[ i ].change_data_capture.transform, &DATA_SYSTEM->DB, &modified_data );
+                    DB_CDC_TransformInserted( DATA_SYSTEM->queries[ i ].etl_config.transform->inserted, DATA_SYSTEM->queries[ i ].etl_config.transform->inserted_count );
+                    DB_CDC_TransformDeleted( DATA_SYSTEM->queries[ i ].etl_config.transform->deleted, DATA_SYSTEM->queries[ i ].etl_config.transform->deleted_count );
+                    DB_CDC_TransformModified( DATA_SYSTEM->queries[ i ].etl_config.transform->modified, DATA_SYSTEM->queries[ i ].etl_config.transform->modified_count );
                 }
             } else if( 
                 ( DATA_SYSTEM->queries[ i ].mode == M_ETL && curr_etl_step == ETL_LOAD ) ||
@@ -246,8 +246,8 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
                     &DATA_SYSTEM->dcpam_db
                 );
 
-                /* Run PostCDC actions. */
-                LOG_print( "[%s] Started run of PostCDC Actions.\n", TIME_get_gmt() );
+                /* Run PostETL actions. */
+                LOG_print( "[%s] Started run of PostETL Actions.\n", TIME_get_gmt() );
                 for( int j = 0; j < DATA_SYSTEM->queries_len; j++ ) {
                     if( DATA_SYSTEM->queries[ j ].etl_config.post_actions ) {
                         for( int k = 0; k < DATA_SYSTEM->queries[ j ].etl_config.post_actions_count; k++ ) {
@@ -260,7 +260,7 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
                         }
                     }
                 }
-                LOG_print( "[%s] Finished run of PostCDC Actions.\n", TIME_get_gmt() );
+                LOG_print( "[%s] Finished run of PostETL Actions.\n", TIME_get_gmt() );
             } else {
                 LOG_print("WTF: curr_etl_step = %d, mode = %d\n", curr_etl_step, DATA_SYSTEM->queries[ i ].mode );
             }

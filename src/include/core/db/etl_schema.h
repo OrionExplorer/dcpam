@@ -16,7 +16,7 @@ typedef enum DB_SYSTEM_MODE {
 } DB_SYSTEM_MODE;
 
 /*
-    config.json => system[].queries[].change_data_capture.extract
+    config.json => system[].queries[].etl.extract
 */
 typedef struct DB_SYSTEM_ETL_EXTRACT_QUERY {
     char                    *primary_db;
@@ -37,7 +37,7 @@ typedef struct DB_SYSTEM_ETL_EXTRACT {
 /******************************************************************************/
 
 /*
-    config.json => system[].queries[].change_data_capture.stage
+    config.json => system[].queries[].etl.stage
 */
 typedef struct DB_SYSTEM_ETL_STAGE_QUERY {
     char                    *sql;
@@ -55,7 +55,7 @@ typedef struct DB_SYSTEM_ETL_STAGE {
 /******************************************************************************/
 
 /*
-    config.json => system[].queries[].change_data_capture.transform
+    config.json => system[].queries[].etl.transform
 */
 typedef struct DB_SYSTEM_ETL_TRANSFORM_QUERY {
     char                    *module;
@@ -79,7 +79,7 @@ typedef struct DB_SYSTEM_ETL_TRANSFORM {
 /******************************************************************************/
 
 /*
-    config.json => system[].queries[].change_data_capture.load
+    config.json => system[].queries[].etl.load
 */
 typedef struct DB_SYSTEM_ETL_LOAD_QUERY {
     char                    *input_data_sql;
@@ -98,21 +98,21 @@ typedef struct DB_SYSTEM_ETL_LOAD {
 
 
 /*
-    config.json => system[].queries[].change_data_capture.pre_actions
+    config.json => system[].queries[].etl.pre_actions
 */
 typedef struct DB_SYSTEM_ETL_PRE {
     char                    *sql;
 } DB_SYSTEM_ETL_PRE;
 
 /*
-    config.json => system[].queries[].change_data_capture.post_actions
+    config.json => system[].queries[].etl.post_actions
 */
 typedef struct DB_SYSTEM_ETL_POST {
     char                    *sql;
 } DB_SYSTEM_ETL_POST;
 
 /*
-    config.json => system[].queries[].change_data_capture
+    config.json => system[].queries[].etl
 */
 typedef struct DB_SYSTEM_ETL {
     DB_SYSTEM_ETL_PRE       **pre_actions;      /* PreCDC actions are optional */

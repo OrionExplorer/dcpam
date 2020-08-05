@@ -3,7 +3,7 @@
 # libmysqlclient-dev
 # oracle-instantclient19.6-basic-19.6.0.0.0-1.x86_64.rpm
 # oracle-instantclient19.6-devel-19.6.0.0.0-1.x86_64.rpm
-CC=clang
+CC=gcc
 
 
 #CFLAGS=-std=c11 -fexpensive-optimizations -Wshadow -Winit-self -Wredundant-decls -Wcast-align -Wundef -Wfloat-equal -Winline -Wunreachable-code -Wmissing-declarations -Wmissing-include-dirs -Wswitch-enum -Wswitch-default -Wmain -pedantic-errors -pedantic -w -Wfatal-errors -Wextra -Wall -Os -O3 -O2 -O1
