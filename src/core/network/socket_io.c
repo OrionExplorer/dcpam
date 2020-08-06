@@ -123,7 +123,6 @@ static void SOCKET_prepare( void ) {
 }
 
 void SOCKET_run( spc *socket_process_callback ) {
-    register int i = 0;
     struct timeval tv;
     pthread_t sthread;
 
@@ -141,7 +140,7 @@ void SOCKET_run( spc *socket_process_callback ) {
             exit( EXIT_FAILURE );
         }
 
-        i = fdmax+1;
+        int i = fdmax+1;
         while( --i ) {
             if( FD_ISSET( i, &read_fds ) ) {
                 if( i == socket_server ) {
