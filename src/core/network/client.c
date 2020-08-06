@@ -30,7 +30,7 @@ int NET_CONN_connect( NET_CONN *connection, const char *host, const int port ) {
     }
 
     LOG_print("ok.\n");
-    return 0;
+    return 1;
 }
 
 int NET_CONN_disconnect( NET_CONN *connection ) {
