@@ -24,16 +24,16 @@ void CDC_TransformGeneric( DB_SYSTEM_ETL_TRANSFORM_QUERY *transform_element, DAT
 
 void CDC_TransformGeneric( DB_SYSTEM_ETL_TRANSFORM_QUERY *transform_element, DATABASE_SYSTEM_DB* dcpam_db, DATABASE_SYSTEM_DB* system_db ) {
 
-    LOG_print( "[%s] Running transform data process ", TIME_get_gmt() );
-
-    if( strstr( transform_element->module, "dcpam://" ) == NULL ) {
+    if( strstr( transform_element->module, "dcpam://" ) == NULL && strstr( transform_element->module, "./" ) ) {
         FILE    *script = NULL;
         char    command[ 4096 ];
         size_t  res_len = 0;
         char    res[ 16 ];
 
+        memset( res, '\0', 16 );
+
         /* Prepare argument list */
-        snprintf( command, 4096, "%s --dhost=\"%s\" --dport=%d --duser=\"%s\" --dpass=\"%s\" --ddriver=%d --dconn=\"%s\" --shost=\"%s\" --sport=%d --suser=\"%s\" --spass=\"%s\" --sdriver=%d --sconn=\"%s\" &>21",
+        snprintf( command, 4096, "%s --dhost=\"%s\" --dport=%d --duser=\"%s\" --dpass=\"%s\" --ddriver=%d --dconn=\"%s\" --shost=\"%s\" --sport=%d --suser=\"%s\" --spass=\"%s\" --sdriver=%d --sconn=\"%s\"",
             transform_element->module,
             dcpam_db->ip,
             dcpam_db->port,
@@ -49,9 +49,9 @@ void CDC_TransformGeneric( DB_SYSTEM_ETL_TRANSFORM_QUERY *transform_element, DAT
             system_db->connection_string
         );
 
-        LOG_print( "%s\n", command );
+        LOG_print( "[%s] Running local transform data process at %s.", TIME_get_gmt(), command );
         LOG_print( "\t- executing local script...", command );
-        script = popen( transform_element->module, READ_BINARY );
+        script = popen( command, READ_BINARY );
         if( script == NULL ) {
             LOG_print( "error.\n" );
             pclose( script );
@@ -75,7 +75,7 @@ void CDC_TransformGeneric( DB_SYSTEM_ETL_TRANSFORM_QUERY *transform_element, DAT
         sscanf( transform_element->module, "dcpam://%99[^:]:%99d/%255[^\n]", host, &port, script );
 
         /* Prepare query*/
-        snprintf( command, 4096, "m=\"%s\" dhost=\"%s\" dport=%d duser=\"%s\" dpass=\"%s\" driver=%d dconn=\"%s\" shost=\"%s\" sport=%d suser=\"%s\" spass=\"%s\" sdriver=%d sconn=\"%s\"",
+        snprintf( command, 4096, "m=./%s dhost=%s dport=%d duser=%s dpass=%s driver=%d dconn=%s shost=%s sport=%d suser=%s spass=%s sdriver=%d sconn=%s",
             script,
             dcpam_db->ip,
             dcpam_db->port,
@@ -91,7 +91,7 @@ void CDC_TransformGeneric( DB_SYSTEM_ETL_TRANSFORM_QUERY *transform_element, DAT
             system_db->connection_string
         );
 
-        LOG_print( "dcpam://%s:%d > %s\n", host, port, command );
+        LOG_print( "[%s] Running remote transform data process at dcpam://%s:%d > %s\n.", TIME_get_gmt(), host, port, command );
 
         transform_element->connection = SAFEMALLOC( sizeof( NET_CONN ), __FILE__, __LINE__ );
         if( NET_CONN_connect( transform_element->connection, host, port ) == 1 ) {
@@ -99,6 +99,7 @@ void CDC_TransformGeneric( DB_SYSTEM_ETL_TRANSFORM_QUERY *transform_element, DAT
             LOG_print( "[%s] NET_CONN_send...", TIME_get_gmt() );
             if( NET_CONN_send( transform_element->connection, command, strlen( command ) ) == 1 ) {
                 LOG_print( "ok.\n" );
+                LOG_print( "[%s] Received response: %s\n", TIME_get_gmt(), transform_element->connection->response );
             } else {
                 LOG_print( "error.\n" );
             }

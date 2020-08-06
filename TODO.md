@@ -81,9 +81,11 @@
 			* [ ] Python script.
 			* [ ] Remove leading and trailing spaces.
 			* [ ] Backflow of cleaned data in the original source.
-		* [ ] DCPAM EXEC:
+		* [x] DCPAM EXEC:
 			* [x] Socket server application capable to deal with many connected clients.
-			* [ ] Use of `popen` to call external script/application.
+			* [x] Use of `popen` to call external script/application.
+			* [ ] Pass arguments to external script/application.
+* [ ] Handle ETL errors.
 * [x] Allow DCPAM ETL to run once and exit (for scheduled CRON tasks).
 * [x] `app.DATA` from `config.json` should be accessed by new subsystem - DCPAM WDS (Warehouse Data Server):
 	* DCPAM WDS is dedicated memory caching system for DCPAM BI backend.

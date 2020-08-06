@@ -93,8 +93,8 @@ memory.o: src/utils/memory.c
 strings.o: src/utils/strings.c
 	$(CC) -c src/utils/strings.c $(CFLAGS)
 
-dcpam-exec: dcpam-exec.o socket_io.o
-	$(CC) socket_io.o dcpam-exec.o -o dcpam-exec
+dcpam-exec: dcpam-exec.o socket_io.o log.o time.o filesystem.o memory.o
+	$(CC) socket_io.o dcpam-exec.o log.o time.o filesystem.o memory.o -o dcpam-exec
 
 dcpam-etl: dcpam-etl.o mysql.o mariadb.o odbc.o postgresql.o log.o time.o filesystem.o cJSON.o sqlite3.o memory.o db.o worker.o system.o extract.o stage.o transform.o load.o strings.o oracle.o sqlite.o client.o
 	$(CC) mysql.o mariadb.o odbc.o postgresql.o dcpam-etl.o log.o time.o filesystem.o cJSON.o sqlite3.o memory.o db.o worker.o system.o extract.o stage.o transform.o load.o strings.o oracle.o sqlite.o client.o -o dcpam-etl $(LIBS)

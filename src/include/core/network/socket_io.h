@@ -49,7 +49,7 @@ typedef struct {
     socklen_t                   data_length;
 #endif
     int                         socket_descriptor;
-    char*                       content[ MAX_BUFFER ];
+    char                        content[ MAX_BUFFER ];
     short                       keep_alive;
 } COMMUNICATION_SESSION;
 
@@ -74,8 +74,10 @@ typedef struct {
 CONNECTED_CLIENT                connected_clients[ MAX_CLIENTS ];
 
 
-void                SOCKET_main( void );
-void                SOCKET_run( void );
+typedef void ( *spc )( COMMUNICATION_SESSION*, CONNECTED_CLIENT* ); /* Socket Process Callback */
+
+void                SOCKET_main( spc *socket_process_callback );
+void                SOCKET_run( spc *socket_process_callback );
 void                SOCKET_stop( void );
 
 void                SOCKET_send( COMMUNICATION_SESSION *communication_session, CONNECTED_CLIENT *client, const char *data, unsigned int data_size );

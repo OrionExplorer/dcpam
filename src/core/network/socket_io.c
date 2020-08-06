@@ -1,4 +1,5 @@
 #include "../../include/core/network/socket_io.h"
+#include "../../include/utils/log.h"
 #include "../../include/shared.h"
 #include <assert.h>
 #include <stdio.h>
@@ -32,23 +33,22 @@ int                     http_conn_count = 0;
 
 static void     SOCKET_initialization( void );
 static void     SOCKET_prepare( void );
-static void     SOCKET_process( int socket_fd );
+void            SOCKET_process( int socket_fd, spc *socket_process_callback );
 void            SOCKET_stop( void );
 
 static void SOCKET_initialization( void ) {
-    printf("Initializing...");
+    LOG_print("[%s] Initializing...", TIME_get_gmt() );
 
     #ifdef _WIN32
         if ( WSAStartup( MAKEWORD( 2, 2 ), &wsk ) != 0 ) {
-            printf( "error creating Winsock.\n" );
-            system( "pause" );
+            LOG_print( "error creating Winsock.\n" );
             exit( EXIT_FAILURE );
         }
     #endif
 
     socket_server = socket( AF_INET, SOCK_STREAM, IPPROTO_TCP );
     if ( socket_server == SOCKET_ERROR ) {
-        printf( "error creating socket.\n" );
+        LOG_print( "error creating socket.\n" );
         SOCKET_stop();
         exit( EXIT_FAILURE );
     }
@@ -80,49 +80,49 @@ static void SOCKET_prepare( void ) {
 
     if( setsockopt( socket_server, SOL_SOCKET, SO_REUSEADDR, &i, sizeof( int ) ) == SOCKET_ERROR ) {
         wsa_result = WSAGetLastError();
-        printf( "setsockopt( SO_REUSEADDR ) error: %d.\n", wsa_result );
+        LOG_print( "setsockopt( SO_REUSEADDR ) error: %d.\n", wsa_result );
     }
 
     if ( bind( socket_server, ( struct sockaddr* )&server_address, sizeof( server_address ) ) == SOCKET_ERROR ) {
         wsa_result = WSAGetLastError();
-        printf( "bind error: %d.\n", wsa_result );
+        LOG_print( "bind error: %d.\n", wsa_result );
         SOCKET_stop();
         exit( EXIT_FAILURE );
     }
 
     if( setsockopt( socket_server, SOL_SOCKET, SO_RCVTIMEO, ( char* )&tv, sizeof( struct timeval ) ) == SOCKET_ERROR ) {
         wsa_result = WSAGetLastError();
-        printf( "setsockopt( SO_RCVTIMEO ) error: %d.\n", wsa_result );
+        LOG_print( "setsockopt( SO_RCVTIMEO ) error: %d.\n", wsa_result );
     }
 
     if( setsockopt( socket_server, SOL_SOCKET, SO_SNDTIMEO, ( char* )&tv, sizeof( struct timeval ) ) == SOCKET_ERROR ) {
         wsa_result = WSAGetLastError();
-        printf( "setsockopt( SO_SNDTIMEO ) error: %d.\n", wsa_result );
+        LOG_print( "setsockopt( SO_SNDTIMEO ) error: %d.\n", wsa_result );
     }
 
     if( setsockopt( socket_server, IPPROTO_TCP, TCP_NODELAY, ( char * )&i, sizeof( i ) ) == SOCKET_ERROR ) {
         wsa_result = WSAGetLastError();
-        printf( "setsockopt( TCP_NODELAY ) error: %d.\n", wsa_result );
+        LOG_print( "setsockopt( TCP_NODELAY ) error: %d.\n", wsa_result );
     }
 
     if( fcntl( socket_server, F_SETFL, &b ) == SOCKET_ERROR ) {
         wsa_result = WSAGetLastError();
-        printf( "ioctlsocket error: %d.\n", wsa_result );
+        LOG_print( "ioctlsocket error: %d.\n", wsa_result );
         SOCKET_stop();
         exit( EXIT_FAILURE );
     }
 
     if( listen( socket_server, MAX_CLIENTS ) == SOCKET_ERROR ) {
         wsa_result = WSAGetLastError();
-        printf( "listen error: %d.\n", wsa_result );
+        LOG_print( "listen error: %d.\n", wsa_result );
         SOCKET_stop();
         exit( EXIT_FAILURE );
     }
 
-    printf( "ok.\n" );
+    LOG_print( "ok.\n" );
 }
 
-void SOCKET_run( void ) {
+void SOCKET_run( spc *socket_process_callback ) {
     register int i = 0;
     struct timeval tv;
     pthread_t sthread;
@@ -152,7 +152,7 @@ void SOCKET_run( void ) {
                     communication_session_.socket_descriptor = newfd;
 
                     if( newfd == -1 ) {
-                        printf( "Socket closed.\n" );
+                        LOG_print( "[%s] Socket closed.\n", TIME_get_gmt() );
                     } else {
                         SOCKET_register_client( newfd );
                         FD_SET( newfd, &master );
@@ -161,14 +161,14 @@ void SOCKET_run( void ) {
                         }
                     }
                 } else {
-                    SOCKET_process( i );
+                    SOCKET_process( i, socket_process_callback ? socket_process_callback : NULL );
                 }
             }
         }
     }
 }
 
-static void SOCKET_process( int socket_fd ) {
+void SOCKET_process( int socket_fd, spc *socket_process_callback ) {
     CONNECTED_CLIENT *client = SOCKET_find_client( socket_fd );
     extern int errno;
 
@@ -186,8 +186,9 @@ static void SOCKET_process( int socket_fd ) {
             SOCKET_unregister_client( socket_fd );
             SOCKET_close( socket_fd );
         } else {
-            printf( "Received packet with size %ld: %s\n", communication_session_.data_length, communication_session_.content );
-            SOCKET_send( &communication_session_, client, "EHLO", 4 );
+            if( socket_process_callback ) {
+                    ( *socket_process_callback )( &communication_session_, client );
+            }
         }
     }
 }
@@ -259,10 +260,10 @@ char* SOCKET_get_remote_ip( COMMUNICATION_SESSION *communication_session ) {
     return ( ( char* )&ip_addr );
 }
 
-void SOCKET_main( void ) {
+void SOCKET_main( spc *socket_process_callback ) {
     ( void )SOCKET_initialization();
     ( void )SOCKET_prepare();
-    ( void )SOCKET_run();
+    ( void )SOCKET_run( socket_process_callback );
     ( void )SOCKET_stop();
 }
 
@@ -273,7 +274,7 @@ void SOCKET_register_client( int socket_descriptor ) {
         if( connected_clients[ i ].socket_descriptor == 0 ) {
             connected_clients[ i ].socket_descriptor = socket_descriptor;
             connected_clients[ i ].connected = 1;
-            printf("Client connected with descriptor %d.\n", socket_descriptor );
+            LOG_print( "[%s] Client connected with descriptor %d.\n", TIME_get_gmt(), socket_descriptor );
             return;
         }
     }
@@ -286,7 +287,7 @@ void SOCKET_unregister_client( int socket_descriptor ) {
         if( connected_clients[ i ].socket_descriptor == socket_descriptor ) {
             connected_clients[ i ].socket_descriptor = 0;
             connected_clients[ i ].connected = 0;
-            printf("Client disconnected: %d.\n", socket_descriptor );
+            LOG_print( "[%s] Client disconnected: %d.\n", TIME_get_gmt(), socket_descriptor );
             break;
         }
     }

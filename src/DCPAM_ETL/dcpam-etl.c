@@ -1031,7 +1031,7 @@ int DCPAM_load_configuration( const char* filename ) {
                                 strncpy(
                                     tmp_cdc->transform->inserted[ k ]->source_system_update,
                                     cfg_system_query_item_etl_transform_inserted_source_system_update->valuestring,
-                                    str_len
+                                    str_len3
                                 );
                             }
 
