@@ -125,6 +125,7 @@ For detailed information about ETL and ELT pipelines, please refer to [DCPAM ETL
 ### DCPAM Components
   * [DCPAM ETL](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL) - main ETL/ELT engine.
   * [DCPAM WDS](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_WDS) - warehouse data server with memory caching system.
+  * [DCPAM EXEC](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_EXEC) - remote data transformation service.
   * DCPAM Construct - system administration.
   * DCPAM Access - Bussiness Inteligence web application.
 
