@@ -35,7 +35,7 @@
 #define MAX_PATH_LENGTH                     2048
 #define MAX_PATH_LENGTH_CHAR                2048*sizeof( char )
 #define MAX_CLIENTS                         FD_SETSIZE
-#define DEFAULT_PORT                        1212
+#define DEFAULT_PORT                        9091
 #define MAX_COLUMNS							64
 #define MAX_COLUMN_NAME_LEN					256
 

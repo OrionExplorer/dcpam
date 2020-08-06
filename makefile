@@ -12,7 +12,7 @@ ORACLE_DEP= -I/usr/include/oracle/19.6/client64/ -L/usr/lib/oracle/19.6/client64
 LIBS=-lm -lpthread -lpq -lodbc -lmariadbclient $(ORACLE_DEP) -ldl -lclntsh
 
 
-all: dcpam-etl dcpam-wds
+all: dcpam-etl dcpam-wds dcpam-exec
 
 
 db.o: src/db/db.c
@@ -42,6 +42,9 @@ dcpam-etl.o: src/DCPAM_ETL/dcpam-etl.c
 dcpam-wds.o: src/DCPAM_WDS/dcpam-wds.c
 	$(CC) -c src/DCPAM_WDS/dcpam-wds.c $(CFLAGS) $(ORACLE_DEP)
 
+dcpam-exec.o: src/DCPAM_EXEC/dcpam-exec.c
+	$(CC) -c src/DCPAM_EXEC/dcpam-exec.c $(CFLAGS)
+
 log.o: src/utils/log.c
 	$(CC) -c src/utils/log.c $(CFLAGS)
 
@@ -66,6 +69,9 @@ load.o: src/core/db/etl/load.c
 client.o: src/core/network/client.c
 	$(CC) -c src/core/network/client.c $(CFLAGS)
 
+socket_io.o: src/core/network/socket_io.c
+	$(CC) -c src/core/network/socket_io.c $(CFLAGS)
+
 time.o: src/utils/time.c
 	$(CC) -c src/utils/time.c $(CFLAGS)
 
@@ -86,6 +92,9 @@ memory.o: src/utils/memory.c
 
 strings.o: src/utils/strings.c
 	$(CC) -c src/utils/strings.c $(CFLAGS)
+
+dcpam-exec: dcpam-exec.o socket_io.o
+	$(CC) socket_io.o dcpam-exec.o -o dcpam-exec
 
 dcpam-etl: dcpam-etl.o mysql.o mariadb.o odbc.o postgresql.o log.o time.o filesystem.o cJSON.o sqlite3.o memory.o db.o worker.o system.o extract.o stage.o transform.o load.o strings.o oracle.o sqlite.o client.o
 	$(CC) mysql.o mariadb.o odbc.o postgresql.o dcpam-etl.o log.o time.o filesystem.o cJSON.o sqlite3.o memory.o db.o worker.o system.o extract.o stage.o transform.o load.o strings.o oracle.o sqlite.o client.o -o dcpam-etl $(LIBS)

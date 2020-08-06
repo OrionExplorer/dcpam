@@ -13,15 +13,15 @@ static char                 log_object[LARGE_BUFF_SIZE];
 char                        LOG_filename[MAX_PATH_LENGTH];
 static pthread_mutex_t      printf_mutex = PTHREAD_MUTEX_INITIALIZER;
 
-static void LOG_prepare( void ) {
+static void LOG_prepare( const char *prefix ) {
 
-    snprintf( LOG_filename, MAX_PATH_LENGTH, "%s%slog.txt", app_path, LOGS_PATH );
+    snprintf( LOG_filename, MAX_PATH_LENGTH, "%s%s%s-log.txt", app_path, LOGS_PATH, prefix ? prefix : "dcpam" );
     LOG_print( "\n[%s] Session start.\n", TIME_get_gmt() );
 
 }
 
 
-static void LOG_validate_paths( void ) {
+static void LOG_validate_paths( const char *prefix ) {
     char *log_path = malloc( MAX_PATH_LENGTH_CHAR + 1 );
 
     if( log_path ) {
@@ -36,7 +36,7 @@ static void LOG_validate_paths( void ) {
             }
         }
 
-        LOG_prepare();
+        LOG_prepare( prefix );
 
         free( log_path );
         log_path = NULL;
@@ -46,11 +46,11 @@ static void LOG_validate_paths( void ) {
     
 }
 
-void LOG_init( void ) {
+void LOG_init( const char *prefix) {
     snprintf( app_path, MAX_PATH_LENGTH, get_app_path() );
     /*strncpy( app_path, get_app_path(), MAX_PATH_LENGTH );*/
 
-    ( void )LOG_validate_paths();
+    ( void )LOG_validate_paths( prefix );
 
     LOG_print( "[%s] Start path: \"%s\".\n", TIME_get_gmt(), app_path );
 

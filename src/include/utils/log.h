@@ -7,6 +7,6 @@ extern char     LOG_filename[MAX_PATH_LENGTH];
 
 void LOG_print( char *fmt, ... );
 void LOG_save( void );
-void LOG_init( void );
+void LOG_init( const char *prefix );
 
 #endif

@@ -17,6 +17,7 @@
     #define MSG_NOSIGNAL    0
     #define __sighandler_t  void*
 #else
+    #define WSAGetLastError() errno
     #define SLASH           "/"
     #define C_SLASH         '/'
     #define SOCKET_ERROR    ( -1 )
@@ -26,6 +27,27 @@
     #define Sleep(x)        dcpam_sleep(x)
 #endif
 
+#ifndef NI_MAXHOST
+# define NI_MAXHOST         1025
+#endif
+#ifndef NI_MAXSERV
+# define NI_MAXSERV         32
+#endif
+#ifndef NI_NUMERICHOST
+# define NI_NUMERICHOST     1
+#endif
+#ifndef NI_NUMERICSERV
+# define NI_NUMERICSERV     2
+#endif
+#ifndef NI_NOFQDN
+# define NI_NOFQDN          4
+#endif
+#ifndef NI_NAMEREQD
+# define NI_NAMEREQD        8
+#endif
+#ifndef NI_DGRAM
+# define NI_DGRAM           16
+#endif
 
 #ifdef _MSC_VER
 #pragma comment( lib, "pthreadVC2.lib" )

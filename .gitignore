@@ -1,6 +1,6 @@
 *.o
 *.log
-log.txt
+*log.txt
 .vs/
 .odbc.ini
 Debug/

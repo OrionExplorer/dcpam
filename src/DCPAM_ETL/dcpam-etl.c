@@ -1417,7 +1417,7 @@ int main( int argc, char** argv ) {
     signal( SIGABRT, (__sighandler_t)&app_terminate );
     signal( SIGTERM, (__sighandler_t)&app_terminate );
 
-    LOG_init();
+    LOG_init( "dcpam-etl" );
 
     memset( config_file, '\0', MAX_PATH_LENGTH );
     if( argc <= 1 ) {

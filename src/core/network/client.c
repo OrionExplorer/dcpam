@@ -11,7 +11,6 @@ int NET_CONN_connect( NET_CONN *connection, const char *host, const int port ) {
     if ( connection->socket == -1) {
         LOG_print("error. Could not create socket.\n");
     }
-    LOG_print( "ok.\n" );
     
     connection->server.sin_addr.s_addr = inet_addr( host );
     connection->server.sin_family = AF_INET;
@@ -23,9 +22,10 @@ int NET_CONN_connect( NET_CONN *connection, const char *host, const int port ) {
     snprintf( connection->host, 255, host );
     connection->port = port;
 
-    LOG_print( "[%s] Connecting...", TIME_get_gmt() );
+    LOG_print( "ok. Connecting...", TIME_get_gmt() );
     if (connect( connection->socket , (struct sockaddr *)&connection->server , sizeof( connection->server ) ) < 0 ) {
         LOG_print( "error.\n" );
+        free( connection->host ); connection->host = NULL;
         return 0;
     }
 

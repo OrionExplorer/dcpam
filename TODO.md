@@ -72,11 +72,11 @@
 		* Possible to call Transformation scripts/applications locally and remotely.
 	* [ ] Implementation:
 		* [x] Rebuild DCPAM ETL config.
-		* [ ] Socket-based network layer (client):
-			* [ ] Protocol.
-		* [ ] Run external script/application (`popen` for local and sockets for remote).
-		* [ ] Provide all the necessary auth data to external script/application with command line arguments. 
-		* [ ] Wait for external script/application to finish with `EXIT_SUCCESS`.
+		* [x] Socket-based network layer (client):
+			* [x] Protocol.
+		* [x] Run external script/application (`popen` for local and sockets for remote).
+		* [x] Provide all the necessary auth data to external script/application with command line arguments. 
+		* [x] Wait for external script/application to finish with `EXIT_SUCCESS`.
 		* [ ] Proof of concept script:
 			* [ ] Python script.
 			* [ ] Remove leading and trailing spaces.

@@ -220,9 +220,24 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
                 if( DATA_SYSTEM->queries[ i ].etl_config.transform ) {
                     LOG_print( "\t· [TRANSFORM] Query #%d: %s\n", i + 1, DATA_SYSTEM->queries[ i ].name );
 
-                    DB_CDC_TransformInserted( DATA_SYSTEM->queries[ i ].etl_config.transform->inserted, DATA_SYSTEM->queries[ i ].etl_config.transform->inserted_count );
-                    DB_CDC_TransformDeleted( DATA_SYSTEM->queries[ i ].etl_config.transform->deleted, DATA_SYSTEM->queries[ i ].etl_config.transform->deleted_count );
-                    DB_CDC_TransformModified( DATA_SYSTEM->queries[ i ].etl_config.transform->modified, DATA_SYSTEM->queries[ i ].etl_config.transform->modified_count );
+                    DB_CDC_TransformInserted(
+                        DATA_SYSTEM->queries[ i ].etl_config.transform->inserted,
+                        DATA_SYSTEM->queries[ i ].etl_config.transform->inserted_count,
+                        &DATA_SYSTEM->dcpam_db,
+                        &DATA_SYSTEM->system_db
+                    );
+                    DB_CDC_TransformDeleted(
+                        DATA_SYSTEM->queries[ i ].etl_config.transform->deleted,
+                        DATA_SYSTEM->queries[ i ].etl_config.transform->deleted_count,
+                        &DATA_SYSTEM->dcpam_db,
+                        &DATA_SYSTEM->system_db
+                    );
+                    DB_CDC_TransformModified(
+                        DATA_SYSTEM->queries[ i ].etl_config.transform->modified,
+                        DATA_SYSTEM->queries[ i ].etl_config.transform->modified_count,
+                        &DATA_SYSTEM->dcpam_db,
+                        &DATA_SYSTEM->system_db
+                    );
                 }
             } else if( 
                 ( DATA_SYSTEM->queries[ i ].mode == M_ETL && curr_etl_step == ETL_LOAD ) ||
@@ -261,8 +276,6 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
                     }
                 }
                 LOG_print( "[%s] Finished run of PostETL Actions.\n", TIME_get_gmt() );
-            } else {
-                LOG_print("WTF: curr_etl_step = %d, mode = %d\n", curr_etl_step, DATA_SYSTEM->queries[ i ].mode );
             }
         }
     }
@@ -277,6 +290,7 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
         if( APP.run_once == 1 ) {
             app_terminated = 1;
         } else {
+            LOG_print( "[%s] Workflow finished.\n", TIME_get_gmt() );
             Sleep( WORKER_WATCHER_SLEEP );
         }
     }
