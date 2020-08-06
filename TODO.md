@@ -82,7 +82,7 @@
 			* [ ] Remove leading and trailing spaces.
 			* [ ] Backflow of cleaned data in the original source.
 		* [ ] DCPAM EXEC:
-			* [ ] Socket server application capable to deal with many connected clients.
+			* [x] Socket server application capable to deal with many connected clients.
 			* [ ] Use of `popen` to call external script/application.
 * [x] Allow DCPAM ETL to run once and exit (for scheduled CRON tasks).
 * [x] `app.DATA` from `config.json` should be accessed by new subsystem - DCPAM WDS (Warehouse Data Server):
