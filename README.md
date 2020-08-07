@@ -52,33 +52,33 @@ More specific description of data transformation possibilities can be found in [
 ### What DCPAM covers in terms of Data Warehousing?
 * JSON-based source systems configuration.
 * SQL and JSON-based configuration of the ETL processes:
-  * [x] Data extraction:
-    * [x] Inserted data
-    * [x] Deleted data
-    * [x] Modified data
-  * [x] Staging Area:
-    * [x] optional
-    * [x] placed locally in DCPAM Database
-    * [x] placed in external database
-  * [x] Data transformation:
-    * [x] optional
-    * [x] handled locally (in relation to the Staging Area)
-    * [x] handled remotely (in relation to the Staging Area)
-  * [x] Data load from:
-    * [x] local Staging Area
-    * [x] remote Staging Area 
+  * Data extraction:
+    * Inserted data
+    * Deleted data
+    * Modified data
+  * Staging Area:
+    * optional
+    * placed locally in DCPAM Database
+    * placed in external database
+  * Data transformation:
+    * optional
+    * handled locally (in relation to the Staging Area)
+    * handled remotely (in relation to the Staging Area)
+  * Data load from:
+    * local Staging Area
+    * remote Staging Area 
 * Parallel execution:
-  * [x] By design:
-    * [x] Each ETL process runs in separate thread.
-  * [x] By running multiple instances of DCPAM:
-    * [x] On the same server
-    * [x] On many disparate servers
+  * By design:
+    * Each ETL process runs in separate thread.
+  * By running multiple instances of DCPAM:
+    * On the same server
+    * On many disparate servers
 * SQL and JSON-based preconfigured queries for data analysis.
 * Data Warehouse and Data Marts:
   * One or many instances of DCPAM can work as Data Warehouse (extracting and processing data from disparate sources).
   * In the same time different DCPAM instances can use Data Warehouse to feed Data Marts with specific business-oriented data.
 * Data sources:
-  * [x] [Databases](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL#data-sources)
+  * [Databases](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL#data-sources)
 * Access DCPAM Database with any system for analytics (Power BI, Tableau, Redash etc.).
 
 ### Elements yet to be covered by DCPAM
