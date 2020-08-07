@@ -67,8 +67,8 @@ int main( void ) {
     signal( SIGABRT, ( sighandler )&app_terminate );
     signal( SIGTERM, ( sighandler )&app_terminate );
 
-    LOG_init( "dcpam-exec" );
-    LOG_print( "DCPAM EXEC\n");
+    LOG_init( "dcpam-rdp" );
+    LOG_print( "DCPAM RDP\n");
 
     spc exec_script = ( spc )&DCPAM_script_exec;
     SOCKET_main( &exec_script );

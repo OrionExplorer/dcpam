@@ -81,7 +81,7 @@ Sample operations to perform with this process:
 * creation of entirely new views
 * data enrichments
 
-Moreover, Transform process should be able to perform backflow of cleaned data to the original source.
+Moreover, Transform process is able to perform backflow of cleaned data to the original source.
 
 DCPAM ETL can handle data transformations with two different approaches:
 1. Locally - each transform module is executed on the same server, where DCPAM is.
@@ -90,8 +90,6 @@ DCPAM ETL can handle data transformations with two different approaches:
 DCPAM ETL does not limit the number of transformations in any way. Furthermore, both local and remote approaches can be used simultaneously.
 
 Data transformation in DCPAM ETL pipeline is not enforced.
-
-> **Information**: This section is incomplete. Transform process in DCPAM is still under development.
 
 ### Loading
 When all transformations in the Staging Area are completed or during the Extract subprocess, DCPAM ETL loads the data directly into target tables. Dimensions are first to load, followed by Facts. Then Staging Area is cleared and ready for the next occurence of data extraction.

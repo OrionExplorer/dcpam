@@ -45,6 +45,8 @@
 ### Extract, Transform and Load
 For detailed information about ETL and ELT pipelines, please refer to [DCPAM ETL documentation](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL).
 
+More specific description of data transformation possibilities can be found in [DCPAM RDP documentation](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_RDP).
+
 ## Data Warehouse with DCPAM
 
 ### What DCPAM covers in terms of Data Warehousing?
@@ -58,10 +60,10 @@ For detailed information about ETL and ELT pipelines, please refer to [DCPAM ETL
     * [x] optional
     * [x] placed locally in DCPAM Database
     * [x] placed in external database
-  * [ ] Data transformation:
-    * [ ] optional
-    * [ ] handled locally (in relation to the Staging Area)
-    * [ ] handled remotely (in relation to the Staging Area)
+  * [x] Data transformation:
+    * [x] optional
+    * [x] handled locally (in relation to the Staging Area)
+    * [x] handled remotely (in relation to the Staging Area)
   * [x] Data load from:
     * [x] local Staging Area
     * [x] remote Staging Area 
@@ -125,7 +127,7 @@ For detailed information about ETL and ELT pipelines, please refer to [DCPAM ETL
 ### DCPAM Components
   * [DCPAM ETL](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL) - main ETL/ELT engine.
   * [DCPAM WDS](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_WDS) - warehouse data server with memory caching system.
-  * [DCPAM EXEC](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_EXEC) - remote data transformation service.
+  * [DCPAM RDP](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_RDP) - remote data processor for transformations.
   * DCPAM Construct - system administration.
   * DCPAM Access - Bussiness Inteligence web application.
 
@@ -151,12 +153,12 @@ DCPAM is designed to be as most customizable as it needs to be.
 Therefore every database listed above as available data source can also be used as DCPAM target database.
 
 ##### Currently under active development
-* [x] Transform subprocess in [DCPAM ETL](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL).
+* [x] [DCPAM WDS](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_WDS).
 
 ## Roadmap
 | 2020                              | 2021                                    |
 |:----------------------------------|:----------------------------------------|
-| Transform process                 | DCPAM Construct (admin web application) |
+| ~Transform process~               | DCPAM Construct (admin web application) |
 | DCPAM WDS (warehouse data server) | DCPAM AI platform                       |
 | DCPAM Access (BI web application) |                                         |
 

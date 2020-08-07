@@ -79,14 +79,14 @@
 		* [x] Wait for external script/application to finish with `EXIT_SUCCESS`.
 		* [x] Proof of concept script:
 			* [x] Python script.
-		* [x] DCPAM EXEC:
+		* [x] DCPAM RDP:
 			* [x] Socket server application capable to deal with many connected clients.
 			* [x] Use of `popen` to call external script/application.
 			* [x] Pass arguments to external script/application.
 * [x] Handle ETL errors:
 	* [x] For each system separately. Failure on one system does not affect ETL workflow for other systems and does not stop DCPAM ETL service.
 * [ ] Example python script for data transformation:
-	* [ ] Parse arguments passed by DCPAM EXEC.
+	* [ ] Parse arguments passed by DCPAM RDP.
 	* [ ] Connect to data source.
 	* [ ] Process staged data.
 	* [ ] Perform backflow of cleaned data to source system.
