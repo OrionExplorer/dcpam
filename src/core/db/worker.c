@@ -48,18 +48,24 @@ int DB_WORKER_init( void ) {
             Spawn all Extract processes.
         */
         for( i = 0; i < DATABASE_SYSTEMS_COUNT; i++ ) {
-            t_worker_data[ i ].DATA_SYSTEM = &DATABASE_SYSTEMS[ i ];
-            t_worker_data[ i ].thread_id = i;
-            t_worker_data[ i ].step = ETL_EXTRACT;
 
-            LOG_print( "===========================================================\n[%s] DB_WORKER_init: spawning EXTRACT thread %d/%d...\n", TIME_get_gmt(), i + 1, DATABASE_SYSTEMS_COUNT );
-            thread_s[ i ] = pthread_create( &w_watcher_thread[ i ], &attrs, DB_WORKER_watcher, ( void* )&t_worker_data[ i ] );
-            if( thread_s[ i ] != 0 ) {
-                LOG_print( "[%s] DB_WORKER_init( ) failed to create DB_WORKER_watcher thread for \"%s\". Error: %d.\n", TIME_get_gmt(), DATABASE_SYSTEMS[ i ].name, thread_s[ i ] );
-                mysql_library_end();
-                return 0;
+            if( DATABASE_SYSTEMS[ i ].failure == 0 ) {
+
+                t_worker_data[ i ].DATA_SYSTEM = &DATABASE_SYSTEMS[ i ];
+                t_worker_data[ i ].thread_id = i;
+                t_worker_data[ i ].step = ETL_EXTRACT;
+
+                LOG_print( "===========================================================\n[%s] DB_WORKER_init: spawning EXTRACT thread %d/%d...\n", TIME_get_gmt(), i + 1, DATABASE_SYSTEMS_COUNT );
+                thread_s[ i ] = pthread_create( &w_watcher_thread[ i ], &attrs, DB_WORKER_watcher, ( void* )&t_worker_data[ i ] );
+                if( thread_s[ i ] != 0 ) {
+                    LOG_print( "[%s] DB_WORKER_init( ) failed to create DB_WORKER_watcher thread for \"%s\". Error: %d.\n", TIME_get_gmt(), DATABASE_SYSTEMS[ i ].name, thread_s[ i ] );
+                    mysql_library_end();
+                    return 0;
+                }
+                Sleep( 10 );
+            } else {
+                LOG_print( "===========================================================\n[%s] DB_WORKER_init: not spawning EXTRACT thread %d/%d due to previous failure.\n", TIME_get_gmt(), i + 1, DATABASE_SYSTEMS_COUNT );
             }
-            Sleep( 10 );
         }
 
         for( i = 0; i < DATABASE_SYSTEMS_COUNT; i++ ) {
@@ -71,18 +77,23 @@ int DB_WORKER_init( void ) {
             Spawn all Transform processes.
         */
         for( i = 0; i < DATABASE_SYSTEMS_COUNT; i++ ) {
-            t_worker_data[ i ].DATA_SYSTEM = &DATABASE_SYSTEMS[ i ];
-            t_worker_data[ i ].thread_id = i;
-            t_worker_data[ i ].step = ETL_TRANSFORM;
 
-            LOG_print( "===========================================================\n[%s] DB_WORKER_init: spawning TRANSFORM/LOAD thread %d/%d...\n", TIME_get_gmt(), i + 1, DATABASE_SYSTEMS_COUNT );
-            thread_s[ i ] = pthread_create( &w_watcher_thread[ i ], &attrs, DB_WORKER_watcher, ( void* )&t_worker_data[ i ] );
-            if( thread_s[ i ] != 0 ) {
-                LOG_print( "[%s] WORKER_init( ) failed to create DB_WORKER_watcher thread for \"%s\". Error: %d.\n", TIME_get_gmt(), DATABASE_SYSTEMS[ i ].name, thread_s[ i ] );
-                mysql_library_end();
-                return 0;
+            if( DATABASE_SYSTEMS[ i ].failure == 0 ) {
+                t_worker_data[ i ].DATA_SYSTEM = &DATABASE_SYSTEMS[ i ];
+                t_worker_data[ i ].thread_id = i;
+                t_worker_data[ i ].step = ETL_TRANSFORM;
+
+                LOG_print( "===========================================================\n[%s] DB_WORKER_init: spawning TRANSFORM/LOAD thread %d/%d...\n", TIME_get_gmt(), i + 1, DATABASE_SYSTEMS_COUNT );
+                thread_s[ i ] = pthread_create( &w_watcher_thread[ i ], &attrs, DB_WORKER_watcher, ( void* )&t_worker_data[ i ] );
+                if( thread_s[ i ] != 0 ) {
+                    LOG_print( "[%s] WORKER_init( ) failed to create DB_WORKER_watcher thread for \"%s\". Error: %d.\n", TIME_get_gmt(), DATABASE_SYSTEMS[ i ].name, thread_s[ i ] );
+                    mysql_library_end();
+                    return 0;
+                }
+                Sleep( 10 );
+            } else {
+                LOG_print( "===========================================================\n[%s] DB_WORKER_init: not spawning TRANSFORM/LOAD thread %d/%d due to previous failure.\n", TIME_get_gmt(), i + 1, DATABASE_SYSTEMS_COUNT );
             }
-            Sleep( 10 );
         }
 
         for( i = 0; i < DATABASE_SYSTEMS_COUNT; i++ ) {
@@ -94,18 +105,22 @@ int DB_WORKER_init( void ) {
             Spawn all Load processes.
         */
         for( i = 0; i < DATABASE_SYSTEMS_COUNT; i++ ) {
-            t_worker_data[ i ].DATA_SYSTEM = &DATABASE_SYSTEMS[ i ];
-            t_worker_data[ i ].thread_id = i;
-            t_worker_data[ i ].step = ETL_LOAD;
+            if( DATABASE_SYSTEMS[ i ].failure == 0 ) {
+                t_worker_data[ i ].DATA_SYSTEM = &DATABASE_SYSTEMS[ i ];
+                t_worker_data[ i ].thread_id = i;
+                t_worker_data[ i ].step = ETL_LOAD;
 
-            LOG_print( "===========================================================\n[%s] DB_WORKER_init: spawning LOAD/TRANSFORM thread %d/%d...\n", TIME_get_gmt(), i + 1, DATABASE_SYSTEMS_COUNT );
-            thread_s[ i ] = pthread_create( &w_watcher_thread[ i ], &attrs, DB_WORKER_watcher, ( void* )&t_worker_data[ i ] );
-            if( thread_s[ i ] != 0 ) {
-                LOG_print( "[%s] WORKER_init( ) failed to create DB_WORKER_watcher thread for \"%s\". Error: %d.\n", TIME_get_gmt(), DATABASE_SYSTEMS[ i ].name, thread_s[ i ] );
-                mysql_library_end();
-                return 0;
+                LOG_print( "===========================================================\n[%s] DB_WORKER_init: spawning LOAD/TRANSFORM thread %d/%d...\n", TIME_get_gmt(), i + 1, DATABASE_SYSTEMS_COUNT );
+                thread_s[ i ] = pthread_create( &w_watcher_thread[ i ], &attrs, DB_WORKER_watcher, ( void* )&t_worker_data[ i ] );
+                if( thread_s[ i ] != 0 ) {
+                    LOG_print( "[%s] WORKER_init( ) failed to create DB_WORKER_watcher thread for \"%s\". Error: %d.\n", TIME_get_gmt(), DATABASE_SYSTEMS[ i ].name, thread_s[ i ] );
+                    mysql_library_end();
+                    return 0;
+                }
+                Sleep( 10 );
+            } else {
+                LOG_print( "===========================================================\n[%s] DB_WORKER_init: not spawning LOAD/TRANSFORM thread %d/%d due to previous failure.\n", TIME_get_gmt(), i + 1, DATABASE_SYSTEMS_COUNT );
             }
-            Sleep( 10 );
         }
 
         for( i = 0; i < DATABASE_SYSTEMS_COUNT; i++ ) {
@@ -184,7 +199,7 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
 
             LOG_print( "\t· [EXTRACT] Query #%d: %s\n", i + 1, DATA_SYSTEM->queries[ i ].name );
 
-            DB_CDC_ExtractInserted(
+            int ei_res = DB_CDC_ExtractInserted(
                 &DATA_SYSTEM->queries[ i ].etl_config.extract,
                 &DATA_SYSTEM->system_db,
                 &DATA_SYSTEM->dcpam_db,
@@ -192,7 +207,12 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
                 DATA_SYSTEM->queries[ i ].etl_config.stage ? ( void* )DATA_SYSTEM->queries[ i ].etl_config.stage : ( void* )&DATA_SYSTEM->queries[ i ].etl_config.load,
                 DATA_SYSTEM->staging_db ? ( void* )DATA_SYSTEM->staging_db : ( void* )&DATA_SYSTEM->dcpam_db
             );
-            DB_CDC_ExtractDeleted(
+            if( ei_res == 0 ) {
+                DATA_SYSTEM->failure = 1;
+                continue;
+            }
+
+            int ed_res = DB_CDC_ExtractDeleted(
                 &DATA_SYSTEM->queries[ i ].etl_config.extract,
                 &DATA_SYSTEM->system_db,
                 &DATA_SYSTEM->dcpam_db,
@@ -200,7 +220,12 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
                 DATA_SYSTEM->queries[ i ].etl_config.stage ? ( void* )DATA_SYSTEM->queries[ i ].etl_config.stage : ( void* )&DATA_SYSTEM->queries[ i ].etl_config.load,
                 DATA_SYSTEM->staging_db ? ( void* )DATA_SYSTEM->staging_db : ( void* )&DATA_SYSTEM->dcpam_db
             );
-            DB_CDC_ExtractModified(
+            if( ed_res == 0 ) {
+                DATA_SYSTEM->failure = 1;
+                continue;
+            }
+
+            int em_res = DB_CDC_ExtractModified(
                 &DATA_SYSTEM->queries[ i ].etl_config.extract,
                 &DATA_SYSTEM->system_db,
                 &DATA_SYSTEM->dcpam_db,
@@ -208,6 +233,10 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
                 DATA_SYSTEM->queries[ i ].etl_config.stage ? ( void* )DATA_SYSTEM->queries[ i ].etl_config.stage : ( void* )&DATA_SYSTEM->queries[ i ].etl_config.load,
                 DATA_SYSTEM->staging_db ? ( void* )DATA_SYSTEM->staging_db : ( void* )&DATA_SYSTEM->dcpam_db
             );
+            if( em_res == 0 ) {
+                DATA_SYSTEM->failure = 1;
+                continue;
+            }
         }
     }
 
@@ -220,24 +249,38 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
                 if( DATA_SYSTEM->queries[ i ].etl_config.transform ) {
                     LOG_print( "\t· [TRANSFORM] Query #%d: %s\n", i + 1, DATA_SYSTEM->queries[ i ].name );
 
-                    DB_CDC_TransformInserted(
+                    int ti_res = DB_CDC_TransformInserted(
                         DATA_SYSTEM->queries[ i ].etl_config.transform->inserted,
                         DATA_SYSTEM->queries[ i ].etl_config.transform->inserted_count,
                         &DATA_SYSTEM->dcpam_db,
                         &DATA_SYSTEM->system_db
                     );
-                    DB_CDC_TransformDeleted(
+                    if( ti_res == 0 ) {
+                        DATA_SYSTEM->failure = 1;
+                        continue;
+                    }
+
+                    int td_res = DB_CDC_TransformDeleted(
                         DATA_SYSTEM->queries[ i ].etl_config.transform->deleted,
                         DATA_SYSTEM->queries[ i ].etl_config.transform->deleted_count,
                         &DATA_SYSTEM->dcpam_db,
                         &DATA_SYSTEM->system_db
                     );
-                    DB_CDC_TransformModified(
+                    if( td_res == 0 ) {
+                        DATA_SYSTEM->failure = 1;
+                        continue;
+                    }
+
+                    int tm_res = DB_CDC_TransformModified(
                         DATA_SYSTEM->queries[ i ].etl_config.transform->modified,
                         DATA_SYSTEM->queries[ i ].etl_config.transform->modified_count,
                         &DATA_SYSTEM->dcpam_db,
                         &DATA_SYSTEM->system_db
                     );
+                    if( tm_res == 0 ) {
+                        DATA_SYSTEM->failure = 1;
+                        continue;
+                    }
                 }
             } else if( 
                 ( DATA_SYSTEM->queries[ i ].mode == M_ETL && curr_etl_step == ETL_LOAD ) ||
@@ -245,21 +288,35 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
             ) {
                 LOG_print( "\t· [LOAD] Query #%d: %s\n", i + 1, DATA_SYSTEM->queries[ i ].name );
 
-                DB_CDC_LoadInserted(
+                int li_res = DB_CDC_LoadInserted(
                     &DATA_SYSTEM->queries[ i ].etl_config.load,
                     DATA_SYSTEM->staging_db ? DATA_SYSTEM->staging_db : &DATA_SYSTEM->dcpam_db,
                     &DATA_SYSTEM->dcpam_db
                 );
-                DB_CDC_LoadDeleted(
+                if( li_res == 0 ) {
+                    DATA_SYSTEM->failure = 1;
+                    continue;
+                }
+
+                int ld_res = DB_CDC_LoadDeleted(
                     &DATA_SYSTEM->queries[ i ].etl_config.load,
                     DATA_SYSTEM->staging_db ? DATA_SYSTEM->staging_db : &DATA_SYSTEM->dcpam_db,
                     &DATA_SYSTEM->dcpam_db
                 );
-                DB_CDC_LoadModified(
+                if( ld_res == 1 ) {
+                    DATA_SYSTEM->failure = 1;
+                    continue;
+                }
+
+                int lm_res = DB_CDC_LoadModified(
                     &DATA_SYSTEM->queries[ i ].etl_config.load,
                     DATA_SYSTEM->staging_db ? DATA_SYSTEM->staging_db : &DATA_SYSTEM->dcpam_db,
                     &DATA_SYSTEM->dcpam_db
                 );
+                if( lm_res == 0 ) {
+                    DATA_SYSTEM->failure = 1;
+                    continue;
+                }
 
                 /* Run PostETL actions. */
                 LOG_print( "[%s] Started run of PostETL Actions.\n", TIME_get_gmt() );

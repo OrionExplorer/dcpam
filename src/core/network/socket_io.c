@@ -1,6 +1,7 @@
 #include "../../include/core/network/socket_io.h"
 #include "../../include/utils/log.h"
 #include "../../include/shared.h"
+#include "../../include/utils/time.h"
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -31,12 +32,12 @@ struct in_addr          addr;
 
 int                     http_conn_count = 0;
 
-static void     SOCKET_initialization( void );
-static void     SOCKET_prepare( void );
-void            SOCKET_process( int socket_fd, spc *socket_process_callback );
-void            SOCKET_stop( void );
+void     SOCKET_initialization( void );
+void     SOCKET_prepare( void );
+void     SOCKET_process( int socket_fd, spc *socket_process_callback );
+void     SOCKET_stop( void );
 
-static void SOCKET_initialization( void ) {
+void SOCKET_initialization( void ) {
     LOG_print("[%s] Initializing...", TIME_get_gmt() );
 
     #ifdef _WIN32
@@ -61,7 +62,7 @@ static void SOCKET_initialization( void ) {
     server_address.sin_port = htons( ( unsigned short )active_port );
 }
 
-static void SOCKET_prepare( void ) {
+void SOCKET_prepare( void ) {
     unsigned long b = 0;
     int i = 1;
     int wsa_result = 0;
@@ -260,10 +261,10 @@ char* SOCKET_get_remote_ip( COMMUNICATION_SESSION *communication_session ) {
 }
 
 void SOCKET_main( spc *socket_process_callback ) {
-    ( void )SOCKET_initialization();
-    ( void )SOCKET_prepare();
-    ( void )SOCKET_run( socket_process_callback );
-    ( void )SOCKET_stop();
+    SOCKET_initialization();
+    SOCKET_prepare();
+    SOCKET_run( socket_process_callback );
+    SOCKET_stop();
 }
 
 void SOCKET_register_client( int socket_descriptor ) {

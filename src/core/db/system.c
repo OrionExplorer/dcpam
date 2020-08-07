@@ -605,6 +605,8 @@ void DATABASE_SYSTEM_add(
 
         int j = 0;
 
+        DATABASE_SYSTEMS[ DATABASE_SYSTEMS_COUNT ].failure = 0;
+
         size_t name_len = strlen(name);
         DATABASE_SYSTEMS[ DATABASE_SYSTEMS_COUNT ].name = SAFECALLOC( name_len + 1, sizeof( char ), __FILE__, __LINE__ );
         if( DATABASE_SYSTEMS[ DATABASE_SYSTEMS_COUNT ].name ) {

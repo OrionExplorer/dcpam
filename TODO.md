@@ -84,8 +84,9 @@
 		* [x] DCPAM EXEC:
 			* [x] Socket server application capable to deal with many connected clients.
 			* [x] Use of `popen` to call external script/application.
-			* [ ] Pass arguments to external script/application.
-* [ ] Handle ETL errors.
+			* [x] Pass arguments to external script/application.
+* [x] Handle ETL errors:
+	* [x] For each system separately. Failure on one system does not affect ETL workflow for other systems.
 * [x] Allow DCPAM ETL to run once and exit (for scheduled CRON tasks).
 * [x] `app.DATA` from `config.json` should be accessed by new subsystem - DCPAM WDS (Warehouse Data Server):
 	* DCPAM WDS is dedicated memory caching system for DCPAM BI backend.

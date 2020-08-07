@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <limits.h>
@@ -8,6 +7,7 @@
 #include "../../../include/utils/log.h"
 #include "../../../include/core/network/client.h"
 #include "../../../include/core/db/etl/transform.h"
+#include <stdio.h>
 
 #ifdef _WIN32
 #define popen           _popen
@@ -19,18 +19,19 @@
 
 extern DCPAM_APP           APP;
 
-void CDC_TransformGeneric( DB_SYSTEM_ETL_TRANSFORM_QUERY *transform_element, DATABASE_SYSTEM_DB* dcpam_db, DATABASE_SYSTEM_DB* system_db );
+int CDC_TransformGeneric( DB_SYSTEM_ETL_TRANSFORM_QUERY *transform_element, DATABASE_SYSTEM_DB* dcpam_db, DATABASE_SYSTEM_DB* system_db );
 
 
-void CDC_TransformGeneric( DB_SYSTEM_ETL_TRANSFORM_QUERY *transform_element, DATABASE_SYSTEM_DB* dcpam_db, DATABASE_SYSTEM_DB* system_db ) {
-
-    if( strstr( transform_element->module, "dcpam://" ) == NULL && strstr( transform_element->module, "./" ) ) {
+int CDC_TransformGeneric( DB_SYSTEM_ETL_TRANSFORM_QUERY *transform_element, DATABASE_SYSTEM_DB* dcpam_db, DATABASE_SYSTEM_DB* system_db ) {
+    if( strstr( transform_element->module, "dcpam://" ) == NULL && strstr( transform_element->module, "./" ) && strstr( transform_element->module, ".." )  == NULL ) {
         FILE    *script = NULL;
         char    command[ 4096 ];
         size_t  res_len = 0;
-        char    res[ 16 ];
+        char    res[ 4096 ];
 
-        memset( res, '\0', 16 );
+        memset( res, '\0', 4096 );
+        memset( command, '\0', 4096 );
+
 
         /* Prepare argument list */
         snprintf( command, 4096, "%s --dhost=\"%s\" --dport=%d --duser=\"%s\" --dpass=\"%s\" --ddriver=%d --dconn=\"%s\" --shost=\"%s\" --sport=%d --suser=\"%s\" --spass=\"%s\" --sdriver=%d --sconn=\"%s\"",
@@ -50,20 +51,21 @@ void CDC_TransformGeneric( DB_SYSTEM_ETL_TRANSFORM_QUERY *transform_element, DAT
         );
 
         LOG_print( "[%s] Running local transform data process at %s.", TIME_get_gmt(), command );
-        LOG_print( "\t- executing local script...", command );
+        LOG_print( "[%s] Executing local script %s...\n", TIME_get_gmt(), command );
         script = popen( command, READ_BINARY );
         if( script == NULL ) {
-            LOG_print( "error.\n" );
+            LOG_print( "[%s] Error executing script %s.\n", TIME_get_gmt(), command );
             pclose( script );
-            return;
+            return 0;
         }
-        res_len = fread( res, sizeof( char ), 16, script );
+        res_len = fread( res, sizeof( char ), 1, script );
         if( res_len == 0 ) {
-            LOG_print( "error. No data returned from script.\n" );
+            LOG_print( "[%s] Error executing script %s. No data returned.\n", TIME_get_gmt(), command );
             pclose( script );
-            return;
+            return 0;
         }
-        LOG_print( "ok. Result: %s.\n", res );
+        res[ res_len ] = 0;
+        LOG_print( "[%s] Script %s finished with result: %s.\n", TIME_get_gmt(), command, res );
         pclose( script );
 
     } else {
@@ -75,7 +77,7 @@ void CDC_TransformGeneric( DB_SYSTEM_ETL_TRANSFORM_QUERY *transform_element, DAT
         sscanf( transform_element->module, "dcpam://%99[^:]:%99d/%255[^\n]", host, &port, script );
 
         /* Prepare query*/
-        snprintf( command, 4096, "m=./%s dhost=%s dport=%d duser=%s dpass=%s driver=%d dconn=%s shost=%s sport=%d suser=%s spass=%s sdriver=%d sconn=%s",
+        snprintf( command, 4096, "m=./%s dhost=%s dport=%d duser=%s dpass=%s ddriver=%d dconn=\"%s\" shost=%s sport=%d suser=%s spass=%s sdriver=%d sconn=\"%s\"",
             script,
             dcpam_db->ip,
             dcpam_db->port,
@@ -91,7 +93,7 @@ void CDC_TransformGeneric( DB_SYSTEM_ETL_TRANSFORM_QUERY *transform_element, DAT
             system_db->connection_string
         );
 
-        LOG_print( "[%s] Running remote transform data process at dcpam://%s:%d > %s\n.", TIME_get_gmt(), host, port, command );
+        LOG_print( "[%s] Running remote transform data process at dcpam://%s:%d with payload %s\n", TIME_get_gmt(), host, port, command );
 
         transform_element->connection = SAFEMALLOC( sizeof( NET_CONN ), __FILE__, __LINE__ );
         if( NET_CONN_connect( transform_element->connection, host, port ) == 1 ) {
@@ -107,39 +109,47 @@ void CDC_TransformGeneric( DB_SYSTEM_ETL_TRANSFORM_QUERY *transform_element, DAT
         }
         free( transform_element->connection ); transform_element->connection = NULL;
     }
+
+    return 1;
 }
 
 
-void DB_CDC_TransformInserted( DB_SYSTEM_ETL_TRANSFORM_QUERY **transform_elements, const int count, DATABASE_SYSTEM_DB* dcpam_db, DATABASE_SYSTEM_DB* system_db ) {
+int DB_CDC_TransformInserted( DB_SYSTEM_ETL_TRANSFORM_QUERY **transform_elements, const int count, DATABASE_SYSTEM_DB* dcpam_db, DATABASE_SYSTEM_DB* system_db ) {
     if( transform_elements && dcpam_db && system_db ) {
         LOG_print( "\t· [CDC - TRANSFORM::INSERTED]:\n" );
         for( int i = 0; i < count; i++ ) {
-            CDC_TransformGeneric( transform_elements[ i ], dcpam_db, system_db );
+            return CDC_TransformGeneric( transform_elements[ i ], dcpam_db, system_db );
         }
+        return 1;
     } else {
         LOG_print( "\t· [CDC - TRANSFORM::INSERTED] Fatal error: not all DB_CDC_TransformInserted parameters are valid!\n" );
+        return 0;
     }
 
 }
 
-void DB_CDC_TransformDeleted( DB_SYSTEM_ETL_TRANSFORM_QUERY **transform_elements, const int count, DATABASE_SYSTEM_DB* dcpam_db, DATABASE_SYSTEM_DB* system_db ) {
+int DB_CDC_TransformDeleted( DB_SYSTEM_ETL_TRANSFORM_QUERY **transform_elements, const int count, DATABASE_SYSTEM_DB* dcpam_db, DATABASE_SYSTEM_DB* system_db ) {
     if( transform_elements && dcpam_db && system_db ) {
         LOG_print( "\t· [CDC - TRANSFORM::DELETED]:\n" );
         for( int i = 0; i < count; i++ ) {
-            CDC_TransformGeneric( transform_elements[ i ], dcpam_db, system_db );
+            return CDC_TransformGeneric( transform_elements[ i ], dcpam_db, system_db );
         }
+        return 1;
     } else {
         LOG_print( "\t· [CDC - TRANSFORM::DELETED] Fatal error: not all DB_CDC_TransformDeleted parameters are valid!\n" ); 
+        return 0;
     }
 }
 
-void DB_CDC_TransformModified( DB_SYSTEM_ETL_TRANSFORM_QUERY **transform_elements, const int count, DATABASE_SYSTEM_DB* dcpam_db, DATABASE_SYSTEM_DB* system_db ) {
+int DB_CDC_TransformModified( DB_SYSTEM_ETL_TRANSFORM_QUERY **transform_elements, const int count, DATABASE_SYSTEM_DB* dcpam_db, DATABASE_SYSTEM_DB* system_db ) {
     if( transform_elements && dcpam_db && system_db ) {
         LOG_print( "\t· [CDC - TRANSFORM::MODIFIED]:\n" );
         for( int i = 0; i < count; i++ ) {
-            CDC_TransformGeneric( transform_elements[ i ], dcpam_db, system_db );
+            return CDC_TransformGeneric( transform_elements[ i ], dcpam_db, system_db );
         }
+        return 1;
     } else {
         LOG_print( "\t· [CDC - TRANSFORM::MODIFIED] Fatal error: not all DB_CDC_TransformModified parameters are valid!\n" );
+        return 0;
     }
 }

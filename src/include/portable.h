@@ -27,6 +27,7 @@
     #define Sleep(x)        dcpam_sleep(x)
 #endif
 
+#ifndef _WIN32
 #ifndef NI_MAXHOST
 # define NI_MAXHOST         1025
 #endif
@@ -47,6 +48,7 @@
 #endif
 #ifndef NI_DGRAM
 # define NI_DGRAM           16
+#endif
 #endif
 
 #ifdef _MSC_VER

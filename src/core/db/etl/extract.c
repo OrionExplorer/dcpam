@@ -53,11 +53,11 @@ int CDC_ExtractQueryTypeValid( const char *sql ) {
     return 1;
 }
 
-void CDC_ExtractGeneric( DB_SYSTEM_ETL_EXTRACT *extract, DB_SYSTEM_ETL_EXTRACT_QUERY *extract_element, DATABASE_SYSTEM_DB *system_db, DATABASE_SYSTEM_DB* dcpam_db, qec *query_exec_callback, void* data_ptr1, void* data_ptr2 ) {
+int CDC_ExtractGeneric( DB_SYSTEM_ETL_EXTRACT *extract, DB_SYSTEM_ETL_EXTRACT_QUERY *extract_element, DATABASE_SYSTEM_DB *system_db, DATABASE_SYSTEM_DB* dcpam_db, qec *query_exec_callback, void* data_ptr1, void* data_ptr2 ) {
 
     if( CDC_ExtractQueryTypeValid( extract_element->primary_db_sql ) == 0 || CDC_ExtractQueryTypeValid( extract_element->secondary_db_sql ) == 0 ) {
         LOG_print( "Fatal error: Only SELECT queries are allowed in *_sql commands.\n" );
-        return;
+        return 0;
     }
 
     if( extract ) {
@@ -123,7 +123,7 @@ void CDC_ExtractGeneric( DB_SYSTEM_ETL_EXTRACT *extract, DB_SYSTEM_ETL_EXTRACT_Q
                             }
                             free( ret_values );
                             ret_values = NULL;
-                            return;
+                            return 0;
                         }
 
                         /* Join ret_values with commas */
@@ -175,6 +175,7 @@ void CDC_ExtractGeneric( DB_SYSTEM_ETL_EXTRACT *extract, DB_SYSTEM_ETL_EXTRACT_Q
                     DB_QUERY_free( &primary_db_sql_res );
                     /*DB_QUERY_free( data );*/
                     LOG_print( "Fatal error: query returned more than one column.\n" );
+                    return 0;
                 }
             } else {
                 DB_QUERY_free( &primary_db_sql_res );
@@ -182,34 +183,38 @@ void CDC_ExtractGeneric( DB_SYSTEM_ETL_EXTRACT *extract, DB_SYSTEM_ETL_EXTRACT_Q
         } else {
             /* In case of error, free query result struct */
             DB_QUERY_free( &primary_db_sql_res );
-            /*DB_QUERY_free( data );*/
         }
     }
+
+    return 1;
 }
 
-void DB_CDC_ExtractInserted( DB_SYSTEM_ETL_EXTRACT *extract, DATABASE_SYSTEM_DB *system_db, DATABASE_SYSTEM_DB* dcpam_db, qec *query_exec_callback, void* data_ptr1, void* data_ptr2 ) {
+int DB_CDC_ExtractInserted( DB_SYSTEM_ETL_EXTRACT *extract, DATABASE_SYSTEM_DB *system_db, DATABASE_SYSTEM_DB* dcpam_db, qec *query_exec_callback, void* data_ptr1, void* data_ptr2 ) {
     if( extract && system_db && dcpam_db ) {
         LOG_print( "\t· [CDC - EXTRACT::INSERTED] existing data:\n" );
-        CDC_ExtractGeneric( extract, &extract->inserted, system_db, dcpam_db, query_exec_callback, data_ptr1, data_ptr2 );
+        return CDC_ExtractGeneric( extract, &extract->inserted, system_db, dcpam_db, query_exec_callback, data_ptr1, data_ptr2 );
     } else {
         LOG_print( "\t· [CDC - EXTRACT::INSERTED] Fatal error: not all DB_CDC_ExtractInserted parameters are valid!\n" );
+        return 0;
     }
 }
 
-void DB_CDC_ExtractDeleted( DB_SYSTEM_ETL_EXTRACT *extract, DATABASE_SYSTEM_DB *system_db, DATABASE_SYSTEM_DB* dcpam_db, qec *query_exec_callback, void* data_ptr1, void* data_ptr2 ) {
+int DB_CDC_ExtractDeleted( DB_SYSTEM_ETL_EXTRACT *extract, DATABASE_SYSTEM_DB *system_db, DATABASE_SYSTEM_DB* dcpam_db, qec *query_exec_callback, void* data_ptr1, void* data_ptr2 ) {
     if( extract && system_db && dcpam_db ) {
         LOG_print( "\t· [CDC - EXTRACT::DELETED] existing data:\n" );
-        CDC_ExtractGeneric( extract, &extract->deleted, system_db, dcpam_db, query_exec_callback, data_ptr1, data_ptr2 );
+        return CDC_ExtractGeneric( extract, &extract->deleted, system_db, dcpam_db, query_exec_callback, data_ptr1, data_ptr2 );
     } else {
         LOG_print( "\t· [CDC - EXTRACT::DELETED] Fatal error: not all DB_CDC_ExtractDeleted parameters are valid!\n" ); 
+        return 0;
     }
 }
 
-void DB_CDC_ExtractModified( DB_SYSTEM_ETL_EXTRACT *extract, DATABASE_SYSTEM_DB *system_db, DATABASE_SYSTEM_DB* dcpam_db, qec *query_exec_callback, void* data_ptr1, void* data_ptr2 ) {
+int DB_CDC_ExtractModified( DB_SYSTEM_ETL_EXTRACT *extract, DATABASE_SYSTEM_DB *system_db, DATABASE_SYSTEM_DB* dcpam_db, qec *query_exec_callback, void* data_ptr1, void* data_ptr2 ) {
     if( extract && system_db && dcpam_db ) {
         LOG_print( "\t· [CDC - EXTRACT::MODIFIED] existing data:\n" );
-        CDC_ExtractGeneric( extract, &extract->modified, system_db, dcpam_db, query_exec_callback, data_ptr1, data_ptr2 );
+        return CDC_ExtractGeneric( extract, &extract->modified, system_db, dcpam_db, query_exec_callback, data_ptr1, data_ptr2 );
     } else {
         LOG_print( "\t· [CDC - EXTRACT::MODIFIED] Fatal error: not all DB_CDC_ExtractModified parameters are valid!\n" );
+        return 0;
     }
 }

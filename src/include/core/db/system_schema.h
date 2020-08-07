@@ -51,6 +51,7 @@ typedef struct DATABASE_SYSTEM {
     DATABASE_SYSTEM_DB      *staging_db;
     DATABASE_SYSTEM_QUERY   queries[ MAX_SYSTEM_QUERIES ];
     int                     queries_len;
+    int                     failure;
 } DATABASE_SYSTEM;
 
 #endif
