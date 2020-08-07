@@ -34,37 +34,46 @@ int NET_CONN_connect( NET_CONN *connection, const char *host, const int port ) {
 }
 
 int NET_CONN_disconnect( NET_CONN *connection ) {
-    LOG_print( "[%s] NET_CONN_disconnect( %s, %d )...", TIME_get_gmt(), connection->host, connection->port );
+    if( connection ) {
+        LOG_print( "[%s] NET_CONN_disconnect( %s, %d )...", TIME_get_gmt(), connection->host, connection->port );
 
-    free( connection->host ); connection->host = NULL;
-    free( connection->response ); connection->response = NULL;
+        free( connection->host ); connection->host = NULL;
+        free( connection->response ); connection->response = NULL;
 
-    LOG_print( "ok.\n" );
+        LOG_print( "ok.\n" );
 
-    return closesocket( connection->socket );
+        return closesocket( connection->socket );
+    } else {
+        LOG_print( "error. Connection pointer is not valid.\n" );
+        return 0;
+    }
 }
 
 int NET_CONN_send( NET_CONN *connection, const char *data, size_t data_len ) {
-
     char    response[ 256 ];
 
-    if( send( connection->socket, data, data_len, 0 ) < 0 ) {
-        LOG_print( "[%s] Error sending data to %s.\n", TIME_get_gmt(), connection->host );
+    if( connection ) {
+        if( send( connection->socket, data, data_len, 0 ) < 0 ) {
+            LOG_print( "[%s] Error sending data to %s.\n", TIME_get_gmt(), connection->host );
+            return 0;
+        }
+
+        int response_len = recv( connection->socket, response, 255, 0 );
+        if( response_len < 0 ) {
+            LOG_print( "[%s] Error receiving data to %s.\n", TIME_get_gmt(), connection->host );
+            return 0;
+        }
+
+        connection->response = SAFECALLOC( response_len + 1, sizeof( char ), __FILE__, __LINE__ );
+        strncpy(
+            connection->response,
+            response,
+            response_len
+        );
+
+        return 1;
+    } else {
+        LOG_print( "[connection pointer is not valid]..." );
         return 0;
     }
-
-    int response_len = recv( connection->socket, response, 255, 0 );
-    if( response_len < 0 ) {
-        LOG_print( "[%s] Error receiving data to %s.\n", TIME_get_gmt(), connection->host );
-        return 0;
-    }
-
-    connection->response = SAFECALLOC( response_len + 1, sizeof( char ), __FILE__, __LINE__ );
-    strncpy(
-        connection->response,
-        response,
-        response_len
-    );
-
-    return 1;
 }

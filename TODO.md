@@ -86,7 +86,7 @@
 			* [x] Use of `popen` to call external script/application.
 			* [x] Pass arguments to external script/application.
 * [x] Handle ETL errors:
-	* [x] For each system separately. Failure on one system does not affect ETL workflow for other systems.
+	* [x] For each system separately. Failure on one system does not affect ETL workflow for other systems and does not stop DCPAM ETL service.
 * [x] Allow DCPAM ETL to run once and exit (for scheduled CRON tasks).
 * [x] `app.DATA` from `config.json` should be accessed by new subsystem - DCPAM WDS (Warehouse Data Server):
 	* DCPAM WDS is dedicated memory caching system for DCPAM BI backend.

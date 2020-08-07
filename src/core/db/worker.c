@@ -208,6 +208,7 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
                 DATA_SYSTEM->staging_db ? ( void* )DATA_SYSTEM->staging_db : ( void* )&DATA_SYSTEM->dcpam_db
             );
             if( ei_res == 0 ) {
+                LOG_print( "[%s] Fatal error: process exited with failure. %s processing is put on hold.\n", TIME_get_gmt(), DATA_SYSTEM->name );
                 DATA_SYSTEM->failure = 1;
                 continue;
             }
@@ -221,6 +222,7 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
                 DATA_SYSTEM->staging_db ? ( void* )DATA_SYSTEM->staging_db : ( void* )&DATA_SYSTEM->dcpam_db
             );
             if( ed_res == 0 ) {
+                LOG_print( "[%s] Fatal error: process exited with failure. %s processing is put on hold.\n", TIME_get_gmt(), DATA_SYSTEM->name );
                 DATA_SYSTEM->failure = 1;
                 continue;
             }
@@ -234,6 +236,7 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
                 DATA_SYSTEM->staging_db ? ( void* )DATA_SYSTEM->staging_db : ( void* )&DATA_SYSTEM->dcpam_db
             );
             if( em_res == 0 ) {
+                LOG_print( "[%s] Fatal error: process exited with failure. %s processing is put on hold.\n", TIME_get_gmt(), DATA_SYSTEM->name );
                 DATA_SYSTEM->failure = 1;
                 continue;
             }
@@ -256,6 +259,7 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
                         &DATA_SYSTEM->system_db
                     );
                     if( ti_res == 0 ) {
+                        LOG_print( "[%s] Fatal error: process exited with failure. %s processing is put on hold.\n", TIME_get_gmt(), DATA_SYSTEM->name );
                         DATA_SYSTEM->failure = 1;
                         continue;
                     }
@@ -267,6 +271,7 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
                         &DATA_SYSTEM->system_db
                     );
                     if( td_res == 0 ) {
+                        LOG_print( "[%s] Fatal error: process exited with failure. %s processing is put on hold.\n", TIME_get_gmt(), DATA_SYSTEM->name );
                         DATA_SYSTEM->failure = 1;
                         continue;
                     }
@@ -278,6 +283,7 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
                         &DATA_SYSTEM->system_db
                     );
                     if( tm_res == 0 ) {
+                        LOG_print( "[%s] Fatal error: process exited with failure. %s processing is put on hold.\n", TIME_get_gmt(), DATA_SYSTEM->name );
                         DATA_SYSTEM->failure = 1;
                         continue;
                     }
@@ -294,6 +300,7 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
                     &DATA_SYSTEM->dcpam_db
                 );
                 if( li_res == 0 ) {
+                    LOG_print( "[%s] Fatal error: process exited with failure. %s processing is put on hold.\n", TIME_get_gmt(), DATA_SYSTEM->name );
                     DATA_SYSTEM->failure = 1;
                     continue;
                 }
@@ -303,7 +310,8 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
                     DATA_SYSTEM->staging_db ? DATA_SYSTEM->staging_db : &DATA_SYSTEM->dcpam_db,
                     &DATA_SYSTEM->dcpam_db
                 );
-                if( ld_res == 1 ) {
+                if( ld_res == 0 ) {
+                    LOG_print( "[%s] Fatal error: process exited with failure. %s processing is put on hold.\n", TIME_get_gmt(), DATA_SYSTEM->name );
                     DATA_SYSTEM->failure = 1;
                     continue;
                 }
@@ -314,6 +322,7 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
                     &DATA_SYSTEM->dcpam_db
                 );
                 if( lm_res == 0 ) {
+                    LOG_print( "[%s] Fatal error: process exited with failure. %s processing is put on hold.\n", TIME_get_gmt(), DATA_SYSTEM->name );
                     DATA_SYSTEM->failure = 1;
                     continue;
                 }
