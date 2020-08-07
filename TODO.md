@@ -60,7 +60,7 @@
 		* [x] PreETL actions execution.
 		* [x] PostETL actions execution.
 		* [x] Remove `system.queries[].change_data_capture.stage.reset`.
-* [ ] Transform subprocess (https://en.wikipedia.org/wiki/Extract,_transform,_load#Transform):
+* [x] Transform subprocess (https://en.wikipedia.org/wiki/Extract,_transform,_load#Transform):
 	* [ ] Proposal #1: simple internal operations within dcpam (NO-GO: hard-coded rules, small range of usable functions).
 	* [x] Proposal #2: make use of external scripts/applications.
 	* [ ] Proposal #3: LUA scripts (NO-GO: DCPAM ETL would require major rebuild and new dependencies, also speed is concern).
@@ -70,23 +70,26 @@
 		* Scripts/applications for transformation are placed here.
 		* New DCPAM tool for communication with DCPAM engine.
 		* Possible to call Transformation scripts/applications locally and remotely.
-	* [ ] Implementation:
+	* [x] Implementation:
 		* [x] Rebuild DCPAM ETL config.
 		* [x] Socket-based network layer (client):
 			* [x] Protocol.
 		* [x] Run external script/application (`popen` for local and sockets for remote).
 		* [x] Provide all the necessary auth data to external script/application with command line arguments. 
 		* [x] Wait for external script/application to finish with `EXIT_SUCCESS`.
-		* [ ] Proof of concept script:
-			* [ ] Python script.
-			* [ ] Remove leading and trailing spaces.
-			* [ ] Backflow of cleaned data in the original source.
+		* [x] Proof of concept script:
+			* [x] Python script.
 		* [x] DCPAM EXEC:
 			* [x] Socket server application capable to deal with many connected clients.
 			* [x] Use of `popen` to call external script/application.
 			* [x] Pass arguments to external script/application.
 * [x] Handle ETL errors:
 	* [x] For each system separately. Failure on one system does not affect ETL workflow for other systems and does not stop DCPAM ETL service.
+* [ ] Example python script for data transformation:
+	* [ ] Parse arguments passed by DCPAM EXEC.
+	* [ ] Connect to data source.
+	* [ ] Process staged data.
+	* [ ] Perform backflow of cleaned data to source system.
 * [x] Allow DCPAM ETL to run once and exit (for scheduled CRON tasks).
 * [x] `app.DATA` from `config.json` should be accessed by new subsystem - DCPAM WDS (Warehouse Data Server):
 	* DCPAM WDS is dedicated memory caching system for DCPAM BI backend.
