@@ -137,7 +137,7 @@ More specific description of data transformation possibilities can be found in [
 [DCPAM WDS](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_WDS) is dedicated endpoint for querying predefined business data. It is custom caching system for DCPAM.
 
 #### DCPAM RDP - Remote Data Processor
-[DCPAM RDP](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_RDP) is used by DCPAM ETL to execute transform scripts/applications that must be run on separate machines because of performance impact. DCPAM ETL communicate with these remote scripts/applications through DCPAM RDP.
+[DCPAM RDP](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_RDP) is used by DCPAM ETL to execute transform scripts/applications that must be run on separate machines when performance impact is significant. DCPAM ETL communicate with these remote scripts/applications through DCPAM RDP.
 
 ![DCPAM Architecture overview](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/architecture.png)
 *<p align=center>DCPAM Architecture overview</p>*
@@ -151,7 +151,7 @@ Example of DCPAM Transform process scalability:
 * Many DCPAM Database nodes can be encapsulated into single data access point by DCPAM WDS.
 
 #### DCPAM Construct
-DCPAM Construct is going to be main system administration web application.
+DCPAM Construct is going to be the main system administration web application.
 
 #### DCPAM Access
 DCPAM Access is going to be dedicated Bussiness Inteligence web application.
