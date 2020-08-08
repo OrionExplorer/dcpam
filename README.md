@@ -24,6 +24,11 @@
     * [Other](https://github.com/OrionExplorer/dcpam#other)
 * [Technology](https://github.com/OrionExplorer/dcpam#technology)
     * [DCPAM Components](https://github.com/OrionExplorer/dcpam#dcpam-components)
+      * [DCPAM ETL - Extract-Transform-Load / Extract-Load-Transform](https://github.com/OrionExplorer/dcpam#dcpam-etl-extract-transform-load-extract-load-transform)
+      * [DCPAM WDS - Warehouse Data Server](https://github.com/OrionExplorer/dcpam#dcpam-wds-warehouse-data-server)
+      * [DCPAM RDP - Remote Data Processor](https://github.com/OrionExplorer/dcpam#dcpam-rdp-remote-data-processor)
+      * [DCPAM Construct](https://github.com/OrionExplorer/dcpam#dcpam-construct)
+      * [DCPAM Access](https://github.com/OrionExplorer/dcpam#dcpam-access)
     * [Data Sources](https://github.com/OrionExplorer/dcpam#data-sources)
     * [DCPAM Database](https://github.com/OrionExplorer/dcpam#dcpam-database)
 * [Roadmap](https://github.com/OrionExplorer/dcpam#roadmap)
@@ -129,7 +134,7 @@ More specific description of data transformation possibilities can be found in [
 [DCPAM ETL](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL) is the main ETL/ELT engine. Many instances of DCPAM ETL can work within single Data Warehouse.
 
 #### DCPAM WDS - Warehouse Data Server
-[DCPAM WDS](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_WDS) is dedicated endpoint for querying predefined business data. It is dedicated caching system for DCPAM.
+[DCPAM WDS](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_WDS) is dedicated endpoint for querying predefined business data. It is custom caching system for DCPAM.
 
 #### DCPAM RDP - Remote Data Processor
 [DCPAM RDP](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_RDP) is used by DCPAM ETL to execute transform scripts/applications that must be run on separate machines because of performance impact. DCPAM ETL communicate with these remote scripts/applications through DCPAM RDP.
