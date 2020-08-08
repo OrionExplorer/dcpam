@@ -24,7 +24,12 @@
   * possibility to run outside the DCPAM server
 
 ![Architecture overview](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/rdp.png)
-
+Example of DCPAM Transform process scalability:
+* Multiple DCPAM ETL engine nodes can be run within single Data Warehouse.
+* Each DCPAM ETL instance can trigger unlimitend number of local and remote (through DCPAM RDP) data transformation scripts/applications.
+* Each DCPAM ETL instance can use dedicated Staging Area node (local or remote).
+* Many DCPAM Database nodes can be encapsulated into single data access point by DCPAM WDS.
+* DCPAM ETL, Staging Area, DCPAM Database and DCPAM WDS can run on single server as well!
 
 #### Compilation (Linux)
 > Before attempt to compile, please adjust `ORACLE_DEP` paths in `makefile`.
