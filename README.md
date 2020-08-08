@@ -9,7 +9,7 @@
 
 * DCPAM helps to create central repositories of integrated data from one or disparate sources [[1]].
 * DCPAM goal is to deliver full range of Data Warehouse possibilities without need to include or hire more engineers for this specific task.
-* DCPAM architecture is [highly flexible and provides unlimited scaling possibilities](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL#architecture-overview).
+* DCPAM architecture is [highly flexible](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL#architecture-overview) and [provides unlimited scaling possibilities](https://github.com/OrionExplorer/dcpam#dcpam-rdp---remote-data-processor).
 * DCPAM allows to perform advanced data copy between technically different datasets.
 * DCPAM is multiplatform (Linux/Windows/Cloud).
 
