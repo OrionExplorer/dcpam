@@ -140,7 +140,7 @@ More specific description of data transformation possibilities can be found in [
 [DCPAM RDP](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_RDP) is used by DCPAM ETL to execute transform scripts/applications that must be run on separate machines when performance impact is significant. DCPAM ETL communicate with these remote scripts/applications through DCPAM RDP.
 
 ![DCPAM Architecture overview](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/architecture.png)
-*<p align=center>DCPAM Architecture overview</p>*
+*<p align=center>DCPAM workflow overview</p>*
 
 
 ![DCPAM Transform process architecture overview](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/rdp.png)
