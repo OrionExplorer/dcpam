@@ -149,6 +149,7 @@ Example of DCPAM Transform process scalability:
 * Each DCPAM ETL instance can trigger unlimitend number of local and remote (through DCPAM RDP) data transformation scripts/applications.
 * Each DCPAM ETL instance can use dedicated Staging Area node (local or remote).
 * Many DCPAM Database nodes can be encapsulated into single data access point by DCPAM WDS.
+* DCPAM ETL, Staging Area, DCPAM Database and DCPAM WDS can run on single server as well!
 
 #### DCPAM Construct
 DCPAM Construct is going to be the main system administration web application.
