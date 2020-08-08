@@ -131,7 +131,8 @@ More specific description of data transformation possibilities can be found in [
   * DCPAM Construct - system administration.
   * DCPAM Access - Bussiness Inteligence web application.
 
-![Architecture overview](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/architecture.png)
+![DCPAM Architecture overview](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/architecture.png)
+![DCPAM Transform process architecture overview](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/rdp.png)
 
 ### Data sources
 DCPAM development is still in progress with following data sources available:
