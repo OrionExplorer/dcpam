@@ -19,7 +19,7 @@
 * [Business Value](https://github.com/OrionExplorer/dcpam#business-value)
     * [Extract, Transform and Load](https://github.com/OrionExplorer/dcpam#extract-transform-and-load)
 * [Data Warehouse with DCPAM](https://github.com/OrionExplorer/dcpam#data-warehouse-with-dcpam)
-    * [What DCAM covers in terms of Data Warehousing?](https://github.com/OrionExplorer/dcpam#what-dcpam-covers-in-terms-of-data-warehousing)
+    * [What DCPAM covers in terms of Data Warehousing?](https://github.com/OrionExplorer/dcpam#what-dcpam-covers-in-terms-of-data-warehousing)
     * [Elements yet to be covered by DCPAM](https://github.com/OrionExplorer/dcpam#elements-yet-to-be-covered-by-dcpam)
     * [Other](https://github.com/OrionExplorer/dcpam#other)
 * [Technology](https://github.com/OrionExplorer/dcpam#technology)
@@ -125,18 +125,31 @@ More specific description of data transformation possibilities can be found in [
 
 ## Technology
 ### DCPAM Components
-  * [DCPAM ETL](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL) - main ETL/ELT engine.
-  * [DCPAM WDS](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_WDS) - warehouse data server with memory caching system.
-  * [DCPAM RDP](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_RDP) - remote data processor for transformations.
-  * DCPAM Construct - system administration.
-  * DCPAM Access - Bussiness Inteligence web application.
+#### DCPAM ETL - Extract-Transform-Load / Extract-Load-Transform
+[DCPAM ETL](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL) is the main ETL/ELT engine. Many instances of DCPAM ETL can work within single Data Warehouse.
+
+#### DCPAM WDS - Warehouse Data Server
+[DCPAM WDS](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_WDS) is dedicated endpoint for querying predefined business data. It is dedicated caching system for DCPAM.
+
+#### DCPAM RDP - Remote Data Processor
+[DCPAM RDP](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_RDP) is used by DCPAM ETL to execute transform scripts/applications that must be run on separate machines because of performance impact. DCPAM ETL communicate with these remote scripts/applications through DCPAM RDP.
 
 ![DCPAM Architecture overview](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/architecture.png)
 *<p align=center>DCPAM Architecture overview</p>*
 
 
 ![DCPAM Transform process architecture overview](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/rdp.png)
-*<p align=center>DCPAM Transform process overview</p>*
+Example of DCPAM Transform process scalability:
+* Multiple DCPAM ETL engine nodes can be run within single Data Warehouse.
+* Each DCPAM ETL instance can trigger unlimitend number of local and remote (through DCPAM RDP) data transformation scripts/applications.
+* Each DCPAM ETL instance can use dedicated Staging Area node (local or remote).
+* Many DCPAM Database nodes can be encapsulated into single data access point by DCPAM WDS.
+
+#### DCPAM Construct
+DCPAM Construct is going to be main system administration web application.
+
+#### DCPAM Access
+DCPAM Access is going to be dedicated Bussiness Inteligence web application.
 
 ### Data sources
 DCPAM development is still in progress with following data sources available:
