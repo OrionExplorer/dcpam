@@ -84,12 +84,16 @@ Sample operations to perform with this process:
 Moreover, Transform process is able to perform backflow of cleaned data to the original source.
 
 DCPAM ETL can handle data transformations with two different approaches:
-1. Locally - each transform module is executed on the same server, where DCPAM is.
-2. Remotely - transform modules are located on one or more different machines. This is recommended solution for compute-intensive data transformations.
+1. **Locally** - each transform module is executed on the same server, where DCPAM is.
+2. **Remotely** - transform modules are located on one or more different machines and operated by [DCPAM RDP](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_RDP). This is recommended solution for compute-intensive data transformations.
+
+![Architecture overview](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/rdp.png)
 
 DCPAM ETL does not limit the number of transformations in any way. Furthermore, both local and remote approaches can be used simultaneously.
 
 Data transformation in DCPAM ETL pipeline is not enforced.
+
+
 
 ### Loading
 When all transformations in the Staging Area are completed or during the Extract subprocess, DCPAM ETL loads the data directly into target tables. Dimensions are first to load, followed by Facts. Then Staging Area is cleared and ready for the next occurence of data extraction.
