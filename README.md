@@ -132,6 +132,8 @@ More specific description of data transformation possibilities can be found in [
 
 ## Technology
 ### DCPAM Components
+DCPAM Data Warehouse Solution consists of a number of integrated components.
+
 #### DCPAM ETL - Extract-Transform-Load / Extract-Load-Transform
 [DCPAM ETL](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL) is the main ETL/ELT engine. Many instances of DCPAM ETL can work within single Data Warehouse.
 
@@ -139,7 +141,7 @@ More specific description of data transformation possibilities can be found in [
 [DCPAM WDS](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_WDS) is dedicated endpoint for querying predefined business data with custom caching system. DCPAM WDS encapsulates every node od DCPAM Database into single data access point.
 
 #### DCPAM RDP - Remote Data Processor
-[DCPAM RDP](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_RDP) is used by DCPAM ETL to execute transform scripts/applications that must be run on separate machines when performance impact is significant. DCPAM ETL communicate with these remote scripts/applications through DCPAM RDP.
+[DCPAM RDP](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_RDP) is used by DCPAM ETL to execute transform scripts/applications that must be run on separate machines when performance impact is significant. DCPAM ETL communicates with these remote scripts/applications through DCPAM RDP.
 
 ![DCPAM Architecture overview](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/architecture.png)
 *<p align=center>DCPAM workflow overview</p>*
@@ -186,7 +188,8 @@ Therefore every database listed above as available data source can also be used 
 |:----------------------------------|:----------------------------------------|
 | ~Transform process~               | DCPAM Construct (admin web application) |
 | DCPAM WDS (warehouse data server) | DCPAM AI platform                       |
-| Data source: flat files           |                                         |
+| Data source: local flat files     |                                         |
+| Data source: remote flat files    |                                         |
 | DCPAM Access (BI web application) |                                         |
 
 ---
