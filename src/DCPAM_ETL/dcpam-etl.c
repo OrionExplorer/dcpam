@@ -230,7 +230,7 @@ int DCPAM_load_configuration( const char* filename ) {
                     size_t str_len = strlen( cfg_app_version->valuestring );
                     APP.version = SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
                     snprintf( APP.version, str_len + 1, cfg_app_version->valuestring );
-                    LOG_print( "v%s.\n", APP.version );
+                    LOG_print( "%s v%s.\n", APP.name, APP.version );
                 } else {
                     LOG_print( "ERROR: \"app.version\" key not found.\n" );
                     cJSON_Delete( config_json );

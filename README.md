@@ -71,7 +71,8 @@ More specific description of data transformation possibilities can be found in [
     * handled remotely (in relation to the Staging Area)
   * Data load from:
     * local Staging Area
-    * remote Staging Area 
+    * remote Staging Area
+    * Extract subprocess results
 * Parallel execution:
   * By design:
     * Each ETL process runs in separate thread.
@@ -184,6 +185,7 @@ Therefore every database listed above as available data source can also be used 
 |:----------------------------------|:----------------------------------------|
 | ~Transform process~               | DCPAM Construct (admin web application) |
 | DCPAM WDS (warehouse data server) | DCPAM AI platform                       |
+| Data source: flat files           |                                         |
 | DCPAM Access (BI web application) |                                         |
 
 ---

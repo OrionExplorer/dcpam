@@ -34,7 +34,7 @@ void DCPAM_script_exec( COMMUNICATION_SESSION *communication_session, CONNECTED_
         sscanf( communication_session->content, "m=%255s dhost=%99s dport=%5d duser=%99s dpass=%99s ddriver=%2d dconn=\"%1024[^\"]\" shost=%99s sport=%5d suser=%99s spass=%99s sdriver=%2d sconn=\"%1024[^\"]\"", module, dhost, &dport, duser, dpass, &ddriver, dconn, shost, &sport, suser, spass, &sdriver, sconn );
         snprintf( command, 4096, "%s --dhost %s --dport %d --duser %s --dpass %s --ddriver %d --dconn \"%s\" --shost %s --sport %d --suser %s --spass %s --sdriver %d --sconn \"%s\"", module, dhost, dport, duser, dpass, ddriver, dconn, shost, sport, suser, spass, sdriver, sconn );
         LOG_print( "[%s] Executing local script %s...\n", TIME_get_gmt(), command );
-        //LOG_print( "\t- executing local script: %s with params: -dhost=%s -dport=%d -duser=%s -dpass=%s -ddriver=%d -dconn=%s -shost=%s -sport=%d -suser=%s -spass=%s -sdriver=%d -sconn=%s...", command, dhost, dport, duser, dpass, ddriver, dconn, shost, sport, suser, spass, sdriver, sconn );
+
         script = popen( command, READ_BINARY );
         if( script == NULL ) {
             LOG_print( "[%s] Error executing script %s.\n", TIME_get_gmt(), command );

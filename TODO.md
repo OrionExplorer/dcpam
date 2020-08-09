@@ -98,6 +98,12 @@
 	* [x] Remove `app.DATA` from `config.json`.
 	* [x] Create `app.DATA` handlers in DCPAM WDS.
 	* [x] Create `app.DATA` in `wds_config.json`.
+* [ ] DCPAM WDS project and implementation:
+	* [ ] Load all wds_config\*.json files in application directory.
+	* [ ] Keep list of all DCPAM Database nodes and corresponding predefined queries.
+	* [ ] Network layer:
+		* [ ] Based on [c-server-core](https://github.com/OrionExplorer/c-server-core).
+		* [ ] Protocol
 * [ ] DCPAM ETL must not know about P_DCPAM_APP and DPCAM WDS about DCPAM_APP.
 * [ ] ETL process interval can vary between system[].queries[].
 * [ ] Move DCPAM ETL configuration to database:
