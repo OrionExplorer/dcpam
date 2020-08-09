@@ -50,7 +50,6 @@ int NET_CONN_disconnect( NET_CONN *connection ) {
 }
 
 int NET_CONN_send( NET_CONN *connection, const char *data, size_t data_len ) {
-    char    response[ 256 ];
 
     if( connection ) {
         if( send( connection->socket, data, data_len, 0 ) < 0 ) {
@@ -63,6 +62,8 @@ int NET_CONN_send( NET_CONN *connection, const char *data, size_t data_len ) {
             LOG_print( "[%s] Error receiving data to %s.\n", TIME_get_gmt(), connection->host );
             return 0;
         }
+
+        char    response[ 256 ];
 
         connection->response = SAFECALLOC( response_len + 1, sizeof( char ), __FILE__, __LINE__ );
         strncpy(
