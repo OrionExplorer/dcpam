@@ -144,7 +144,7 @@ More specific description of data transformation possibilities can be found in [
 
 
 ![DCPAM Transform process architecture overview](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/rdp.png)
-Example of DCPAM Transform process scalability:
+Example of DCPAM Extract-Transform-Load / Extract-Load-Transform process scalability:
 * Multiple DCPAM ETL engine nodes can be run within single Data Warehouse.
 * Each DCPAM ETL instance can trigger unlimitend number of local and remote (through DCPAM RDP) data transformation scripts/applications.
 * Each DCPAM ETL instance can use dedicated Staging Area node (local or remote).
