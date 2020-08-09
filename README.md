@@ -17,7 +17,7 @@
 
 ### Table of contents
 * [Business Value](https://github.com/OrionExplorer/dcpam#business-value)
-    * [Extract, Transform and Load](https://github.com/OrionExplorer/dcpam#extract-transform-and-load)
+    * [Company data in DCPAM](https://github.com/OrionExplorer/dcpam#company-data-in-dcpam)
 * [Data Warehouse with DCPAM](https://github.com/OrionExplorer/dcpam#data-warehouse-with-dcpam)
     * [What DCPAM covers in terms of Data Warehousing?](https://github.com/OrionExplorer/dcpam#what-dcpam-covers-in-terms-of-data-warehousing)
     * [Elements yet to be covered by DCPAM](https://github.com/OrionExplorer/dcpam#elements-yet-to-be-covered-by-dcpam)
@@ -47,7 +47,8 @@
 * [x] **Process gigabytes of data within minutes** - benefit of parallel execution.
 
 
-### Extract, Transform and Load
+### Company data in DCPAM
+DCPAM is responsible for copying data from one or more sources into a destination system. That process consists of three steps: Extraction, Transformation and Load, with Transform and Load in various configurations: Extract-Transform-Load (ETL) or Extract-Load-Transform (ELT).
 For detailed information about ETL and ELT pipelines, please refer to [DCPAM ETL documentation](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL).
 
 More specific description of data transformation possibilities can be found in [DCPAM RDP documentation](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_RDP).
