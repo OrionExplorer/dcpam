@@ -2,8 +2,8 @@
 	"app" : {
 		"name" : "DCPAM Warehouse Data Server",
 		"version" : "0.1",
-		"DB" : {
-			"name" : "DCPAM Database",
+		"DB" : [{
+			"name" : "DCPAM Database main node",
 			"ip" : "127.0.0.1",
 			"port" : 5432,
 			"driver" : 1,
@@ -12,10 +12,11 @@
 			"user" : "dcpam",
 			"password" : "tantive-4",
 			"db" : "dcpam"
-		},
+		}],
 		"DATA" : [{
 			"id" : "TIME_ACCOUNTING",
 			"name" : "Accounted time data",
+			"db_name" : "DCPAM Database main node",
 			"db_table_name" : "accounted_time",
 			"columns" : ["system_object_id", "system_worklog_id", "system_customer", "system_agent_id", "accounted_time", "created", "system", "is_valid"],
 			"description" : "All accounted time data",

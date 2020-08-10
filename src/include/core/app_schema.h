@@ -22,6 +22,7 @@ typedef struct DCPAM_DATA {
     char                    *id;
     char                    *name;
     char                    *db_table_name;
+    char                    *db_name;
     char                    columns[ MAX_ETL_COLUMNS ][ 32 ];
     int                     columns_len;
     char                    *description;

@@ -52,6 +52,7 @@ void DCPAM_free_configuration( void ) {
         if( P_APP.DATA[ i ].id != NULL ) { free( P_APP.DATA[ i ].id ); P_APP.DATA[ i ].id = NULL; }
         if( P_APP.DATA[ i ].name != NULL ) { free( P_APP.DATA[ i ].name ); P_APP.DATA[ i ].name = NULL; }
         if( P_APP.DATA[ i ].db_table_name != NULL ) { free( P_APP.DATA[ i ].db_table_name ); P_APP.DATA[ i ].db_table_name = NULL; }
+        if( P_APP.DATA[ i ].db_name != NULL ) { free( P_APP.DATA[ i ].db_name ); P_APP.DATA[ i ].db_name = NULL; }
         if( P_APP.DATA[ i ].description != NULL ) { free( P_APP.DATA[ i ].description ); P_APP.DATA[ i ].description = NULL; }
 
         for( int j = 0; j < P_APP.DATA[ i ].actions_len; j++ ) {
@@ -85,6 +86,7 @@ int DCPAM_load_configuration( const char* filename ) {
     cJSON* cfg_app_data_item = NULL;
     cJSON* cfg_app_data_item_id = NULL;
     cJSON* cfg_app_data_item_name = NULL;
+    cJSON* cfg_app_data_item_db_name = NULL;
     cJSON* cfg_app_data_item_db_table_name = NULL;
     cJSON* cfg_app_data_item_description = NULL;
     cJSON* cfg_app_data_actions = NULL;
@@ -256,6 +258,18 @@ int DCPAM_load_configuration( const char* filename ) {
                         P_APP.DATA[ i ].db_table_name = SAFECALLOC( str_len3 + 1, sizeof( char ), __FILE__, __LINE__ );
                         snprintf( P_APP.DATA[ i ].db_table_name, str_len3+1, cfg_app_data_item_db_table_name->valuestring );
                         LOG_print( "\t· db_table_name=\"%s\"\n", P_APP.DATA[ i ].db_table_name );
+
+                        cfg_app_data_item_db_name = cJSON_GetObjectItem( cfg_app_data_item, "db_name" );
+                        if( cfg_app_data_item_db_name == NULL ) {
+                            LOG_print( "ERROR: \"app.DATA[%d].db_name\" key not found.\n", i );
+                            cJSON_Delete( config_json );
+                            free( config_string ); config_string = NULL;
+                            return FALSE;
+                        }
+                        size_t str_len3a = strlen( cfg_app_data_item_db_name->valuestring );
+                        P_APP.DATA[ i ].db_name = SAFECALLOC( str_len3a + 1, sizeof( char ), __FILE__, __LINE__ );
+                        snprintf( P_APP.DATA[ i ].db_name, str_len3a+1, cfg_app_data_item_db_name->valuestring );
+                        LOG_print( "\t· db_name=\"%s\"\n", P_APP.DATA[ i ].db_name );
 
                         P_APP.DATA[ i ].columns_len = 0;
                         cfg_app_data_actions_item_columns = cJSON_GetObjectItem( cfg_app_data_item, "columns" );

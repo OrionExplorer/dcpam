@@ -26,6 +26,7 @@
 		"DATA" : [{
 			"id" : "TIME_ACCOUNTING",
 			"name" : "Accounted time data",
+			"db_name" : "DCPAM Database NODE #1",
 			"db_table_name" : "accounted_time",
 			"columns" : ["system_object_id", "system_worklog_id", "system_customer", "system_agent_id", "accounted_time", "created", "system", "is_valid"],
 			"description" : "All accounted time data",

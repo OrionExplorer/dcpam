@@ -99,8 +99,8 @@
 	* [x] Create `app.DATA` handlers in DCPAM WDS.
 	* [x] Create `app.DATA` in `wds_config.json`.
 * [ ] DCPAM WDS project and implementation:
-	* [ ] Support for multiple DCPAM Database nodes.
-	* [ ] Load all wds_config\*.json files in application directory.
+	* [x] Support for multiple DCPAM Database nodes.
+	* [ ] ~~Load all wds_config\*.json files in application directory.~~
 	* [ ] Keep list of all DCPAM Database nodes and corresponding predefined queries.
 	* [ ] Network layer:
 		* [ ] Based on [c-server-core](https://github.com/OrionExplorer/c-server-core).
