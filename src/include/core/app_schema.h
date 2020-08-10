@@ -51,6 +51,8 @@ typedef struct P_DCPAM_APP {
     int                     DB_len;
     DCPAM_DATA              DATA[ MAX_DCPAM_DATA_ITEMS ];
     int                     DATA_len;
+    DB_CACHE                **CACHE;
+    int                     CACHE_len;
 } P_DCPAM_APP;
 
 #endif

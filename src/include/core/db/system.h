@@ -70,4 +70,9 @@ int DB_exec(
             void                    *data_ptr2
 );
 
+void DB_QUERY_cache(
+            const char              *sql,
+            DB_CACHE                *dst
+);
+
 #endif

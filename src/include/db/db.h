@@ -35,14 +35,18 @@ typedef struct {
     char            *sql;
 } DB_QUERY;
 
+typedef struct {
+    DB_QUERY        *query;
+} DB_CACHE;
+
 
 typedef void ( *qec )( DB_RECORD*, void *data_ptr1, void *data_ptr2 ); /* Query Exec Callback */
 
 
-void DB_QUERY_init( DB_QUERY *db_query );
-void DB_QUERY_free( DB_QUERY *db_query );
-void DB_QUERY_record_free( DB_RECORD *record );
-int  DB_QUERY_format( const char *src, char **dst, size_t *dst_length, const char* const* param_values, const int params_count, const int *param_lengths );
-DB_QUERY_TYPE DB_QUERY_get_type( const char *sql );
+void            DB_QUERY_init( DB_QUERY *db_query );
+void            DB_QUERY_free( DB_QUERY *db_query );
+void            DB_QUERY_record_free( DB_RECORD *record );
+int             DB_QUERY_format( const char *src, char **dst, size_t *dst_length, const char* const* param_values, const int params_count, const int *param_lengths );
+DB_QUERY_TYPE   DB_QUERY_get_type( const char *sql );
 
 #endif

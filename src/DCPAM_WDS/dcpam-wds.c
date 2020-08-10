@@ -45,6 +45,12 @@ void DCPAM_free_configuration( void ) {
     free( P_APP.DB ); P_APP.DB = NULL;
     P_APP.DB_len = 0;
 
+    for( int i = 0; i < P_APP.CACHE_len; i++ ) {
+        DB_QUERY_free( P_APP.CACHE[ i ]->query );
+        free( P_APP.CACHE[ i ] ); P_APP.CACHE[ i ] = NULL;
+    }
+    free( P_APP.CACHE ); P_APP.CACHE = NULL;
+
     if( P_APP.version != NULL ) { free( P_APP.version ); P_APP.version = NULL; }
     if( P_APP.name != NULL ) { free( P_APP.name ); P_APP.name = NULL; }
 
@@ -429,9 +435,9 @@ int main( int argc, char** argv ) {
     }
 
     if( DCPAM_load_configuration( config_file ) == 1 ) {
-        /*if( DB_WORKER_init() == 1 ) {
-            //while( 1 );
-        }*/
+        LOG_print( "[%s] Init memory cache...", TIME_get_gmt() );
+        P_APP.CACHE = SAFEMALLOC( P_APP.CACHE_len * sizeof * P_APP.CACHE, __FILE__, __LINE__ );
+        LOG_print( "ok.\n" );
         LOG_print( "[%s] DCPAM Warehouse Data Server configuration loaded.\n", TIME_get_gmt() );
     }
 

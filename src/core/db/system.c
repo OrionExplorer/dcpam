@@ -11,6 +11,11 @@ DATABASE_SYSTEM     DATABASE_SYSTEMS[MAX_DATA_SYSTEMS];
 int                 DATABASE_SYSTEMS_COUNT;
 
 
+void DB_QUERY_cache( const char *sql, DB_CACHE *dst ) {
+    return;
+}
+
+
 int DB_exec(
     DATABASE_SYSTEM_DB  *db,
     const char          *sql_template,
