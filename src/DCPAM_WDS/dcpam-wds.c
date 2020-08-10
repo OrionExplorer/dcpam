@@ -38,7 +38,12 @@ void app_terminate( void ) {
 
 void DCPAM_free_configuration( void ) {
 
-    DATABASE_SYSTEM_DB_free( &P_APP.DB );
+    for( int i = 0; i < P_APP.DB_len; i++ ) {
+        DATABASE_SYSTEM_DB_free( P_APP.DB[ i ] );
+        free( P_APP.DB[ i ] ); P_APP.DB[ i ] = NULL;
+    }
+    free( P_APP.DB ); P_APP.DB = NULL;
+    P_APP.DB_len = 0;
 
     if( P_APP.version != NULL ) { free( P_APP.version ); P_APP.version = NULL; }
     if( P_APP.name != NULL ) { free( P_APP.name ); P_APP.name = NULL; }
@@ -64,7 +69,8 @@ int DCPAM_load_configuration( const char* filename ) {
     cJSON* cfg_app = NULL;
     cJSON* cfg_app_version = NULL;
     cJSON* cfg_app_name = NULL;
-    cJSON* cfg_app_run_once = NULL;
+    cJSON* cfg_app_db_array = NULL;
+    cJSON* cfg_app_db_item = NULL;
     cJSON* cfg_app_db = NULL;
     cJSON* cfg_app_db_ip = NULL;
     cJSON* cfg_app_db_port = NULL;
@@ -74,16 +80,6 @@ int DCPAM_load_configuration( const char* filename ) {
     cJSON* cfg_app_db_connection_string = NULL;
     cJSON* cfg_app_db_db = NULL;
     cJSON* cfg_app_db_name = NULL;
-
-    cJSON* cfg_app_sa = NULL;
-    cJSON* cfg_app_sa_ip = NULL;
-    cJSON* cfg_app_sa_port = NULL;
-    cJSON* cfg_app_sa_driver = NULL;
-    cJSON* cfg_app_sa_user = NULL;
-    cJSON* cfg_app_sa_password = NULL;
-    cJSON* cfg_app_sa_connection_string = NULL;
-    cJSON* cfg_app_sa_db = NULL;
-    cJSON* cfg_app_sa_name = NULL;
 
     cJSON* cfg_app_data = NULL;
     cJSON* cfg_app_data_item = NULL;
@@ -144,61 +140,73 @@ int DCPAM_load_configuration( const char* filename ) {
                     return FALSE;
                 }
 
-                cfg_app_db = cJSON_GetObjectItem( cfg_app, "DB" );
-                if( cfg_app_db ) {
+                cfg_app_db_array = cJSON_GetObjectItem( cfg_app, "DB" );
+                if( cfg_app_db_array ) {
 
-                    cfg_app_db_ip = cJSON_GetObjectItem( cfg_app_db, "ip" );
-                    if( cfg_app_db_ip == NULL ) {
-                        LOG_print( "ERROR: \"app.DB.ip\" key not found.\n" );
+                    P_APP.DB_len = cJSON_GetArraySize( cfg_app_db_array );
+
+
+                    P_APP.DB = SAFEMALLOC( P_APP.DB_len * sizeof * P_APP.DB, __FILE__, __LINE__ );
+
+                    for( int i = 0; i < P_APP.DB_len; i++ ) {
+                        cfg_app_db = cJSON_GetArrayItem( cfg_app_db_array, i );
+
+                        cfg_app_db_ip = cJSON_GetObjectItem( cfg_app_db, "ip" );
+                        if( cfg_app_db_ip == NULL ) {
+                            LOG_print( "ERROR: \"app.DB.ip\" key not found.\n" );
+                        }
+
+                        cfg_app_db_port = cJSON_GetObjectItem( cfg_app_db, "port" );
+                        if( cfg_app_db_port == NULL ) {
+                            LOG_print( "ERROR: \"app.DB.port\" key not found.\n" );
+                        }
+
+                        cfg_app_db_driver = cJSON_GetObjectItem( cfg_app_db, "driver" );
+                        if( cfg_app_db_driver == NULL ) {
+                            LOG_print( "ERROR: \"app.DB.driver\" key not found.\n" );
+                        }
+
+                        cfg_app_db_user = cJSON_GetObjectItem( cfg_app_db, "user" );
+                        if( cfg_app_db_user == NULL ) {
+                            LOG_print( "ERROR: \"app.DB.user\" key not found.\n" );
+                        }
+
+                        cfg_app_db_password = cJSON_GetObjectItem( cfg_app_db, "password" );
+                        if( cfg_app_db_password == NULL ) {
+                            LOG_print( "ERROR: \"app.DB.password\" key not found.\n" );
+                        }
+
+                        cfg_app_db_connection_string = cJSON_GetObjectItem( cfg_app_db, "connection_string" );
+                        if( cfg_app_db_connection_string == NULL ) {
+                            LOG_print( "ERROR: \"app.DB.connection_string\" key not found.\n" );
+                        }
+
+                        cfg_app_db_db = cJSON_GetObjectItem( cfg_app_db, "db" );
+                        if( cfg_app_db_db == NULL ) {
+                            LOG_print( "ERROR: \"app.DB.db\" key not found.\n" );
+                        }
+
+                        cfg_app_db_name = cJSON_GetObjectItem( cfg_app_db, "name" );
+                        if( cfg_app_db_name == NULL ) {
+                            LOG_print( "Error: \"app.DB.name\" key not found.\n" );
+                        }
+
+                        P_APP.DB[ i ] = SAFEMALLOC( sizeof( DATABASE_SYSTEM_DB ), __FILE__, __LINE__ );
+
+                        DATABASE_SYSTEM_DB_add(
+                            cfg_app_db_ip->valuestring,
+                            cfg_app_db_port->valueint,
+                            cfg_app_db_driver->valueint,
+                            cfg_app_db_user->valuestring,
+                            cfg_app_db_password->valuestring,
+                            cfg_app_db_db->valuestring,
+                            cfg_app_db_connection_string->valuestring,
+                            P_APP.DB[ i ],
+                            cfg_app_db_name->valuestring,
+                            TRUE
+                        );
                     }
 
-                    cfg_app_db_port = cJSON_GetObjectItem( cfg_app_db, "port" );
-                    if( cfg_app_db_port == NULL ) {
-                        LOG_print( "ERROR: \"app.DB.port\" key not found.\n" );
-                    }
-
-                    cfg_app_db_driver = cJSON_GetObjectItem( cfg_app_db, "driver" );
-                    if( cfg_app_db_driver == NULL ) {
-                        LOG_print( "ERROR: \"app.DB.driver\" key not found.\n" );
-                    }
-
-                    cfg_app_db_user = cJSON_GetObjectItem( cfg_app_db, "user" );
-                    if( cfg_app_db_user == NULL ) {
-                        LOG_print( "ERROR: \"app.DB.user\" key not found.\n" );
-                    }
-
-                    cfg_app_db_password = cJSON_GetObjectItem( cfg_app_db, "password" );
-                    if( cfg_app_db_password == NULL ) {
-                        LOG_print( "ERROR: \"app.DB.password\" key not found.\n" );
-                    }
-
-                    cfg_app_db_connection_string = cJSON_GetObjectItem( cfg_app_db, "connection_string" );
-                    if( cfg_app_db_connection_string == NULL ) {
-                        LOG_print( "ERROR: \"app.DB.connection_string\" key not found.\n" );
-                    }
-
-                    cfg_app_db_db = cJSON_GetObjectItem( cfg_app_db, "db" );
-                    if( cfg_app_db_db == NULL ) {
-                        LOG_print( "ERROR: \"app.DB.db\" key not found.\n" );
-                    }
-
-                    cfg_app_db_name = cJSON_GetObjectItem( cfg_app_db, "name" );
-                    if( cfg_app_db_name == NULL ) {
-                        LOG_print( "Error: \"app.DB.name\" key not found.\n" );
-                    }
-
-                    DATABASE_SYSTEM_DB_add(
-                        cfg_app_db_ip->valuestring,
-                        cfg_app_db_port->valueint,
-                        cfg_app_db_driver->valueint,
-                        cfg_app_db_user->valuestring,
-                        cfg_app_db_password->valuestring,
-                        cfg_app_db_db->valuestring,
-                        cfg_app_db_connection_string->valuestring,
-                        &P_APP.DB,
-                        cfg_app_db_name->valuestring,
-                        TRUE
-                    );
                 } else {
                     LOG_print( "ERROR: \"app.DB\" key not found.\n" );
                     cJSON_Delete( config_json );
@@ -410,9 +418,10 @@ int main( int argc, char** argv ) {
         /*if( DB_WORKER_init() == 1 ) {
             //while( 1 );
         }*/
+        LOG_print( "[%s] DCPAM Data Warehouse Server configuration loaded.\n ", TIME_get_gmt() );
     }
 
     DCPAM_free_configuration();
-
+    LOG_print( "[%s] DCPAM Data Warehouse Server finished.\n ", TIME_get_gmt() );
     return 0;
 }
