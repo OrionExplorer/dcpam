@@ -418,10 +418,10 @@ int main( int argc, char** argv ) {
         /*if( DB_WORKER_init() == 1 ) {
             //while( 1 );
         }*/
-        LOG_print( "[%s] DCPAM Data Warehouse Server configuration loaded.\n ", TIME_get_gmt() );
+        LOG_print( "[%s] DCPAM Warehouse Data Server configuration loaded.\n", TIME_get_gmt() );
     }
 
     DCPAM_free_configuration();
-    LOG_print( "[%s] DCPAM Data Warehouse Server finished.\n ", TIME_get_gmt() );
+    LOG_print( "[%s] DCPAM Warehouse Data Server finished.\n", TIME_get_gmt() );
     return 0;
 }

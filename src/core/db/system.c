@@ -224,6 +224,16 @@ void DATABASE_SYSTEM_QUERY_add(
     dst->mode = mode;
     dst->etl_config = etl;
 
+    if( verbose > 0 ) LOG_print("\t· mode = %s\n", mode == M_ETL ? "ETL" : "ELT" );
+
+    if( etl.pre_actions_count > 0 ) {
+        if( verbose > 0 ) LOG_print( "\t· PreETL Actions:\n" );
+
+        for( int i = 0; i < etl.pre_actions_count; i++ ) {
+            if( verbose > 0 ) LOG_print( "\t\t·\"%.70s(...)\"\n", etl.pre_actions[ i ]->sql );
+        }
+    }
+
     if( verbose > 0 ) LOG_print("\t· extract\n\t\t·inserted\n\t\t\t·primary_db_sql: \"%.70s(...)\"\n", etl.extract.inserted.primary_db_sql );
     if( verbose > 0 ) LOG_print("\t\t\t·primary_db: \"%s\"\n", etl.extract.inserted.primary_db );
     if( verbose > 0 ) LOG_print("\t\t\t·secondary_db_sql: \"%.70s(...)\"\n", etl.extract.inserted.secondary_db_sql );
@@ -259,6 +269,25 @@ void DATABASE_SYSTEM_QUERY_add(
         if( verbose > 0 ) LOG_print( "\n" );
     }
 
+    for( int i = 0; i < etl.transform->inserted_count; i++ ) {
+        if( verbose > 0 ) LOG_print( "\t· transform\n\t\t·inserted\n\t\t\t·module: %.70s(...)\n", etl.transform->inserted[ i ]->module );
+        if( verbose > 0 ) LOG_print( "\t\t\t·staged_data: \"%.70s(...)\"\n", etl.transform->inserted[ i ]->staged_data );
+        if( verbose > 0 ) LOG_print( "\t\t\t·source_system_update: \"%.70s(...)\"\n", etl.transform->inserted[ i ]->source_system_update);
+    }
+
+    for( int i = 0; i < etl.transform->deleted_count; i++ ) {
+        if( verbose > 0 ) LOG_print( "\t· transform\n\t\t·deleted\n\t\t\t·module: %.70s(...)\n", etl.transform->deleted[ i ]->module );
+        if( verbose > 0 ) LOG_print( "\t\t\t·staged_data: \"%.70s(...)\"\n", etl.transform->deleted[ i ]->staged_data );
+        if( verbose > 0 ) LOG_print( "\t\t\t·source_system_update: \"%.70s(...)\"\n", etl.transform->deleted[ i ]->source_system_update );
+    }
+
+    for( int i = 0; i < etl.transform->modified_count; i++ ) {
+        if( verbose > 0 ) LOG_print( "\t· transform\n\t\t·modified\n\t\t\t·module: %.70s(...)\n", etl.transform->modified[ i ]->module );
+        if( verbose > 0 ) LOG_print( "\t\t\t·staged_data: \"%.70s(...)\"\n", etl.transform->modified[ i ]->staged_data );
+        if( verbose > 0 ) LOG_print( "\t\t\t·source_system_update: \"%.70s(...)\"\n", etl.transform->modified[ i ]->source_system_update );
+    }
+    
+
     if( verbose > 0 ) LOG_print("\t· load\n\t\t·inserted\n\t\t\t·input_data_sql: \"%.70s(...)\"\n", etl.load.inserted.input_data_sql );
     if( verbose > 0 ) LOG_print("\t\t\t·extracted_values: " );
     for( i = 0; i < etl.load.inserted.extracted_values_len; i++ ) {
@@ -282,6 +311,14 @@ void DATABASE_SYSTEM_QUERY_add(
     }
     if( verbose > 0 ) LOG_print("\n");
     if( verbose > 0 ) LOG_print( "\t\t\t·output_data_sql: \"%.70s(...)\"\n", etl.load.modified.output_data_sql );
+
+    if( etl.post_actions_count > 0 ) {
+        if( verbose > 0 ) LOG_print( "\t· PostETL Actions:\n" );
+
+        for( int i = 0; i < etl.post_actions_count; i++ ) {
+            if( verbose > 0 ) LOG_print( "\t\t·\"%.70s(...)\"\n", etl.post_actions[ i ]->sql );
+        }
+    }
 }
 
 void DATABASE_SYSTEM_DB_add(
