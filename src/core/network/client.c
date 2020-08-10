@@ -57,13 +57,13 @@ int NET_CONN_send( NET_CONN *connection, const char *data, size_t data_len ) {
             return 0;
         }
 
+        char response[ 256 ];
+
         int response_len = recv( connection->socket, response, 255, 0 );
         if( response_len < 0 ) {
             LOG_print( "[%s] Error receiving data to %s.\n", TIME_get_gmt(), connection->host );
             return 0;
         }
-
-        char    response[ 256 ];
 
         connection->response = SAFECALLOC( response_len + 1, sizeof( char ), __FILE__, __LINE__ );
         strncpy(
