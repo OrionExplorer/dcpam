@@ -184,18 +184,15 @@ Therefore every database listed above as available data source can also be used 
 * [x] [DCPAM WDS](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_WDS).
 
 ## Roadmap
-| 2020                                     | Status            |
-|:-----------------------------------------|:------------------|
-| Transform process                        | Done (2020-08-07) |
-| DCPAM WDS (warehouse data server)        | In progress       |
-| Data source: local flat files            | Not implemented   |
-| Data source: remote flat files           | Not implemented   |
-| DCPAM Access (BI web application)        | Not implemented   |
-
-| 2021                                     | Status
-|:-----------------------------------------|:------------------|
-| DCPAM Construct (admin web application)  | Not implemented   |
-| DCPAM AI platform                        | Not implemented   |
+| Year | Feature                                  | Status            |
+|:----:|:-----------------------------------------|:------------------|
+| 2020 | Transform process                        | Done (2020-08-07) |
+| 2020 | DCPAM WDS (warehouse data server)        | In progress       |
+| 2020 | Data source: local flat files            | Not implemented   |
+| 2020 | Data source: remote flat files           | Not implemented   |
+| 2020 | DCPAM Access (BI web application)        | Not implemented   |
+| 2021 | DCPAM Construct (admin web application)  | Not implemented   |
+| 2021 | DCPAM AI Platform                        | Not implemented   |
 
 
 ---
