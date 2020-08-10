@@ -186,7 +186,7 @@ Therefore every database listed above as available data source can also be used 
 ## Roadmap
 | Year | Feature                                  | Status            |
 |:----:|:-----------------------------------------|:------------------|
-| 2020 | Transform process                        | Done (2020-08-07) |
+| 2020 | :white_check_mark: Transform process     | Done (2020-08-07) |
 | 2020 | DCPAM WDS (warehouse data server)        | In progress       |
 | 2020 | Data source: local flat files            | Not implemented   |
 | 2020 | Data source: remote flat files           | Not implemented   |
