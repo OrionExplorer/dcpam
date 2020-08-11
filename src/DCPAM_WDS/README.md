@@ -5,12 +5,13 @@
  Copyright © 2020 Marcin Kelar
 ###### _Data Construct-Populate-Access-Manage_ 
 #### Warehouse Data Server
-![PostgreSQL](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/postgresql102x100.png) ![MySQL ](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/mysql159x100.png) ![MariaDB ](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/mariadb100x100.png) ![Microsoft SQL Server ](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/sqlserver134x100.png) ![Oracle Database ](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/oracle100x100.png) ![ODBC ](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/odbc199x100.png) ![SQLite3 ](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/sqlite171x100.png) ![Linux ](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/linux100x100.png) ![Windows 10 ](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/windows87x100.png)
+![PostgreSQL](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/postgresql102x100.png) ![MySQL](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/mysql159x100.png) ![MariaDB](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/mariadb100x100.png) ![Microsoft SQL Server](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/sqlserver134x100.png) ![Oracle Database](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/oracle100x100.png) ![ODBC](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/odbc199x100.png) ![SQLite3](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/sqlite171x100.png) ![Linux](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/linux100x100.png) ![Windows 10](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/windows87x100.png)
 
 ##### Currently under active development
 * [x] Cache mechanism.
 
 ### Table of contents
+* [Purpose of DCPAM WDS](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_WDS#purpose-of-dcpam-wds)
 * [Technology](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_WDS#technology)
     * [Data Sources](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_WDS#data-sources)
     * [DCPAM Database](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_WDS#dcpam-database)
@@ -19,10 +20,12 @@
     * [Linux Dependencies](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_WDS#linux-dependencies)
     * [Windows Dependencies](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_WDS#windows-dependencies)
 
-## Technology
+## Purpose of DCPAM WDS
+DCPAM WDS is dedicated endpoint for querying predefined business data with custom caching system. DCPAM does not limit number of virtual and physical DCPAM Database nodes, therefore DCPAM WDS encapsulates every node of DCPAM Database into single data access point.
 
+## Technology
 ### Data sources
-DCPAM WDS development has just begun as the result of functionality extraction from DCPAM ETL. Following data sources are available:
+DCPAM WDS development is still in progress with following data sources are available:
 |  ID  | Data source                        | Type            | Support          |
 |:----:|:-----------------------------------|:---------------:|:----------------:|
 | 1    | PostgreSQL                         | database        | native           |
@@ -39,7 +42,6 @@ DCPAM WDS development has just begun as the result of functionality extraction f
 ### DCPAM Database
 DCPAM is designed to be as most customizable as it needs to be.
 Therefore every database listed above as available data source can also be used as DCPAM target database.
-
 
 ### Configuration
 For DCPAM WDS `wds_config.json` is the main configuration file. It defines:

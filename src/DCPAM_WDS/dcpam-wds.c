@@ -21,7 +21,7 @@ extern DATABASE_SYSTEM  DATABASE_SYSTEMS[ MAX_DATA_SYSTEMS ];
 extern int              DATABASE_SYSTEMS_COUNT;
 extern P_DCPAM_APP      P_APP;
 
-void DCPAM_free_configuration( void );
+void DCPAM_WDS_free_configuration( void );
 
 
 void app_terminate( void ) {
@@ -29,14 +29,14 @@ void app_terminate( void ) {
     if( app_terminated == 0 ) {
         app_terminated = 1;
         printf( "\r" );
-        DCPAM_free_configuration();
+        DCPAM_WDS_free_configuration();
         LOG_print( "[%s] DCPAM graceful shutdown finished. Waiting for all threads to terminate...\n", TIME_get_gmt() );
     }
 
     return;
 }
 
-void DCPAM_free_configuration( void ) {
+void DCPAM_WDS_free_configuration( void ) {
 
     for( int i = 0; i < P_APP.DB_len; i++ ) {
         DATABASE_SYSTEM_DB_free( P_APP.DB[ i ] );
@@ -47,6 +47,7 @@ void DCPAM_free_configuration( void ) {
 
     for( int i = 0; i < P_APP.CACHE_len; i++ ) {
         DB_QUERY_free( P_APP.CACHE[ i ]->query );
+        free( P_APP.CACHE[ i ]->query ); P_APP.CACHE[ i ]->query = NULL;
         free( P_APP.CACHE[ i ] ); P_APP.CACHE[ i ] = NULL;
     }
     free( P_APP.CACHE ); P_APP.CACHE = NULL;
@@ -70,7 +71,7 @@ void DCPAM_free_configuration( void ) {
     }
 }
 
-int DCPAM_load_configuration( const char* filename ) {
+int DCPAM_WDS_load_configuration( const char* filename ) {
     cJSON* config_json = NULL;
 
     cJSON* cfg_app = NULL;
@@ -106,13 +107,11 @@ int DCPAM_load_configuration( const char* filename ) {
     cJSON* cfg_app_data_actions_item_condition = NULL;
     cJSON* cfg_app_data_actions_item_sql = NULL;
 
-    cJSON* array_value = NULL;
     int                         result = 0;
-
     char*                       config_string = NULL;
 
 
-    LOG_print( "[%s] DCPAM_load_configuration( %s ).\n", TIME_get_gmt(), filename );
+    LOG_print( "[%s] DCPAM_WDS_load_configuration( %s ).\n", TIME_get_gmt(), filename );
 
     config_string = file_get_content( filename );
 
@@ -226,6 +225,9 @@ int DCPAM_load_configuration( const char* filename ) {
                 cfg_app_data = cJSON_GetObjectItem( cfg_app, "DATA" );
                 if( cfg_app_data ) {
                     P_APP.DATA_len = cJSON_GetArraySize( cfg_app_data );
+
+                    P_APP.CACHE_len = P_APP.DATA_len;
+
                     for( int i = 0; i < P_APP.DATA_len; i++ ) {
                         cfg_app_data_item = cJSON_GetArrayItem( cfg_app_data, i );
 
@@ -434,14 +436,19 @@ int main( int argc, char** argv ) {
         }
     }
 
-    if( DCPAM_load_configuration( config_file ) == 1 ) {
-        LOG_print( "[%s] Init memory cache...", TIME_get_gmt() );
+    if( DCPAM_WDS_load_configuration( config_file ) == 1 ) {
+        LOG_print( "[%s] Init memory cache (predefined queries: %d)...", TIME_get_gmt(), P_APP.CACHE_len );
         P_APP.CACHE = SAFEMALLOC( P_APP.CACHE_len * sizeof * P_APP.CACHE, __FILE__, __LINE__ );
+        for( int i = 0; i < P_APP.CACHE_len; i++ ) {
+            P_APP.CACHE[ i ] = SAFEMALLOC( sizeof( DB_CACHE ), __FILE__, __LINE__ );
+            P_APP.CACHE[ i ]->query = SAFEMALLOC( sizeof( DB_QUERY ), __FILE__, __LINE__ );
+            DB_QUERY_init( P_APP.CACHE[ i ]->query );
+        }
         LOG_print( "ok.\n" );
         LOG_print( "[%s] DCPAM Warehouse Data Server configuration loaded.\n", TIME_get_gmt() );
     }
 
-    DCPAM_free_configuration();
+    DCPAM_WDS_free_configuration();
     LOG_print( "[%s] DCPAM Warehouse Data Server finished.\n", TIME_get_gmt() );
     return 0;
 }

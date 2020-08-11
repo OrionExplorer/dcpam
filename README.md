@@ -5,7 +5,7 @@
  Copyright © 2020 Marcin Kelar
 ###### _Data Construct-Populate-Access-Manage_ 
 #### Data Warehouse
-![PostgreSQL](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/postgresql102x100.png) ![MySQL ](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/mysql159x100.png) ![MariaDB ](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/mariadb100x100.png) ![Microsoft SQL Server ](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/sqlserver134x100.png) ![Oracle Database ](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/oracle100x100.png) ![ODBC ](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/odbc199x100.png) ![SQLite3 ](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/sqlite171x100.png) ![Linux ](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/linux100x100.png) ![Windows 10 ](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/windows87x100.png)
+![PostgreSQL](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/postgresql102x100.png) ![MySQL](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/mysql159x100.png) ![MariaDB](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/mariadb100x100.png) ![Microsoft SQL Server](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/sqlserver134x100.png) ![Oracle Database](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/oracle100x100.png) ![ODBC](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/odbc199x100.png) ![SQLite3](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/sqlite171x100.png) ![Linux](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/linux100x100.png) ![Windows 10](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/windows87x100.png)
 
 * DCPAM helps to create central repositories of integrated data from one or disparate sources [[1]].
 * DCPAM goal is to deliver full range of Data Warehouse possibilities without need to include or hire more engineers for this specific task.
@@ -46,7 +46,6 @@
 
 * [x] **Process gigabytes of data within minutes** - benefit of parallel execution.
 
-
 ### Company data in DCPAM
 DCPAM is responsible for copying data from one or more sources into a destination system. That process consists of three steps: Extraction, Transformation and Load, with Transform and Load in various configurations: Extract-Transform-Load (ETL) or Extract-Load-Transform (ELT).
 For detailed information about ETL and ELT pipelines, please refer to [DCPAM ETL documentation](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL).
@@ -54,6 +53,7 @@ For detailed information about ETL and ELT pipelines, please refer to [DCPAM ETL
 More specific description of data transformation possibilities can be found in [DCPAM RDP documentation](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_RDP).
 
 ## Data Warehouse with DCPAM
+As DCPAM is extremely modular and scalabe, it can serve both as Data Warehouse and number of dedicated Data Marts.
 
 ### What DCPAM covers in terms of Data Warehousing?
 * JSON-based source systems configuration.
@@ -129,7 +129,6 @@ More specific description of data transformation possibilities can be found in [
   * Views
 * ...and much more.
 
-
 ## Technology
 ### DCPAM Components
 DCPAM Data Warehouse Solution consists of a number of integrated components.
@@ -145,7 +144,6 @@ DCPAM Data Warehouse Solution consists of a number of integrated components.
 
 ![DCPAM Architecture overview](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/architecture.png)
 *<p align=center>DCPAM workflow overview</p>*
-
 
 ![DCPAM Transform process architecture overview](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/rdp.png)
 Example of DCPAM Extract-Transform-Load / Extract-Load-Transform process scalability:
@@ -193,7 +191,6 @@ Therefore every database listed above as available data source can also be used 
 | 2020 | DCPAM Access (BI web application)        | Not implemented   |
 | 2021 | DCPAM Construct (admin web application)  | Not implemented   |
 | 2021 | DCPAM AI Platform                        | Not implemented   |
-
 
 ---
 This software uses:
