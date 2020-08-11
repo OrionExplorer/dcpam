@@ -48,12 +48,14 @@
 
 ### Company data in DCPAM
 DCPAM is responsible for copying data from one or more sources into a destination system. That process consists of three steps: Extraction, Transformation and Load, with Transform and Load in various configurations: Extract-Transform-Load (ETL) or Extract-Load-Transform (ELT).
-For detailed information about ETL and ELT pipelines, please refer to [DCPAM ETL documentation](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL).
+* For detailed information about ETL and ELT pipelines, please refer to [DCPAM ETL documentation](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL).
+* More specific description of data transformation possibilities can be found in [DCPAM RDP documentation](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_RDP).
 
-More specific description of data transformation possibilities can be found in [DCPAM RDP documentation](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_RDP).
+Data in the Warehouse can be accessed directly at the database level with any system for analytics, such as Power BI, Tableau, Redash and others.
+For complex architectures with more than one DCPAM Database node, DCPAM Warehouse Data Server is dedicated data access point. For more details, please refer to [DCPAM WDS documentation](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_WDS).
 
 ## Data Warehouse with DCPAM
-As DCPAM is extremely modular and scalabe, it can serve both as Data Warehouse and number of dedicated Data Marts.
+As DCPAM is extremely modular and highly scalabe, it can serve both as Data Warehouse and number of dedicated Data Marts.
 
 ### What DCPAM covers in terms of Data Warehousing?
 * JSON-based source systems configuration.
