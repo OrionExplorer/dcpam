@@ -57,8 +57,6 @@ For complex architectures with more than one DCPAM Database node, DCPAM Warehous
 ## Data Warehouse with DCPAM
 As DCPAM is extremely modular and highly scalabe, it can serve both as Data Warehouse and number of dedicated Data Marts.
 
-![DCPAM overview](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/dcpam.png)
-
 ### What DCPAM covers in terms of Data Warehousing?
 * JSON-based source systems configuration.
 * SQL and JSON-based configuration of the ETL processes:
@@ -135,7 +133,14 @@ As DCPAM is extremely modular and highly scalabe, it can serve both as Data Ware
 
 ## Technology
 ### DCPAM Components
-DCPAM Data Warehouse Solution consists of a number of integrated components.
+DCPAM Data Warehouse Solution consists of a number of integrated components. Following diagrams represents different configurations, allowing to deploy both Data Marts and Data Warehouse.
+
+![DCPAM overview](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/dcpam-dws.png)
+*<p align=center>Data Warehouse with DCPAM</p>*
+
+
+![DCPAM overview](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/dcpam-dm.png)
+*<p align=center>Data Marts with DCPAM Data Warehouse</p>*
 
 #### DCPAM ETL - Extract-Transform-Load / Extract-Load-Transform
 [DCPAM ETL](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL) is the main ETL/ELT engine. Many instances of DCPAM ETL can work within single Data Warehouse.
