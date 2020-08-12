@@ -1421,7 +1421,7 @@ int main( int argc, char** argv ) {
 
     memset( config_file, '\0', MAX_PATH_LENGTH );
     if( argc <= 1 ) {
-        snprintf( config_file, MAX_PATH_LENGTH, "etl_config.json" );
+        snprintf( config_file, MAX_PATH_LENGTH, "./conf/etl_config.json" );
     } else {
         if( strlen( argv[ 1 ] ) > MAX_PATH_LENGTH ) {
             LOG_print( "[%s] Notice: \"%s\" is not valid config file name.\n", TIME_get_gmt(), argv[ 1 ] );
