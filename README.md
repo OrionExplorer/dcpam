@@ -133,14 +133,7 @@ As DCPAM is extremely modular and highly scalabe, it can serve both as Data Ware
 
 ## Technology
 ### DCPAM Components
-DCPAM Data Warehouse Solution consists of a number of integrated components. Following diagrams represents different configurations, allowing to deploy both Data Warehouse and Data Marts.
-
-![DCPAM overview](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/dcpam-dws.png)
-*<p align=center>Data Warehouse with DCPAM</p>*
-
-
-![DCPAM overview](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/dcpam-dm.png)
-*<p align=center>Data Marts with DCPAM Data Warehouse</p>*
+DCPAM Data Warehouse Solution consists of a number of integrated components.
 
 #### DCPAM ETL - Extract-Transform-Load / Extract-Load-Transform
 [DCPAM ETL](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL) is the main ETL/ELT engine. Many instances of DCPAM ETL can work within single Data Warehouse.
@@ -161,6 +154,14 @@ Example of DCPAM Extract-Transform-Load / Extract-Load-Transform process scalabi
 * Each DCPAM ETL instance can use dedicated Staging Area node (local or remote).
 * Many DCPAM Database nodes can be encapsulated into single data access point by DCPAM WDS.
 * DCPAM ETL, Staging Area, DCPAM Database and DCPAM WDS can run on single server as well!
+
+Following diagrams represents different configurations, allowing to deploy both Data Warehouse and Data Marts.
+
+![DCPAM overview](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/dcpam-dws.png)
+*<p align=center>Data Warehouse with DCPAM</p>*
+
+![DCPAM overview](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/dcpam-dm.png)
+*<p align=center>Data Marts with DCPAM Data Warehouse</p>*
 
 #### DCPAM Construct
 DCPAM Construct is going to be the main system administration web application.
