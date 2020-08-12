@@ -133,7 +133,7 @@ As DCPAM is extremely modular and highly scalabe, it can serve both as Data Ware
 
 ## Technology
 ### DCPAM Components
-DCPAM Data Warehouse Solution consists of a number of integrated components. Following diagrams represents different configurations, allowing to deploy both Data Marts and Data Warehouse.
+DCPAM Data Warehouse Solution consists of a number of integrated components. Following diagrams represents different configurations, allowing to deploy both Data Warehouse and Data Marts.
 
 ![DCPAM overview](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/dcpam-dws.png)
 *<p align=center>Data Warehouse with DCPAM</p>*
