@@ -57,6 +57,8 @@ For complex architectures with more than one DCPAM Database node, DCPAM Warehous
 ## Data Warehouse with DCPAM
 As DCPAM is extremely modular and highly scalabe, it can serve both as Data Warehouse and number of dedicated Data Marts.
 
+![DCPAM overview](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/dcpam.png)
+
 ### What DCPAM covers in terms of Data Warehousing?
 * JSON-based source systems configuration.
 * SQL and JSON-based configuration of the ETL processes:
