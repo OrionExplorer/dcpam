@@ -139,7 +139,7 @@ DCPAM Data Warehouse Solution consists of a number of integrated components.
 [DCPAM ETL](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL) is the main ETL/ELT engine. Many instances of DCPAM ETL can work within single Data Warehouse.
 
 #### DCPAM WDS - Warehouse Data Server
-[DCPAM WDS](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_WDS) is dedicated endpoint for querying predefined business data with custom caching system. DCPAM WDS encapsulates every node od DCPAM Database into single data access point.
+[DCPAM WDS](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_WDS) is dedicated endpoint for querying predefined business data with custom caching system. DCPAM WDS encapsulates every node of DCPAM Database into single data access point.
 
 #### DCPAM RDP - Remote Data Processor
 [DCPAM RDP](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_RDP) is used by DCPAM ETL to execute transform scripts/applications that must be run on separate machines when performance impact is significant. DCPAM ETL communicates with these remote scripts/applications through DCPAM RDP.
