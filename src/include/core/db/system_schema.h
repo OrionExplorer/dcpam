@@ -7,6 +7,9 @@
 #include "../../db/odbc.h"
 #include "../../db/oracle.h"
 #include "../../db/sqlite.h"
+#include "etl_schema.h"
+
+#define MAX_SYSTEM_QUERIES                  32
 
 typedef union {
     PG_CONNECTION           pgsql_conn;

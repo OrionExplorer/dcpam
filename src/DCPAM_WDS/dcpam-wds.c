@@ -10,6 +10,7 @@
 #include "../include/utils/strings.h"
 #include "../include/utils/filesystem.h"
 #include "../include/core/db/system.h"
+#include "../include/core/cache.h"
 
 #pragma warning( disable : 6031 )
 
@@ -36,6 +37,75 @@ void app_terminate( void ) {
     return;
 }
 
+int DCPAM_WDS_init_cache( void ) {
+
+    LOG_print( "[%s] Init memory cache (slots: %d)...", TIME_get_gmt(), P_APP.CACHE_len );
+    P_APP.CACHE = SAFEMALLOC( P_APP.CACHE_len * sizeof * P_APP.CACHE, __FILE__, __LINE__ );
+    for( int i = 0; i < P_APP.CACHE_len; i++ ) {
+        P_APP.CACHE[ i ] = SAFEMALLOC( sizeof( D_CACHE ), __FILE__, __LINE__ );
+        P_APP.CACHE[ i ]->query = NULL;
+    }
+
+    LOG_print( "ok.\n" );
+
+    /* Initialize database connections */
+    for( int i = 0; i < P_APP.DB_len; i++ ) {
+        LOG_print( "[%s] Connecting to \"%s\"...\n", TIME_get_gmt(), P_APP.DB[ i ]->name );
+        if( DATABASE_SYSTEM_DB_init( P_APP.DB[ i ] ) == 0 ) {
+            LOG_print( "[%s] Error: Unable to connect with \"%s\".\n", TIME_get_gmt(), P_APP.DB[ i ]->name );
+            return 0;
+        }
+    }
+
+    int initialized = 0;
+
+    for( int i = 0; i < P_APP.DATA_len; i++ ) {
+        for( int j = 0; j < P_APP.DATA[ i ].actions_len; j++ ) {
+
+            /* Cache queries without variable conditions only. */
+            if( P_APP.DATA[ i ].actions[ j ].condition && strlen( P_APP.DATA[ i ].actions[ j ].condition ) == 0 ) {
+
+                DATABASE_SYSTEM_DB      *src = NULL;
+
+                LOG_print( "[%s] Caching \"%s\" from \"%s\" table in \"%s\"...\n", TIME_get_gmt(), P_APP.DATA[ i ].actions[ j ].description, P_APP.DATA[ i ].db_table_name, P_APP.DATA[ i ].db_name );
+                src = DATABASE_SYSTEM_DB_get( P_APP.DATA[ i ].db_name );
+                if( src ) {
+                    LOG_print( "\t- Database found.\n" );
+
+                    DB_CACHE_init( P_APP.CACHE[ initialized ] );
+
+                    int res = DB_exec(
+                                        src,
+                                        P_APP.DATA[ i ].actions[ j ].sql,
+                                        strlen( P_APP.DATA[ i ].actions[ j ].sql),
+                                        P_APP.CACHE[ initialized ]->query,
+                                        NULL,
+                                        0,
+                                        NULL, NULL, NULL, NULL, NULL, NULL
+                    );
+
+                    DB_CACHE_print( P_APP.CACHE[ initialized ]->query->sql, P_APP.CACHE[ initialized ] );
+
+                    initialized++;
+
+                } else {
+                    LOG_print( "[%s] Fatal error: database \"%s\" is not valid!\n", TIME_get_gmt(), P_APP.DATA[ i ].db_name );
+                }
+            } else {
+                LOG_print( "[%s] NOTICE: \"%s\" from \"%s\" table in \"%s\" is not static cache.\n", TIME_get_gmt(), P_APP.DATA[ i ].actions[ j ].description, P_APP.DATA[ i ].db_table_name, P_APP.DATA[ i ].db_name );
+            }
+        }
+    }
+
+    /*
+    DB_QUERY *cached_result = NULL;
+    DB_CACHE_get( "SELECT system_customer, system_accounted_time, system_created, system FROM accounted_time WHERE is_valid = 1", &cached_result );
+    */
+
+    return 1;
+
+}
+
 void DCPAM_WDS_free_configuration( void ) {
 
     for( int i = 0; i < P_APP.DB_len; i++ ) {
@@ -46,8 +116,7 @@ void DCPAM_WDS_free_configuration( void ) {
     P_APP.DB_len = 0;
 
     for( int i = 0; i < P_APP.CACHE_len; i++ ) {
-        DB_QUERY_free( P_APP.CACHE[ i ]->query );
-        free( P_APP.CACHE[ i ]->query ); P_APP.CACHE[ i ]->query = NULL;
+        DB_CACHE_free( P_APP.CACHE[ i ] );
         free( P_APP.CACHE[ i ] ); P_APP.CACHE[ i ] = NULL;
     }
     free( P_APP.CACHE ); P_APP.CACHE = NULL;
@@ -151,7 +220,7 @@ int DCPAM_WDS_load_configuration( const char* filename ) {
                 if( cfg_app_db_array ) {
 
                     P_APP.DB_len = cJSON_GetArraySize( cfg_app_db_array );
-
+                    P_APP.CACHE_len = 0;
 
                     P_APP.DB = SAFEMALLOC( P_APP.DB_len * sizeof * P_APP.DB, __FILE__, __LINE__ );
 
@@ -226,8 +295,6 @@ int DCPAM_WDS_load_configuration( const char* filename ) {
                 if( cfg_app_data ) {
                     P_APP.DATA_len = cJSON_GetArraySize( cfg_app_data );
 
-                    P_APP.CACHE_len = P_APP.DATA_len;
-
                     for( int i = 0; i < P_APP.DATA_len; i++ ) {
                         cfg_app_data_item = cJSON_GetArrayItem( cfg_app_data, i );
 
@@ -279,16 +346,15 @@ int DCPAM_WDS_load_configuration( const char* filename ) {
                         snprintf( P_APP.DATA[ i ].db_name, str_len3a+1, cfg_app_data_item_db_name->valuestring );
                         LOG_print( "\t· db_name=\"%s\"\n", P_APP.DATA[ i ].db_name );
 
-                        P_APP.DATA[ i ].columns_len = 0;
                         cfg_app_data_actions_item_columns = cJSON_GetObjectItem( cfg_app_data_item, "columns" );
+                        P_APP.DATA[ i ].columns_len = cJSON_GetArraySize( cfg_app_data_actions_item_columns );
                         if( cfg_app_data_actions_item_columns ) {
                             LOG_print( "\t· columns=[" );
-                            for( int k = 0; k < cJSON_GetArraySize( cfg_app_data_actions_item_columns ); k++ ) {
+                            for( int k = 0; k < P_APP.DATA[ i ].columns_len; k++ ) {
                                 cfg_app_data_actions_item_columns_name = cJSON_GetArrayItem( cfg_app_data_actions_item_columns, k );
-                                memset( P_APP.DATA[ i ].columns[ k ], 0, MAX_COLUMN_NAME_LEN );
+                                memset( P_APP.DATA[ i ].columns[ k ], '\0', MAX_COLUMN_NAME_LEN );
                                 snprintf( P_APP.DATA[ i ].columns[ k ], MAX_COLUMN_NAME_LEN, "%s", cfg_app_data_actions_item_columns_name->valuestring );
                                 LOG_print( "\"%s\", ", cfg_app_data_actions_item_columns_name->valuestring );
-                                P_APP.DATA[ i ].columns_len++;
                             }
                             LOG_print( "]\n" );
                         } else {
@@ -313,6 +379,9 @@ int DCPAM_WDS_load_configuration( const char* filename ) {
                         cfg_app_data_actions = cJSON_GetObjectItem( cfg_app_data_item, "actions" );
                         if( cfg_app_data_actions ) {
                             P_APP.DATA[ i ].actions_len = cJSON_GetArraySize( cfg_app_data_actions );
+
+                            P_APP.CACHE_len += P_APP.DATA[ i ].actions_len;
+
                             for( int j = 0; j < P_APP.DATA[ i ].actions_len; j++ ) {
                                 cfg_app_data_actions_item = cJSON_GetArrayItem( cfg_app_data_actions, j );
 
@@ -437,18 +506,18 @@ int main( int argc, char** argv ) {
     }
 
     if( DCPAM_WDS_load_configuration( config_file ) == 1 ) {
-        LOG_print( "[%s] Init memory cache (predefined queries: %d)...", TIME_get_gmt(), P_APP.CACHE_len );
-        P_APP.CACHE = SAFEMALLOC( P_APP.CACHE_len * sizeof * P_APP.CACHE, __FILE__, __LINE__ );
-        for( int i = 0; i < P_APP.CACHE_len; i++ ) {
-            P_APP.CACHE[ i ] = SAFEMALLOC( sizeof( DB_CACHE ), __FILE__, __LINE__ );
-            P_APP.CACHE[ i ]->query = SAFEMALLOC( sizeof( DB_QUERY ), __FILE__, __LINE__ );
-            DB_QUERY_init( P_APP.CACHE[ i ]->query );
-        }
-        LOG_print( "ok.\n" );
         LOG_print( "[%s] DCPAM Warehouse Data Server configuration loaded.\n", TIME_get_gmt() );
+
+        if( DCPAM_WDS_init_cache() == 1 ) {
+            LOG_print( "[%s] Cache initialization finished.\n", TIME_get_gmt() );
+
+        } else {
+            LOG_print( "[%s] Warning: cache initialization failed.\n", TIME_get_gmt() );
+        }
+
+        DCPAM_WDS_free_configuration();
     }
 
-    DCPAM_WDS_free_configuration();
     LOG_print( "[%s] DCPAM Warehouse Data Server finished.\n", TIME_get_gmt() );
     return 0;
 }

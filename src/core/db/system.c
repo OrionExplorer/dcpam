@@ -11,11 +11,6 @@ DATABASE_SYSTEM     DATABASE_SYSTEMS[MAX_DATA_SYSTEMS];
 int                 DATABASE_SYSTEMS_COUNT;
 
 
-void DB_QUERY_cache( const char *sql, DB_CACHE *dst ) {
-    return;
-}
-
-
 int DB_exec(
     DATABASE_SYSTEM_DB  *db,
     const char          *sql_template,
@@ -735,4 +730,13 @@ void DATABASE_SYSTEM_add(
     } else {
         LOG_print( "error. Maximum data systems limit exceeded.\n" );
     }
+}
+
+DATABASE_SYSTEM_DB* DATABASE_SYSTEM_DB_get( const char* name ) {
+    for( int i = 0; i < P_APP.DB_len; i++ ) {
+        if( strcmp( P_APP.DB[ i ]->name, name ) == 0 ) {
+            return P_APP.DB[ i ];
+        }
+    }
+    return NULL;
 }

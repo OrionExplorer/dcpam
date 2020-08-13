@@ -4,6 +4,8 @@
 #include "../../shared.h"
 #include "../network/client.h"
 
+#define MAX_ETL_COLUMNS                     32
+
 typedef enum DB_SYSTEM_ETL_STEP {
     ETL_EXTRACT = 1,
     ETL_TRANSFORM,

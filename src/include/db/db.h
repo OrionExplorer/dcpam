@@ -35,11 +35,6 @@ typedef struct {
     char            *sql;
 } DB_QUERY;
 
-typedef struct {
-    DB_QUERY        *query;
-} DB_CACHE;
-
-
 typedef void ( *qec )( DB_RECORD*, void *data_ptr1, void *data_ptr2 ); /* Query Exec Callback */
 
 

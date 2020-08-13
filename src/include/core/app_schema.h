@@ -2,6 +2,10 @@
 #define APP_SCHEMA_H
 
 #include "db/system_schema.h"
+#include "../core/cache.h"
+
+#define MAX_DCPAM_DATA_ITEMS                5
+#define MAX_DCPAM_DATA_ACTIONS              8
 
 /*
     config.json => app.DATA[ i ]
@@ -23,7 +27,7 @@ typedef struct DCPAM_DATA {
     char                    *name;
     char                    *db_table_name;
     char                    *db_name;
-    char                    columns[ MAX_ETL_COLUMNS ][ 32 ];
+    char                    columns[ MAX_ETL_COLUMNS ][ MAX_COLUMN_NAME_LEN ];
     int                     columns_len;
     char                    *description;
     DCPAM_DATA_ACTION       actions[ MAX_DCPAM_DATA_ACTIONS ];
@@ -51,7 +55,7 @@ typedef struct P_DCPAM_APP {
     int                     DB_len;
     DCPAM_DATA              DATA[ MAX_DCPAM_DATA_ITEMS ];
     int                     DATA_len;
-    DB_CACHE                **CACHE;
+    D_CACHE                 **CACHE;
     int                     CACHE_len;
 } P_DCPAM_APP;
 

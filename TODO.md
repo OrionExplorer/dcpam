@@ -105,7 +105,9 @@
 	* [ ] Network layer:
 		* [ ] Based on [c-server-core](https://github.com/OrionExplorer/c-server-core).
 		* [ ] Protocol.
-	* [ ] Memory cache structure.
+	* [x] Memory cache structure.
+	* [x] Cache all actions data.
+	* [x] DB_CACHE_get function.
 * [ ] DCPAM ETL must not know about P_DCPAM_APP and DPCAM WDS about DCPAM_APP.
 * [ ] ETL process interval can vary between system[].queries[].
 * [ ] Move DCPAM ETL configuration to database:

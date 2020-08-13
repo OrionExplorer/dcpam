@@ -1,11 +1,7 @@
 #ifndef SCHEMA_H
 #define SCHEMA_H
 
-#define MAX_DCPAM_DATA_ITEMS                1
-#define MAX_DCPAM_DATA_ACTIONS              8
-#define MAX_SYSTEM_QUERIES                  32
 #define MAX_DATA_SYSTEMS                    4
-#define MAX_ETL_COLUMNS                     32
 
 #include "db/etl_schema.h"
 #include "db/system_schema.h"
