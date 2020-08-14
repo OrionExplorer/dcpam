@@ -11,8 +11,8 @@ extern P_DCPAM_APP      P_APP;
 
 int DB_CACHE_init( D_CACHE *dst, DATABASE_SYSTEM_DB *db, const char *sql, const char *table ) {
 
-    LOG_print( "[%s] DB_CACHE_init( %s, \"%.30s(...)\", %s ) started...\n", TIME_get_gmt(), db->name, sql, table );
     if( dst && db && table) {
+        LOG_print( "[%s] DB_CACHE_init( %s, \"%.30s(...)\", %s ) started...\n", TIME_get_gmt(), db->name, sql, table );
         dst->query = SAFEMALLOC( sizeof( DB_QUERY ), __FILE__, __LINE__ );
         DB_QUERY_init( dst->query );
 
@@ -40,6 +40,7 @@ int DB_CACHE_init( D_CACHE *dst, DATABASE_SYSTEM_DB *db, const char *sql, const 
         }
         return res;
     } else {
+        LOG_print( "[%s] DB_CACHE_init error: not all parameters are valid!\n", TIME_get_gmt() );
         dst->db = NULL;
         dst->query = NULL;
         dst->table = NULL;
