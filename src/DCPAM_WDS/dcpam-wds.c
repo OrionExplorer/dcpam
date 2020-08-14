@@ -44,6 +44,7 @@ int DCPAM_WDS_init_cache( void ) {
     for( int i = 0; i < P_APP.CACHE_len; i++ ) {
         P_APP.CACHE[ i ] = SAFEMALLOC( sizeof( D_CACHE ), __FILE__, __LINE__ );
         P_APP.CACHE[ i ]->query = NULL;
+        P_APP.CACHE[ i ]->table = NULL;
     }
 
     LOG_print( "ok.\n" );
@@ -72,19 +73,18 @@ int DCPAM_WDS_init_cache( void ) {
                 if( src ) {
                     LOG_print( "\t- Database found.\n" );
 
-                    DB_CACHE_init( P_APP.CACHE[ initialized ] );
-
-                    int res = DB_exec(
-                                        src,
-                                        P_APP.DATA[ i ].actions[ j ].sql,
-                                        strlen( P_APP.DATA[ i ].actions[ j ].sql),
-                                        P_APP.CACHE[ initialized ]->query,
-                                        NULL,
-                                        0,
-                                        NULL, NULL, NULL, NULL, NULL, NULL
+                    int res = DB_CACHE_init(
+                        P_APP.CACHE[ initialized ],
+                        src,
+                        P_APP.DATA[ i ].actions[ j ].sql,
+                        P_APP.DATA[ i ].db_table_name
                     );
 
-                    DB_CACHE_print( P_APP.CACHE[ initialized ]->query->sql, P_APP.CACHE[ initialized ] );
+                    if( res == 1 ) {
+                        DB_CACHE_print( P_APP.CACHE[ initialized ] );
+                    } else {
+                        LOG_print( "[%s] Fatal error: DB_CACHE_init failed.\n", TIME_get_gmt() );
+                    }
 
                     initialized++;
 
