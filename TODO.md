@@ -103,8 +103,10 @@
 	* [ ] ~~Load all wds_config\*.json files in application directory.~~
 	* [x] Keep list of all DCPAM Database nodes and corresponding predefined queries.
 	* [ ] Network layer:
-		* [ ] Based on [c-server-core](https://github.com/OrionExplorer/c-server-core).
-		* [ ] Protocol.
+		* [x] Based on [c-server-core](https://github.com/OrionExplorer/c-server-core).
+		* [ ] Protocol:
+			* Just plain SQL query forwarded to RDBMS to deal with.
+		* [ ] Cache missing data in real time based on received queries.
 	* [x] Memory cache structure.
 	* [x] Cache all actions data.
 	* [x] DB_CACHE_get function.

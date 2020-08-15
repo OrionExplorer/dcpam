@@ -71,7 +71,7 @@ int main( void ) {
     LOG_print( "DCPAM RDP\n");
 
     spc exec_script = ( spc )&DCPAM_script_exec;
-    SOCKET_main( &exec_script );
+    SOCKET_main( &exec_script, 9091 );
 
     return 0;
 }

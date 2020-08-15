@@ -2,6 +2,7 @@
 	"app" : {
 		"name" : "DCPAM Warehouse Data Server",
 		"version" : "0.1",
+		"network_port" : 8080,
 		"DB" : [{
 			"name" : "DCPAM Database NODE #1",
 			"ip" : "127.0.0.1",

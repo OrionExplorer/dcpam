@@ -102,5 +102,5 @@ dcpam-rdp: dcpam-rdp.o socket_io.o log.o time.o filesystem.o memory.o
 dcpam-etl: dcpam-etl.o mysql.o mariadb.o odbc.o postgresql.o log.o time.o filesystem.o cJSON.o sqlite3.o memory.o db.o worker.o system.o extract.o stage.o transform.o load.o strings.o oracle.o sqlite.o client.o
 	$(CC) mysql.o mariadb.o odbc.o postgresql.o dcpam-etl.o log.o time.o filesystem.o cJSON.o sqlite3.o memory.o db.o worker.o system.o extract.o stage.o transform.o load.o strings.o oracle.o sqlite.o client.o -o dcpam-etl $(LIBS)
 
-dcpam-wds: dcpam-wds.o cache.o mysql.o mariadb.o odbc.o postgresql.o log.o time.o filesystem.o cJSON.o sqlite3.o memory.o db.o worker.o system.o extract.o stage.o transform.o load.o strings.o oracle.o sqlite.o client.o
-	$(CC) cache.o mysql.o mariadb.o odbc.o postgresql.o dcpam-wds.o log.o time.o filesystem.o cJSON.o sqlite3.o memory.o db.o worker.o system.o extract.o stage.o transform.o load.o strings.o oracle.o sqlite.o client.o -o dcpam-wds $(LIBS)
+dcpam-wds: dcpam-wds.o socket_io.o cache.o mysql.o mariadb.o odbc.o postgresql.o log.o time.o filesystem.o cJSON.o sqlite3.o memory.o db.o worker.o system.o extract.o stage.o transform.o load.o strings.o oracle.o sqlite.o client.o
+	$(CC) cache.o mysql.o socket_io.o mariadb.o odbc.o postgresql.o dcpam-wds.o log.o time.o filesystem.o cJSON.o sqlite3.o memory.o db.o worker.o system.o extract.o stage.o transform.o load.o strings.o oracle.o sqlite.o client.o -o dcpam-wds $(LIBS)

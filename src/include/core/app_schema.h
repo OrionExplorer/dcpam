@@ -51,6 +51,7 @@ typedef struct DCPAM_APP {
 typedef struct P_DCPAM_APP {
     char                    *version;
     char                    *name;
+    int                     network_port;
     DATABASE_SYSTEM_DB      **DB;
     int                     DB_len;
     DCPAM_DATA              DATA[ MAX_DCPAM_DATA_ITEMS ];

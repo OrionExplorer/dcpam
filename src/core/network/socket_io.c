@@ -32,12 +32,12 @@ struct in_addr          addr;
 
 int                     http_conn_count = 0;
 
-void     SOCKET_initialization( void );
+void     SOCKET_initialization( const int port );
 void     SOCKET_prepare( void );
 void     SOCKET_process( int socket_fd, spc *socket_process_callback );
 void     SOCKET_stop( void );
 
-void SOCKET_initialization( void ) {
+void SOCKET_initialization( const int port ) {
     LOG_print("[%s] Initializing...", TIME_get_gmt() );
 
     #ifdef _WIN32
@@ -54,7 +54,7 @@ void SOCKET_initialization( void ) {
         exit( EXIT_FAILURE );
     }
 
-    active_port = DEFAULT_PORT;
+    active_port = port > 0 ? port : DEFAULT_PORT;
 
     memset( &server_address, 0, sizeof( server_address ) );
     server_address.sin_addr.s_addr = htonl( INADDR_ANY );
@@ -260,8 +260,8 @@ char* SOCKET_get_remote_ip( COMMUNICATION_SESSION *communication_session ) {
     return ( ( char* )&ip_addr );
 }
 
-void SOCKET_main( spc *socket_process_callback ) {
-    SOCKET_initialization();
+void SOCKET_main( spc *socket_process_callback, const int port ) {
+    SOCKET_initialization( port );
     SOCKET_prepare();
     SOCKET_run( socket_process_callback );
     SOCKET_stop();

@@ -11,6 +11,7 @@
 #include "../include/utils/filesystem.h"
 #include "../include/core/db/system.h"
 #include "../include/core/cache.h"
+#include "../include/core/network/socket_io.h"
 
 #pragma warning( disable : 6031 )
 
@@ -146,6 +147,7 @@ int DCPAM_WDS_load_configuration( const char* filename ) {
     cJSON* cfg_app = NULL;
     cJSON* cfg_app_version = NULL;
     cJSON* cfg_app_name = NULL;
+    cJSON* cfg_app_network_port = NULL;
     cJSON* cfg_app_db_array = NULL;
     cJSON* cfg_app_db_item = NULL;
     cJSON* cfg_app_db = NULL;
@@ -215,6 +217,14 @@ int DCPAM_WDS_load_configuration( const char* filename ) {
                     free( config_string ); config_string = NULL;
                     return FALSE;
                 }
+
+                cfg_app_network_port = cJSON_GetObjectItem( cfg_app, "network_port" );
+                if( cfg_app_network_port ) {
+                    P_APP.network_port = cfg_app_network_port->valueint;
+                } else {
+                    P_APP.network_port = 9090;
+                }
+                LOG_print( "Network port is set to %d.\n", P_APP.network_port );
 
                 cfg_app_db_array = cJSON_GetObjectItem( cfg_app, "DB" );
                 if( cfg_app_db_array ) {
@@ -480,6 +490,10 @@ int DCPAM_WDS_load_configuration( const char* filename ) {
     return result;
 }
 
+void DCPAM_WDS_query( COMMUNICATION_SESSION *communication_session, CONNECTED_CLIENT *client  ) {
+    LOG_print( "[%s] Received query (%ld): %s\n", TIME_get_gmt(), communication_session->data_length, communication_session->content );
+}
+
 
 int main( int argc, char** argv ) {
     char        config_file[ MAX_PATH_LENGTH + 1 ];
@@ -510,6 +524,9 @@ int main( int argc, char** argv ) {
 
         if( DCPAM_WDS_init_cache() == 1 ) {
             LOG_print( "[%s] Cache initialization finished.\n", TIME_get_gmt() );
+
+            spc exec_script = ( spc )&DCPAM_WDS_query;
+            SOCKET_main( &exec_script, P_APP.network_port );
 
         } else {
             LOG_print( "[%s] Warning: cache initialization failed.\n", TIME_get_gmt() );

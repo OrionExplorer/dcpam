@@ -76,7 +76,7 @@ CONNECTED_CLIENT                connected_clients[ MAX_CLIENTS ];
 
 typedef void ( *spc )( COMMUNICATION_SESSION*, CONNECTED_CLIENT* ); /* Socket Process Callback */
 
-void                SOCKET_main( spc *socket_process_callback );
+void                SOCKET_main( spc *socket_process_callback, const int port );
 void                SOCKET_run( spc *socket_process_callback );
 void                SOCKET_stop( void );
 
