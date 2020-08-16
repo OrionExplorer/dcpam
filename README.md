@@ -106,8 +106,6 @@ As DCPAM is extremely modular and highly scalabe, it can serve both as Data Ware
   * Manage custom reports:
     * labels, charts and grids
     * user access control
-* DCPAM WDS:
-  * Caching mechanism for preconfigured queries.
 * DCPAM Admin web application:
   * Manage data sources.
   * Configure ETL processes.
