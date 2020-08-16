@@ -36,8 +36,6 @@ void _DB_CACHE_calc_size( D_CACHE* src ) {
         }
 
         src->size = result;
-    } else {
-        src->size = 0;
     }
 }
 
