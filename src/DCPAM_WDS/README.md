@@ -8,7 +8,7 @@
 ![PostgreSQL](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/postgresql102x100.png) ![MySQL](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/mysql159x100.png) ![MariaDB](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/mariadb100x100.png) ![Microsoft SQL Server](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/sqlserver134x100.png) ![Oracle Database](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/oracle100x100.png) ![ODBC](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/odbc199x100.png) ![SQLite3](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/sqlite171x100.png) ![Linux](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/linux100x100.png) ![Windows 10](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/windows87x100.png)
 
 ##### Currently under active development
-* [x] Allowed hosts list.
+* [ ] To be announced.
 
 ### Table of contents
 * [Purpose of DCPAM WDS](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_WDS#purpose-of-dcpam-wds)
@@ -25,7 +25,7 @@ DCPAM WDS is dedicated endpoint for querying predefined business data with custo
 
 ## Technology
 ### Data sources
-DCPAM WDS development is still in progress with following data sources are available:
+DCPAM WDS development is still in progress with following data sources available:
 |  ID  | Data source                        | Type            | Support          |
 |:----:|:-----------------------------------|:---------------:|:----------------:|
 | 1    | PostgreSQL                         | database        | native           |

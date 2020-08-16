@@ -57,6 +57,16 @@ typedef struct P_DCPAM_APP {
     int                     DATA_len;
     D_CACHE                 **CACHE;
     int                     CACHE_len;
+    char                    **ALLOWED_HOSTS;
+    int                     ALLOWED_HOSTS_len;
 } P_DCPAM_APP;
+
+typedef struct R_DCPAM_APP {
+    char                    *version;
+    char                    *name;
+    int                     network_port;
+    char                    **ALLOWED_HOSTS;
+    int                     ALLOWED_HOSTS_len;
+} R_DCPAM_APP;
 
 #endif

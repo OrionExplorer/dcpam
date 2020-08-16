@@ -1,0 +1,13 @@
+{
+	"app" : {
+		"name" : "DCPAM Remote Data Processor",
+		"version" : "0.1",
+		"network" : {
+			"port" : 9091,
+			"allowed_hosts" : [
+				"192.168.0.1",
+				"127.0.0.1"
+			]
+		}
+	}
+}

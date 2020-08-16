@@ -155,7 +155,7 @@ Example of DCPAM Extract-Transform-Load / Extract-Load-Transform process scalabi
 * Many DCPAM Database nodes can be encapsulated into single data access point by DCPAM WDS.
 * DCPAM ETL, Staging Area, DCPAM Database and DCPAM WDS can run on single server as well!
 
-Following diagrams represents different configurations, allowing to deploy both Data Warehouse and Data Marts.
+Following diagrams represents different configurations to deploy both Data Warehouse and Data Marts.
 
 ![DCPAM overview](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/dcpam-dws.png)
 *<p align=center>Data Warehouse with DCPAM</p>*
@@ -189,8 +189,7 @@ DCPAM is designed to be as most customizable as it needs to be.
 Therefore every database listed above as available data source can also be used as DCPAM target database.
 
 ##### Currently under active development
-* [x] [DCPAM WDS](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_WDS): allowed hosts list.
-* [x] [DCPAM RDP](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_RDP): allowed hosts list.
+* [ ] To be announced.
 
 ## Roadmap
 | Year | Feature                                  | Status            |

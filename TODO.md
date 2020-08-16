@@ -113,9 +113,9 @@
 	* [x] Memory cache structure.
 	* [x] Cache all actions data.
 	* [x] DB_CACHE_get function.
-* [ ] Allowed hosts list for DCPAM components:
-	* [ ] DCPAM RDP
-	* [ ] DCPAM WDS 
+* [x] Allowed hosts list for DCPAM components:
+	* [x] DCPAM RDP
+	* [x] DCPAM WDS 
 * [ ] DCPAM ETL must not know about P_DCPAM_APP and DPCAM WDS about DCPAM_APP.
 * [ ] ETL process interval can vary between system[].queries[].
 * [ ] Move DCPAM ETL configuration to database:

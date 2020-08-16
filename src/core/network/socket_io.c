@@ -123,7 +123,18 @@ void SOCKET_prepare( void ) {
     LOG_print( "ok.\n" );
 }
 
-void SOCKET_run( spc *socket_process_callback ) {
+int SOCKET_client_host_allowed( const char *ip, const char **allowed_hosts, int hosts_len ) {
+    if( ip && *allowed_hosts && hosts_len > 0 ) {
+        for( int i = 0; i < hosts_len; i++ ) {
+            if( strcmp( ip, allowed_hosts[ i ] ) == 0 ) {
+                return 1;
+            }
+        }
+    }
+    return 0;
+}
+
+void SOCKET_run( spc *socket_process_callback, const char **allowed_hosts, const int hosts_len ) {
     struct timeval tv;
     pthread_t sthread;
 
@@ -149,6 +160,15 @@ void SOCKET_run( spc *socket_process_callback ) {
 
                     communication_session_.data_length = sizeof( struct sockaddr );
                     newfd = accept( socket_server, ( struct sockaddr* )&communication_session_.address, &communication_session_.data_length );
+                    int client_allowed = SOCKET_client_host_allowed( inet_ntoa( communication_session_.address.sin_addr ), &( *allowed_hosts ), hosts_len );
+                    if( client_allowed == 0 ) {
+                        SOCKET_unregister_client( newfd );
+                        SOCKET_close( newfd );
+                        LOG_print( "[%s] WARNING: host %s is not allowed.\n", TIME_get_gmt(), inet_ntoa( communication_session_.address.sin_addr ) );
+                        continue;
+                    } else {
+                        LOG_print( "[%s] Client IP: %s.\n", TIME_get_gmt(), inet_ntoa( communication_session_.address.sin_addr ) );
+                    }
                     communication_session_.socket_descriptor = newfd;
 
                     if( newfd == -1 ) {
@@ -260,10 +280,10 @@ char* SOCKET_get_remote_ip( COMMUNICATION_SESSION *communication_session ) {
     return ( ( char* )&ip_addr );
 }
 
-void SOCKET_main( spc *socket_process_callback, const int port ) {
+void SOCKET_main( spc* socket_process_callback, const int port, const char** allowed_hosts, const int hosts_len ) {
     SOCKET_initialization( port );
     SOCKET_prepare();
-    SOCKET_run( socket_process_callback );
+    SOCKET_run( socket_process_callback, &(*allowed_hosts), hosts_len );
     SOCKET_stop();
 }
 

@@ -76,9 +76,10 @@ CONNECTED_CLIENT                connected_clients[ MAX_CLIENTS ];
 
 typedef void ( *spc )( COMMUNICATION_SESSION*, CONNECTED_CLIENT* ); /* Socket Process Callback */
 
-void                SOCKET_main( spc *socket_process_callback, const int port );
-void                SOCKET_run( spc *socket_process_callback );
+void                SOCKET_main( spc* socket_process_callback, const int port, const char** allowed_hosts, const int hosts_len );
+void                SOCKET_run( spc* socket_process_callback, const char** allowed_hosts, const int hosts_len );
 void                SOCKET_stop( void );
+int                 SOCKET_client_host_allowed( const char *ip, const char **allowed_hosts, int hosts_len );
 
 void                SOCKET_send( COMMUNICATION_SESSION *communication_session, CONNECTED_CLIENT *client, const char *data, unsigned int data_size );
 

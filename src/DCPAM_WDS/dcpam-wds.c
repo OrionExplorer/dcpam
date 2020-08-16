@@ -40,6 +40,11 @@ void app_terminate( void ) {
 
 void DCPAM_WDS_free_configuration( void ) {
 
+    for( int i = 0; i < P_APP.ALLOWED_HOSTS_len; i++ ) {
+        free( P_APP.ALLOWED_HOSTS[ i ] ); P_APP.ALLOWED_HOSTS[ i ] = NULL;
+    }
+    free( P_APP.ALLOWED_HOSTS ); P_APP.ALLOWED_HOSTS = NULL;
+
     for( int i = 0; i < P_APP.DB_len; i++ ) {
         DATABASE_SYSTEM_DB_free( P_APP.DB[ i ] );
         free( P_APP.DB[ i ] ); P_APP.DB[ i ] = NULL;
@@ -77,7 +82,10 @@ int DCPAM_WDS_load_configuration( const char* filename ) {
     cJSON* cfg_app = NULL;
     cJSON* cfg_app_version = NULL;
     cJSON* cfg_app_name = NULL;
+    cJSON* cfg_app_network = NULL;
     cJSON* cfg_app_network_port = NULL;
+    cJSON* cfg_app_network_allowed_hosts = NULL;
+    cJSON* cfg_app_network_allowed_host_item = NULL;
     cJSON* cfg_app_db_array = NULL;
     cJSON* cfg_app_db_item = NULL;
     cJSON* cfg_app_db = NULL;
@@ -148,13 +156,42 @@ int DCPAM_WDS_load_configuration( const char* filename ) {
                     return FALSE;
                 }
 
-                cfg_app_network_port = cJSON_GetObjectItem( cfg_app, "network_port" );
-                if( cfg_app_network_port ) {
-                    P_APP.network_port = cfg_app_network_port->valueint;
+                cfg_app_network = cJSON_GetObjectItem( cfg_app, "network" );
+                if( cfg_app_network ) {
+
+                    cfg_app_network_port = cJSON_GetObjectItem( cfg_app_network, "port" );
+                    if( cfg_app_network_port ) {
+                        P_APP.network_port = cfg_app_network_port->valueint;
+                    } else {
+                        P_APP.network_port = 9090;
+                    }
+                    LOG_print( "Network port is set to %d.\n", P_APP.network_port );
+
+                    cfg_app_network_allowed_hosts = cJSON_GetObjectItem( cfg_app_network, "allowed_hosts" );
+                    if( cfg_app_network_allowed_hosts ) {
+                        P_APP.ALLOWED_HOSTS_len = cJSON_GetArraySize( cfg_app_network_allowed_hosts );
+                        P_APP.ALLOWED_HOSTS = SAFEMALLOC( P_APP.ALLOWED_HOSTS_len * sizeof * P_APP.ALLOWED_HOSTS, __FILE__, __LINE__ );
+
+                        for( int i = 0; i < P_APP.ALLOWED_HOSTS_len; i++ ) {
+                            cfg_app_network_allowed_host_item = cJSON_GetArrayItem( cfg_app_network_allowed_hosts, i );
+                            if( cfg_app_network_allowed_host_item ) {
+                                size_t str_len = strlen( cfg_app_network_allowed_host_item->valuestring );
+                                P_APP.ALLOWED_HOSTS[ i ] = SAFECALLOC( ( str_len + 1 ), sizeof( char ), __FILE__, __LINE__ );
+                                snprintf( P_APP.ALLOWED_HOSTS[ i ], str_len + 1, cfg_app_network_allowed_host_item->valuestring );
+                            }
+                        }
+                    } else {
+                        LOG_print( "ERROR: \"app.network.allowed_hosts\" key not found.\n" );
+                        cJSON_Delete( config_json );
+                        free( config_string ); config_string = NULL;
+                        return FALSE;
+                    }
                 } else {
-                    P_APP.network_port = 9090;
+                    LOG_print( "ERROR: \"app.network\" key not found.\n" );
+                    cJSON_Delete( config_json );
+                    free( config_string ); config_string = NULL;
+                    return FALSE;
                 }
-                LOG_print( "Network port is set to %d.\n", P_APP.network_port );
 
                 cfg_app_db_array = cJSON_GetObjectItem( cfg_app, "DB" );
                 if( cfg_app_db_array ) {
@@ -636,7 +673,7 @@ int main( int argc, char** argv ) {
             LOG_print( "[%s] Cache initialization finished.\n", TIME_get_gmt() );
 
             spc exec_script = ( spc )&DCPAM_WDS_query;
-            SOCKET_main( &exec_script, P_APP.network_port );
+            SOCKET_main( &exec_script, P_APP.network_port, (const char **)&(*P_APP.ALLOWED_HOSTS), P_APP.ALLOWED_HOSTS_len );
 
         } else {
             LOG_print( "[%s] Warning: cache initialization failed.\n", TIME_get_gmt() );

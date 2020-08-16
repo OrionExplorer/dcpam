@@ -113,17 +113,17 @@
 					"comment#24" : "# Running Transform subprocess is optional in DCPAM.",
 					"comment#25" : "##################################################################################################",
 					"inserted" : [{
-						"module" : "./src/DCPAM_EXEC/whitespaces/trailing-spaces.py",
+						"module" : "./src/DCPAM_RDP/whitespaces/trailing-spaces.py",
 						"staged_data" : "SELECT * FROM stage_accounted_time",
 						"source_system_update" : "UPDATE time_accounting SET %s WHERE %s"
 					}],
 					"deleted" : [{
-						"module" : "dcpam://127.0.0.1:9091/src/DCPAM_EXEC/whitespaces/trailing-spaces.py",
+						"module" : "dcpam://127.0.0.1:9091/src/DCPAM_RDP/whitespaces/trailing-spaces.py",
 						"staged_data" : "SELECT * FROM stage_accounted_time",
 						"source_system_update" : "UPDATE time_accounting SET %s WHERE %s"
 					}],
 					"modified" : [{
-						"module" : "./src/DCPAM_EXEC/whitespaces/trailing-spaces.py",
+						"module" : "./src/DCPAM_RDP/whitespaces/trailing-spaces.py",
 						"staged_data" : "SELECT * FROM stage_accounted_time",
 						"source_system_update" : "UPDATE time_accounting SET %s WHERE %s"
 					}]
