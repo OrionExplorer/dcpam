@@ -115,7 +115,10 @@
 	* [x] DB_CACHE_get function.
 * [x] Allowed hosts list for DCPAM components:
 	* [x] DCPAM RDP
-	* [x] DCPAM WDS 
+	* [x] DCPAM WDS
+* [ ] Client is allowed to connect to each DCPAM component with valid IP address and dedicated API key:
+	* [ ] DCPAM RDP
+	* [ ] DCPAM WDS
 * [ ] DCPAM ETL must not know about P_DCPAM_APP and DPCAM WDS about DCPAM_APP.
 * [ ] ETL process interval can vary between system[].queries[].
 * [ ] Move DCPAM ETL configuration to database:
