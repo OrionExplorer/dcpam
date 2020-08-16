@@ -38,75 +38,6 @@ void app_terminate( void ) {
     return;
 }
 
-int DCPAM_WDS_init_cache( void ) {
-
-    LOG_print( "[%s] Init memory cache (slots: %d)...", TIME_get_gmt(), P_APP.CACHE_len );
-    P_APP.CACHE = SAFEMALLOC( P_APP.CACHE_len * sizeof * P_APP.CACHE, __FILE__, __LINE__ );
-    for( int i = 0; i < P_APP.CACHE_len; i++ ) {
-        P_APP.CACHE[ i ] = SAFEMALLOC( sizeof( D_CACHE ), __FILE__, __LINE__ );
-        P_APP.CACHE[ i ]->query = NULL;
-        P_APP.CACHE[ i ]->table = NULL;
-    }
-
-    LOG_print( "ok.\n" );
-
-    /* Initialize database connections */
-    for( int i = 0; i < P_APP.DB_len; i++ ) {
-        LOG_print( "[%s] Connecting to \"%s\"...\n", TIME_get_gmt(), P_APP.DB[ i ]->name );
-        if( DATABASE_SYSTEM_DB_init( P_APP.DB[ i ] ) == 0 ) {
-            LOG_print( "[%s] Error: Unable to connect with \"%s\".\n", TIME_get_gmt(), P_APP.DB[ i ]->name );
-            return 0;
-        }
-    }
-
-    int initialized = 0;
-
-    for( int i = 0; i < P_APP.DATA_len; i++ ) {
-        for( int j = 0; j < P_APP.DATA[ i ].actions_len; j++ ) {
-
-            /* Cache queries without variable conditions only. */
-            if( P_APP.DATA[ i ].actions[ j ].condition && strlen( P_APP.DATA[ i ].actions[ j ].condition ) == 0 ) {
-
-                DATABASE_SYSTEM_DB      *src = NULL;
-
-                LOG_print( "[%s] Caching \"%s\" from \"%s\" table in \"%s\"...\n", TIME_get_gmt(), P_APP.DATA[ i ].actions[ j ].description, P_APP.DATA[ i ].db_table_name, P_APP.DATA[ i ].db_name );
-                src = DATABASE_SYSTEM_DB_get( P_APP.DATA[ i ].db_name );
-                if( src ) {
-                    LOG_print( "\t- Database found.\n" );
-
-                    int res = DB_CACHE_init(
-                        P_APP.CACHE[ initialized ],
-                        src,
-                        P_APP.DATA[ i ].actions[ j ].sql,
-                        P_APP.DATA[ i ].db_table_name
-                    );
-
-                    if( res == 1 ) {
-                        DB_CACHE_print( P_APP.CACHE[ initialized ] );
-                    } else {
-                        LOG_print( "[%s] Fatal error: DB_CACHE_init failed.\n", TIME_get_gmt() );
-                    }
-
-                    initialized++;
-
-                } else {
-                    LOG_print( "[%s] Fatal error: database \"%s\" is not valid!\n", TIME_get_gmt(), P_APP.DATA[ i ].db_name );
-                }
-            } else {
-                LOG_print( "[%s] NOTICE: \"%s\" from \"%s\" table in \"%s\" is not static cache.\n", TIME_get_gmt(), P_APP.DATA[ i ].actions[ j ].description, P_APP.DATA[ i ].db_table_name, P_APP.DATA[ i ].db_name );
-            }
-        }
-    }
-
-    /*
-    DB_QUERY *cached_result = NULL;
-    DB_CACHE_get( "SELECT system_customer, system_accounted_time, system_created, system FROM accounted_time WHERE is_valid = 1", &cached_result );
-    */
-
-    return 1;
-
-}
-
 void DCPAM_WDS_free_configuration( void ) {
 
     for( int i = 0; i < P_APP.DB_len; i++ ) {
@@ -128,7 +59,6 @@ void DCPAM_WDS_free_configuration( void ) {
     for( int i = 0; i < P_APP.DATA_len; i++ ) {
         if( P_APP.DATA[ i ].id != NULL ) { free( P_APP.DATA[ i ].id ); P_APP.DATA[ i ].id = NULL; }
         if( P_APP.DATA[ i ].name != NULL ) { free( P_APP.DATA[ i ].name ); P_APP.DATA[ i ].name = NULL; }
-        if( P_APP.DATA[ i ].db_table_name != NULL ) { free( P_APP.DATA[ i ].db_table_name ); P_APP.DATA[ i ].db_table_name = NULL; }
         if( P_APP.DATA[ i ].db_name != NULL ) { free( P_APP.DATA[ i ].db_name ); P_APP.DATA[ i ].db_name = NULL; }
         if( P_APP.DATA[ i ].description != NULL ) { free( P_APP.DATA[ i ].description ); P_APP.DATA[ i ].description = NULL; }
 
@@ -339,10 +269,6 @@ int DCPAM_WDS_load_configuration( const char* filename ) {
                             free( config_string ); config_string = NULL;
                             return FALSE;
                         }
-                        size_t str_len3 = strlen( cfg_app_data_item_db_table_name->valuestring );
-                        P_APP.DATA[ i ].db_table_name = SAFECALLOC( str_len3 + 1, sizeof( char ), __FILE__, __LINE__ );
-                        snprintf( P_APP.DATA[ i ].db_table_name, str_len3+1, cfg_app_data_item_db_table_name->valuestring );
-                        LOG_print( "\t· db_table_name=\"%s\"\n", P_APP.DATA[ i ].db_table_name );
 
                         cfg_app_data_item_db_name = cJSON_GetObjectItem( cfg_app_data_item, "db_name" );
                         if( cfg_app_data_item_db_name == NULL ) {
@@ -490,10 +416,194 @@ int DCPAM_WDS_load_configuration( const char* filename ) {
     return result;
 }
 
-void DCPAM_WDS_query( COMMUNICATION_SESSION *communication_session, CONNECTED_CLIENT *client  ) {
-    LOG_print( "[%s] Received query (%ld): %s\n", TIME_get_gmt(), communication_session->data_length, communication_session->content );
+int DCPAM_WDS_init_cache( void ) {
+
+    LOG_print( "[%s] Init memory cache (slots: %d)...", TIME_get_gmt(), P_APP.CACHE_len );
+    P_APP.CACHE = SAFEMALLOC( P_APP.CACHE_len * sizeof * P_APP.CACHE, __FILE__, __LINE__ );
+    for( int i = 0; i < P_APP.CACHE_len; i++ ) {
+        P_APP.CACHE[ i ] = SAFEMALLOC( sizeof( D_CACHE ), __FILE__, __LINE__ );
+        P_APP.CACHE[ i ]->query = NULL;
+    }
+
+    LOG_print( "ok.\n" );
+
+    /* Initialize database connections */
+    for( int i = 0; i < P_APP.DB_len; i++ ) {
+        LOG_print( "[%s] Connecting to \"%s\"...\n", TIME_get_gmt(), P_APP.DB[ i ]->name );
+        if( DATABASE_SYSTEM_DB_init( P_APP.DB[ i ] ) == 0 ) {
+            LOG_print( "[%s] Error: Unable to connect with \"%s\".\n", TIME_get_gmt(), P_APP.DB[ i ]->name );
+            return 0;
+        }
+    }
+
+    int initialized = 0;
+
+    for( int i = 0; i < P_APP.DATA_len; i++ ) {
+        for( int j = 0; j < P_APP.DATA[ i ].actions_len; j++ ) {
+
+            /* Cache queries without variable conditions only. */
+            if( P_APP.DATA[ i ].actions[ j ].condition && strlen( P_APP.DATA[ i ].actions[ j ].condition ) == 0 ) {
+
+                DATABASE_SYSTEM_DB* src = NULL;
+
+                LOG_print( "[%s] Caching \"%s\" from \"%s\"...\n", TIME_get_gmt(), P_APP.DATA[ i ].actions[ j ].description, P_APP.DATA[ i ].db_name );
+                src = DATABASE_SYSTEM_DB_get( P_APP.DATA[ i ].db_name );
+                if( src ) {
+                    LOG_print( "\t- Database found.\n" );
+
+                    int res = DB_CACHE_init(
+                        P_APP.CACHE[ initialized ],
+                        src,
+                        P_APP.DATA[ i ].actions[ j ].sql
+                    );
+
+                    if( res == 1 ) {
+                        DB_CACHE_print( P_APP.CACHE[ initialized ] );
+                    } else {
+                        LOG_print( "[%s] Fatal error: DB_CACHE_init failed.\n", TIME_get_gmt() );
+                    }
+
+                    initialized++;
+
+                } else {
+                    LOG_print( "[%s] Fatal error: database \"%s\" is not valid!\n", TIME_get_gmt(), P_APP.DATA[ i ].db_name );
+                }
+            } else {
+                LOG_print( "[%s] NOTICE: \"%s\" from \"%s\" is not static cache.\n", TIME_get_gmt(), P_APP.DATA[ i ].actions[ j ].description, P_APP.DATA[ i ].db_name );
+            }
+        }
+    }
+
+    /*
+    DB_QUERY *cached_result = NULL;
+    DB_CACHE_get( "SELECT system_customer, system_accounted_time, system_created, system FROM accounted_time WHERE is_valid = 1", &cached_result );
+    */
+
+    return 1;
 }
 
+void DCPAM_WDS_get_data( const char *sql, const char *db, char **dst_json ) {
+    DB_QUERY *cached_result = NULL;
+
+    if( sql && db ) {
+        LOG_print( "[%s] DCPAM_WDS_get_data( %s, %s )...", TIME_get_gmt(), sql, db );
+        DB_CACHE_get( sql, &cached_result );
+
+        if( cached_result ) {
+            cJSON* record = NULL;
+            cJSON* all_data = cJSON_CreateArray();
+
+            LOG_print( "ok. Found records: %d.\n", cached_result->row_count );
+            for( int i = 0; i < cached_result->row_count; i++ ) {
+                record = cJSON_CreateObject();
+                for( int j = 0; j < cached_result->field_count; j++ ) {
+                    cJSON_AddStringToObject( record, cached_result->records[ i ].fields[ j ].label, cached_result->records[ i ].fields[ j ].value );
+                }
+                cJSON_AddItemToArray( all_data, record );
+            }
+
+            char* _res = cJSON_Print( all_data );
+            *dst_json = SAFECALLOC( strlen( _res + 1 ), sizeof( char ), __FILE__, __LINE__ );
+            strncpy( *dst_json, _res, strlen( _res ) );
+            cJSON_Delete( all_data );
+        } else {
+            LOG_print( "requested data is not cached.\n" );
+
+            DATABASE_SYSTEM_DB *src_db = DATABASE_SYSTEM_DB_get( db );
+            if( src_db ) {
+                D_CACHE *tmp_cache;
+
+                P_APP.CACHE = realloc( P_APP.CACHE, (P_APP.CACHE_len + 1 ) * sizeof( D_CACHE ) );
+                if( P_APP.CACHE != NULL ) {
+
+                    P_APP.CACHE[ P_APP.CACHE_len ] = SAFEMALLOC( sizeof( D_CACHE ), __FILE__, __LINE__ );
+                    P_APP.CACHE[ P_APP.CACHE_len ]->query = NULL;
+
+                    if( DB_CACHE_init(
+                        P_APP.CACHE[ P_APP.CACHE_len ],
+                        src_db,
+                        sql
+                    ) == 1 ) {
+                        P_APP.CACHE_len++;
+                        LOG_print( "[%s] Data for request cached successfully.\n", TIME_get_gmt() );
+                        DCPAM_WDS_get_data( sql, db, &(*dst_json) );
+                    } else {
+                        LOG_print( "[%s] Error: unable to cache data for request.\n", TIME_get_gmt() );
+                    }
+                }
+
+            } else {
+                LOG_print( "[%s] Error: database \"%s\" not found!\n", TIME_get_gmt(), db );
+            }
+        }
+    } else {
+        LOG_print( "[%s] DCPAM_WDS_get_data error: not all parameters are valid!\n", TIME_get_gmt() );
+    }
+}
+
+void DCPAM_WDS_query( COMMUNICATION_SESSION *communication_session, CONNECTED_CLIENT *client  ) {
+
+    if( communication_session->data_length > 0 ) {
+
+        char* request = NULL;
+        cJSON *json_request = NULL;
+
+        request = SAFECALLOC( communication_session->data_length + 1, sizeof( char ), __FILE__, __LINE__ );
+        strncpy( request, communication_session->content, communication_session->data_length );
+
+        LOG_print( "[%s] Received request (%ld): %s\n", TIME_get_gmt(), communication_session->data_length, request );
+
+        json_request = cJSON_Parse( request );
+        if( json_request ) {
+
+            cJSON *sql = NULL;
+            cJSON *db = NULL;
+
+            LOG_print( "[%s] Request is valid JSON.\n", TIME_get_gmt() );
+
+            sql = cJSON_GetObjectItem( json_request, "sql" );
+            if( sql == NULL) {
+                LOG_print( "[%s] Error: no SQL in request is found.\n", TIME_get_gmt() );
+                SOCKET_send( communication_session, client, "-1", 2 );
+                cJSON_Delete( json_request );
+                return;
+            }
+
+            db = cJSON_GetObjectItem( json_request, "db" );
+            if( db  == NULL ) {
+                LOG_print( "[%s] Error: no DB name in request is found.\n", TIME_get_gmt() );
+                SOCKET_send( communication_session, client, "-1", 2 );
+                cJSON_Delete( json_request );
+                return;
+            }
+
+            DB_QUERY_TYPE dqt = DB_QUERY_get_type( sql->valuestring );
+            if(
+                dqt == DQT_DELETE ||
+                dqt == DQT_INSERT ||
+                dqt == DQT_UPDATE ||
+                dqt != DQT_SELECT
+                ) {
+
+            } else {
+                char* json_response = NULL;
+
+                DCPAM_WDS_get_data( sql->valuestring, db->valuestring, &json_response );
+
+                if( json_response ) {
+                    SOCKET_send( communication_session, client, json_response, strlen( json_response ) );
+                } else {
+                    SOCKET_send( communication_session, client, "-1", 2 );
+                }
+            }
+        } else {
+            LOG_print( "[%s] Error: request is not valid JSON.\n", TIME_get_gmt() );
+            SOCKET_send( communication_session, client, "-1", 2 );
+            return;
+        }
+    }
+
+}
 
 int main( int argc, char** argv ) {
     char        config_file[ MAX_PATH_LENGTH + 1 ];

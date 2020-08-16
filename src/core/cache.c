@@ -9,18 +9,14 @@
 
 extern P_DCPAM_APP      P_APP;
 
-int DB_CACHE_init( D_CACHE *dst, DATABASE_SYSTEM_DB *db, const char *sql, const char *table ) {
+int DB_CACHE_init( D_CACHE *dst, DATABASE_SYSTEM_DB *db, const char *sql ) {
 
-    if( dst && db && table) {
-        LOG_print( "[%s] DB_CACHE_init( %s, \"%.30s(...)\", %s ) started...\n", TIME_get_gmt(), db->name, sql, table );
+    if( dst && db ) {
+        LOG_print( "[%s] DB_CACHE_init( %s, \"%.30s(...)\" ) started...\n", TIME_get_gmt(), db->name, sql );
         dst->query = SAFEMALLOC( sizeof( DB_QUERY ), __FILE__, __LINE__ );
         DB_QUERY_init( dst->query );
 
         dst->db = db;
-
-        size_t table_len = strlen( table );
-        dst->table = SAFECALLOC( table_len + 1, sizeof( char ), __FILE__, __LINE__ );
-        snprintf( dst->table, table_len + 1, table );
 
         int res =  DB_exec(
             db,
@@ -32,24 +28,24 @@ int DB_CACHE_init( D_CACHE *dst, DATABASE_SYSTEM_DB *db, const char *sql, const 
             NULL, NULL, NULL, NULL, NULL, NULL
         );
 
-        LOG_print( "[%s] DB_CACHE_init( %s, \"%.30s(...)\", %s ) finished %s:\n", TIME_get_gmt(), db->name, sql, table, res == 1 ? "successfully" : "with error" );
+        LOG_print( "[%s] DB_CACHE_init( %s, \"%.30s(...)\" ) finished %s:\n", TIME_get_gmt(), db->name, sql, res == 1 ? "successfully" : "with error" );
         if( res == 1 ) {
             LOG_print( "\t- Cached records: %d.\n", dst->query->row_count );
         } else {
-            LOG_print( "\t- DB_exec failed!" );
+            LOG_print( "\t- DB_exec failed!\n" );
         }
         return res;
     } else {
         LOG_print( "[%s] DB_CACHE_init error: not all parameters are valid!\n", TIME_get_gmt() );
         dst->db = NULL;
         dst->query = NULL;
-        dst->table = NULL;
     }
 
     return 0;
 }
 
 void DB_CACHE_get( const char* sql, DB_QUERY** dst ) {
+
     for( int i = 0; i < P_APP.CACHE_len; i++ ) {
         if( P_APP.CACHE[ i ]  && P_APP.CACHE[ i ]->query && P_APP.CACHE[ i ]->query->sql ) {
             if( strcmp( sql, P_APP.CACHE[ i ]->query->sql ) == 0 ) {
@@ -69,7 +65,6 @@ void DB_CACHE_free( D_CACHE* dst ) {
         }
 
         dst->db = NULL;
-        free( dst->table ); dst->table = NULL;
     }
 }
 

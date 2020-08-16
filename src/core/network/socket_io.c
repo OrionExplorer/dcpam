@@ -38,7 +38,7 @@ void     SOCKET_process( int socket_fd, spc *socket_process_callback );
 void     SOCKET_stop( void );
 
 void SOCKET_initialization( const int port ) {
-    LOG_print("[%s] Initializing...", TIME_get_gmt() );
+    LOG_print("[%s] Initializing network...", TIME_get_gmt() );
 
     #ifdef _WIN32
         if ( WSAStartup( MAKEWORD( 2, 2 ), &wsk ) != 0 ) {

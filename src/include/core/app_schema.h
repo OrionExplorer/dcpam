@@ -25,7 +25,6 @@ typedef struct DCPAM_DATA_ACTION {
 typedef struct DCPAM_DATA {
     char                    *id;
     char                    *name;
-    char                    *db_table_name;
     char                    *db_name;
     char                    columns[ MAX_ETL_COLUMNS ][ MAX_COLUMN_NAME_LEN ];
     int                     columns_len;

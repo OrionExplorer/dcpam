@@ -52,7 +52,6 @@ void DCPAM_free_configuration( void ) {
     for( int i = 0; i < APP.DATA_len; i++ ) {
         if( APP.DATA[ i ].id != NULL ) { free( APP.DATA[ i ].id ); APP.DATA[ i ].id = NULL; }
         if( APP.DATA[ i ].name != NULL ) { free( APP.DATA[ i ].name ); APP.DATA[ i ].name = NULL; }
-        if( APP.DATA[ i ].db_table_name != NULL ) { free( APP.DATA[ i ].db_table_name ); APP.DATA[ i ].db_table_name = NULL; }
         if( APP.DATA[ i ].description != NULL ) { free( APP.DATA[ i ].description ); APP.DATA[ i ].description = NULL; }
 
         for( int j = 0; j < APP.DATA[ i ].actions_len; j++ ) {
