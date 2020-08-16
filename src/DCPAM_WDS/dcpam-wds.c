@@ -32,13 +32,20 @@ void app_terminate( void ) {
         app_terminated = 1;
         printf( "\r" );
         DCPAM_WDS_free_configuration();
-        LOG_print( "[%s] DCPAM graceful shutdown finished. Waiting for all threads to terminate...\n", TIME_get_gmt() );
+        LOG_print( "[%s] DCPAM WDS graceful shutdown finished.\n", TIME_get_gmt() );
     }
 
     return;
 }
 
 void DCPAM_WDS_free_configuration( void ) {
+
+    for( int i = 0; i < P_APP.CACHE_len; i++ ) {
+        LOG_print( "[%s] Removing cache %d of %d...\n", TIME_get_gmt(), i + 1, P_APP.CACHE_len );
+        DB_CACHE_free( P_APP.CACHE[ i ] );
+        free( P_APP.CACHE[ i ] ); P_APP.CACHE[ i ] = NULL;
+    }
+    free( P_APP.CACHE ); P_APP.CACHE = NULL;
 
     for( int i = 0; i < P_APP.ALLOWED_HOSTS_len; i++ ) {
         free( P_APP.ALLOWED_HOSTS[ i ] ); P_APP.ALLOWED_HOSTS[ i ] = NULL;
@@ -51,12 +58,6 @@ void DCPAM_WDS_free_configuration( void ) {
     }
     free( P_APP.DB ); P_APP.DB = NULL;
     P_APP.DB_len = 0;
-
-    for( int i = 0; i < P_APP.CACHE_len; i++ ) {
-        DB_CACHE_free( P_APP.CACHE[ i ] );
-        free( P_APP.CACHE[ i ] ); P_APP.CACHE[ i ] = NULL;
-    }
-    free( P_APP.CACHE ); P_APP.CACHE = NULL;
 
     if( P_APP.version != NULL ) { free( P_APP.version ); P_APP.version = NULL; }
     if( P_APP.name != NULL ) { free( P_APP.name ); P_APP.name = NULL; }
@@ -82,6 +83,7 @@ int DCPAM_WDS_load_configuration( const char* filename ) {
     cJSON* cfg_app = NULL;
     cJSON* cfg_app_version = NULL;
     cJSON* cfg_app_name = NULL;
+    cJSON* cfg_app_max_memory = NULL;
     cJSON* cfg_app_network = NULL;
     cJSON* cfg_app_network_port = NULL;
     cJSON* cfg_app_network_allowed_hosts = NULL;
@@ -188,6 +190,17 @@ int DCPAM_WDS_load_configuration( const char* filename ) {
                     }
                 } else {
                     LOG_print( "ERROR: \"app.network\" key not found.\n" );
+                    cJSON_Delete( config_json );
+                    free( config_string ); config_string = NULL;
+                    return FALSE;
+                }
+
+                cfg_app_max_memory = cJSON_GetObjectItem( cfg_app, "max_memory" );
+                if( cfg_app_max_memory ) {
+                    P_APP.CACHE_MAX_size = ( size_t )cfg_app_max_memory->valueint;
+                    LOG_print( "Maximum memory usage: %ld KB.\n", P_APP.CACHE_MAX_size );
+                } else {
+                    LOG_print( "ERROR: \"app.max_memory\" key not found.\n" );
                     cJSON_Delete( config_json );
                     free( config_string ); config_string = NULL;
                     return FALSE;
@@ -456,10 +469,12 @@ int DCPAM_WDS_load_configuration( const char* filename ) {
 int DCPAM_WDS_init_cache( void ) {
 
     LOG_print( "[%s] Init memory cache (slots: %d)...", TIME_get_gmt(), P_APP.CACHE_len );
+    P_APP.CACHE_size = 0;
     P_APP.CACHE = SAFEMALLOC( P_APP.CACHE_len * sizeof * P_APP.CACHE, __FILE__, __LINE__ );
     for( int i = 0; i < P_APP.CACHE_len; i++ ) {
         P_APP.CACHE[ i ] = SAFEMALLOC( sizeof( D_CACHE ), __FILE__, __LINE__ );
         P_APP.CACHE[ i ]->query = NULL;
+        P_APP.CACHE[ i ]->size = 0;
     }
 
     LOG_print( "ok.\n" );
@@ -511,11 +526,6 @@ int DCPAM_WDS_init_cache( void ) {
         }
     }
 
-    /*
-    DB_QUERY *cached_result = NULL;
-    DB_CACHE_get( "SELECT system_customer, system_accounted_time, system_created, system FROM accounted_time WHERE is_valid = 1", &cached_result );
-    */
-
     return 1;
 }
 
@@ -536,6 +546,7 @@ void DCPAM_WDS_get_data( const char *sql, const char *db, char **dst_json ) {
                 for( int j = 0; j < cached_result->field_count; j++ ) {
                     cJSON_AddStringToObject( record, cached_result->records[ i ].fields[ j ].label, cached_result->records[ i ].fields[ j ].value );
                 }
+
                 cJSON_AddItemToArray( all_data, record );
             }
 
@@ -550,22 +561,30 @@ void DCPAM_WDS_get_data( const char *sql, const char *db, char **dst_json ) {
             if( src_db ) {
                 D_CACHE *tmp_cache;
 
-                P_APP.CACHE = realloc( P_APP.CACHE, (P_APP.CACHE_len + 1 ) * sizeof( D_CACHE ) );
+                P_APP.CACHE = realloc( P_APP.CACHE, (P_APP.CACHE_len + 1 ) * sizeof * P_APP.CACHE );
                 if( P_APP.CACHE != NULL ) {
 
                     P_APP.CACHE[ P_APP.CACHE_len ] = SAFEMALLOC( sizeof( D_CACHE ), __FILE__, __LINE__ );
                     P_APP.CACHE[ P_APP.CACHE_len ]->query = NULL;
 
-                    if( DB_CACHE_init(
+                    int cache_res = DB_CACHE_init(
                         P_APP.CACHE[ P_APP.CACHE_len ],
                         src_db,
                         sql
-                    ) == 1 ) {
+                    );
+
+                    if( cache_res == 1 ) {
                         P_APP.CACHE_len++;
                         LOG_print( "[%s] Data for request cached successfully.\n", TIME_get_gmt() );
                         DCPAM_WDS_get_data( sql, db, &(*dst_json) );
                     } else {
                         LOG_print( "[%s] Error: unable to cache data for request.\n", TIME_get_gmt() );
+                        if( cache_res == 2 ) {
+                            P_APP.CACHE_len++;
+                            DCPAM_WDS_get_data( sql, db, &( *dst_json ) );
+                            P_APP.CACHE_len--;
+                            DB_CACHE_free( P_APP.CACHE[ P_APP.CACHE_len ] );
+                        }
                     }
                 }
 

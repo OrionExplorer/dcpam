@@ -8,11 +8,12 @@
 ![PostgreSQL](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/postgresql102x100.png) ![MySQL](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/mysql159x100.png) ![MariaDB](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/mariadb100x100.png) ![Microsoft SQL Server](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/sqlserver134x100.png) ![Oracle Database](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/oracle100x100.png) ![ODBC](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/odbc199x100.png) ![SQLite3](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/sqlite171x100.png) ![Linux](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/linux100x100.png) ![Windows 10](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/windows87x100.png)
 
 ##### Currently under active development
-* [ ] To be announced.
+* [x] API key handler.
 
 ### Table of contents
 * [Purpose of DCPAM WDS](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_WDS#purpose-of-dcpam-wds)
 * [Technology](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_WDS#technology)
+    * [Architecture Overview](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_WDS#architecture-overview)
     * [Data Sources](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_WDS#data-sources)
     * [DCPAM Database](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_WDS#dcpam-database)
     * [Configuration](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_WDS#configuration)
@@ -24,6 +25,16 @@
 DCPAM WDS is dedicated endpoint for querying predefined business data with custom caching system. DCPAM does not limit number of virtual and physical DCPAM Database nodes, therefore DCPAM WDS encapsulates every node of DCPAM Database into single data access point.
 
 ## Technology
+### Architecture Overview
+* Server application dedicated for the backends of client applications.
+* Connections accepted from allowed hosts only.
+* JSON-based communication with client applications.
+* Builds the in-memory cache for queries predefined in `wds_config.json` on startup:
+	* For one or more DCPAM Database nodes.
+* Caches missing data on the run for new requests.
+* Maximum allowed memory usage configuration.
+* May need a lot of RAM.
+
 ### Data sources
 DCPAM WDS development is still in progress with following data sources available:
 |  ID  | Data source                        | Type            | Support          |

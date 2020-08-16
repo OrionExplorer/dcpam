@@ -9,6 +9,7 @@
 				"127.0.0.1"
 			]
 		},
+		"max_memory" : 5,
 		"DB" : [{
 			"name" : "DCPAM Database NODE #1",
 			"ip" : "127.0.0.1",

@@ -7,6 +7,7 @@
 typedef struct {
     DB_QUERY                *query;
     DATABASE_SYSTEM_DB      *db;
+    size_t                  size;
 } D_CACHE;
 
 int DB_CACHE_init( D_CACHE *dst, DATABASE_SYSTEM_DB *db, const char *sql );

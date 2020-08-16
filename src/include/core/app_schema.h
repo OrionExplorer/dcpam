@@ -34,7 +34,7 @@ typedef struct DCPAM_DATA {
 } DCPAM_DATA;
 
 /*
-    config.json => app
+    etl_config.json => app
 */
 typedef struct DCPAM_APP {
     char                    *version;
@@ -46,7 +46,9 @@ typedef struct DCPAM_APP {
     int                     DATA_len;
 } DCPAM_APP;
 
-
+/*
+    wds_config.json => app
+*/
 typedef struct P_DCPAM_APP {
     char                    *version;
     char                    *name;
@@ -57,10 +59,15 @@ typedef struct P_DCPAM_APP {
     int                     DATA_len;
     D_CACHE                 **CACHE;
     int                     CACHE_len;
+    size_t                  CACHE_size;
+    size_t                  CACHE_MAX_size;
     char                    **ALLOWED_HOSTS;
     int                     ALLOWED_HOSTS_len;
 } P_DCPAM_APP;
 
+/*
+    rdp_config.json => app
+*/
 typedef struct R_DCPAM_APP {
     char                    *version;
     char                    *name;

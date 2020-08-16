@@ -8,7 +8,7 @@
 ![PostgreSQL](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/postgresql102x100.png) ![MySQL](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/mysql159x100.png) ![MariaDB](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/mariadb100x100.png) ![Microsoft SQL Server](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/sqlserver134x100.png) ![Oracle Database](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/oracle100x100.png) ![ODBC](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/odbc199x100.png) ![SQLite3](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/sqlite171x100.png) ![Linux](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/linux100x100.png) ![Windows 10](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/windows87x100.png)
 
 ##### Currently under active development
-* [ ] To be announced.
+* [x] API key handler.
 
 ### Table of contents
 * [Purpose of DCPAM RDP](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_RDP#purpose-of-dcpam-rdp)
@@ -23,9 +23,9 @@ DCPAM RDP is used by DCPAM-ETL to execute scripts/applications for data transfor
 
 ## Technology
 ### Architecture Overview
-* Data transformation:
-  * fully supported, but not required in the ETL/ELT process
-  * possibility to run outside the DCPAM server
+* Server application dedicated for DCPAM ETL requests.
+* Connections accepted from allowed hosts only.
+* DCPAM ETL provides all the information about Staging Area and source system databases, so backflow of cleaned data is possible.
 
 ![Architecture overview](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/rdp.png)
 Example of DCPAM Transform process scalability:

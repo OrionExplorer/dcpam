@@ -9,6 +9,38 @@
 
 extern P_DCPAM_APP      P_APP;
 
+static inline void _DB_CACHE_show_usage( void ) {
+    LOG_print( "[%s] Total cached data: %ld/%ld KB.\n", TIME_get_gmt(), P_APP.CACHE_size / 1024, P_APP.CACHE_MAX_size );
+}
+
+void _DB_CACHE_add_size( D_CACHE *src ) {
+    if( src && src->size > 0 ) {
+        P_APP.CACHE_size += src->size;
+    }
+}
+
+void _DB_CACHE_sub_size( D_CACHE *src ) {
+    if( src && src->size > 0 ) {
+        P_APP.CACHE_size -= src->size;
+    }
+}
+
+void _DB_CACHE_calc_size( D_CACHE* src ) {
+    if( src ) {
+        size_t result = 0;
+        for( int i = 0; i < src->query->row_count; i++ ) {
+            for( int j = 0; j < src->query->records[ i ].field_count; j++ ) {
+                result += src->query->records[ i ].fields[ j ].size;
+                result += strlen( src->query->records[ i ].fields[ j ].label );
+            }
+        }
+
+        src->size = result;
+    } else {
+        src->size = 0;
+    }
+}
+
 int DB_CACHE_init( D_CACHE *dst, DATABASE_SYSTEM_DB *db, const char *sql ) {
 
     if( dst && db ) {
@@ -16,6 +48,7 @@ int DB_CACHE_init( D_CACHE *dst, DATABASE_SYSTEM_DB *db, const char *sql ) {
         dst->query = SAFEMALLOC( sizeof( DB_QUERY ), __FILE__, __LINE__ );
         DB_QUERY_init( dst->query );
 
+        dst->size = 0;
         dst->db = db;
 
         int res =  DB_exec(
@@ -28,9 +61,18 @@ int DB_CACHE_init( D_CACHE *dst, DATABASE_SYSTEM_DB *db, const char *sql ) {
             NULL, NULL, NULL, NULL, NULL, NULL
         );
 
-        LOG_print( "[%s] DB_CACHE_init( %s, \"%.30s(...)\" ) finished %s:\n", TIME_get_gmt(), db->name, sql, res == 1 ? "successfully" : "with error" );
+        LOG_print( "[%s] DB_CACHE_init( %s, \"%.30s(...)\" ) finished:\n", TIME_get_gmt(), db->name, sql );
         if( res == 1 ) {
-            LOG_print( "\t- Cached records: %d.\n", dst->query->row_count );
+            _DB_CACHE_calc_size( dst );
+            _DB_CACHE_add_size( dst );
+            if( ( P_APP.CACHE_size / 1024 ) > P_APP.CACHE_MAX_size ) {
+                LOG_print( "\t- Fatal error: memory limit exceeded!\n" );
+                LOG_print( "\t- Data would be removed from heap after completing this request.\n" );
+                _DB_CACHE_show_usage();
+                return 2;
+            }
+            LOG_print( "\t- Cached records: %d (%ld KB).\n", dst->query->row_count, dst->size / 1024 );
+            _DB_CACHE_show_usage();
         } else {
             LOG_print( "\t- DB_exec failed!\n" );
         }
@@ -60,11 +102,15 @@ void DB_CACHE_get( const char* sql, DB_QUERY** dst ) {
 void DB_CACHE_free( D_CACHE* dst ) {
     if( dst ) {
         if( dst->query ) {
+            LOG_print( "[%s] DB_CACHE_free( %s, %s )...", TIME_get_gmt(), dst->query->sql, dst->db->name );
             DB_QUERY_free( dst->query );
             free( dst->query ); dst->query = NULL;
+            LOG_print( "ok.\n" );
         }
-
+        _DB_CACHE_sub_size( dst );
+        _DB_CACHE_show_usage();
         dst->db = NULL;
+        dst->size = 0;
     }
 }
 
