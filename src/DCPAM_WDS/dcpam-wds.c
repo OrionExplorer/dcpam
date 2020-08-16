@@ -616,12 +616,9 @@ void DCPAM_WDS_query( COMMUNICATION_SESSION *communication_session, CONNECTED_CL
 
             DB_QUERY_TYPE dqt = DB_QUERY_get_type( sql->valuestring );
             if(
-                dqt == DQT_DELETE ||
-                dqt == DQT_INSERT ||
-                dqt == DQT_UPDATE ||
                 dqt != DQT_SELECT
                 ) {
-
+                SOCKET_send( communication_session, client, "-1", 2 );
             } else {
                 char* json_response = NULL;
 
