@@ -49,10 +49,10 @@
 ### Company data in DCPAM
 DCPAM is responsible for copying data from one or more sources into a destination system. That process consists of three steps: Extraction, Transformation and Load, with Transform and Load in various configurations: Extract-Transform-Load (ETL) or Extract-Load-Transform (ELT).
 * For detailed information about ETL and ELT pipelines, please refer to [DCPAM ETL documentation](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL).
-* More specific description of data transformation possibilities can be found in [DCPAM RDP documentation](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_RDP).
+* More specific description of data transformation possibilities can be found in [DCPAM RDP documentation](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_RDP/README.md).
 
 Data in the Warehouse can be accessed directly at the database level with any system for analytics, such as Power BI, Tableau, Redash and others.
-For complex architectures with more than one DCPAM Database node, DCPAM Warehouse Data Server is dedicated data access point. For more details, please refer to [DCPAM WDS documentation](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_WDS).
+For complex architectures with more than one DCPAM Database node, DCPAM Warehouse Data Server is dedicated data access point. For more details, please refer to [DCPAM WDS documentation](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_WDS/README.md).
 
 ## Data Warehouse with DCPAM
 As DCPAM is extremely modular and highly scalabe, it can serve both as Data Warehouse and number of dedicated Data Marts.
@@ -134,10 +134,10 @@ As DCPAM is extremely modular and highly scalabe, it can serve both as Data Ware
 DCPAM Data Warehouse Solution consists of a number of integrated components.
 
 #### DCPAM ETL - Extract-Transform-Load / Extract-Load-Transform
-[DCPAM ETL](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL) is the main ETL/ELT engine. Many instances of DCPAM ETL can work within single Data Warehouse.
+[DCPAM ETL](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL/README.md) is the main ETL/ELT engine. Many instances of DCPAM ETL can work within single Data Warehouse.
 
 #### DCPAM WDS - Warehouse Data Server
-[DCPAM WDS](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_WDS) is dedicated endpoint for querying predefined business data with custom caching system. DCPAM WDS encapsulates every node of DCPAM Database into single data access point.
+[DCPAM WDS](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_WDS/README.md) is dedicated endpoint for querying predefined business data with custom caching system. DCPAM WDS encapsulates every node of DCPAM Database into single data access point.
 
 #### DCPAM RDP - Remote Data Processor
 [DCPAM RDP](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_RDP) is used by DCPAM ETL to execute transform scripts/applications that must be run on separate machines when performance impact is significant. DCPAM ETL communicates with these remote scripts/applications through DCPAM RDP.
@@ -187,7 +187,7 @@ DCPAM is designed to be as most customizable as it needs to be.
 Therefore every database listed above as available data source can also be used as DCPAM target database.
 
 ##### Currently under active development
-* [ ] To be announced.
+* [ ] API keys for [DCPAM WDS](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_WDS/README.md) and [DCPAM RDP](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_RDP/README.md).
 
 ## Roadmap
 | Year | Feature                                  | Status            |

@@ -559,7 +559,6 @@ void DCPAM_WDS_get_data( const char *sql, const char *db, char **dst_json ) {
 
             DATABASE_SYSTEM_DB *src_db = DATABASE_SYSTEM_DB_get( db );
             if( src_db ) {
-                D_CACHE *tmp_cache;
 
                 P_APP.CACHE = realloc( P_APP.CACHE, (P_APP.CACHE_len + 1 ) * sizeof * P_APP.CACHE );
                 if( P_APP.CACHE != NULL ) {
@@ -573,13 +572,13 @@ void DCPAM_WDS_get_data( const char *sql, const char *db, char **dst_json ) {
                         sql
                     );
 
-                    if( cache_res == 1 ) {
+                    if( cache_res == 1 ) { /* OK */
                         P_APP.CACHE_len++;
                         LOG_print( "[%s] Data for request cached successfully.\n", TIME_get_gmt() );
                         DCPAM_WDS_get_data( sql, db, &(*dst_json) );
                     } else {
                         LOG_print( "[%s] Error: unable to cache data for request.\n", TIME_get_gmt() );
-                        if( cache_res == 2 ) {
+                        if( cache_res == 2 ) { /* Memory limit exceeded */
                             P_APP.CACHE_len++;
                             DCPAM_WDS_get_data( sql, db, &( *dst_json ) );
                             P_APP.CACHE_len--;
