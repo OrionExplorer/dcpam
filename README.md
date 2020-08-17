@@ -75,7 +75,7 @@ As DCPAM is extremely modular and highly scalabe, it can serve both as Data Ware
   * Data load from:
     * local Staging Area
     * remote Staging Area
-    * Extract subprocess results
+    * results of the Extract subprocess
 * Parallel execution:
   * By design:
     * Each ETL process runs in separate thread.
