@@ -13,6 +13,8 @@
 #include "../include/core/cache.h"
 #include "../include/core/network/socket_io.h"
 
+#define WDS_RESPONSE_ERROR( communication_session, client ) SOCKET_send( communication_session, client, "{\"success\":false,\"data\":[],\"length\":0}", 38 );
+
 #pragma warning( disable : 6031 )
 
 char                    app_path[ MAX_PATH_LENGTH + 1 ];
@@ -640,7 +642,7 @@ void DCPAM_WDS_query( COMMUNICATION_SESSION *communication_session, CONNECTED_CL
             key = cJSON_GetObjectItem( json_request, "key" );
             if( key == NULL ) {
                 LOG_print( "[%s] Error: no KEY in request is found.\n", TIME_get_gmt() );
-                SOCKET_send( communication_session, client, "{\"success\":false,\"data\":[],\"length\":0}", 38 );
+                WDS_RESPONSE_ERROR( communication_session, client );
                 cJSON_Delete( json_request );
                 return;
             } else {
@@ -649,7 +651,7 @@ void DCPAM_WDS_query( COMMUNICATION_SESSION *communication_session, CONNECTED_CL
                     if( strcmp( ip, P_APP.ALLOWED_HOSTS_[ i ]->ip ) == 0 ) {
                         if( strcmp( key->valuestring, P_APP.ALLOWED_HOSTS_[ i ]->api_key ) != 0 ) {
                             LOG_print( "[%s] Error: KEY in request is invalid.\n", TIME_get_gmt() );
-                            SOCKET_send( communication_session, client, "{\"success\":false,\"data\":[],\"length\":0}", 38 );
+                            WDS_RESPONSE_ERROR( communication_session, client );
                             cJSON_Delete( json_request );
                             return;
                         }
@@ -663,7 +665,7 @@ void DCPAM_WDS_query( COMMUNICATION_SESSION *communication_session, CONNECTED_CL
             sql = cJSON_GetObjectItem( json_request, "sql" );
             if( sql == NULL) {
                 LOG_print( "[%s] Error: no SQL in request is found.\n", TIME_get_gmt() );
-                SOCKET_send( communication_session, client, "{\"success\":false,\"data\":[],\"length\":0}", 38 );
+                WDS_RESPONSE_ERROR( communication_session, client );
                 cJSON_Delete( json_request );
                 return;
             }
@@ -671,7 +673,7 @@ void DCPAM_WDS_query( COMMUNICATION_SESSION *communication_session, CONNECTED_CL
             db = cJSON_GetObjectItem( json_request, "db" );
             if( db  == NULL ) {
                 LOG_print( "[%s] Error: no DB name in request is found.\n", TIME_get_gmt() );
-                SOCKET_send( communication_session, client, "{\"success\":false,\"data\":[],\"length\":0}", 38 );
+                WDS_RESPONSE_ERROR( communication_session, client );
                 cJSON_Delete( json_request );
                 return;
             }
@@ -680,7 +682,7 @@ void DCPAM_WDS_query( COMMUNICATION_SESSION *communication_session, CONNECTED_CL
             if(
                 dqt != DQT_SELECT
                 ) {
-                SOCKET_send( communication_session, client, "{\"success\":false,\"data\":[],\"length\":0}", 38 );
+                WDS_RESPONSE_ERROR( communication_session, client );
             } else {
                 char* json_response = NULL;
 
@@ -689,12 +691,12 @@ void DCPAM_WDS_query( COMMUNICATION_SESSION *communication_session, CONNECTED_CL
                 if( json_response ) {
                     SOCKET_send( communication_session, client, json_response, strlen( json_response ) );
                 } else {
-                    SOCKET_send( communication_session, client, "{\"success\":false,\"data\":[],\"length\":0}", 38 );
+                    WDS_RESPONSE_ERROR( communication_session, client );
                 }
             }
         } else {
             LOG_print( "[%s] Error: request is not valid JSON.\n", TIME_get_gmt() );
-            SOCKET_send( communication_session, client, "{\"success\":false,\"data\":[],\"length\":0}", 38 );
+            WDS_RESPONSE_ERROR( communication_session, client );
             return;
         }
     }
