@@ -27,7 +27,7 @@ DCPAM WDS is dedicated endpoint for querying predefined business data with custo
 ## Technology
 ### Architecture Overview
 * Server application dedicated for the backends of client applications.
-* Connections accepted from allowed hosts only.
+* Connections accepted from allowed hosts only with valid API key.
 * JSON-based communication with client applications.
 * Builds the in-memory cache for queries predefined in `wds_config.json` on startup:
 	* For one or more DCPAM Database nodes.

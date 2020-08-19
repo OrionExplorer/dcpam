@@ -24,7 +24,7 @@ DCPAM RDP is used by DCPAM-ETL to execute scripts/applications for data transfor
 ## Technology
 ### Architecture Overview
 * Server application dedicated for DCPAM ETL requests.
-* Connections accepted from allowed hosts only.
+* Connections accepted from allowed hosts only with valid API key.
 * DCPAM ETL provides all the information about Staging Area and source system databases, so backflow of cleaned data is possible.
 
 ![Architecture overview](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/rdp.png)
