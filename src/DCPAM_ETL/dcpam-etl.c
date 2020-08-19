@@ -148,15 +148,18 @@ int DCPAM_load_configuration( const char* filename ) {
     cJSON* cfg_system_query_item_etl_transform_inserted_module = NULL;
     cJSON* cfg_system_query_item_etl_transform_inserted_staged_data = NULL;
     cJSON* cfg_system_query_item_etl_transform_inserted_source_system_update = NULL;
+    cJSON* cfg_system_query_item_etl_transform_inserted_api_key = NULL;
     cJSON* cfg_system_query_item_etl_transform_deleted_array = NULL;
     cJSON* cfg_system_query_item_etl_transform_deleted_item = NULL;
     cJSON* cfg_system_query_item_etl_transform_deleted_module = NULL;
     cJSON* cfg_system_query_item_etl_transform_deleted_staged_data = NULL;
+    cJSON* cfg_system_query_item_etl_transform_deleted_api_key = NULL;
     cJSON* cfg_system_query_item_etl_transform_deleted_source_system_update = NULL;
     cJSON* cfg_system_query_item_etl_transform_modified_array = NULL;
     cJSON* cfg_system_query_item_etl_transform_modified_item = NULL;
     cJSON* cfg_system_query_item_etl_transform_modified_module = NULL;
     cJSON* cfg_system_query_item_etl_transform_modified_staged_data = NULL;
+    cJSON* cfg_system_query_item_etl_transform_modified_api_key = NULL;
     cJSON* cfg_system_query_item_etl_transform_modified_source_system_update = NULL;
     
     cJSON* cfg_system_query_item_etl_load = NULL;
@@ -1032,6 +1035,15 @@ int DCPAM_load_configuration( const char* filename ) {
                                     cfg_system_query_item_etl_transform_inserted_source_system_update->valuestring,
                                     str_len3
                                 );
+
+                                cfg_system_query_item_etl_transform_inserted_api_key = cJSON_GetObjectItem( cfg_system_query_item_etl_transform_inserted_item, "api_key" );
+                                size_t str_len4 = strlen( cfg_system_query_item_etl_transform_inserted_api_key->valuestring );
+                                tmp_cdc->transform->inserted[ k ]->api_key = SAFECALLOC( str_len4 + 1, sizeof( char ), __FILE__, __LINE__ );
+                                strncpy(
+                                    tmp_cdc->transform->inserted[ k ]->api_key,
+                                    cfg_system_query_item_etl_transform_inserted_api_key->valuestring,
+                                    str_len4
+                                );
                             }
 
                             /*
@@ -1078,6 +1090,15 @@ int DCPAM_load_configuration( const char* filename ) {
                                     cfg_system_query_item_etl_transform_deleted_source_system_update->valuestring,
                                     str_len3
                                 );
+
+                                cfg_system_query_item_etl_transform_deleted_api_key = cJSON_GetObjectItem( cfg_system_query_item_etl_transform_deleted_item, "api_key" );
+                                size_t str_len4 = strlen( cfg_system_query_item_etl_transform_deleted_api_key->valuestring );
+                                tmp_cdc->transform->deleted[ k ]->api_key = SAFECALLOC( str_len4 + 1, sizeof( char ), __FILE__, __LINE__ );
+                                strncpy(
+                                    tmp_cdc->transform->deleted[ k ]->api_key,
+                                    cfg_system_query_item_etl_transform_deleted_api_key->valuestring,
+                                    str_len4
+                                );
                             }
 
                             /*
@@ -1123,6 +1144,15 @@ int DCPAM_load_configuration( const char* filename ) {
                                     tmp_cdc->transform->modified[ k ]->source_system_update,
                                     cfg_system_query_item_etl_transform_modified_source_system_update->valuestring,
                                     str_len3
+                                );
+
+                                cfg_system_query_item_etl_transform_modified_api_key = cJSON_GetObjectItem( cfg_system_query_item_etl_transform_modified_item, "api_key" );
+                                size_t str_len4 = strlen( cfg_system_query_item_etl_transform_modified_api_key->valuestring );
+                                tmp_cdc->transform->modified[ k ]->api_key = SAFECALLOC( str_len4 + 1, sizeof( char ), __FILE__, __LINE__ );
+                                strncpy(
+                                    tmp_cdc->transform->modified[ k ]->api_key,
+                                    cfg_system_query_item_etl_transform_modified_api_key->valuestring,
+                                    str_len4
                                 );
                             }
                         }

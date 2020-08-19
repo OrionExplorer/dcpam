@@ -92,7 +92,7 @@
 					"comment#03" : "# is recommended to handle compute-intensive transformations.",
 					"comment#04" : "# When transform module is local script or application, standard system path must be specified.",
 					"comment#05" : "# When transform module is placed on the remote server, dcpam:// URL must be specified. It is",
-					"comment#06" : "# required then to run DCPAM EXEC daemon on the remote server.",
+					"comment#06" : "# required then to run DCPAM RDP daemon on the remote server.",
 					"comment#07" : "# DCPAM calls external modules with additional, required params:",
 					"comment#08" : "# - dhost: DCPAM database server address (auto)",
 					"comment#09" : "# - dport: DCPAM database server port (auto)",
@@ -107,24 +107,28 @@
 					"comment#18" : "# - sdriver: original source type (auto)",
 					"comment#19" : "# - OR sconn: original source connection string (auto)",
 					"comment#20" : "# - sql: query used by transform module to fetch data for transformation (specified here)",
-					"comment#21" : "# No other data is exchanged between DCPAM and transform module invoker (DCPAM EXEC). Transform",
+					"comment#xx" : "# - key: \"api_key\" value for DCPAM RDP service (auto)",
+					"comment#21" : "# No other data is exchanged between DCPAM and transform module invoker (DCPAM RDP). Transform",
 					"comment#22" : "# module is responsible for all data updates in the Staging Area and source system (optionally).",
 					"comment#23" : "# Transform modules must be executable files.",
 					"comment#24" : "# Running Transform subprocess is optional in DCPAM.",
 					"comment#25" : "##################################################################################################",
 					"inserted" : [{
-						"module" : "./transform-scripts/trailing-spaces.py",
+						"module" : "./src/DCPAM_RDP/whitespaces/trailing-spaces.py",
 						"staged_data" : "SELECT * FROM stage_accounted_time",
+						"api_key" : "",
 						"source_system_update" : "UPDATE time_accounting SET %s WHERE %s"
 					}],
 					"deleted" : [{
-						"module" : "dcpam://127.0.0.1:9091/whitespaces/trailing-spaces.py",
+						"module" : "dcpam://127.0.0.1:9091/src/DCPAM_RDP/whitespaces/trailing-spaces.py",
+						"api_key" : "zxcasd321",
 						"staged_data" : "SELECT * FROM stage_accounted_time",
 						"source_system_update" : "UPDATE time_accounting SET %s WHERE %s"
 					}],
 					"modified" : [{
-						"module" : "./transform-scripts/trailing-spaces.py",
+						"module" : "./src/DCPAM_RDP/whitespaces/trailing-spaces.py",
 						"staged_data" : "SELECT * FROM stage_accounted_time",
+						"api_key" : "",
 						"source_system_update" : "UPDATE time_accounting SET %s WHERE %s"
 					}]
 				},

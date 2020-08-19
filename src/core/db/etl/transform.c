@@ -32,7 +32,6 @@ int CDC_TransformGeneric( DB_SYSTEM_ETL_TRANSFORM_QUERY *transform_element, DATA
         memset( res, '\0', 4096 );
         memset( command, '\0', 4096 );
 
-
         /* Prepare argument list */
         snprintf( command, 4096, "%s --dhost=\"%s\" --dport=%d --duser=\"%s\" --dpass=\"%s\" --ddriver=%d --dconn=\"%s\" --shost=\"%s\" --sport=%d --suser=\"%s\" --spass=\"%s\" --sdriver=%d --sconn=\"%s\"",
             transform_element->module,
@@ -79,7 +78,7 @@ int CDC_TransformGeneric( DB_SYSTEM_ETL_TRANSFORM_QUERY *transform_element, DATA
         sscanf( transform_element->module, "dcpam://%99[^:]:%99d/%255[^\n]", host, &port, script );
 
         /* Prepare query*/
-        snprintf( command, 4096, "m=./%s dhost=%s dport=%d duser=%s dpass=%s ddriver=%d dconn=\"%s\" shost=%s sport=%d suser=%s spass=%s sdriver=%d sconn=\"%s\"",
+        snprintf( command, 4096, "m=./%s dhost=%s dport=%d duser=%s dpass=%s ddriver=%d dconn=\"%s\" shost=%s sport=%d suser=%s spass=%s sdriver=%d sconn=\"%s\" key=%s",
             script,
             dcpam_db->ip,
             dcpam_db->port,
@@ -92,7 +91,8 @@ int CDC_TransformGeneric( DB_SYSTEM_ETL_TRANSFORM_QUERY *transform_element, DATA
             system_db->user,
             system_db->password,
             system_db->driver,
-            system_db->connection_string
+            system_db->connection_string,
+            transform_element->api_key
         );
 
         LOG_print( "[%s] Running remote transform data process at dcpam://%s:%d with payload %s\n", TIME_get_gmt(), host, port, command );

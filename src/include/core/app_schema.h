@@ -7,6 +7,11 @@
 #define MAX_DCPAM_DATA_ITEMS                5
 #define MAX_DCPAM_DATA_ACTIONS              8
 
+typedef struct DCPAM_ALLOWED_HOST {
+    char                    *ip;
+    char                    *api_key;
+} DCPAM_ALLOWED_HOST;
+
 /*
     config.json => app.DATA[ i ]
 */
@@ -62,6 +67,7 @@ typedef struct P_DCPAM_APP {
     size_t                  CACHE_size;
     size_t                  CACHE_MAX_size;
     char                    **ALLOWED_HOSTS;
+    DCPAM_ALLOWED_HOST      **ALLOWED_HOSTS_;
     int                     ALLOWED_HOSTS_len;
 } P_DCPAM_APP;
 
@@ -73,6 +79,7 @@ typedef struct R_DCPAM_APP {
     char                    *name;
     int                     network_port;
     char                    **ALLOWED_HOSTS;
+    DCPAM_ALLOWED_HOST      **ALLOWED_HOSTS_;
     int                     ALLOWED_HOSTS_len;
 } R_DCPAM_APP;
 

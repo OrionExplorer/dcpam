@@ -141,6 +141,7 @@ void SYSTEM_QUERY_free( DATABASE_SYSTEM_QUERY *dst ) {
             free( dst->etl_config.transform->inserted[ i ]->module ); dst->etl_config.transform->inserted[ i ]->module = NULL;
             free( dst->etl_config.transform->inserted[ i ]->staged_data ); dst->etl_config.transform->inserted[ i ]->staged_data = NULL;
             free( dst->etl_config.transform->inserted[ i ]->source_system_update ); dst->etl_config.transform->inserted[ i ]->source_system_update = NULL;
+            free( dst->etl_config.transform->inserted[ i ]->api_key ); dst->etl_config.transform->inserted[ i ]->api_key = NULL;
             free( dst->etl_config.transform->inserted[ i ] ); dst->etl_config.transform->inserted[ i ] = NULL;
         }
         free( dst->etl_config.transform->inserted ); dst->etl_config.transform->inserted = NULL;
@@ -149,6 +150,7 @@ void SYSTEM_QUERY_free( DATABASE_SYSTEM_QUERY *dst ) {
             free( dst->etl_config.transform->deleted[ i ]->module ); dst->etl_config.transform->deleted[ i ]->module = NULL;
             free( dst->etl_config.transform->deleted[ i ]->staged_data ); dst->etl_config.transform->deleted[ i ]->staged_data = NULL;
             free( dst->etl_config.transform->deleted[ i ]->source_system_update ); dst->etl_config.transform->deleted[ i ]->source_system_update = NULL;
+            free( dst->etl_config.transform->deleted[ i ]->api_key ); dst->etl_config.transform->deleted[ i ]->api_key = NULL;
             free( dst->etl_config.transform->deleted[ i ] ); dst->etl_config.transform->deleted[ i ] = NULL;
         }
         free( dst->etl_config.transform->deleted ); dst->etl_config.transform->deleted = NULL;
@@ -157,6 +159,7 @@ void SYSTEM_QUERY_free( DATABASE_SYSTEM_QUERY *dst ) {
             free( dst->etl_config.transform->modified[ i ]->module ); dst->etl_config.transform->modified[ i ]->module = NULL;
             free( dst->etl_config.transform->modified[ i ]->staged_data ); dst->etl_config.transform->modified[ i ]->staged_data = NULL;
             free( dst->etl_config.transform->modified[ i ]->source_system_update ); dst->etl_config.transform->modified[ i ]->source_system_update = NULL;
+            free( dst->etl_config.transform->modified[ i ]->api_key ); dst->etl_config.transform->modified[ i ]->api_key = NULL;
             free( dst->etl_config.transform->modified[ i ] ); dst->etl_config.transform->modified[ i ] = NULL;
         }
         free( dst->etl_config.transform->modified ); dst->etl_config.transform->modified = NULL;
@@ -273,18 +276,21 @@ void DATABASE_SYSTEM_QUERY_add(
         if( verbose > 0 ) LOG_print( "\t· transform\n\t\t·inserted\n\t\t\t·module: %.70s(...)\n", etl.transform->inserted[ i ]->module );
         if( verbose > 0 ) LOG_print( "\t\t\t·staged_data: \"%.70s(...)\"\n", etl.transform->inserted[ i ]->staged_data );
         if( verbose > 0 ) LOG_print( "\t\t\t·source_system_update: \"%.70s(...)\"\n", etl.transform->inserted[ i ]->source_system_update);
+        if( verbose > 0 ) LOG_print( "\t\t\t·api_key: \"%.70s(...)\"\n", etl.transform->inserted[ i ]->api_key );
     }
 
     for( int i = 0; i < etl.transform->deleted_count; i++ ) {
         if( verbose > 0 ) LOG_print( "\t· transform\n\t\t·deleted\n\t\t\t·module: %.70s(...)\n", etl.transform->deleted[ i ]->module );
         if( verbose > 0 ) LOG_print( "\t\t\t·staged_data: \"%.70s(...)\"\n", etl.transform->deleted[ i ]->staged_data );
         if( verbose > 0 ) LOG_print( "\t\t\t·source_system_update: \"%.70s(...)\"\n", etl.transform->deleted[ i ]->source_system_update );
+        if( verbose > 0 ) LOG_print( "\t\t\t·api_key: \"%.70s(...)\"\n", etl.transform->deleted[ i ]->api_key );
     }
 
     for( int i = 0; i < etl.transform->modified_count; i++ ) {
         if( verbose > 0 ) LOG_print( "\t· transform\n\t\t·modified\n\t\t\t·module: %.70s(...)\n", etl.transform->modified[ i ]->module );
         if( verbose > 0 ) LOG_print( "\t\t\t·staged_data: \"%.70s(...)\"\n", etl.transform->modified[ i ]->staged_data );
         if( verbose > 0 ) LOG_print( "\t\t\t·source_system_update: \"%.70s(...)\"\n", etl.transform->modified[ i ]->source_system_update );
+        if( verbose > 0 ) LOG_print( "\t\t\t·api_key: \"%.70s(...)\"\n", etl.transform->modified[ i ]->api_key );
     }
     
 

@@ -187,14 +187,14 @@ DCPAM is designed to be as most customizable as it needs to be.
 Therefore every database listed above as available data source can also be used as DCPAM target database.
 
 ##### Currently under active development
-* [ ] API keys for [DCPAM WDS](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_WDS/README.md) and [DCPAM RDP](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_RDP/README.md).
+* [x] To be announced.
 
 ## Roadmap
 | Year | Feature                                  | Status            |
 |:----:|:-----------------------------------------|:------------------|
 | 2020 | :white_check_mark: Transform process     | Done (2020-08-07) |
 | 2020 | :white_check_mark: DCPAM WDS (warehouse data server)        | Done (2020-08-17)       |
-| 2020 | :construction: API keys                  | In progress       |
+| 2020 | :white_check_mark: API keys              | Done(2020-08-19)  |
 | 2020 | Data source: local flat files            | Not implemented   |
 | 2020 | Data source: remote flat files           | Not implemented   |
 | 2020 | DCPAM Access (BI web application)        | Not implemented   |

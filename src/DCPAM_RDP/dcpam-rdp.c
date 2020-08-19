@@ -24,6 +24,7 @@ void DCPAM_script_exec( COMMUNICATION_SESSION *communication_session, CONNECTED_
 
     if( strstr( communication_session->content, "m=./" ) && strstr( communication_session->content, ".." ) == NULL ) {
         FILE    *script = NULL;
+        char    key[ 64 ];
         char    module[ 256 ];
         char    command[ 4096 ];
         char    dhost[ 100 ], shost[ 100 ];
@@ -34,9 +35,23 @@ void DCPAM_script_exec( COMMUNICATION_SESSION *communication_session, CONNECTED_
         char    dconn[ 1024 ], sconn[ 1024 ];
         size_t  res_len = 0;
         char    res[ 4096 ];
+        char    *ip = inet_ntoa( communication_session->address.sin_addr );
 
         memset( res, '\0', 4096 );
-        sscanf( communication_session->content, "m=%255s dhost=%99s dport=%5d duser=%99s dpass=%99s ddriver=%2d dconn=\"%1024[^\"]\" shost=%99s sport=%5d suser=%99s spass=%99s sdriver=%2d sconn=\"%1024[^\"]\"", module, dhost, &dport, duser, dpass, &ddriver, dconn, shost, &sport, suser, spass, &sdriver, sconn );
+        sscanf( communication_session->content, "m=%255s dhost=%99s dport=%5d duser=%99s dpass=%99s ddriver=%2d dconn=\"%1024[^\"]\" shost=%99s sport=%5d suser=%99s spass=%99s sdriver=%2d sconn=\"%1024[^\"]\" key=%63s", module, dhost, &dport, duser, dpass, &ddriver, dconn, shost, &sport, suser, spass, &sdriver, sconn, key );
+
+        for( int i = 0; i < R_APP.ALLOWED_HOSTS_len; i++ ) {
+            if( strcmp( ip, R_APP.ALLOWED_HOSTS_[ i ]->ip ) == 0 ) {
+                if( strcmp( key, R_APP.ALLOWED_HOSTS_[ i ]->api_key ) != 0 ) {
+                    LOG_print( "[%s] Error: KEY in request is invalid.\n", TIME_get_gmt() );
+                    SOCKET_send( communication_session, client, "-1", 2 );
+                    return;
+                }
+            }
+        }
+
+        LOG_print( "[%s] Access granted for client %s with key %s.\n", TIME_get_gmt(), ip, key );
+
         snprintf( command, 4096, "%s --dhost %s --dport %d --duser %s --dpass %s --ddriver %d --dconn \"%s\" --shost %s --sport %d --suser %s --spass %s --sdriver %d --sconn \"%s\"", module, dhost, dport, duser, dpass, ddriver, dconn, shost, sport, suser, spass, sdriver, sconn );
         LOG_print( "[%s] Executing local script %s...\n", TIME_get_gmt(), command );
 
@@ -65,9 +80,10 @@ void DCPAM_script_exec( COMMUNICATION_SESSION *communication_session, CONNECTED_
 
 void DCPAM_RDP_free_configuration( void ) {
     for( int i = 0; i < R_APP.ALLOWED_HOSTS_len; i++ ) {
-        free( R_APP.ALLOWED_HOSTS[ i ] ); R_APP.ALLOWED_HOSTS[ i ] = NULL;
+        free( R_APP.ALLOWED_HOSTS_[ i ]->ip ); R_APP.ALLOWED_HOSTS_[ i ]->ip;
+        free( R_APP.ALLOWED_HOSTS_[ i ]->api_key ); R_APP.ALLOWED_HOSTS_[ i ]->api_key;
     }
-    free( R_APP.ALLOWED_HOSTS ); R_APP.ALLOWED_HOSTS = NULL;
+    free( R_APP.ALLOWED_HOSTS_ ); R_APP.ALLOWED_HOSTS_ = NULL;
 
     if( R_APP.version != NULL ) { free( R_APP.version ); R_APP.version = NULL; }
     if( R_APP.name != NULL ) { free( R_APP.name ); R_APP.name = NULL; }
@@ -83,6 +99,8 @@ int DCPAM_RDP_load_configuration( const char* filename ) {
     cJSON* cfg_app_network_port = NULL;
     cJSON* cfg_app_network_allowed_hosts = NULL;
     cJSON* cfg_app_network_allowed_host_item = NULL;
+    cJSON* cfg_app_network_allowed_host_item_ip = NULL;
+    cJSON* cfg_app_network_allowed_host_item_key = NULL;
     int                         result = 0;
     char* config_string = NULL;
 
@@ -137,16 +155,29 @@ int DCPAM_RDP_load_configuration( const char* filename ) {
                     cfg_app_network_allowed_hosts = cJSON_GetObjectItem( cfg_app_network, "allowed_hosts" );
                     if( cfg_app_network_allowed_hosts ) {
                         R_APP.ALLOWED_HOSTS_len = cJSON_GetArraySize( cfg_app_network_allowed_hosts );
-                        R_APP.ALLOWED_HOSTS = SAFEMALLOC( R_APP.ALLOWED_HOSTS_len * sizeof * R_APP.ALLOWED_HOSTS, __FILE__, __LINE__ );
+                        R_APP.ALLOWED_HOSTS_ = SAFEMALLOC( R_APP.ALLOWED_HOSTS_len * sizeof * R_APP.ALLOWED_HOSTS_, __FILE__, __LINE__ );
 
                         for( int i = 0; i < R_APP.ALLOWED_HOSTS_len; i++ ) {
                             cfg_app_network_allowed_host_item = cJSON_GetArrayItem( cfg_app_network_allowed_hosts, i );
                             if( cfg_app_network_allowed_host_item ) {
-                                size_t str_len = strlen( cfg_app_network_allowed_host_item->valuestring );
-                                R_APP.ALLOWED_HOSTS[ i ] = SAFECALLOC( ( str_len + 1 ), sizeof( char ), __FILE__, __LINE__ );
-                                snprintf( R_APP.ALLOWED_HOSTS[ i ], str_len + 1, cfg_app_network_allowed_host_item->valuestring );
+                                R_APP.ALLOWED_HOSTS_[ i ] = SAFEMALLOC( sizeof( DCPAM_ALLOWED_HOST ), __FILE__, __LINE__ );
+
+                                cfg_app_network_allowed_host_item_ip = cJSON_GetObjectItem( cfg_app_network_allowed_host_item, "ip" );
+                                if( cfg_app_network_allowed_host_item_ip ) {
+                                    size_t str_len = strlen( cfg_app_network_allowed_host_item_ip->valuestring );
+                                    R_APP.ALLOWED_HOSTS_[ i ]->ip = SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
+                                    snprintf( R_APP.ALLOWED_HOSTS_[ i ]->ip, str_len + 1, cfg_app_network_allowed_host_item_ip->valuestring );
+                                }
+
+                                cfg_app_network_allowed_host_item_key = cJSON_GetObjectItem( cfg_app_network_allowed_host_item, "key" );
+                                if( cfg_app_network_allowed_host_item_key ) {
+                                    size_t str_len = strlen( cfg_app_network_allowed_host_item_key->valuestring );
+                                    R_APP.ALLOWED_HOSTS_[ i ]->api_key = SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
+                                    snprintf( R_APP.ALLOWED_HOSTS_[ i ]->api_key, str_len + 1, cfg_app_network_allowed_host_item_key->valuestring );
+                                }
                             }
                         }
+
                     } else {
                         LOG_print( "ERROR: \"app.network.allowed_hosts\" key not found.\n" );
                         cJSON_Delete( config_json );
@@ -206,7 +237,15 @@ int main( int argc, char** argv ) {
         LOG_print( "[%s] DCPAM Remote Data Processor configuration loaded.\n", TIME_get_gmt() );
 
         spc exec_script = ( spc )&DCPAM_script_exec;
-        SOCKET_main( &exec_script, R_APP.network_port, ( const char** )&(*R_APP.ALLOWED_HOSTS), R_APP.ALLOWED_HOSTS_len );
+        char **allowed_hosts_ip = SAFEMALLOC( R_APP.ALLOWED_HOSTS_len * sizeof * R_APP.ALLOWED_HOSTS_, __FILE__, __LINE__ );
+
+        for( int i = 0; i < R_APP.ALLOWED_HOSTS_len; i++ ) {
+            size_t str_len = strlen( R_APP.ALLOWED_HOSTS_[ i ]->ip );
+            allowed_hosts_ip[ i ] = SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
+            snprintf( allowed_hosts_ip[ i ], str_len + 1, R_APP.ALLOWED_HOSTS_[ i ]->ip );
+        }
+
+        SOCKET_main( &exec_script, R_APP.network_port, ( const char** )&(*allowed_hosts_ip), R_APP.ALLOWED_HOSTS_len );
     }
 
     return 0;

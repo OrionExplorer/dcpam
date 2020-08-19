@@ -64,6 +64,7 @@ typedef struct DB_SYSTEM_ETL_TRANSFORM_QUERY {
     char                    *staged_data;
     char                    *source_system_update;
     NET_CONN                *connection;
+    char                    *api_key;
     
 } DB_SYSTEM_ETL_TRANSFORM_QUERY;
 

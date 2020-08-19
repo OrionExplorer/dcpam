@@ -48,9 +48,10 @@ void DCPAM_WDS_free_configuration( void ) {
     free( P_APP.CACHE ); P_APP.CACHE = NULL;
 
     for( int i = 0; i < P_APP.ALLOWED_HOSTS_len; i++ ) {
-        free( P_APP.ALLOWED_HOSTS[ i ] ); P_APP.ALLOWED_HOSTS[ i ] = NULL;
+        free( P_APP.ALLOWED_HOSTS_[ i ]->ip ); P_APP.ALLOWED_HOSTS_[ i ]->ip = NULL;
+        free( P_APP.ALLOWED_HOSTS_[ i ]->api_key ); P_APP.ALLOWED_HOSTS_[ i ]->api_key = NULL;
     }
-    free( P_APP.ALLOWED_HOSTS ); P_APP.ALLOWED_HOSTS = NULL;
+    free( P_APP.ALLOWED_HOSTS_ ); P_APP.ALLOWED_HOSTS_ = NULL;
 
     for( int i = 0; i < P_APP.DB_len; i++ ) {
         DATABASE_SYSTEM_DB_free( P_APP.DB[ i ] );
@@ -88,6 +89,8 @@ int DCPAM_WDS_load_configuration( const char* filename ) {
     cJSON* cfg_app_network_port = NULL;
     cJSON* cfg_app_network_allowed_hosts = NULL;
     cJSON* cfg_app_network_allowed_host_item = NULL;
+    cJSON* cfg_app_network_allowed_host_item_ip = NULL;
+    cJSON* cfg_app_network_allowed_host_item_key = NULL;
     cJSON* cfg_app_db_array = NULL;
     cJSON* cfg_app_db_item = NULL;
     cJSON* cfg_app_db = NULL;
@@ -172,14 +175,26 @@ int DCPAM_WDS_load_configuration( const char* filename ) {
                     cfg_app_network_allowed_hosts = cJSON_GetObjectItem( cfg_app_network, "allowed_hosts" );
                     if( cfg_app_network_allowed_hosts ) {
                         P_APP.ALLOWED_HOSTS_len = cJSON_GetArraySize( cfg_app_network_allowed_hosts );
-                        P_APP.ALLOWED_HOSTS = SAFEMALLOC( P_APP.ALLOWED_HOSTS_len * sizeof * P_APP.ALLOWED_HOSTS, __FILE__, __LINE__ );
+                        P_APP.ALLOWED_HOSTS_ = SAFEMALLOC( P_APP.ALLOWED_HOSTS_len * sizeof * P_APP.ALLOWED_HOSTS_, __FILE__, __LINE__ );
 
                         for( int i = 0; i < P_APP.ALLOWED_HOSTS_len; i++ ) {
                             cfg_app_network_allowed_host_item = cJSON_GetArrayItem( cfg_app_network_allowed_hosts, i );
                             if( cfg_app_network_allowed_host_item ) {
-                                size_t str_len = strlen( cfg_app_network_allowed_host_item->valuestring );
-                                P_APP.ALLOWED_HOSTS[ i ] = SAFECALLOC( ( str_len + 1 ), sizeof( char ), __FILE__, __LINE__ );
-                                snprintf( P_APP.ALLOWED_HOSTS[ i ], str_len + 1, cfg_app_network_allowed_host_item->valuestring );
+                                P_APP.ALLOWED_HOSTS_[ i ] = SAFEMALLOC( sizeof( DCPAM_ALLOWED_HOST ), __FILE__, __LINE__ );
+
+                                cfg_app_network_allowed_host_item_ip = cJSON_GetObjectItem( cfg_app_network_allowed_host_item, "ip" );
+                                if( cfg_app_network_allowed_host_item_ip ) {
+                                    size_t str_len = strlen( cfg_app_network_allowed_host_item_ip->valuestring );
+                                    P_APP.ALLOWED_HOSTS_[ i ]->ip = SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
+                                    snprintf( P_APP.ALLOWED_HOSTS_[ i ]->ip, str_len + 1, cfg_app_network_allowed_host_item_ip->valuestring );
+                                }
+
+                                cfg_app_network_allowed_host_item_key = cJSON_GetObjectItem( cfg_app_network_allowed_host_item, "key" );
+                                if( cfg_app_network_allowed_host_item_key ) {
+                                    size_t str_len = strlen( cfg_app_network_allowed_host_item_key->valuestring );
+                                    P_APP.ALLOWED_HOSTS_[ i ]->api_key = SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
+                                    snprintf( P_APP.ALLOWED_HOSTS_[ i ]->api_key, str_len + 1, cfg_app_network_allowed_host_item_key->valuestring );
+                                }
                             }
                         }
                     } else {
@@ -610,11 +625,35 @@ void DCPAM_WDS_query( COMMUNICATION_SESSION *communication_session, CONNECTED_CL
 
         json_request = cJSON_Parse( request );
         if( json_request ) {
-
+            char* ip = inet_ntoa( communication_session->address.sin_addr );
             cJSON *sql = NULL;
             cJSON *db = NULL;
+            cJSON *key = NULL;
 
             LOG_print( "[%s] Request is valid JSON.\n", TIME_get_gmt() );
+
+            key = cJSON_GetObjectItem( json_request, "key" );
+            if( key == NULL ) {
+                LOG_print( "[%s] Error: no KEY in request is found.\n", TIME_get_gmt() );
+                SOCKET_send( communication_session, client, "-1", 2 );
+                cJSON_Delete( json_request );
+                return;
+            } else {
+
+                for( int i = 0; i < P_APP.ALLOWED_HOSTS_len; i++ ) {
+                    if( strcmp( ip, P_APP.ALLOWED_HOSTS_[ i ]->ip ) == 0 ) {
+                        if( strcmp( key->valuestring, P_APP.ALLOWED_HOSTS_[ i ]->api_key ) != 0 ) {
+                            LOG_print( "[%s] Error: KEY in request is invalid.\n", TIME_get_gmt() );
+                            SOCKET_send( communication_session, client, "-1", 2 );
+                            cJSON_Delete( json_request );
+                            return;
+                        }
+                    }
+                }
+
+            }
+
+            LOG_print( "[%s] Access granted for client %s with key %s.\n", TIME_get_gmt(), ip, key->valuestring );
 
             sql = cJSON_GetObjectItem( json_request, "sql" );
             if( sql == NULL) {
@@ -688,7 +727,15 @@ int main( int argc, char** argv ) {
             LOG_print( "[%s] Cache initialization finished.\n", TIME_get_gmt() );
 
             spc exec_script = ( spc )&DCPAM_WDS_query;
-            SOCKET_main( &exec_script, P_APP.network_port, (const char **)&(*P_APP.ALLOWED_HOSTS), P_APP.ALLOWED_HOSTS_len );
+            char** allowed_hosts_ip = SAFEMALLOC( P_APP.ALLOWED_HOSTS_len * sizeof * P_APP.ALLOWED_HOSTS_, __FILE__, __LINE__ );
+
+            for( int i = 0; i < P_APP.ALLOWED_HOSTS_len; i++ ) {
+                size_t str_len = strlen( P_APP.ALLOWED_HOSTS_[ i ]->ip );
+                allowed_hosts_ip[ i ] = SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
+                snprintf( allowed_hosts_ip[ i ], str_len + 1, P_APP.ALLOWED_HOSTS_[ i ]->ip );
+            }
+
+            SOCKET_main( &exec_script, P_APP.network_port, (const char **)&(*allowed_hosts_ip), P_APP.ALLOWED_HOSTS_len );
 
         } else {
             LOG_print( "[%s] Warning: cache initialization failed.\n", TIME_get_gmt() );
