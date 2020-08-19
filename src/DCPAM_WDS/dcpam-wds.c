@@ -554,6 +554,7 @@ void DCPAM_WDS_get_data( const char *sql, const char *db, char **dst_json ) {
         if( cached_result ) {
             cJSON* record = NULL;
             cJSON* all_data = cJSON_CreateArray();
+            cJSON* response = cJSON_CreateObject();
 
             LOG_print( "ok. Found records: %d.\n", cached_result->row_count );
             for( int i = 0; i < cached_result->row_count; i++ ) {
@@ -565,10 +566,14 @@ void DCPAM_WDS_get_data( const char *sql, const char *db, char **dst_json ) {
                 cJSON_AddItemToArray( all_data, record );
             }
 
-            char* _res = cJSON_Print( all_data );
+            cJSON_AddItemToObject( response, "data", all_data );
+            cJSON_AddBoolToObject( response, "success", 1 );
+            cJSON_AddNumberToObject( response, "length", cached_result->row_count );
+
+            char* _res = cJSON_Print( response );
             *dst_json = SAFECALLOC( strlen( _res + 1 ), sizeof( char ), __FILE__, __LINE__ );
             strncpy( *dst_json, _res, strlen( _res ) );
-            cJSON_Delete( all_data );
+            cJSON_Delete( response );
         } else {
             LOG_print( "requested data is not cached.\n" );
 
@@ -635,7 +640,7 @@ void DCPAM_WDS_query( COMMUNICATION_SESSION *communication_session, CONNECTED_CL
             key = cJSON_GetObjectItem( json_request, "key" );
             if( key == NULL ) {
                 LOG_print( "[%s] Error: no KEY in request is found.\n", TIME_get_gmt() );
-                SOCKET_send( communication_session, client, "-1", 2 );
+                SOCKET_send( communication_session, client, "{\"success\":false,\"data\":[],\"length\":0}", 38 );
                 cJSON_Delete( json_request );
                 return;
             } else {
@@ -644,7 +649,7 @@ void DCPAM_WDS_query( COMMUNICATION_SESSION *communication_session, CONNECTED_CL
                     if( strcmp( ip, P_APP.ALLOWED_HOSTS_[ i ]->ip ) == 0 ) {
                         if( strcmp( key->valuestring, P_APP.ALLOWED_HOSTS_[ i ]->api_key ) != 0 ) {
                             LOG_print( "[%s] Error: KEY in request is invalid.\n", TIME_get_gmt() );
-                            SOCKET_send( communication_session, client, "-1", 2 );
+                            SOCKET_send( communication_session, client, "{\"success\":false,\"data\":[],\"length\":0}", 38 );
                             cJSON_Delete( json_request );
                             return;
                         }
@@ -658,7 +663,7 @@ void DCPAM_WDS_query( COMMUNICATION_SESSION *communication_session, CONNECTED_CL
             sql = cJSON_GetObjectItem( json_request, "sql" );
             if( sql == NULL) {
                 LOG_print( "[%s] Error: no SQL in request is found.\n", TIME_get_gmt() );
-                SOCKET_send( communication_session, client, "-1", 2 );
+                SOCKET_send( communication_session, client, "{\"success\":false,\"data\":[],\"length\":0}", 38 );
                 cJSON_Delete( json_request );
                 return;
             }
@@ -666,7 +671,7 @@ void DCPAM_WDS_query( COMMUNICATION_SESSION *communication_session, CONNECTED_CL
             db = cJSON_GetObjectItem( json_request, "db" );
             if( db  == NULL ) {
                 LOG_print( "[%s] Error: no DB name in request is found.\n", TIME_get_gmt() );
-                SOCKET_send( communication_session, client, "-1", 2 );
+                SOCKET_send( communication_session, client, "{\"success\":false,\"data\":[],\"length\":0}", 38 );
                 cJSON_Delete( json_request );
                 return;
             }
@@ -675,7 +680,7 @@ void DCPAM_WDS_query( COMMUNICATION_SESSION *communication_session, CONNECTED_CL
             if(
                 dqt != DQT_SELECT
                 ) {
-                SOCKET_send( communication_session, client, "-1", 2 );
+                SOCKET_send( communication_session, client, "{\"success\":false,\"data\":[],\"length\":0}", 38 );
             } else {
                 char* json_response = NULL;
 
@@ -684,12 +689,12 @@ void DCPAM_WDS_query( COMMUNICATION_SESSION *communication_session, CONNECTED_CL
                 if( json_response ) {
                     SOCKET_send( communication_session, client, json_response, strlen( json_response ) );
                 } else {
-                    SOCKET_send( communication_session, client, "-1", 2 );
+                    SOCKET_send( communication_session, client, "{\"success\":false,\"data\":[],\"length\":0}", 38 );
                 }
             }
         } else {
             LOG_print( "[%s] Error: request is not valid JSON.\n", TIME_get_gmt() );
-            SOCKET_send( communication_session, client, "-1", 2 );
+            SOCKET_send( communication_session, client, "{\"success\":false,\"data\":[],\"length\":0}", 38 );
             return;
         }
     }
