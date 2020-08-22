@@ -629,6 +629,14 @@ void DATABASE_SYSTEM_close( DATABASE_SYSTEM *system ) {
             DATABASE_SYSTEM_DB_free( system->staging_db );
             free( system->staging_db ); system->staging_db;
         }
+
+        free( system->flat_file->name ); system->flat_file->name = NULL;
+        free( system->flat_file->sql ); system->flat_file->sql = NULL;
+        for( int i = 0; i < system->flat_file->columns_len; i++ ) {
+            free( system->flat_file->columns[ i ] ); system->flat_file->columns[ i ] = NULL;
+        }
+        free( system->flat_file->columns ); system->flat_file->columns = NULL;
+        memset( system->flat_file->delimiter, '\0', 1 );
     }
 }
 
@@ -638,6 +646,7 @@ void DATABASE_SYSTEM_add(
     DATABASE_SYSTEM_DB      *source_db,
     DATABASE_SYSTEM_DB      *dcpam_db,
     DATABASE_SYSTEM_DB      *staging_db,
+    DATABASE_SYSTEM_FLAT_FILE *flat_file,
     DATABASE_SYSTEM_QUERY   queries[ MAX_SYSTEM_QUERIES ],
     const int               queries_len,
     short                   verbose
@@ -721,6 +730,31 @@ void DATABASE_SYSTEM_add(
                 TRUE
             );
         }
+
+        /* Flat file configuration */
+        if( flat_file ) {
+            DATABASE_SYSTEMS[ DATABASE_SYSTEMS_COUNT ].flat_file = SAFEMALLOC( sizeof( DATABASE_SYSTEM_FLAT_FILE ), __FILE__, __LINE__ );
+
+            size_t name_len = strlen( flat_file->name );
+            DATABASE_SYSTEMS[ DATABASE_SYSTEMS_COUNT ].flat_file->name = SAFECALLOC( name_len + 1, sizeof( char ), __FILE__, __LINE__ );
+            snprintf( DATABASE_SYSTEMS[ DATABASE_SYSTEMS_COUNT ].flat_file->name, name_len + 1, flat_file->name );
+
+            DATABASE_SYSTEMS[ DATABASE_SYSTEMS_COUNT ].flat_file->columns_len = flat_file->columns_len;
+            DATABASE_SYSTEMS[ DATABASE_SYSTEMS_COUNT ].flat_file->columns = SAFEMALLOC( flat_file->columns_len * sizeof * DATABASE_SYSTEMS[ DATABASE_SYSTEMS_COUNT ].flat_file->columns, __FILE__, __LINE__ );
+            for( int i = 0; i < flat_file->columns_len; i++ ) {
+                size_t col_name_len = strlen( flat_file->columns[ i ] );
+                DATABASE_SYSTEMS[ DATABASE_SYSTEMS_COUNT ].flat_file->columns[ i ] = SAFECALLOC( col_name_len + 1, sizeof( char ), __FILE__, __LINE__ );
+                snprintf( DATABASE_SYSTEMS[ DATABASE_SYSTEMS_COUNT ].flat_file->columns[ i ], col_name_len + 1, flat_file->columns[ i ] );
+            }
+
+            size_t sql_len = strlen( flat_file->sql );
+            DATABASE_SYSTEMS[ DATABASE_SYSTEMS_COUNT ].flat_file->sql = SAFECALLOC( sql_len + 1, sizeof( char ), __FILE__, __LINE__ );
+            snprintf( DATABASE_SYSTEMS[ DATABASE_SYSTEMS_COUNT ].flat_file->sql, sql_len + 1, flat_file->sql );
+
+            snprintf( DATABASE_SYSTEMS[ DATABASE_SYSTEMS_COUNT ].flat_file->delimiter, 1, flat_file->delimiter );
+
+        }
+        
 
         free( source_db->ip ); source_db->ip = NULL;
         free( source_db->user ); source_db->user = NULL;

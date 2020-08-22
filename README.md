@@ -187,7 +187,7 @@ DCPAM is designed to be as most customizable as it needs to be.
 Therefore every database listed above as available data source can also be used as DCPAM target database.
 
 ##### Currently under active development
-* [x] To be announced.
+* [x] Data source: CSV.
 
 ## Roadmap
 | Year | Feature                                  | Status            |
@@ -195,8 +195,8 @@ Therefore every database listed above as available data source can also be used 
 | 2020 | :white_check_mark: Transform process     | Done (2020-08-07) |
 | 2020 | :white_check_mark: DCPAM WDS (warehouse data server)        | Done (2020-08-17)       |
 | 2020 | :white_check_mark: API keys              | Done (2020-08-19) |
-| 2020 | Data source: local flat files            | Not implemented   |
-| 2020 | Data source: remote flat files           | Not implemented   |
+| 2020 | :construction: Data source: local flat files            | In progress       |
+| 2020 | :construction: Data source: remote flat files           | In progress       |
 | 2020 | DCPAM Access (BI web application)        | Not implemented   |
 | 2021 | DCPAM Construct (admin web application)  | Not implemented   |
 | 2021 | DCPAM AI Platform                        | Not implemented   |

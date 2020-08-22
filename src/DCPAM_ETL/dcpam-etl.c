@@ -93,7 +93,6 @@ int DCPAM_load_configuration( const char* filename ) {
     cJSON* cfg_system_array = NULL;
     cJSON* cfg_system_enabled = NULL;
     cJSON* cfg_system_name = NULL;
-    cJSON* cfg_system_minute_ratio = NULL;
     cJSON* cfg_system_ip = NULL;
     cJSON* cfg_system_port = NULL;
     cJSON* cfg_system_driver = NULL;
@@ -106,6 +105,12 @@ int DCPAM_load_configuration( const char* filename ) {
     cJSON* cfg_system_query_item = NULL;
     cJSON* cfg_system_query_item_name = NULL;
     cJSON* cfg_system_query_item_mode = NULL;
+    cJSON* cfg_system_flat_file = NULL;
+    cJSON* cfg_system_flat_file_name = NULL;
+    cJSON* cfg_system_flat_file_columns_array = NULL;
+    cJSON* cfg_system_flat_file_columns_item = NULL;
+    cJSON* cfg_system_flat_file_delimiter = NULL;
+    cJSON* cfg_system_flat_file_sql = NULL;
 
     cJSON* cfg_system_query_item_etl = NULL;
     cJSON* cfg_system_query_item_etl_pre_actions = NULL;
@@ -201,7 +206,7 @@ int DCPAM_load_configuration( const char* filename ) {
         config_json = cJSON_Parse( config_string );
         if( config_json ) {
 
-            DATABASE_SYSTEM_QUERY **tmp_queries = SAFEMALLOC( MAX_SYSTEM_QUERIES * sizeof * tmp_queries, __FILE__, __LINE__ );
+            DATABASE_SYSTEM_QUERY       **tmp_queries = SAFEMALLOC( MAX_SYSTEM_QUERIES * sizeof * tmp_queries, __FILE__, __LINE__ );
 
             cfg_app = cJSON_GetObjectItem( config_json, "app" );
             if( cfg_app ) {
@@ -376,6 +381,9 @@ int DCPAM_load_configuration( const char* filename ) {
 
             cfg_system_array = cJSON_GetObjectItem( config_json, "system" );
             if( cfg_system_array ) {
+                
+                DATABASE_SYSTEM_FLAT_FILE* tmp_flat_file = NULL;
+
                 for( int i = 0; i < cJSON_GetArraySize( cfg_system_array ); i++ ) {
 
                     array_value = cJSON_GetArrayItem( cfg_system_array, i );
@@ -400,6 +408,66 @@ int DCPAM_load_configuration( const char* filename ) {
                         return FALSE;
                     }
                     LOG_print( "\n[%s] Loading system data: %s.\n", TIME_get_gmt(), cfg_system_name->valuestring );
+
+                    cfg_system_flat_file = cJSON_GetObjectItem( array_value, "FILE" );
+                    if( cfg_system_flat_file ) {
+                        LOG_print( "[%s] Source is flat file.\n", TIME_get_gmt() );
+                        cfg_system_flat_file_name = cJSON_GetObjectItem( cfg_system_flat_file, "name" );
+
+                        if( cfg_system_flat_file == NULL ) {
+                            LOG_print( "ERROR: \"system[%d].FILE.name\" key not found.\n", i );
+                            cJSON_Delete( config_json );
+                            free( config_string ); config_string = NULL;
+                            return FALSE;
+                        }
+
+                        tmp_flat_file = SAFEMALLOC( sizeof( DATABASE_SYSTEM_FLAT_FILE ), __FILE__, __LINE__ );
+
+                        size_t str_len = strlen( cfg_system_flat_file_name->valuestring );
+                        tmp_flat_file->name = SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
+                        snprintf( tmp_flat_file->name, str_len + 1, cfg_system_flat_file_name->valuestring );
+
+                        cfg_system_flat_file_columns_array = cJSON_GetObjectItem( cfg_system_flat_file, "columns" );
+                        if( cfg_system_flat_file_columns_array == NULL ) {
+                            LOG_print( "ERROR: \"system[%d].FILE.columns\" key not found.\n", i );
+                            cJSON_Delete( config_json );
+                            free( config_string ); config_string = NULL;
+                            return FALSE;
+                        }
+
+                        tmp_flat_file->columns_len = cJSON_GetArraySize( cfg_system_flat_file_columns_array );
+                        tmp_flat_file->columns = SAFEMALLOC( tmp_flat_file->columns_len * sizeof * tmp_flat_file->columns, __FILE__, __LINE__ );
+                        for( int j = 0; j < tmp_flat_file->columns_len; j++ ) {
+                            cfg_system_flat_file_columns_item = cJSON_GetArrayItem( cfg_system_flat_file_columns_array, j );
+                            size_t str_len_col = strlen( cfg_system_flat_file_columns_item->valuestring );
+                            tmp_flat_file->columns[ j ] = SAFECALLOC( str_len_col + 1, sizeof( char ), __FILE__, __LINE__ );
+                            snprintf( tmp_flat_file->columns[ j ], str_len_col + 1, cfg_system_flat_file_columns_item->valuestring );
+                        }
+
+                        cfg_system_flat_file_sql = cJSON_GetObjectItem( cfg_system_flat_file, "sql" );
+                        if( cfg_system_flat_file_sql == NULL ) {
+                            LOG_print( "ERROR: \"system[%d].FILE.sql\" key not found.\n", i );
+                            cJSON_Delete( config_json );
+                            free( config_string ); config_string = NULL;
+                            return FALSE;
+                        }
+
+                        size_t str_len_sql = strlen( cfg_system_flat_file_sql->valuestring );
+                        tmp_flat_file->sql = SAFECALLOC( str_len_sql + 1, sizeof( char ), __FILE__, __LINE__ );
+                        snprintf( tmp_flat_file->sql, str_len_sql + 1, cfg_system_flat_file_sql->valuestring );
+
+                        if( strstr( tmp_flat_file->name, ".csv" ) ) {
+                            cfg_system_flat_file_delimiter = cJSON_GetObjectItem( cfg_system_flat_file, "delimiter" );
+                            if( cfg_system_flat_file_delimiter == NULL ) {
+                                LOG_print( "ERROR: \"system[%d].FILE.delimiter\" key not found.\n", i );
+                                cJSON_Delete( config_json );
+                                free( config_string ); config_string = NULL;
+                                return FALSE;
+                            }
+
+                            snprintf( tmp_flat_file->delimiter, 1, cfg_system_flat_file_delimiter->valuestring );
+                        }
+                    }
 
                     cfg_system_info = cJSON_GetObjectItem( array_value, "DB" );
                     if( cfg_system_info == NULL ) {
@@ -1401,6 +1469,7 @@ int DCPAM_load_configuration( const char* filename ) {
                             tmp_db,
                             &APP.DB,
                             APP.STAGING ? APP.STAGING : NULL,
+                            tmp_flat_file,
                             *tmp_queries,
                             tmp_queries_count,
                             TRUE
@@ -1409,13 +1478,26 @@ int DCPAM_load_configuration( const char* filename ) {
                         for( int i = 0; i < tmp_queries_count; i++ ) {
                             free( tmp_queries[ i ] ); tmp_queries[ i ] = NULL;
                         }
+
+                        if( tmp_flat_file ) {
+                            free( tmp_flat_file->name ); tmp_flat_file->name = NULL;
+                            free( tmp_flat_file->sql ); tmp_flat_file->sql = NULL;
+                            for( int i = 0; i < tmp_flat_file->columns_len; i++ ) {
+                                free( tmp_flat_file->columns[ i ] ); tmp_flat_file->columns[ i ] = NULL;
+                            }
+                            free( tmp_flat_file->columns ); tmp_flat_file->columns = NULL;
+                            memset( tmp_flat_file->delimiter, '\0', 1 );
+                            free( tmp_flat_file );
+                        }
                     }
 
-                    free( tmp_queries ); tmp_queries = NULL;
+                    //free( tmp_queries ); tmp_queries = NULL;
 
                     free( tmp_db );
                     LOG_print( "[%s] Finished loading system %s.\n\n", TIME_get_gmt(), cfg_system_name->valuestring );
                 }
+                free( tmp_queries ); tmp_queries = NULL;
+
             } else {
                 LOG_print( "ERROR: \"system\" key not found.\n" );
                 cJSON_Delete( config_json );

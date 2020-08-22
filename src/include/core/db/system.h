@@ -9,6 +9,7 @@ void DATABASE_SYSTEM_add(
             DATABASE_SYSTEM_DB      *source_db,
             DATABASE_SYSTEM_DB      *dcpam_db,
             DATABASE_SYSTEM_DB      *staging_db,
+            DATABASE_SYSTEM_FLAT_FILE* flat_file,
             DATABASE_SYSTEM_QUERY   queries[ MAX_SYSTEM_QUERIES ],
             const int               queries_len,
             short                   verbose

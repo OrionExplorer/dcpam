@@ -1,6 +1,6 @@
 {
 	"system" : [{
-		"enabled" : 1,
+		"enabled" : 0,
 		"name" : "OTRS",
 		"DB" : {
 			"name" : "OTRS [source]",
@@ -163,6 +163,130 @@
 				"comment#13" : "# PostETL Actions configuration. Use it to perform any set of queries in DCPAM Database after ETL",
 				"comment#14" : "# process finished (ie. to clear the Staging Area).",
 				"comment#15" : "##################################################################################################",
+				"post_actions" : [
+					"DELETE FROM stage_accounted_time"
+				]
+
+			}
+		}]
+	}, {
+		"enabled" : 1,
+		"name" : "OTRS History Data (CSV source)",
+
+		"file_comment#00" : "##################################################################################################",
+		"file_comment#01" : "# FILE section is dedicated for schema definition of the flat files loader.",
+		"file_comment#02" : "# The \"name\", \"columns\" and \"sql\" keys are required. For CSV files, \"delimeter\" is also required.",
+		"file_comment#03" : "# DCPAM ETL loads the file to the database set in \"DB\" section.",
+		"file_comment#04" : "# The same \"DB\" is later used as real source for DCPAM.",
+		"file_comment#05" : "# This is work in progress with support for local CSV files only.",
+		"file_comment#06" : "# Remote files are going to be supported with battery-http-server.",
+		"file_comment#07" : "##################################################################################################",
+		"FILE" : {
+			"name" : "/tmp/otrs_history_data.csv",
+			"delimiter" : ";",
+			"columns" : ["id", "name", "history_type_id", "ticket_id", "article_id", "type_id", "queue_id", "owner_id", "priority_id", "state_id", "create_time", "create_by", "change_time", "change_by"],
+			"sql" : "INSERT INTO ff_ticket_history_data (id, name, history_type_id, ticket_id, article_id, type_id, queue_id, owner_id, priority_id, state_id, create_time, create_by, change_time, change_by) VALUES (?, '?', ?, ?, ?, ?, ?, ?, ?, ?, '?', ?, '?', ?)"
+		},
+		"DB" : {
+			"name" : "Flat Files Area",
+			"ip" : "127.0.0.1",
+			"port" : 5432,
+			"driver" : 1,
+			"driver_comment" : "Driver types: 1=PostgreSQL, 2=MySQL, 3=MariaDB, 4=ODBC, 5=Oracle Database, 6=SQLite",
+			"connection_string" : "dbname=%s host=%s port=%d user=%s password=%s",
+			"user" : "dcpam",
+			"password" : "tantive-4",
+			"db" : "dcpam"
+		},
+		"queries" : [{
+			"name" : "GET_ACCOUNTED_TIME",
+			"mode" : 1,
+			"etl" : {
+
+				"pre_actions" : [
+					"DELETE FROM stage_accounted_time"
+				],
+
+
+				"extract" : {
+					"inserted" : {
+						"primary_db" : "dcpam",
+						"primary_db_sql" : "SELECT system_worklog_id FROM accounted_time WHERE system = 'OTRS'",
+						"secondary_db" : "this",
+						"secondary_db_sql" : "SELECT t.id AS system_object_id, ta.id AS system_worklog_id, t.customer_id AS system_customer, ta.create_by AS system_agent_id, ta.time_unit AS system_accounted_time, ta.create_time AS system_created FROM time_accounting ta LEFT JOIN ticket t ON t.id = ta.ticket_id WHERE ta.id NOT IN (%s)"
+					},
+					"deleted" : {
+						"primary_db" : "this",
+						"primary_db_sql" : "SELECT id AS system_worklog_id FROM time_accounting",
+						"secondary_db" : "dcpam",
+						"secondary_db_sql" : "SELECT system_object_id, system_worklog_id, system_customer, system_agent_id, system_accounted_time, system_created, system FROM accounted_time WHERE is_valid = 1 AND system_worklog_id NOT IN (%s)"
+					},
+					"modified" : {
+						"primary_db" : "dcpam",
+						"primary_db_sql" : "SELECT MAX(changed) AS changed FROM accounted_time WHERE is_valid = 1 AND SYSTEM = 'OTRS'",
+						"secondary_db" : "this",
+						"secondary_db_sql" : "SELECT t.id AS system_object_id, ta.id AS system_worklog_id, t.customer_id AS system_customer, ta.create_by AS system_agent_id, ta.time_unit AS system_accounted_time, ta.create_time AS system_created FROM time_accounting ta LEFT JOIN ticket t ON t.id = ta.ticket_id WHERE ta.change_time > '%s'"
+					}
+				},
+
+
+				"stage" : {
+					"inserted" : {
+						"sql" : "INSERT INTO stage_accounted_time (system_object_id, system_worklog_id, system_customer, system_agent_id, system_accounted_time, system_created, is_valid, system, e_type) VALUES (?, ?, '?', '?', ?, '?', 1, 'OTRS', 1)",
+						"extracted_values" : ["system_object_id", "system_worklog_id", "system_customer", "system_agent_id", "system_accounted_time", "system_created"]
+					},
+					"deleted" : {
+						"sql" : "INSERT INTO stage_accounted_time (system_object_id, system_worklog_id, system_customer, system_agent_id, system_accounted_time, system_created, is_valid, system, e_type) VALUES (?, ?, '?', '?', ?, '?', 0, 'OTRS', 2)",
+						"extracted_values" : ["system_object_id", "system_worklog_id", "system_customer", "system_agent_id", "system_accounted_time", "system_created"]
+					},
+					"modified" : {
+						"sql" : "INSERT INTO stage_accounted_time (system_object_id, system_worklog_id, system_customer, system_agent_id, system_accounted_time, system_created, is_valid, system, e_type) VALUES (?, ?, '?', '?', ?, '?', 1, 'OTRS', 3)",
+						"extracted_values" : ["system_object_id", "system_worklog_id", "system_customer", "system_agent_id", "system_accounted_time", "system_created"]
+					}
+				},
+
+
+				"transform" : {
+					"inserted" : [{
+						"module" : "./src/DCPAM_RDP/whitespaces/trailing-spaces.py",
+						"staged_data" : "SELECT * FROM stage_accounted_time",
+						"api_key" : "",
+						"source_system_update" : "UPDATE time_accounting SET %s WHERE %s"
+					}],
+					"deleted" : [{
+						"module" : "dcpam://127.0.0.1:9091/src/DCPAM_RDP/whitespaces/trailing-spaces.py",
+						"api_key" : "zxcasd321",
+						"staged_data" : "SELECT * FROM stage_accounted_time",
+						"source_system_update" : "UPDATE time_accounting SET %s WHERE %s"
+					}],
+					"modified" : [{
+						"module" : "./src/DCPAM_RDP/whitespaces/trailing-spaces.py",
+						"staged_data" : "SELECT * FROM stage_accounted_time",
+						"api_key" : "",
+						"source_system_update" : "UPDATE time_accounting SET %s WHERE %s"
+					}]
+				},
+
+
+				"load" : {
+					"inserted" : {
+						"input_data_sql" : "SELECT system_object_id, system_worklog_id, system_customer, system_agent_id, system_accounted_time, system_created FROM stage_accounted_time WHERE e_type = 1",
+						"extracted_values" : ["system_object_id", "system_worklog_id", "system_customer", "system_agent_id", "system_accounted_time", "system_created"],
+						"output_data_sql" : "INSERT INTO accounted_time (system_object_id, system_worklog_id, system_customer, system_agent_id, system_accounted_time, system_created, is_valid, system) VALUES (?, ?, '?', '?', ?, '?', 1, 'OTRS')"
+					},
+					"deleted" : {
+						"input_data_sql" : "SELECT system_worklog_id FROM stage_accounted_time WHERE e_type = 2",
+						"extracted_values" : ["system_worklog_id"],
+						"output_data_sql" : "UPDATE accounted_time SET is_valid = 0 WHERE system_worklog_id = '?'"
+					},
+					"modified" : {
+						"input_data_sql" : "SELECT system_object_id, system_worklog_id, system_customer, system_agent_id, system_accounted_time, system_created, is_valid FROM stage_accounted_time WHERE e_type = 3",
+						"extracted_values" : ["system_object_id", "system_worklog_id", "system_customer", "system_agent_id", "system_accounted_time", "system_created", "is_valid", "system_worklog_id"],
+						"output_data_sql" : "UPDATE accounted_time SET system_object_id = ?, system_worklog_id = ?, system_customer = '?', system_agent_id = '?', system_accounted_time = ?, system_created = '?', is_valid = ? WHERE system_worklog_id = ?"
+					}
+				},
+
+
 				"post_actions" : [
 					"DELETE FROM stage_accounted_time"
 				]

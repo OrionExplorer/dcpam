@@ -119,10 +119,22 @@
 * [x] Client is allowed to connect to each DCPAM component with valid IP address and dedicated API key:
 	* [x] DCPAM RDP
 	* [x] DCPAM WDS
-* [x] DCPAM WDS must response with metadata (request success/failure, how many records etc.):
+* [x] DCPAM WDS must response with metadata:
 	* [x] success [true|false]
 	* [x] data [array]
 	* [x] length [number]
+* [x] Architecture rebuild for flat files support:
+	* [x] New struct: DATABASE_SYSTEM_FLAT_FILE.
+	* [x] New DATABASE_SYSTEM element: DATABASE_SYSTEM_FLAT_FILE.
+	* [x] Update `etl_config.json` with "FILE" section.
+	* [x] Load DATABASE_SYSTEM_FLAT_FILE data from `etl_config.json`.
+* [ ] Process flat file data before each ETL start:
+	* [ ] CSV parser.
+	* [ ] Load CSV data to desired table.
+* [ ] DCPAM log rebuild:
+	* [ ] Each processed source has dedicated log file.
+	* [ ] Init log files during `etl_config.json` load.
+	* [ ] Rebuild `LOG_print` function to support additional parameter: `log_name`.
 * [ ] DCPAM ETL must not know about P_DCPAM_APP and DPCAM WDS about DCPAM_APP.
 * [ ] ETL process interval can vary between system[].queries[].
 * [ ] Move DCPAM ETL configuration to database:

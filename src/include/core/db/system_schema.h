@@ -9,15 +9,15 @@
 #include "../../db/sqlite.h"
 #include "etl_schema.h"
 
-#define MAX_SYSTEM_QUERIES                  32
+#define MAX_SYSTEM_QUERIES      32
 
 typedef union {
-    PG_CONNECTION           pgsql_conn;
-    MYSQL_CONNECTION        mysql_conn;
-    MARIADB_CONNECTION      mariadb_conn;
-    ODBC_CONNECTION         odbc_conn;
-    ORACLE_CONNECTION       oracle_conn;
-    SQLITE_CONNECTION       sqlite_conn;
+    PG_CONNECTION               pgsql_conn;
+    MYSQL_CONNECTION            mysql_conn;
+    MARIADB_CONNECTION          mariadb_conn;
+    ODBC_CONNECTION             odbc_conn;
+    ORACLE_CONNECTION           oracle_conn;
+    SQLITE_CONNECTION           sqlite_conn;
 } DB_CONN;
 
 typedef enum {
@@ -30,31 +30,40 @@ typedef enum {
 } DB_DRIVER;
 
 typedef struct DATABASE_SYSTEM_DB {
-    char                    *ip;
-    int                     port;
-    DB_DRIVER               driver;
-    char                    *user;
-    char                    *password;
-    char                    *connection_string;
-    char                    *db;
-    DB_CONN                 db_conn;
-    char                    *name;
+    char                        *ip;
+    int                         port;
+    DB_DRIVER                   driver;
+    char                        *user;
+    char                        *password;
+    char                        *connection_string;
+    char                        *db;
+    DB_CONN                     db_conn;
+    char                        *name;
 } DATABASE_SYSTEM_DB;
 
 typedef struct DATABASE_SYSTEM_QUERY {
-    char                    *name;
-    DB_SYSTEM_MODE          mode;
-    DB_SYSTEM_ETL           etl_config;
+    char                        *name;
+    DB_SYSTEM_MODE              mode;
+    DB_SYSTEM_ETL               etl_config;
 } DATABASE_SYSTEM_QUERY;
 
+typedef struct DATABASE_SYSTEM_FLAT_FILE {
+    char                        *name;
+    char                        **columns;
+    int                         columns_len;
+    char                        *sql;
+    char                        delimiter[1];
+} DATABASE_SYSTEM_FLAT_FILE;
+
 typedef struct DATABASE_SYSTEM {
-    char                    *name;
-    DATABASE_SYSTEM_DB      system_db;
-    DATABASE_SYSTEM_DB      dcpam_db;
-    DATABASE_SYSTEM_DB      *staging_db;
-    DATABASE_SYSTEM_QUERY   queries[ MAX_SYSTEM_QUERIES ];
-    int                     queries_len;
-    int                     failure;
+    char                        *name;
+    DATABASE_SYSTEM_DB          system_db;
+    DATABASE_SYSTEM_DB          dcpam_db;
+    DATABASE_SYSTEM_DB          *staging_db;
+    DATABASE_SYSTEM_QUERY       queries[ MAX_SYSTEM_QUERIES ];
+    int                         queries_len;
+    DATABASE_SYSTEM_FLAT_FILE   *flat_file;
+    int                         failure;
 } DATABASE_SYSTEM;
 
 #endif
