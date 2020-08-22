@@ -414,7 +414,7 @@ int DCPAM_load_configuration( const char* filename ) {
                         LOG_print( "[%s] Source is flat file.\n", TIME_get_gmt() );
                         cfg_system_flat_file_name = cJSON_GetObjectItem( cfg_system_flat_file, "name" );
 
-                        if( cfg_system_flat_file == NULL ) {
+                        if( cfg_system_flat_file_name == NULL ) {
                             LOG_print( "ERROR: \"system[%d].FILE.name\" key not found.\n", i );
                             cJSON_Delete( config_json );
                             free( config_string ); config_string = NULL;
