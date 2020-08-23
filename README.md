@@ -131,7 +131,7 @@ As DCPAM is extremely modular and highly scalabe, it can serve both as Data Ware
 
 ## Technology
 ### DCPAM Components
-DCPAM Data Warehouse Solution consists of a number of integrated components.
+DCPAM Data Warehouse Solution consists of a number of integrated components. Each component has unique log file, and DCPAM ETL - due to parallel execution - can create many log files simultaneously.
 
 #### DCPAM ETL - Extract-Transform-Load / Extract-Load-Transform
 [DCPAM ETL](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL/README.md) is the main ETL/ELT engine. Many instances of DCPAM ETL can work within single Data Warehouse.

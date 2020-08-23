@@ -31,7 +31,7 @@ DCPAM WDS is dedicated endpoint for querying predefined business data with custo
 * JSON-based communication with client applications.
 * Builds the in-memory cache for queries predefined in `wds_config.json` on startup:
 	* For one or more DCPAM Database nodes.
-* Caches missing data on the run for new requests.
+* Caches data on the fly for new requests.
 * Maximum allowed memory usage configuration.
 * May need a lot of RAM.
 
