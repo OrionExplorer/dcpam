@@ -44,7 +44,7 @@ int NET_CONN_disconnect( NET_CONN *connection ) {
 
         return closesocket( connection->socket );
     } else {
-        LOG_print( connection->log, "error. Connection pointer is not valid.\n" );
+        printf( "error. Connection pointer is not valid.\n" );
         return 0;
     }
 }
@@ -74,7 +74,7 @@ int NET_CONN_send( NET_CONN *connection, const char *data, size_t data_len ) {
 
         return 1;
     } else {
-        LOG_print( connection->log, "[connection pointer is not valid]..." );
+        printf( "[connection pointer is not valid]..." );
         return 0;
     }
 }
