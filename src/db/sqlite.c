@@ -10,9 +10,9 @@
 static pthread_mutex_t      db_exec_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 
-void SQLITE_disconnect( SQLITE_CONNECTION* db_connection ) {
+void SQLITE_disconnect( SQLITE_CONNECTION* db_connection, LOG_OBJECT *log ) {
     if( db_connection != NULL ) {
-        LOG_print( "[%s]\tSQLITE_disconnect( <'%s'> ).\n", TIME_get_gmt(), db_connection->id != NULL ? db_connection->id : "x" );
+        LOG_print( log, "[%s]\tSQLITE_disconnect( <'%s'> ).\n", TIME_get_gmt(), db_connection->id != NULL ? db_connection->id : "x" );
 
         if( db_connection->connection != NULL ) {
             sqlite3_close( db_connection->connection );
@@ -24,7 +24,7 @@ void SQLITE_disconnect( SQLITE_CONNECTION* db_connection ) {
         }
         db_connection->active = 0;
 
-        LOG_print( "[%s]\tSQLITE_disconnect.\n", TIME_get_gmt() );
+        LOG_print( log, "[%s]\tSQLITE_disconnect.\n", TIME_get_gmt() );
     }
 }
 
@@ -32,7 +32,8 @@ void SQLITE_disconnect( SQLITE_CONNECTION* db_connection ) {
 int SQLITE_connect(
     SQLITE_CONNECTION* db_connection,
     const char* filename,
-    const char* name
+    const char* name,
+    LOG_OBJECT* log
 ) {
 
     db_connection->id = ( char* )SAFECALLOC( 1024, sizeof( char ), __FILE__, __LINE__ );
@@ -43,13 +44,13 @@ int SQLITE_connect(
     if( result != SQLITE_OK ) {
         db_connection->active = 0;
         free( db_connection->id ); db_connection->id = NULL;
-        LOG_print( "Error. Message: \"%s\"", sqlite3_errmsg( db_connection->connection ) );
+        LOG_print( log, "Error. Message: \"%s\"", sqlite3_errmsg( db_connection->connection ) );
         sqlite3_close( db_connection->connection );
     }
 
     db_connection->active = 1;
 
-    LOG_print( "ok.\n" );
+    LOG_print( log, "ok.\n" );
 
     return 1;
 }
@@ -65,10 +66,11 @@ int SQLITE_exec(
     const int* param_formats,
     qec* query_exec_callback,
     void* data_ptr1,
-    void* data_ptr2
+    void* data_ptr2,
+    LOG_OBJECT* log
 ) {
 
-    LOG_print( "[%s]\tSQLITE_exec( <'%s'>, \"%s\", ... ).\n", TIME_get_gmt(), db_connection->id, sql );
+    LOG_print( log, "[%s]\tSQLITE_exec( <'%s'>, \"%s\", ... ).\n", TIME_get_gmt(), db_connection->id, sql );
     pthread_mutex_lock( &db_exec_mutex );
 
     if( dst_result ) {
@@ -88,7 +90,7 @@ int SQLITE_exec(
 
             int result = sqlite3_prepare_v2( db_connection->connection, sql, ( int )sql_length, &stmt, NULL );
             if( result != SQLITE_OK ) {
-                LOG_print( "Error: sqlite_prepare_v2 (%d).\n", result );
+                LOG_print( log, "Error: sqlite_prepare_v2 (%d).\n", result );
                 return 0;
             }
 
@@ -116,7 +118,7 @@ int SQLITE_exec(
                         }
 
                         pthread_mutex_unlock( &db_exec_mutex );
-                        ( *query_exec_callback )( record, data_ptr1, data_ptr2 );
+                        ( *query_exec_callback )( record, data_ptr1, data_ptr2, log );
                     }
 
                     if( dst_result ) {
@@ -143,7 +145,7 @@ int SQLITE_exec(
                 }
             } else {
                 if( sqlite3_step( stmt ) != SQLITE_DONE ) {
-                    LOG_print( "[%s][fail] SQLITE_exec. Message: \"%s\"\n", TIME_get_gmt(), sqlite3_errmsg( db_connection->connection ) );
+                    LOG_print( log, "[%s][fail] SQLITE_exec. Message: \"%s\"\n", TIME_get_gmt(), sqlite3_errmsg( db_connection->connection ) );
                     sqlite3_finalize( stmt );
                     pthread_mutex_unlock( &db_exec_mutex );
                     return 0;
@@ -155,11 +157,11 @@ int SQLITE_exec(
 
         } else {
             /* Query with bind parameters */
-            LOG_print( "[%s] Warning: not yet implemented!\n", TIME_get_gmt() );
+            LOG_print( log, "[%s] Warning: not yet implemented!\n", TIME_get_gmt() );
         }
     }
 
-    LOG_print( "[%s]\tSQLITE_exec.\n", TIME_get_gmt() );
+    LOG_print( log, "[%s]\tSQLITE_exec.\n", TIME_get_gmt() );
     pthread_mutex_unlock( &db_exec_mutex );
 
     return 1;

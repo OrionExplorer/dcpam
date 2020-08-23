@@ -18,7 +18,7 @@
 #pragma warning( disable : 6031 )
 
 char                    app_path[ MAX_PATH_LENGTH + 1 ];
-char                    LOG_filename[ MAX_PATH_LENGTH ];
+LOG_OBJECT              dcpam_wds_log;
 extern int              app_terminated = 0;
 
 extern DATABASE_SYSTEM  DATABASE_SYSTEMS[ MAX_DATA_SYSTEMS ];
@@ -29,12 +29,12 @@ void DCPAM_WDS_free_configuration( void );
 
 
 void app_terminate( void ) {
-    LOG_print( "\r\n[%s] Received termination signal.\n", TIME_get_gmt() );
+    LOG_print( &dcpam_wds_log, "\r\n[%s] Received termination signal.\n", TIME_get_gmt() );
     if( app_terminated == 0 ) {
         app_terminated = 1;
         printf( "\r" );
         DCPAM_WDS_free_configuration();
-        LOG_print( "[%s] DCPAM WDS graceful shutdown finished.\n", TIME_get_gmt() );
+        LOG_print( &dcpam_wds_log, "[%s] DCPAM WDS graceful shutdown finished.\n", TIME_get_gmt() );
     }
 
     return;
@@ -43,8 +43,8 @@ void app_terminate( void ) {
 void DCPAM_WDS_free_configuration( void ) {
 
     for( int i = 0; i < P_APP.CACHE_len; i++ ) {
-        LOG_print( "[%s] Removing cache %d of %d...\n", TIME_get_gmt(), i + 1, P_APP.CACHE_len );
-        DB_CACHE_free( P_APP.CACHE[ i ] );
+        LOG_print( &dcpam_wds_log, "[%s] Removing cache %d of %d...\n", TIME_get_gmt(), i + 1, P_APP.CACHE_len );
+        DB_CACHE_free( P_APP.CACHE[ i ], &dcpam_wds_log );
         free( P_APP.CACHE[ i ] ); P_APP.CACHE[ i ] = NULL;
     }
     free( P_APP.CACHE ); P_APP.CACHE = NULL;
@@ -56,7 +56,7 @@ void DCPAM_WDS_free_configuration( void ) {
     free( P_APP.ALLOWED_HOSTS_ ); P_APP.ALLOWED_HOSTS_ = NULL;
 
     for( int i = 0; i < P_APP.DB_len; i++ ) {
-        DATABASE_SYSTEM_DB_free( P_APP.DB[ i ] );
+        DATABASE_SYSTEM_DB_free( P_APP.DB[ i ], &dcpam_wds_log );
         free( P_APP.DB[ i ] ); P_APP.DB[ i ] = NULL;
     }
     free( P_APP.DB ); P_APP.DB = NULL;
@@ -127,7 +127,7 @@ int DCPAM_WDS_load_configuration( const char* filename ) {
     char*                       config_string = NULL;
 
 
-    LOG_print( "[%s] DCPAM_WDS_load_configuration( %s ).\n", TIME_get_gmt(), filename );
+    LOG_print( &dcpam_wds_log, "[%s] DCPAM_WDS_load_configuration( %s ).\n", TIME_get_gmt(), filename );
 
     config_string = file_get_content( filename );
 
@@ -144,7 +144,7 @@ int DCPAM_WDS_load_configuration( const char* filename ) {
                     P_APP.name = SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
                     snprintf( P_APP.name, str_len + 1, cfg_app_name->valuestring );
                 } else {
-                    LOG_print( "ERROR: \"app.name\" key not found.\n" );
+                    LOG_print( &dcpam_wds_log, "ERROR: \"app.name\" key not found.\n" );
                     cJSON_Delete( config_json );
                     free( config_string ); config_string = NULL;
                     return FALSE;
@@ -155,9 +155,9 @@ int DCPAM_WDS_load_configuration( const char* filename ) {
                     size_t str_len = strlen( cfg_app_version->valuestring );
                     P_APP.version = SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
                     snprintf( P_APP.version, str_len + 1, cfg_app_version->valuestring );
-                    LOG_print( "%s v%s.\n", P_APP.name, P_APP.version );
+                    LOG_print( &dcpam_wds_log, "%s v%s.\n", P_APP.name, P_APP.version );
                 } else {
-                    LOG_print( "ERROR: \"app.version\" key not found.\n" );
+                    LOG_print( &dcpam_wds_log, "ERROR: \"app.version\" key not found.\n" );
                     cJSON_Delete( config_json );
                     free( config_string ); config_string = NULL;
                     return FALSE;
@@ -172,7 +172,7 @@ int DCPAM_WDS_load_configuration( const char* filename ) {
                     } else {
                         P_APP.network_port = 9090;
                     }
-                    LOG_print( "Network port is set to %d.\n", P_APP.network_port );
+                    LOG_print( &dcpam_wds_log, "Network port is set to %d.\n", P_APP.network_port );
 
                     cfg_app_network_allowed_hosts = cJSON_GetObjectItem( cfg_app_network, "allowed_hosts" );
                     if( cfg_app_network_allowed_hosts ) {
@@ -200,13 +200,13 @@ int DCPAM_WDS_load_configuration( const char* filename ) {
                             }
                         }
                     } else {
-                        LOG_print( "ERROR: \"app.network.allowed_hosts\" key not found.\n" );
+                        LOG_print( &dcpam_wds_log, "ERROR: \"app.network.allowed_hosts\" key not found.\n" );
                         cJSON_Delete( config_json );
                         free( config_string ); config_string = NULL;
                         return FALSE;
                     }
                 } else {
-                    LOG_print( "ERROR: \"app.network\" key not found.\n" );
+                    LOG_print( &dcpam_wds_log, "ERROR: \"app.network\" key not found.\n" );
                     cJSON_Delete( config_json );
                     free( config_string ); config_string = NULL;
                     return FALSE;
@@ -215,9 +215,9 @@ int DCPAM_WDS_load_configuration( const char* filename ) {
                 cfg_app_max_memory = cJSON_GetObjectItem( cfg_app, "max_memory" );
                 if( cfg_app_max_memory ) {
                     P_APP.CACHE_MAX_size = ( size_t )cfg_app_max_memory->valueint;
-                    LOG_print( "Maximum memory usage: %ld KB.\n", P_APP.CACHE_MAX_size );
+                    LOG_print( &dcpam_wds_log, "Maximum memory usage: %ld KB.\n", P_APP.CACHE_MAX_size );
                 } else {
-                    LOG_print( "ERROR: \"app.max_memory\" key not found.\n" );
+                    LOG_print( &dcpam_wds_log, "ERROR: \"app.max_memory\" key not found.\n" );
                     cJSON_Delete( config_json );
                     free( config_string ); config_string = NULL;
                     return FALSE;
@@ -236,42 +236,42 @@ int DCPAM_WDS_load_configuration( const char* filename ) {
 
                         cfg_app_db_ip = cJSON_GetObjectItem( cfg_app_db, "ip" );
                         if( cfg_app_db_ip == NULL ) {
-                            LOG_print( "ERROR: \"app.DB.ip\" key not found.\n" );
+                            LOG_print( &dcpam_wds_log, "ERROR: \"app.DB.ip\" key not found.\n" );
                         }
 
                         cfg_app_db_port = cJSON_GetObjectItem( cfg_app_db, "port" );
                         if( cfg_app_db_port == NULL ) {
-                            LOG_print( "ERROR: \"app.DB.port\" key not found.\n" );
+                            LOG_print( &dcpam_wds_log, "ERROR: \"app.DB.port\" key not found.\n" );
                         }
 
                         cfg_app_db_driver = cJSON_GetObjectItem( cfg_app_db, "driver" );
                         if( cfg_app_db_driver == NULL ) {
-                            LOG_print( "ERROR: \"app.DB.driver\" key not found.\n" );
+                            LOG_print( &dcpam_wds_log, "ERROR: \"app.DB.driver\" key not found.\n" );
                         }
 
                         cfg_app_db_user = cJSON_GetObjectItem( cfg_app_db, "user" );
                         if( cfg_app_db_user == NULL ) {
-                            LOG_print( "ERROR: \"app.DB.user\" key not found.\n" );
+                            LOG_print( &dcpam_wds_log, "ERROR: \"app.DB.user\" key not found.\n" );
                         }
 
                         cfg_app_db_password = cJSON_GetObjectItem( cfg_app_db, "password" );
                         if( cfg_app_db_password == NULL ) {
-                            LOG_print( "ERROR: \"app.DB.password\" key not found.\n" );
+                            LOG_print( &dcpam_wds_log, "ERROR: \"app.DB.password\" key not found.\n" );
                         }
 
                         cfg_app_db_connection_string = cJSON_GetObjectItem( cfg_app_db, "connection_string" );
                         if( cfg_app_db_connection_string == NULL ) {
-                            LOG_print( "ERROR: \"app.DB.connection_string\" key not found.\n" );
+                            LOG_print( &dcpam_wds_log, "ERROR: \"app.DB.connection_string\" key not found.\n" );
                         }
 
                         cfg_app_db_db = cJSON_GetObjectItem( cfg_app_db, "db" );
                         if( cfg_app_db_db == NULL ) {
-                            LOG_print( "ERROR: \"app.DB.db\" key not found.\n" );
+                            LOG_print( &dcpam_wds_log, "ERROR: \"app.DB.db\" key not found.\n" );
                         }
 
                         cfg_app_db_name = cJSON_GetObjectItem( cfg_app_db, "name" );
                         if( cfg_app_db_name == NULL ) {
-                            LOG_print( "Error: \"app.DB.name\" key not found.\n" );
+                            LOG_print( &dcpam_wds_log, "Error: \"app.DB.name\" key not found.\n" );
                         }
 
                         P_APP.DB[ i ] = SAFEMALLOC( sizeof( DATABASE_SYSTEM_DB ), __FILE__, __LINE__ );
@@ -286,18 +286,19 @@ int DCPAM_WDS_load_configuration( const char* filename ) {
                             cfg_app_db_connection_string->valuestring,
                             P_APP.DB[ i ],
                             cfg_app_db_name->valuestring,
-                            TRUE
+                            TRUE,
+                            &dcpam_wds_log
                         );
                     }
 
                 } else {
-                    LOG_print( "ERROR: \"app.DB\" key not found.\n" );
+                    LOG_print( &dcpam_wds_log, "ERROR: \"app.DB\" key not found.\n" );
                     cJSON_Delete( config_json );
                     free( config_string ); config_string = NULL;
                     return FALSE;
                 }
 
-                LOG_print( "[%s] Loading app.DATA item ", TIME_get_gmt() );
+                LOG_print( &dcpam_wds_log, "[%s] Loading app.DATA item ", TIME_get_gmt() );
                 cfg_app_data = cJSON_GetObjectItem( cfg_app, "DATA" );
                 if( cfg_app_data ) {
                     P_APP.DATA_len = cJSON_GetArraySize( cfg_app_data );
@@ -307,7 +308,7 @@ int DCPAM_WDS_load_configuration( const char* filename ) {
 
                         cfg_app_data_item_id = cJSON_GetObjectItem( cfg_app_data_item, "id" );
                         if( cfg_app_data_item_id == NULL ) {
-                            LOG_print( "ERROR: \"app.DATA[%d].id\" key not found.\n", i );
+                            LOG_print( &dcpam_wds_log, "ERROR: \"app.DATA[%d].id\" key not found.\n", i );
                             cJSON_Delete( config_json );
                             free( config_string ); config_string = NULL;
                             return FALSE;
@@ -315,11 +316,11 @@ int DCPAM_WDS_load_configuration( const char* filename ) {
                         size_t str_len = strlen( cfg_app_data_item_id->valuestring );
                         P_APP.DATA[ i ].id = SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
                         snprintf( P_APP.DATA[ i ].id, str_len + 1, cfg_app_data_item_id->valuestring );
-                        LOG_print( "#%d: \"%s\"\n", i + 1, P_APP.DATA[ i ].id );
+                        LOG_print( &dcpam_wds_log, "#%d: \"%s\"\n", i + 1, P_APP.DATA[ i ].id );
 
                         cfg_app_data_item_name = cJSON_GetObjectItem( cfg_app_data_item, "name" );
                         if( cfg_app_data_item_name == NULL ) {
-                            LOG_print( "ERROR: \"app.DATA[%d].name\" key not found.\n", i );
+                            LOG_print( &dcpam_wds_log, "ERROR: \"app.DATA[%d].name\" key not found.\n", i );
                             cJSON_Delete( config_json );
                             free( config_string ); config_string = NULL;
                             return FALSE;
@@ -327,11 +328,11 @@ int DCPAM_WDS_load_configuration( const char* filename ) {
                         size_t str_len2 = strlen( cfg_app_data_item_name->valuestring );
                         P_APP.DATA[ i ].name = SAFECALLOC( str_len2 + 1, sizeof( char ), __FILE__, __LINE__ );
                         snprintf( P_APP.DATA[ i ].name, str_len2+1, cfg_app_data_item_name->valuestring );
-                        LOG_print( "\t· name=\"%s\"\n", P_APP.DATA[ i ].name );
+                        LOG_print( &dcpam_wds_log, "\t· name=\"%s\"\n", P_APP.DATA[ i ].name );
 
                         cfg_app_data_item_db_table_name = cJSON_GetObjectItem( cfg_app_data_item, "db_table_name" );
                         if( cfg_app_data_item_db_table_name == NULL ) {
-                            LOG_print( "ERROR: \"app.DATA[%d].db_table_name\" key not found.\n", i );
+                            LOG_print( &dcpam_wds_log, "ERROR: \"app.DATA[%d].db_table_name\" key not found.\n", i );
                             cJSON_Delete( config_json );
                             free( config_string ); config_string = NULL;
                             return FALSE;
@@ -339,7 +340,7 @@ int DCPAM_WDS_load_configuration( const char* filename ) {
 
                         cfg_app_data_item_db_name = cJSON_GetObjectItem( cfg_app_data_item, "db_name" );
                         if( cfg_app_data_item_db_name == NULL ) {
-                            LOG_print( "ERROR: \"app.DATA[%d].db_name\" key not found.\n", i );
+                            LOG_print( &dcpam_wds_log, "ERROR: \"app.DATA[%d].db_name\" key not found.\n", i );
                             cJSON_Delete( config_json );
                             free( config_string ); config_string = NULL;
                             return FALSE;
@@ -347,21 +348,21 @@ int DCPAM_WDS_load_configuration( const char* filename ) {
                         size_t str_len3a = strlen( cfg_app_data_item_db_name->valuestring );
                         P_APP.DATA[ i ].db_name = SAFECALLOC( str_len3a + 1, sizeof( char ), __FILE__, __LINE__ );
                         snprintf( P_APP.DATA[ i ].db_name, str_len3a+1, cfg_app_data_item_db_name->valuestring );
-                        LOG_print( "\t· db_name=\"%s\"\n", P_APP.DATA[ i ].db_name );
+                        LOG_print( &dcpam_wds_log, "\t· db_name=\"%s\"\n", P_APP.DATA[ i ].db_name );
 
                         cfg_app_data_actions_item_columns = cJSON_GetObjectItem( cfg_app_data_item, "columns" );
                         P_APP.DATA[ i ].columns_len = cJSON_GetArraySize( cfg_app_data_actions_item_columns );
                         if( cfg_app_data_actions_item_columns ) {
-                            LOG_print( "\t· columns=[" );
+                            LOG_print( &dcpam_wds_log, "\t· columns=[" );
                             for( int k = 0; k < P_APP.DATA[ i ].columns_len; k++ ) {
                                 cfg_app_data_actions_item_columns_name = cJSON_GetArrayItem( cfg_app_data_actions_item_columns, k );
                                 memset( P_APP.DATA[ i ].columns[ k ], '\0', MAX_COLUMN_NAME_LEN );
                                 snprintf( P_APP.DATA[ i ].columns[ k ], MAX_COLUMN_NAME_LEN, "%s", cfg_app_data_actions_item_columns_name->valuestring );
-                                LOG_print( "\"%s\", ", cfg_app_data_actions_item_columns_name->valuestring );
+                                LOG_print( &dcpam_wds_log, "\"%s\", ", cfg_app_data_actions_item_columns_name->valuestring );
                             }
-                            LOG_print( "]\n" );
+                            LOG_print( &dcpam_wds_log, "]\n" );
                         } else {
-                            LOG_print( "ERROR: \"app.DATA[%d].columns\" key not found.\n", i );
+                            LOG_print( &dcpam_wds_log, "ERROR: \"app.DATA[%d].columns\" key not found.\n", i );
                             cJSON_Delete( config_json );
                             free( config_string ); config_string = NULL;
                             return FALSE;
@@ -369,7 +370,7 @@ int DCPAM_WDS_load_configuration( const char* filename ) {
 
                         cfg_app_data_item_description = cJSON_GetObjectItem( cfg_app_data_item, "description" );
                         if( cfg_app_data_item_description == NULL ) {
-                            LOG_print( "ERROR: \"app.DATA[%d].description\" key not found.\n", i );
+                            LOG_print( &dcpam_wds_log, "ERROR: \"app.DATA[%d].description\" key not found.\n", i );
                             cJSON_Delete( config_json );
                             free( config_string ); config_string = NULL;
                             return FALSE;
@@ -377,7 +378,7 @@ int DCPAM_WDS_load_configuration( const char* filename ) {
                         size_t str_len4 = strlen( cfg_app_data_item_description->valuestring );
                         P_APP.DATA[ i ].description = SAFECALLOC( str_len4 + 1, sizeof( char ), __FILE__, __LINE__ );
                         snprintf( P_APP.DATA[ i ].description, str_len4+1, cfg_app_data_item_description->valuestring );
-                        LOG_print( "\t· description=\"%s\"\n", P_APP.DATA[ i ].description );
+                        LOG_print( &dcpam_wds_log, "\t· description=\"%s\"\n", P_APP.DATA[ i ].description );
 
                         cfg_app_data_actions = cJSON_GetObjectItem( cfg_app_data_item, "actions" );
                         if( cfg_app_data_actions ) {
@@ -390,81 +391,81 @@ int DCPAM_WDS_load_configuration( const char* filename ) {
 
                                 cfg_app_data_actions_item_name = cJSON_GetObjectItem( cfg_app_data_actions_item, "name" );
                                 if( cfg_app_data_actions_item_name == NULL ) {
-                                    LOG_print( "ERROR: \"app.DATA[%d].actions[%d].name\" key not found.\n", i, j );
+                                    LOG_print( &dcpam_wds_log, "ERROR: \"app.DATA[%d].actions[%d].name\" key not found.\n", i, j );
                                     cJSON_Delete( config_json );
                                     return FALSE;
                                 }
                                 size_t str_len = strlen( cfg_app_data_actions_item_name->valuestring );
                                 P_APP.DATA[ i ].actions[ j ].name = SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
                                 snprintf( P_APP.DATA[ i ].actions[ j ].name, str_len + 1, cfg_app_data_actions_item_name->valuestring );
-                                LOG_print( "\t· action #%d: \"%s\"\n", j + 1, P_APP.DATA[ i ].actions[ j ].name );
+                                LOG_print( &dcpam_wds_log, "\t· action #%d: \"%s\"\n", j + 1, P_APP.DATA[ i ].actions[ j ].name );
 
                                 cfg_app_data_actions_item_description = cJSON_GetObjectItem( cfg_app_data_actions_item, "description" );
                                 if( cfg_app_data_actions_item_description == NULL ) {
-                                    LOG_print( "ERROR: \"app.DATA[%d].actions[%d].description\" key not found.\n", i, j );
+                                    LOG_print( &dcpam_wds_log, "ERROR: \"app.DATA[%d].actions[%d].description\" key not found.\n", i, j );
                                     cJSON_Delete( config_json );
                                     return FALSE;
                                 }
                                 size_t str_len2 = strlen( cfg_app_data_actions_item_description->valuestring );
                                 P_APP.DATA[ i ].actions[ j ].description = SAFECALLOC( str_len2 + 1, sizeof( char ), __FILE__, __LINE__ );
                                 snprintf( P_APP.DATA[ i ].actions[ j ].description, str_len2+1, cfg_app_data_actions_item_description->valuestring );
-                                LOG_print( "\t\t· description=\"%s\"\n", P_APP.DATA[ i ].actions[ j ].description );
+                                LOG_print( &dcpam_wds_log, "\t\t· description=\"%s\"\n", P_APP.DATA[ i ].actions[ j ].description );
 
                                 cfg_app_data_actions_item_type = cJSON_GetObjectItem( cfg_app_data_actions_item, "type" );
                                 if( cfg_app_data_actions_item_type == NULL ) {
-                                    LOG_print( "ERROR: \"app.DATA[%d].actions[%d].type\" key not found.\n", i, j );
+                                    LOG_print( &dcpam_wds_log, "ERROR: \"app.DATA[%d].actions[%d].type\" key not found.\n", i, j );
                                     cJSON_Delete( config_json );
                                     return FALSE;
                                 }
                                 P_APP.DATA[ i ].actions[ j ].type = cfg_app_data_actions_item_type->valueint;
-                                LOG_print( "\t\t· type=\"%s\"\n", P_APP.DATA[ i ].actions[ j ].type == AT_READ ? "READ" : "WRITE" );
+                                LOG_print( &dcpam_wds_log, "\t\t· type=\"%s\"\n", P_APP.DATA[ i ].actions[ j ].type == AT_READ ? "READ" : "WRITE" );
 
                                 cfg_app_data_actions_item_internal = cJSON_GetObjectItem( cfg_app_data_actions_item, "internal" );
                                 if( cfg_app_data_actions_item_internal == NULL ) {
-                                    LOG_print( "ERROR: \"app.DATA[%d].actions[%d].internal\" key not found.\n", i, j );
+                                    LOG_print( &dcpam_wds_log, "ERROR: \"app.DATA[%d].actions[%d].internal\" key not found.\n", i, j );
                                     cJSON_Delete( config_json );
                                     return FALSE;
                                 }
                                 P_APP.DATA[ i ].actions[ j ].internal = cfg_app_data_actions_item_internal->valueint;
-                                LOG_print( "\t\t· internal=%s\n", P_APP.DATA[ i ].actions[ j ].internal == 1 ? "TRUE" : "FALSE" );
+                                LOG_print( &dcpam_wds_log, "\t\t· internal=%s\n", P_APP.DATA[ i ].actions[ j ].internal == 1 ? "TRUE" : "FALSE" );
 
                                 cfg_app_data_actions_item_condition = cJSON_GetObjectItem( cfg_app_data_actions_item, "condition" );
                                 if( cfg_app_data_actions_item_condition == NULL ) {
-                                    LOG_print( "ERROR: \"app.DATA[%d].actions[%d].condition\" key not found.\n", i, j );
+                                    LOG_print( &dcpam_wds_log, "ERROR: \"app.DATA[%d].actions[%d].condition\" key not found.\n", i, j );
                                     cJSON_Delete( config_json );
                                     return FALSE;
                                 }
                                 size_t str_len3 = strlen( cfg_app_data_actions_item_condition->valuestring );
                                 P_APP.DATA[ i ].actions[ j ].condition = SAFECALLOC( str_len3 + 1, sizeof( char ), __FILE__, __LINE__ );
                                 snprintf( P_APP.DATA[ i ].actions[ j ].condition, str_len3+1, cfg_app_data_actions_item_condition->valuestring );
-                                LOG_print( "\t\t· condition=\"%s\"\n", P_APP.DATA[ i ].actions[ j ].condition );
+                                LOG_print( &dcpam_wds_log, "\t\t· condition=\"%s\"\n", P_APP.DATA[ i ].actions[ j ].condition );
 
                                 cfg_app_data_actions_item_sql = cJSON_GetObjectItem( cfg_app_data_actions_item, "sql" );
                                 if( cfg_app_data_actions_item_sql == NULL ) {
-                                    LOG_print( "ERROR: \"app.DATA[%d].actions[%d].sql\" key not found.\n", i, j );
+                                    LOG_print( &dcpam_wds_log, "ERROR: \"app.DATA[%d].actions[%d].sql\" key not found.\n", i, j );
                                     cJSON_Delete( config_json );
                                     return FALSE;
                                 }
                                 size_t str_len4 = strlen( cfg_app_data_actions_item_sql->valuestring );
                                 P_APP.DATA[ i ].actions[ j ].sql = SAFECALLOC( str_len4 + 1, sizeof( char ), __FILE__, __LINE__ );
                                 strncpy( P_APP.DATA[ i ].actions[ j ].sql, cfg_app_data_actions_item_sql->valuestring, str_len4+1 );
-                                LOG_print( "\t\t· sql=\"%s\"\n", P_APP.DATA[ i ].actions[ j ].sql );
+                                LOG_print( &dcpam_wds_log, "\t\t· sql=\"%s\"\n", P_APP.DATA[ i ].actions[ j ].sql );
                             }
                         } else {
-                            LOG_print( "ERROR: \"app.DATA[%d].actions\" key not found.\n", i );
+                            LOG_print( &dcpam_wds_log, "ERROR: \"app.DATA[%d].actions\" key not found.\n", i );
                             cJSON_Delete( config_json );
                             free( config_string ); config_string = NULL;
                             return FALSE;
                         }
                     }
                 } else {
-                    LOG_print( "ERROR: \"app.DATA\" key not found.\n " );
+                    LOG_print( &dcpam_wds_log, "ERROR: \"app.DATA\" key not found.\n " );
                     cJSON_Delete( config_json );
                     free( config_string ); config_string = NULL;
                     return FALSE;
                 }
             } else {
-                LOG_print( "ERROR: \"app\" key not found.\n " );
+                LOG_print( &dcpam_wds_log, "ERROR: \"app\" key not found.\n " );
                 cJSON_Delete( config_json );
                 free( config_string ); config_string = NULL;
                 return FALSE;
@@ -477,7 +478,7 @@ int DCPAM_WDS_load_configuration( const char* filename ) {
 
         result = 1;
     } else {
-        LOG_print( "[%s] Fatal error: unable to open config file \"%s\"!\n", TIME_get_gmt(), filename );
+        LOG_print( &dcpam_wds_log, "[%s] Fatal error: unable to open config file \"%s\"!\n", TIME_get_gmt(), filename );
     }
 
     return result;
@@ -485,7 +486,7 @@ int DCPAM_WDS_load_configuration( const char* filename ) {
 
 int DCPAM_WDS_init_cache( void ) {
 
-    LOG_print( "[%s] Init memory cache (slots: %d)...", TIME_get_gmt(), P_APP.CACHE_len );
+    LOG_print( &dcpam_wds_log, "[%s] Init memory cache (slots: %d)...", TIME_get_gmt(), P_APP.CACHE_len );
     P_APP.CACHE_size = 0;
     P_APP.CACHE = SAFEMALLOC( P_APP.CACHE_len * sizeof * P_APP.CACHE, __FILE__, __LINE__ );
     for( int i = 0; i < P_APP.CACHE_len; i++ ) {
@@ -494,13 +495,13 @@ int DCPAM_WDS_init_cache( void ) {
         P_APP.CACHE[ i ]->size = 0;
     }
 
-    LOG_print( "ok.\n" );
+    LOG_print( &dcpam_wds_log, "ok.\n" );
 
     /* Initialize database connections */
     for( int i = 0; i < P_APP.DB_len; i++ ) {
-        LOG_print( "[%s] Connecting to \"%s\"...\n", TIME_get_gmt(), P_APP.DB[ i ]->name );
-        if( DATABASE_SYSTEM_DB_init( P_APP.DB[ i ] ) == 0 ) {
-            LOG_print( "[%s] Error: Unable to connect with \"%s\".\n", TIME_get_gmt(), P_APP.DB[ i ]->name );
+        LOG_print( &dcpam_wds_log, "[%s] Connecting to \"%s\"...\n", TIME_get_gmt(), P_APP.DB[ i ]->name );
+        if( DATABASE_SYSTEM_DB_init( P_APP.DB[ i ], &dcpam_wds_log ) == 0 ) {
+            LOG_print( &dcpam_wds_log, "[%s] Error: Unable to connect with \"%s\".\n", TIME_get_gmt(), P_APP.DB[ i ]->name );
             return 0;
         }
     }
@@ -515,30 +516,31 @@ int DCPAM_WDS_init_cache( void ) {
 
                 DATABASE_SYSTEM_DB* src = NULL;
 
-                LOG_print( "[%s] Caching \"%s\" from \"%s\"...\n", TIME_get_gmt(), P_APP.DATA[ i ].actions[ j ].description, P_APP.DATA[ i ].db_name );
+                LOG_print( &dcpam_wds_log, "[%s] Caching \"%s\" from \"%s\"...\n", TIME_get_gmt(), P_APP.DATA[ i ].actions[ j ].description, P_APP.DATA[ i ].db_name );
                 src = DATABASE_SYSTEM_DB_get( P_APP.DATA[ i ].db_name );
                 if( src ) {
-                    LOG_print( "\t- Database found.\n" );
+                    LOG_print( &dcpam_wds_log, "\t- Database found.\n" );
 
                     int res = DB_CACHE_init(
                         P_APP.CACHE[ initialized ],
                         src,
-                        P_APP.DATA[ i ].actions[ j ].sql
+                        P_APP.DATA[ i ].actions[ j ].sql,
+                        &dcpam_wds_log
                     );
 
                     if( res == 1 ) {
-                        DB_CACHE_print( P_APP.CACHE[ initialized ] );
+                        DB_CACHE_print( P_APP.CACHE[ initialized ], &dcpam_wds_log );
                     } else {
-                        LOG_print( "[%s] Fatal error: DB_CACHE_init failed.\n", TIME_get_gmt() );
+                        LOG_print( &dcpam_wds_log, "[%s] Fatal error: DB_CACHE_init failed.\n", TIME_get_gmt() );
                     }
 
                     initialized++;
 
                 } else {
-                    LOG_print( "[%s] Fatal error: database \"%s\" is not valid!\n", TIME_get_gmt(), P_APP.DATA[ i ].db_name );
+                    LOG_print( &dcpam_wds_log, "[%s] Fatal error: database \"%s\" is not valid!\n", TIME_get_gmt(), P_APP.DATA[ i ].db_name );
                 }
             } else {
-                LOG_print( "[%s] NOTICE: \"%s\" from \"%s\" is not static cache.\n", TIME_get_gmt(), P_APP.DATA[ i ].actions[ j ].description, P_APP.DATA[ i ].db_name );
+                LOG_print( &dcpam_wds_log, "[%s] NOTICE: \"%s\" from \"%s\" is not static cache.\n", TIME_get_gmt(), P_APP.DATA[ i ].actions[ j ].description, P_APP.DATA[ i ].db_name );
             }
         }
     }
@@ -550,7 +552,7 @@ void DCPAM_WDS_get_data( const char *sql, const char *db, char **dst_json ) {
     DB_QUERY *cached_result = NULL;
 
     if( sql && db ) {
-        LOG_print( "[%s] DCPAM_WDS_get_data( %s, %s )...", TIME_get_gmt(), sql, db );
+        LOG_print( &dcpam_wds_log, "[%s] DCPAM_WDS_get_data( %s, %s )...", TIME_get_gmt(), sql, db );
         DB_CACHE_get( sql, &cached_result );
 
         if( cached_result ) {
@@ -558,7 +560,7 @@ void DCPAM_WDS_get_data( const char *sql, const char *db, char **dst_json ) {
             cJSON* all_data = cJSON_CreateArray();
             cJSON* response = cJSON_CreateObject();
 
-            LOG_print( "ok. Found records: %d.\n", cached_result->row_count );
+            LOG_print( &dcpam_wds_log, "ok. Found records: %d.\n", cached_result->row_count );
             for( int i = 0; i < cached_result->row_count; i++ ) {
                 record = cJSON_CreateObject();
                 for( int j = 0; j < cached_result->field_count; j++ ) {
@@ -577,7 +579,7 @@ void DCPAM_WDS_get_data( const char *sql, const char *db, char **dst_json ) {
             strncpy( *dst_json, _res, strlen( _res ) );
             cJSON_Delete( response );
         } else {
-            LOG_print( "requested data is not cached.\n" );
+            LOG_print( &dcpam_wds_log, "requested data is not cached.\n" );
 
             DATABASE_SYSTEM_DB *src_db = DATABASE_SYSTEM_DB_get( db );
             if( src_db ) {
@@ -591,30 +593,31 @@ void DCPAM_WDS_get_data( const char *sql, const char *db, char **dst_json ) {
                     int cache_res = DB_CACHE_init(
                         P_APP.CACHE[ P_APP.CACHE_len ],
                         src_db,
-                        sql
+                        sql,
+                        &dcpam_wds_log
                     );
 
                     if( cache_res == 1 ) { /* OK */
                         P_APP.CACHE_len++;
-                        LOG_print( "[%s] Data for request cached successfully.\n", TIME_get_gmt() );
+                        LOG_print( &dcpam_wds_log, "[%s] Data for request cached successfully.\n", TIME_get_gmt() );
                         DCPAM_WDS_get_data( sql, db, &(*dst_json) );
                     } else {
-                        LOG_print( "[%s] Error: unable to cache data for request.\n", TIME_get_gmt() );
+                        LOG_print( &dcpam_wds_log, "[%s] Error: unable to cache data for request.\n", TIME_get_gmt() );
                         if( cache_res == 2 ) { /* Memory limit exceeded */
                             P_APP.CACHE_len++;
                             DCPAM_WDS_get_data( sql, db, &( *dst_json ) );
                             P_APP.CACHE_len--;
-                            DB_CACHE_free( P_APP.CACHE[ P_APP.CACHE_len ] );
+                            DB_CACHE_free( P_APP.CACHE[ P_APP.CACHE_len ], &dcpam_wds_log );
                         }
                     }
                 }
 
             } else {
-                LOG_print( "[%s] Error: database \"%s\" not found!\n", TIME_get_gmt(), db );
+                LOG_print( &dcpam_wds_log, "[%s] Error: database \"%s\" not found!\n", TIME_get_gmt(), db );
             }
         }
     } else {
-        LOG_print( "[%s] DCPAM_WDS_get_data error: not all parameters are valid!\n", TIME_get_gmt() );
+        LOG_print( &dcpam_wds_log, "[%s] DCPAM_WDS_get_data error: not all parameters are valid!\n", TIME_get_gmt() );
     }
 }
 
@@ -628,7 +631,7 @@ void DCPAM_WDS_query( COMMUNICATION_SESSION *communication_session, CONNECTED_CL
         request = SAFECALLOC( communication_session->data_length + 1, sizeof( char ), __FILE__, __LINE__ );
         strncpy( request, communication_session->content, communication_session->data_length );
 
-        LOG_print( "[%s] Received request (%ld): %s\n", TIME_get_gmt(), communication_session->data_length, request );
+        LOG_print( &dcpam_wds_log, "[%s] Received request (%ld): %s\n", TIME_get_gmt(), communication_session->data_length, request );
 
         json_request = cJSON_Parse( request );
         if( json_request ) {
@@ -637,11 +640,11 @@ void DCPAM_WDS_query( COMMUNICATION_SESSION *communication_session, CONNECTED_CL
             cJSON *db = NULL;
             cJSON *key = NULL;
 
-            LOG_print( "[%s] Request is valid JSON.\n", TIME_get_gmt() );
+            LOG_print( &dcpam_wds_log, "[%s] Request is valid JSON.\n", TIME_get_gmt() );
 
             key = cJSON_GetObjectItem( json_request, "key" );
             if( key == NULL ) {
-                LOG_print( "[%s] Error: no KEY in request is found.\n", TIME_get_gmt() );
+                LOG_print( &dcpam_wds_log, "[%s] Error: no KEY in request is found.\n", TIME_get_gmt() );
                 WDS_RESPONSE_ERROR( communication_session, client );
                 cJSON_Delete( json_request );
                 return;
@@ -650,7 +653,7 @@ void DCPAM_WDS_query( COMMUNICATION_SESSION *communication_session, CONNECTED_CL
                 for( int i = 0; i < P_APP.ALLOWED_HOSTS_len; i++ ) {
                     if( strcmp( ip, P_APP.ALLOWED_HOSTS_[ i ]->ip ) == 0 ) {
                         if( strcmp( key->valuestring, P_APP.ALLOWED_HOSTS_[ i ]->api_key ) != 0 ) {
-                            LOG_print( "[%s] Error: KEY in request is invalid.\n", TIME_get_gmt() );
+                            LOG_print( &dcpam_wds_log, "[%s] Error: KEY in request is invalid.\n", TIME_get_gmt() );
                             WDS_RESPONSE_ERROR( communication_session, client );
                             cJSON_Delete( json_request );
                             return;
@@ -660,11 +663,11 @@ void DCPAM_WDS_query( COMMUNICATION_SESSION *communication_session, CONNECTED_CL
 
             }
 
-            LOG_print( "[%s] Access granted for client %s with key %s.\n", TIME_get_gmt(), ip, key->valuestring );
+            LOG_print( &dcpam_wds_log, "[%s] Access granted for client %s with key %s.\n", TIME_get_gmt(), ip, key->valuestring );
 
             sql = cJSON_GetObjectItem( json_request, "sql" );
             if( sql == NULL) {
-                LOG_print( "[%s] Error: no SQL in request is found.\n", TIME_get_gmt() );
+                LOG_print( &dcpam_wds_log, "[%s] Error: no SQL in request is found.\n", TIME_get_gmt() );
                 WDS_RESPONSE_ERROR( communication_session, client );
                 cJSON_Delete( json_request );
                 return;
@@ -672,7 +675,7 @@ void DCPAM_WDS_query( COMMUNICATION_SESSION *communication_session, CONNECTED_CL
 
             db = cJSON_GetObjectItem( json_request, "db" );
             if( db  == NULL ) {
-                LOG_print( "[%s] Error: no DB name in request is found.\n", TIME_get_gmt() );
+                LOG_print( &dcpam_wds_log, "[%s] Error: no DB name in request is found.\n", TIME_get_gmt() );
                 WDS_RESPONSE_ERROR( communication_session, client );
                 cJSON_Delete( json_request );
                 return;
@@ -695,7 +698,7 @@ void DCPAM_WDS_query( COMMUNICATION_SESSION *communication_session, CONNECTED_CL
                 }
             }
         } else {
-            LOG_print( "[%s] Error: request is not valid JSON.\n", TIME_get_gmt() );
+            LOG_print( &dcpam_wds_log, "[%s] Error: request is not valid JSON.\n", TIME_get_gmt() );
             WDS_RESPONSE_ERROR( communication_session, client );
             return;
         }
@@ -713,14 +716,14 @@ int main( int argc, char** argv ) {
     signal( SIGABRT, (__sighandler_t)&app_terminate );
     signal( SIGTERM, (__sighandler_t)&app_terminate );
 
-    LOG_init( "dcpam-wds" );
+    LOG_init( &dcpam_wds_log, "dcpam-wds" );
 
     memset( config_file, '\0', MAX_PATH_LENGTH );
     if( argc <= 1 ) {
         snprintf( config_file, MAX_PATH_LENGTH, "./conf/wds_config.json" );
     } else {
         if( strlen( argv[ 1 ] ) > MAX_PATH_LENGTH ) {
-            LOG_print( "[%s] Notice: \"%s\" is not valid config file name.\n", TIME_get_gmt(), argv[ 1 ] );
+            LOG_print( &dcpam_wds_log, "[%s] Notice: \"%s\" is not valid config file name.\n", TIME_get_gmt(), argv[ 1 ] );
             snprintf( config_file, MAX_PATH_LENGTH, "wds_config.json" );
         } else {
             snprintf( config_file, MAX_PATH_LENGTH, "%s", argv[ 1 ] );
@@ -728,10 +731,10 @@ int main( int argc, char** argv ) {
     }
 
     if( DCPAM_WDS_load_configuration( config_file ) == 1 ) {
-        LOG_print( "[%s] DCPAM Warehouse Data Server configuration loaded.\n", TIME_get_gmt() );
+        LOG_print( &dcpam_wds_log, "[%s] DCPAM Warehouse Data Server configuration loaded.\n", TIME_get_gmt() );
 
         if( DCPAM_WDS_init_cache() == 1 ) {
-            LOG_print( "[%s] Cache initialization finished.\n", TIME_get_gmt() );
+            LOG_print( &dcpam_wds_log, "[%s] Cache initialization finished.\n", TIME_get_gmt() );
 
             spc exec_script = ( spc )&DCPAM_WDS_query;
             char** allowed_hosts_ip = SAFEMALLOC( P_APP.ALLOWED_HOSTS_len * sizeof * P_APP.ALLOWED_HOSTS_, __FILE__, __LINE__ );
@@ -742,15 +745,15 @@ int main( int argc, char** argv ) {
                 snprintf( allowed_hosts_ip[ i ], str_len + 1, P_APP.ALLOWED_HOSTS_[ i ]->ip );
             }
 
-            SOCKET_main( &exec_script, P_APP.network_port, (const char **)&(*allowed_hosts_ip), P_APP.ALLOWED_HOSTS_len );
+            SOCKET_main( &exec_script, P_APP.network_port, (const char **)&(*allowed_hosts_ip), P_APP.ALLOWED_HOSTS_len, &dcpam_wds_log );
 
         } else {
-            LOG_print( "[%s] Warning: cache initialization failed.\n", TIME_get_gmt() );
+            LOG_print( &dcpam_wds_log, "[%s] Warning: cache initialization failed.\n", TIME_get_gmt() );
         }
 
         DCPAM_WDS_free_configuration();
     }
 
-    LOG_print( "[%s] DCPAM Warehouse Data Server finished.\n", TIME_get_gmt() );
+    LOG_print( &dcpam_wds_log, "[%s] DCPAM Warehouse Data Server finished.\n", TIME_get_gmt() );
     return 0;
 }

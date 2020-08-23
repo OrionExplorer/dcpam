@@ -10,9 +10,9 @@
 static pthread_mutex_t      db_exec_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 
-void PG_disconnect( PG_CONNECTION* db_connection ) {
+void PG_disconnect( PG_CONNECTION* db_connection, LOG_OBJECT *log ) {
     if( db_connection != NULL ) {
-        LOG_print( "[%s]\tPG_disconnect( <'%s'> ).\n", TIME_get_gmt(), db_connection->id != NULL ? db_connection->id : "x" );
+        LOG_print( log, "[%s]\tPG_disconnect( <'%s'> ).\n", TIME_get_gmt(), db_connection->id != NULL ? db_connection->id : "x" );
 
         if( db_connection->connection != NULL ) {
             PQfinish( db_connection->connection );  
@@ -24,7 +24,7 @@ void PG_disconnect( PG_CONNECTION* db_connection ) {
         }
         db_connection->active = 0;
 
-        LOG_print( "[%s]\tPG_disconnect.\n", TIME_get_gmt() );
+        LOG_print( log, "[%s]\tPG_disconnect.\n", TIME_get_gmt() );
     }
 }
 
@@ -37,7 +37,8 @@ int PG_connect(
     const char*     user,
     const char*     password,
     const char*     connection_string,
-    const char*     name
+    const char*     name,
+    LOG_OBJECT*     log
 ) {
     char        conn_str[ 1024 ];
 
@@ -55,13 +56,13 @@ int PG_connect(
     if ( PQstatus( db_connection->connection ) == CONNECTION_BAD ) {
         db_connection->active = 0;
         free( db_connection->id ); db_connection->id = NULL;
-        LOG_print( "Error. Message: \"%s\"", PQerrorMessage( db_connection->connection ) );
+        LOG_print( log, "Error. Message: \"%s\"", PQerrorMessage( db_connection->connection ) );
         return 0;
     }
 
     db_connection->active = 1;
 
-    LOG_print( "ok.\n" );
+    LOG_print( log, "ok.\n" );
 
     return 1;
 }
@@ -79,11 +80,12 @@ int PG_exec(
     Oid                 *param_types,
     qec                 *query_exec_callback,
     void                *data_ptr1,
-    void                *data_ptr2
+    void                *data_ptr2,
+    LOG_OBJECT          *log
 ) {
     PGresult        *pg_result = NULL;
 
-    LOG_print( "[%s]\tPG_exec( <'%s'>, \"%s\", ... ).\n", TIME_get_gmt(), db_connection->id, sql );
+    LOG_print( log, "[%s]\tPG_exec( <'%s'>, \"%s\", ... ).\n", TIME_get_gmt(), db_connection->id, sql );
     pthread_mutex_lock( &db_exec_mutex );
 
     if( dst_result ) {
@@ -116,7 +118,7 @@ int PG_exec(
 
     if ( PQresultStatus( pg_result ) != PGRES_TUPLES_OK && PQresultStatus( pg_result ) != PGRES_COMMAND_OK ) {
         PQclear( pg_result );
-        LOG_print( "[%s][fail] PG_exec. Message: \"%s\"\n", TIME_get_gmt(), PQerrorMessage( db_connection->connection ) );
+        LOG_print( log, "[%s][fail] PG_exec. Message: \"%s\"\n", TIME_get_gmt(), PQerrorMessage( db_connection->connection ) );
         pthread_mutex_unlock( &db_exec_mutex );
         return 0;
     }
@@ -161,7 +163,7 @@ int PG_exec(
                     }
                 }
                 pthread_mutex_unlock( &db_exec_mutex );
-                ( *query_exec_callback )( record, data_ptr1, data_ptr2 );
+                ( *query_exec_callback )( record, data_ptr1, data_ptr2, log );
             }
         }
 
@@ -194,7 +196,7 @@ int PG_exec(
             }
         }
     }
-    LOG_print( "[%s]\tPG_exec.\n", TIME_get_gmt() );
+    LOG_print( log, "[%s]\tPG_exec.\n", TIME_get_gmt() );
     PQclear( pg_result );
     pthread_mutex_unlock( &db_exec_mutex );
 

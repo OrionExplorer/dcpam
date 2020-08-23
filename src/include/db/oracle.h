@@ -23,7 +23,8 @@ int ORACLE_connect(
     const char* user,
     const char* password,
     const char* connection_string,
-    const char* name
+    const char* name,
+    LOG_OBJECT* log
 );
 
 int ORACLE_exec(
@@ -37,8 +38,9 @@ int ORACLE_exec(
     const int *param_formats,
     qec* query_exec_callback,
     void* data_ptr1,
-    void* data_ptr2
+    void* data_ptr2,
+    LOG_OBJECT* log
 );
-void ORACLE_disconnect( ORACLE_CONNECTION* db_connection );
+void ORACLE_disconnect( ORACLE_CONNECTION* db_connection, LOG_OBJECT* log );
 
 #endif

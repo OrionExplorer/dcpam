@@ -15,7 +15,8 @@ typedef struct {
 int SQLITE_connect(
     SQLITE_CONNECTION* db_connection,
     const char* filename,
-    const char* name
+    const char* name,
+    LOG_OBJECT* log
 );
 
 int SQLITE_exec(
@@ -29,9 +30,10 @@ int SQLITE_exec(
     const int *param_formats,
     qec* query_exec_callback,
     void* data_ptr1,
-    void* data_ptr2
+    void* data_ptr2,
+    LOG_OBJECT* log
 );
 
-void SQLITE_disconnect( SQLITE_CONNECTION* db_connection );
+void SQLITE_disconnect( SQLITE_CONNECTION* db_connection, LOG_OBJECT* log );
 
 #endif

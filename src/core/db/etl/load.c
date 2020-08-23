@@ -9,10 +9,10 @@
 
 extern DCPAM_APP           APP;
 
-int CDC_LoadGeneric( DB_SYSTEM_ETL_LOAD *load, DB_SYSTEM_ETL_LOAD_QUERY *load_element, DATABASE_SYSTEM_DB *source_db, DATABASE_SYSTEM_DB *dcpam_db );
+int CDC_LoadGeneric( DB_SYSTEM_ETL_LOAD *load, DB_SYSTEM_ETL_LOAD_QUERY *load_element, DATABASE_SYSTEM_DB *source_db, DATABASE_SYSTEM_DB *dcpam_db, LOG_OBJECT *log );
 
 
-void _LoadGeneric_callback( DB_RECORD *record, void *data_ptr1, void *data_ptr2 ) {
+void _LoadGeneric_callback( DB_RECORD *record, void *data_ptr1, void *data_ptr2, LOG_OBJECT *log ) {
     DB_SYSTEM_ETL_LOAD_QUERY* load_element = ( DB_SYSTEM_ETL_LOAD_QUERY* )data_ptr1;
     DATABASE_SYSTEM_DB* dcpam_db = ( DATABASE_SYSTEM_DB* )data_ptr2;
 
@@ -56,10 +56,10 @@ void _LoadGeneric_callback( DB_RECORD *record, void *data_ptr1, void *data_ptr2 
 
         if( q_values_len > 0 ) {
             /* Perform DB query */
-            int query_ret = DB_exec( dcpam_db, load_element->output_data_sql, load_element->output_data_sql_len, NULL, ( const char* const* )q_values, q_values_len, q_lengths, q_formats, NULL, NULL, NULL, NULL );
+            int query_ret = DB_exec( dcpam_db, load_element->output_data_sql, load_element->output_data_sql_len, NULL, ( const char* const* )q_values, q_values_len, q_lengths, q_formats, NULL, NULL, NULL, NULL, log );
 
             if( query_ret == FALSE ) {
-                LOG_print( "[%s] DB_exec error.\n", TIME_get_gmt() );
+                LOG_print( log, "[%s] DB_exec error.\n", TIME_get_gmt() );
             }
 
             /* Free memory before next iteration */
@@ -68,7 +68,7 @@ void _LoadGeneric_callback( DB_RECORD *record, void *data_ptr1, void *data_ptr2 
             }
 
         } else {
-            LOG_print( "[%s] Error: Extract process returned data, but Load process conditions are not satisfied.\n", TIME_get_gmt() );
+            LOG_print( log, "[%s] Error: Extract process returned data, but Load process conditions are not satisfied.\n", TIME_get_gmt() );
         }
 
         free( q_values ); q_values = NULL;
@@ -80,71 +80,71 @@ void _LoadGeneric_callback( DB_RECORD *record, void *data_ptr1, void *data_ptr2 
     }
 }
 
-void _LoadInserted_callback( DB_RECORD* record, void* data_ptr1, void* data_ptr2 ) {
+void _LoadInserted_callback( DB_RECORD* record, void* data_ptr1, void* data_ptr2, LOG_OBJECT *log ) {
     DB_SYSTEM_ETL_LOAD* load = ( DB_SYSTEM_ETL_LOAD* )data_ptr1;
 
-    _LoadGeneric_callback( record, load, &load->inserted );
+    _LoadGeneric_callback( record, load, &load->inserted, log );
 }
 
-void _LoadDeleted_callback( DB_RECORD* record, void* data_ptr1, void* data_ptr2 ) {
+void _LoadDeleted_callback( DB_RECORD* record, void* data_ptr1, void* data_ptr2, LOG_OBJECT *log ) {
     DB_SYSTEM_ETL_LOAD* load = ( DB_SYSTEM_ETL_LOAD* )data_ptr1;
 
-    _LoadGeneric_callback( record, load, &load->deleted );
+    _LoadGeneric_callback( record, load, &load->deleted, log );
 }
 
-void _LoadModified_callback( DB_RECORD* record, void* data_ptr1, void* data_ptr2 ) {
+void _LoadModified_callback( DB_RECORD* record, void* data_ptr1, void* data_ptr2, LOG_OBJECT *log ) {
     DB_SYSTEM_ETL_LOAD* load = ( DB_SYSTEM_ETL_LOAD* )data_ptr1;
 
-    _LoadGeneric_callback( record, load, &load->modified );
+    _LoadGeneric_callback( record, load, &load->modified, log );
 }
 
 
-int CDC_LoadGeneric( DB_SYSTEM_ETL_LOAD *load, DB_SYSTEM_ETL_LOAD_QUERY *load_element, DATABASE_SYSTEM_DB *source_db, DATABASE_SYSTEM_DB *dcpam_db ) {
+int CDC_LoadGeneric( DB_SYSTEM_ETL_LOAD *load, DB_SYSTEM_ETL_LOAD_QUERY *load_element, DATABASE_SYSTEM_DB *source_db, DATABASE_SYSTEM_DB *dcpam_db, LOG_OBJECT *log ) {
 
     if( load && source_db && dcpam_db ) {
 
         /* Load data from Staging Area, after finished Transform process. */
         qec load_generic_callback = ( qec )&_LoadGeneric_callback;
 
-        int query_ret = DB_exec( source_db, load_element->input_data_sql, load_element->input_data_sql_len, NULL, NULL, 0, NULL, NULL, NULL, &load_generic_callback, ( void* )load_element, ( void* )dcpam_db );
+        int query_ret = DB_exec( source_db, load_element->input_data_sql, load_element->input_data_sql_len, NULL, NULL, 0, NULL, NULL, NULL, &load_generic_callback, ( void* )load_element, ( void* )dcpam_db, log );
 
         if( query_ret == FALSE ) {
-            LOG_print( "[%s] DB_exec error.\n", TIME_get_gmt() );
+            LOG_print( log, "[%s] DB_exec error.\n", TIME_get_gmt() );
             return 0;
         }
         return 1;
     } else {
-        LOG_print( "[%s] Error: not all parameters are valid.\n", TIME_get_gmt() );
+        LOG_print( log, "[%s] Error: not all parameters are valid.\n", TIME_get_gmt() );
         return 0;
     }
 }
 
-int DB_CDC_LoadInserted( DB_SYSTEM_ETL_LOAD* load, DATABASE_SYSTEM_DB* source_db, DATABASE_SYSTEM_DB* dcpam_db ) {
+int DB_CDC_LoadInserted( DB_SYSTEM_ETL_LOAD* load, DATABASE_SYSTEM_DB* source_db, DATABASE_SYSTEM_DB* dcpam_db, LOG_OBJECT *log ) {
     if( load && source_db && dcpam_db ) {
-        LOG_print( "\t· [CDC - LOAD::INSERTED]:\n" );
-        return CDC_LoadGeneric( load, &load->inserted, source_db, dcpam_db );
+        LOG_print( log, "\t· [CDC - LOAD::INSERTED]:\n" );
+        return CDC_LoadGeneric( load, &load->inserted, source_db, dcpam_db, log );
     } else {
-        LOG_print( "\t· [CDC - LOAD::INSERTED] Fatal error: not all DB_CDC_LoadInserted parameters are valid!\n" );
+        LOG_print( log, "\t· [CDC - LOAD::INSERTED] Fatal error: not all DB_CDC_LoadInserted parameters are valid!\n" );
         return 0;
     }
 }
 
-int DB_CDC_LoadDeleted( DB_SYSTEM_ETL_LOAD *load, DATABASE_SYSTEM_DB* source_db, DATABASE_SYSTEM_DB *dcpam_db ) {
+int DB_CDC_LoadDeleted( DB_SYSTEM_ETL_LOAD *load, DATABASE_SYSTEM_DB* source_db, DATABASE_SYSTEM_DB *dcpam_db, LOG_OBJECT *log ) {
     if( load && source_db && dcpam_db ) {
-        LOG_print( "\t· [CDC - LOAD::DELETED]:\n" );
-        return CDC_LoadGeneric( load, &load->deleted, source_db, dcpam_db );
+        LOG_print( log, "\t· [CDC - LOAD::DELETED]:\n" );
+        return CDC_LoadGeneric( load, &load->deleted, source_db, dcpam_db, log );
     } else {
-        LOG_print( "\t· [CDC - LOAD::DELETED] Fatal error: not all DB_CDC_LoadDeleted parameters are valid!\n" );
+        LOG_print( log, "\t· [CDC - LOAD::DELETED] Fatal error: not all DB_CDC_LoadDeleted parameters are valid!\n" );
         return 0;
     }
 }
 
-int DB_CDC_LoadModified( DB_SYSTEM_ETL_LOAD *load, DATABASE_SYSTEM_DB* source_db, DATABASE_SYSTEM_DB *dcpam_db ) {
+int DB_CDC_LoadModified( DB_SYSTEM_ETL_LOAD *load, DATABASE_SYSTEM_DB* source_db, DATABASE_SYSTEM_DB *dcpam_db, LOG_OBJECT *log ) {
     if( load && source_db && dcpam_db ) {
-        LOG_print( "\t· [CDC - LOAD::MODIFIED]:\n" );
-        return CDC_LoadGeneric( load, &load->modified, source_db, dcpam_db );
+        LOG_print( log, "\t· [CDC - LOAD::MODIFIED]:\n" );
+        return CDC_LoadGeneric( load, &load->modified, source_db, dcpam_db, log );
     } else {
-        LOG_print( "\t· [CDC - LOAD::MODIFIED] Fatal error: not all DB_CDC_LoadModified parameters are valid!\n" );
+        LOG_print( log, "\t· [CDC - LOAD::MODIFIED] Fatal error: not all DB_CDC_LoadModified parameters are valid!\n" );
         return 0;
     }
 }

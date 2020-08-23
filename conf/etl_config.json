@@ -1,9 +1,9 @@
 {
 	"system" : [{
-		"enabled" : 0,
+		"enabled" : 1,
 		"name" : "OTRS",
 		"DB" : {
-			"name" : "OTRS [source]",
+			"name" : "OTRS-source",
 			"ip" : "172.17.0.199",
 			"port" : 5432,
 			"driver" : 1,
@@ -170,8 +170,8 @@
 			}
 		}]
 	}, {
-		"enabled" : 1,
-		"name" : "OTRS History Data (CSV source)",
+		"enabled" : 0,
+		"name" : "OTRS-History-Data-CSV-source",
 
 		"file_comment#00" : "##################################################################################################",
 		"file_comment#01" : "# FILE section is dedicated for schema definition of the flat files loader.",

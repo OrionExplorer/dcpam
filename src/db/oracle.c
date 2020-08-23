@@ -10,7 +10,7 @@
 static pthread_mutex_t      db_exec_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 
-void ORACLE_get_error( OCIError *errhp, sword status, int line ) {
+void ORACLE_get_error( OCIError *errhp, sword status, int line, LOG_OBJECT *log ) {
     text errbuf[ 512 ];
     sb4 errcode = 0;
 
@@ -18,27 +18,27 @@ void ORACLE_get_error( OCIError *errhp, sword status, int line ) {
         case OCI_SUCCESS:
             break;
         case OCI_SUCCESS_WITH_INFO:
-            LOG_print( "[Line:%d] Error - OCI_SUCCESS_WITH_INFO\n", line );
+            LOG_print( log, "[Line:%d] Error - OCI_SUCCESS_WITH_INFO\n", line );
             break;
         case OCI_NEED_DATA:
-            LOG_print( "[Line:%d] Error - OCI_NEED_DATA\n", line );
+            LOG_print( log, "[Line:%d] Error - OCI_NEED_DATA\n", line );
             break;
         case OCI_NO_DATA:
-            LOG_print( "[Line:%d] Error - OCI_NODATA\n", line );
+            LOG_print( log, "[Line:%d] Error - OCI_NODATA\n", line );
             break;
         case OCI_ERROR:
             OCIErrorGet( ( dvoid* )errhp, ( ub4 )1, ( text* )NULL, &errcode,
                 errbuf, ( ub4 )sizeof( errbuf ), OCI_HTYPE_ERROR );
-            LOG_print( "[Line:%d] Error - %.*s\n", line, 512, errbuf );
+            LOG_print( log, "[Line:%d] Error - %.*s\n", line, 512, errbuf );
             break;
         case OCI_INVALID_HANDLE:
-            LOG_print( "[Line:%d] Error - OCI_INVALID_HANDLE\n", line );
+            LOG_print( log, "[Line:%d] Error - OCI_INVALID_HANDLE\n", line );
             break;
         case OCI_STILL_EXECUTING:
-            LOG_print( "[Line:%d] Error - OCI_STILL_EXECUTE\n", line );
+            LOG_print( log, "[Line:%d] Error - OCI_STILL_EXECUTE\n", line );
             break;
         case OCI_CONTINUE:
-            LOG_print( "[Line:%d] Error - OCI_CONTINUE\n", line );
+            LOG_print( log, "[Line:%d] Error - OCI_CONTINUE\n", line );
             break;
         default:
             break;
@@ -46,14 +46,14 @@ void ORACLE_get_error( OCIError *errhp, sword status, int line ) {
 }
 
 
-void ORACLE_disconnect( ORACLE_CONNECTION* db_connection ) {
+void ORACLE_disconnect( ORACLE_CONNECTION* db_connection, LOG_OBJECT *log ) {
     OCIError        *errhp;
 
     OCIHandleAlloc( ( dvoid* )db_connection->envhp, ( dvoid** )&errhp, OCI_HTYPE_ERROR,
         ( size_t )0, ( dvoid** )0 );
 
     if( db_connection != NULL ) {
-        LOG_print( "[%s]\tORACLE_disconnect( <'%s'> ).\n", TIME_get_gmt(), db_connection->id != NULL ? db_connection->id : "x" );
+        LOG_print( log, "[%s]\tORACLE_disconnect( <'%s'> ).\n", TIME_get_gmt(), db_connection->id != NULL ? db_connection->id : "x" );
 
         if( db_connection->svchp && db_connection->authp ) {
             OCISessionEnd( db_connection->svchp, errhp, db_connection->authp, ( ub4 )OCI_DEFAULT );
@@ -83,7 +83,7 @@ void ORACLE_disconnect( ORACLE_CONNECTION* db_connection ) {
         }
         db_connection->active = 0;
 
-        LOG_print( "[%s]\tORACLE_disconnect.\n", TIME_get_gmt() );
+        LOG_print( log, "[%s]\tORACLE_disconnect.\n", TIME_get_gmt() );
     }
 }
 
@@ -96,7 +96,8 @@ int ORACLE_connect(
     const char*         user,
     const char*         password,
     const char*         connection_string,
-    const char* name
+    const char*         name,
+    LOG_OBJECT*         log
 ) {
     sword       retcode = 0;
     OCIError    *errhp;
@@ -113,7 +114,7 @@ int ORACLE_connect(
         ( void ( * )( dvoid*, dvoid* ) ) 0, ( size_t )0, ( dvoid** )0 );
 
     if( retcode != 0 ) {
-        LOG_print( "[%s] Error: OCIEnvCreate failed with errcode = %d.\n", TIME_get_gmt(), retcode );
+        LOG_print( log, "[%s] Error: OCIEnvCreate failed with errcode = %d.\n", TIME_get_gmt(), retcode );
         return 0;
     }
 
@@ -132,7 +133,7 @@ int ORACLE_connect(
         retcode = OCIServerAttach( db_connection->srvhp, errhp, ( text* )host, ( sb4 )strlen( host ), 0 );
     }
     if( retcode != OCI_SUCCESS ) {
-        ORACLE_get_error( errhp, retcode, __LINE__ );
+        ORACLE_get_error( errhp, retcode, __LINE__, log );
         db_connection->active = 0;
         free( db_connection->id ); db_connection->id = NULL;
         return 0;
@@ -155,7 +156,7 @@ int ORACLE_connect(
     retcode = OCISessionBegin( db_connection->svchp, errhp, db_connection->authp, OCI_CRED_RDBMS,
         ( ub4 )OCI_DEFAULT );
     if( retcode != OCI_SUCCESS ) {
-        ORACLE_get_error( errhp, retcode, __LINE__ );
+        ORACLE_get_error( errhp, retcode, __LINE__, log );
         db_connection->active = 0;
         free( db_connection->id ); db_connection->id = NULL;
         return 0;
@@ -167,7 +168,7 @@ int ORACLE_connect(
 
     db_connection->active = 1;
 
-    LOG_print( "ok.\n" );
+    LOG_print( log, "ok.\n" );
 
     return 1;
 }
@@ -184,7 +185,8 @@ int ORACLE_exec(
     const int           *param_formats,
     qec* query_exec_callback,
     void* data_ptr1,
-    void* data_ptr2
+    void* data_ptr2,
+    LOG_OBJECT *log
 ) {
     OCIStmt         *stmthp = NULL;
     ub2             stmt_type;
@@ -206,7 +208,7 @@ int ORACLE_exec(
         return 0;
     }
 
-    LOG_print( "[%s]\tORACLE_exec( <'%s'>, \"%s\", ... ).\n", TIME_get_gmt(), db_connection->id, sql );
+    LOG_print( log, "[%s]\tORACLE_exec( <'%s'>, \"%s\", ... ).\n", TIME_get_gmt(), db_connection->id, sql );
     pthread_mutex_lock( &db_exec_mutex );
 
     if( dst_result ) {
@@ -218,7 +220,7 @@ int ORACLE_exec(
             *( dst_result->sql + l ) = sql[ l ];
         }
     }
-    
+
 
     OCIHandleAlloc( ( dvoid* )db_connection->envhp, ( dvoid** )&errhp, OCI_HTYPE_ERROR,
         ( size_t )0, ( dvoid** )0 );
@@ -229,7 +231,7 @@ int ORACLE_exec(
         ( ub4 )sql_length,
         ( ub4 )OCI_NTV_SYNTAX, ( ub4 )OCI_DEFAULT );
     if( retcode != OCI_SUCCESS ) {
-        ORACLE_get_error( errhp, retcode, __LINE__ );
+        ORACLE_get_error( errhp, retcode, __LINE__, log );
         OCIHandleFree( ( dvoid* )stmthp, ( ub4 )OCI_HTYPE_STMT );
         pthread_mutex_unlock( &db_exec_mutex );
         return 0;
@@ -237,7 +239,7 @@ int ORACLE_exec(
 
     retcode = OCIAttrGet( ( dvoid* )stmthp, OCI_HTYPE_STMT, ( void* )&stmt_type, 0, OCI_ATTR_STMT_TYPE, ( OCIError * )errhp );
     if( retcode != OCI_SUCCESS ) {
-        ORACLE_get_error( errhp, retcode, __LINE__ );
+        ORACLE_get_error( errhp, retcode, __LINE__, log );
         OCIHandleFree( ( dvoid* )stmthp, ( ub4 )OCI_HTYPE_STMT );
         pthread_mutex_unlock( &db_exec_mutex );
         return 0;
@@ -247,7 +249,7 @@ int ORACLE_exec(
 
     retcode = OCIStmtExecute( db_connection->svchp, stmthp, errhp, iters, 0, ( OCISnapshot* )0, ( OCISnapshot* )0, OCI_DEFAULT );
     if( retcode != OCI_SUCCESS ) {
-        ORACLE_get_error( errhp, retcode, __LINE__ );
+        ORACLE_get_error( errhp, retcode, __LINE__, log );
         OCIHandleFree( ( dvoid* )stmthp, ( ub4 )OCI_HTYPE_STMT );
         pthread_mutex_unlock( &db_exec_mutex );
         return 0;
@@ -274,7 +276,7 @@ int ORACLE_exec(
                 ( dvoid* )&dtype, ( ub4* )0, ( ub4 )OCI_ATTR_DATA_TYPE,
                 ( OCIError* )errhp );
             if( retcode != OCI_SUCCESS ) {
-                ORACLE_get_error( errhp, retcode, __LINE__ );
+                ORACLE_get_error( errhp, retcode, __LINE__, log );
                 OCIHandleFree( ( dvoid* )stmthp, ( ub4 )OCI_HTYPE_STMT );
                 pthread_mutex_unlock( &db_exec_mutex );
                 return 0;
@@ -286,7 +288,7 @@ int ORACLE_exec(
                 ( dvoid** )&_col_name, ( ub4* )&col_name_len, ( ub4 )OCI_ATTR_NAME,
                 ( OCIError* )errhp );
             if( retcode != OCI_SUCCESS ) {
-                ORACLE_get_error( errhp, retcode, __LINE__ );
+                ORACLE_get_error( errhp, retcode, __LINE__, log );
                 OCIHandleFree( ( dvoid* )stmthp, ( ub4 )OCI_HTYPE_STMT );
                 pthread_mutex_unlock( &db_exec_mutex );
                 return 0;
@@ -300,7 +302,7 @@ int ORACLE_exec(
                 ( dvoid* )&char_semantics, ( ub4* )0, ( ub4 )OCI_ATTR_CHAR_USED,
                 ( OCIError* )errhp );
             if( retcode != OCI_SUCCESS ) {
-                ORACLE_get_error( errhp, retcode, __LINE__ );
+                ORACLE_get_error( errhp, retcode, __LINE__ , log);
                 OCIHandleFree( ( dvoid* )stmthp, ( ub4 )OCI_HTYPE_STMT );
                 pthread_mutex_unlock( &db_exec_mutex );
                 return 0;
@@ -312,7 +314,7 @@ int ORACLE_exec(
                     ( dvoid* )&col_width, ( ub4* )0, ( ub4 )OCI_ATTR_CHAR_SIZE,
                     ( OCIError* )errhp );
                 if( retcode != OCI_SUCCESS ) {
-                    ORACLE_get_error( errhp, retcode, __LINE__ );
+                    ORACLE_get_error( errhp, retcode, __LINE__, log );
                     OCIHandleFree( ( dvoid* )stmthp, ( ub4 )OCI_HTYPE_STMT );
                     pthread_mutex_unlock( &db_exec_mutex );
                     return 0;
@@ -323,7 +325,7 @@ int ORACLE_exec(
                     ( dvoid* )&col_width, ( ub4* )0, ( ub4 )OCI_ATTR_DATA_SIZE,
                     ( OCIError* )errhp );
                 if( retcode != OCI_SUCCESS ) {
-                    ORACLE_get_error( errhp, retcode, __LINE__ );
+                    ORACLE_get_error( errhp, retcode, __LINE__, log );
                     OCIHandleFree( ( dvoid* )stmthp, ( ub4 )OCI_HTYPE_STMT );
                     pthread_mutex_unlock( &db_exec_mutex );
                     return 0;
@@ -347,7 +349,7 @@ int ORACLE_exec(
             while( TRUE ) {
                 retcode = OCIStmtFetch2( stmthp, errhp, 1, OCI_FETCH_NEXT, 0, OCI_DEFAULT );
                 if( retcode != OCI_SUCCESS && retcode != OCI_NO_DATA ) {
-                    ORACLE_get_error( errhp, retcode, __LINE__ );
+                    ORACLE_get_error( errhp, retcode, __LINE__, log );
                     break;
                 } else if( retcode == OCI_NO_DATA ) {
                     break;
@@ -376,7 +378,7 @@ int ORACLE_exec(
                     }
 
                     pthread_mutex_unlock( &db_exec_mutex );
-                    ( *query_exec_callback )( record, data_ptr1, data_ptr2 );
+                    ( *query_exec_callback )( record, data_ptr1, data_ptr2, log );
                 }
 
                 if( dst_result ) {
@@ -416,7 +418,7 @@ int ORACLE_exec(
             free( _col_data[ i ] ); _col_data[ i ] = NULL;
         }
     }
-    LOG_print( "[%s]\tORACLE_exec.\n", TIME_get_gmt() );
+    LOG_print( log, "[%s]\tORACLE_exec.\n", TIME_get_gmt() );
     OCIHandleFree( ( dvoid* )stmthp, ( ub4 )OCI_HTYPE_STMT );
     pthread_mutex_unlock( &db_exec_mutex );
 

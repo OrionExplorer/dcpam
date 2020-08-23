@@ -12,9 +12,9 @@
 static pthread_mutex_t      db_exec_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 
-#define CHECK_ERROR(e, s, h, t, r) {if (e!=SQL_SUCCESS && e != SQL_SUCCESS_WITH_INFO) { ODBC_get_error(s, h, t); if( r == TRUE ) { return 0; } } }
+#define CHECK_ERROR(e, s, h, t, r, l) {if (e!=SQL_SUCCESS && e != SQL_SUCCESS_WITH_INFO) { ODBC_get_error(s, h, t, l); if( r == TRUE ) { return 0; } } }
 
-void ODBC_get_error( char* fn, SQLHANDLE handle, SQLSMALLINT type ) {
+void ODBC_get_error( char* fn, SQLHANDLE handle, SQLSMALLINT type, LOG_OBJECT *log ) {
     SQLSMALLINT i = 0;
     SQLINTEGER native_err;
     SQLCHAR sql_state[ 7 ];
@@ -22,20 +22,20 @@ void ODBC_get_error( char* fn, SQLHANDLE handle, SQLSMALLINT type ) {
     SQLSMALLINT text_len;
     SQLRETURN ret;
 
-    LOG_print( "Error: Driver reported the following error - [%s]:\n", fn );
+    LOG_print( log, "Error: Driver reported the following error - [%s]:\n", fn );
     do
     {
         ret = SQLGetDiagRec( type, handle, ++i, sql_state, &native_err,
             message, sizeof( message ), &text_len );
         if( SQL_SUCCEEDED( ret ) ) {
-            LOG_print( "%s:%ld:%ld:%s\n",
+            LOG_print( log, "%s:%ld:%ld:%s\n",
                 sql_state, ( long )i, ( long )native_err, message );
         }
     } while( ret == SQL_SUCCESS );
 }
 
-void ODBC_disconnect( ODBC_CONNECTION* db_connection ) {
-    LOG_print( "[%s]\tODBC_disconnect( <'%s'> ).\n", TIME_get_gmt(), db_connection->id ? db_connection->id : "" );
+void ODBC_disconnect( ODBC_CONNECTION* db_connection, LOG_OBJECT *log ) {
+    LOG_print( log, "[%s]\tODBC_disconnect( <'%s'> ).\n", TIME_get_gmt(), db_connection->id ? db_connection->id : "" );
 
     if( db_connection->connection != SQL_NULL_HDBC ) {
         SQLDisconnect( db_connection->connection );
@@ -52,7 +52,7 @@ void ODBC_disconnect( ODBC_CONNECTION* db_connection ) {
         db_connection->id = NULL;
     }
 
-    LOG_print( "[%s]\tODBC_disconnect.\n", TIME_get_gmt() );
+    LOG_print( log, "[%s]\tODBC_disconnect.\n", TIME_get_gmt() );
 }
 
 
@@ -64,20 +64,21 @@ int ODBC_connect(
     const char* user,
     const char* password,
     const char* connection_string,
-    const char* name
+    const char* name,
+    LOG_OBJECT *log
 ) {
     SQLRETURN       retcode;
 
     retcode = SQLAllocHandle( SQL_HANDLE_ENV, SQL_NULL_HANDLE, &db_connection->sqlenvhandle );
-    CHECK_ERROR( retcode, "SQLAllocHandle( SQL_HANDLE_ENV, SQL_NULL_HANDLE, &db_connection->sqlenvhandle )", db_connection->sqlenvhandle, SQL_HANDLE_ENV, TRUE );
+    CHECK_ERROR( retcode, "SQLAllocHandle( SQL_HANDLE_ENV, SQL_NULL_HANDLE, &db_connection->sqlenvhandle )", db_connection->sqlenvhandle, SQL_HANDLE_ENV, TRUE, log );
 
 
     retcode = SQLSetEnvAttr( db_connection->sqlenvhandle, SQL_ATTR_ODBC_VERSION, ( void* )SQL_OV_ODBC3, 0 );
-    CHECK_ERROR( retcode, "SQLSetEnvAttr( db_connection->sqlenvhandle, SQL_ATTR_ODBC_VERSION, ( void* )SQL_OV_ODBC3, 0 )", db_connection->sqlenvhandle, SQL_HANDLE_ENV, TRUE );
+    CHECK_ERROR( retcode, "SQLSetEnvAttr( db_connection->sqlenvhandle, SQL_ATTR_ODBC_VERSION, ( void* )SQL_OV_ODBC3, 0 )", db_connection->sqlenvhandle, SQL_HANDLE_ENV, TRUE, log );
 
 
     retcode = SQLAllocHandle( SQL_HANDLE_DBC, db_connection->sqlenvhandle, &db_connection->connection );
-    CHECK_ERROR( retcode, "SQLAllocHandle( SQL_HANDLE_DBC, db_connection->sqlenvhandle, &db_connection->connection )", db_connection->connection, SQL_HANDLE_DBC, TRUE );
+    CHECK_ERROR( retcode, "SQLAllocHandle( SQL_HANDLE_DBC, db_connection->sqlenvhandle, &db_connection->connection )", db_connection->connection, SQL_HANDLE_DBC, TRUE, log );
 
     if( connection_string ) {
         db_connection->id = SAFECALLOC( 1025, sizeof( char ), __FILE__, __LINE__ );
@@ -90,7 +91,7 @@ int ODBC_connect(
             );*/
         }
     } else {
-        LOG_print( "error. Message: no \"connection_string\" provided in config.json\n" );
+        LOG_print( log, "error. Message: no \"connection_string\" provided in config.json\n" );
         return 0;
     }
 
@@ -102,11 +103,11 @@ int ODBC_connect(
         NULL,
         SQL_DRIVER_NOPROMPT
     );
-    CHECK_ERROR( retcode, "SQLDriverConnect()", db_connection->connection, SQL_HANDLE_DBC, TRUE );
+    CHECK_ERROR( retcode, "SQLDriverConnect()", db_connection->connection, SQL_HANDLE_DBC, TRUE, log );
 
     db_connection->active = 1;
 
-    LOG_print( "ok.\n" );
+    LOG_print( log, "ok.\n" );
 
     return 1;
 }
@@ -124,7 +125,8 @@ int ODBC_exec(
     const char* const      *param_types,
     qec* query_exec_callback,
     void* data_ptr1,
-    void* data_ptr2
+    void* data_ptr2,
+    LOG_OBJECT *log
 ) {
     SQLHSTMT        stmt;
     SQLRETURN       retcode;
@@ -141,7 +143,7 @@ int ODBC_exec(
         return 0;
     }
 
-    LOG_print( "[%s]\tODBC_exec( <'%s'>, \"%s\", ... ).\n", TIME_get_gmt(), db_connection->id, sql );
+    LOG_print( log, "[%s]\tODBC_exec( <'%s'>, \"%s\", ... ).\n", TIME_get_gmt(), db_connection->id, sql );
     pthread_mutex_lock( &db_exec_mutex );
 
     if( dst_result ) {
@@ -156,7 +158,7 @@ int ODBC_exec(
 
     if( db_connection->connection ) {
         retcode = SQLAllocHandle( SQL_HANDLE_STMT, db_connection->connection, &stmt );
-        CHECK_ERROR( retcode, "SQLAllocHandle()", stmt, SQL_HANDLE_STMT, TRUE );
+        CHECK_ERROR( retcode, "SQLAllocHandle()", stmt, SQL_HANDLE_STMT, TRUE, log );
 
         SQLSetStmtAttr( &stmt, SQL_ATTR_CURSOR_TYPE, ( SQLPOINTER )SQL_CURSOR_DYNAMIC, 0 );
 
@@ -169,15 +171,15 @@ int ODBC_exec(
             }
 
             retcode = SQLPrepare( stmt, ( SQLCHAR* )sql, ( SQLINTEGER )sql_length );
-            CHECK_ERROR( retcode, "SQLPrepare()", stmt, SQL_HANDLE_STMT, TRUE );
+            CHECK_ERROR( retcode, "SQLPrepare()", stmt, SQL_HANDLE_STMT, TRUE, log );
 
             if( DB_QUERY_get_type( sql ) == DQT_SELECT ) {
                 retcode = SQLNumResultCols( stmt, &num_columns );
                 if( ( retcode != SQL_SUCCESS ) && ( retcode != SQL_SUCCESS_WITH_INFO ) ) {
-                    ODBC_get_error( "SQLNumResultCols()", stmt, SQL_HANDLE_STMT );
+                    ODBC_get_error( "SQLNumResultCols()", stmt, SQL_HANDLE_STMT, log );
                     SQLFreeHandle( SQL_HANDLE_STMT, stmt );
 
-                    LOG_print( "[%s]\tODBC_exec.\n", TIME_get_gmt() );
+                    LOG_print( log, "[%s]\tODBC_exec.\n", TIME_get_gmt() );
                     pthread_mutex_unlock( &db_exec_mutex );
                     return 0;
                 }
@@ -195,7 +197,7 @@ int ODBC_exec(
                         NULL,
                         &column_data_nullable[ i ]
                     );
-                    CHECK_ERROR( retcode, "SQLDescribeCol()", stmt, SQL_HANDLE_STMT, TRUE );
+                    CHECK_ERROR( retcode, "SQLDescribeCol()", stmt, SQL_HANDLE_STMT, TRUE, log );
 
                     column_data[ i ] = SAFECALLOC( column_data_size[ i ] + 1, sizeof( SQLCHAR ), __FILE__, __LINE__ );
 
@@ -207,13 +209,13 @@ int ODBC_exec(
                         column_data_size[ i ],
                         &column_data_len[ i ]
                     );
-                    CHECK_ERROR( retcode, "SQLBindCol()", stmt, SQL_HANDLE_STMT, TRUE );
+                    CHECK_ERROR( retcode, "SQLBindCol()", stmt, SQL_HANDLE_STMT, TRUE, log );
                 }
             }
 
             retcode = SQLExecute( stmt );
             if( ( retcode != SQL_SUCCESS ) && ( retcode != SQL_SUCCESS_WITH_INFO ) ) {
-                ODBC_get_error( "SQLExecute()", stmt, SQL_HANDLE_STMT );
+                ODBC_get_error( "SQLExecute()", stmt, SQL_HANDLE_STMT, log );
                 SQLFreeHandle( SQL_HANDLE_STMT, stmt );
 
                 for( int i = 0; i < MAX_COLUMNS; i++ ) {
@@ -223,7 +225,7 @@ int ODBC_exec(
                     column_data_size[ i ] = 0;
                 }
 
-                LOG_print( "[%s]\tODBC_exec.\n", TIME_get_gmt() );
+                LOG_print( log, "[%s]\tODBC_exec.\n", TIME_get_gmt() );
                 pthread_mutex_unlock( &db_exec_mutex );
                 return 0;
             }
@@ -241,7 +243,7 @@ int ODBC_exec(
                         break;
                     }
 
-                    CHECK_ERROR( retcode, "SQLFetch()", stmt, SQL_HANDLE_STMT, TRUE );
+                    CHECK_ERROR( retcode, "SQLFetch()", stmt, SQL_HANDLE_STMT, TRUE, log );
 
                     if( query_exec_callback ) {
 
@@ -269,7 +271,7 @@ int ODBC_exec(
                         }
 
                         pthread_mutex_unlock( &db_exec_mutex );
-                        ( *query_exec_callback )( record, data_ptr1, data_ptr2 );
+                        ( *query_exec_callback )( record, data_ptr1, data_ptr2, log );
 
                     }
 
@@ -321,12 +323,12 @@ int ODBC_exec(
             }
         } else {
             /* Query with bind parameters */
-            LOG_print( "[%s] Warning: not yet implemented!\n", TIME_get_gmt() );
+            LOG_print( log, "[%s] Warning: not yet implemented!\n", TIME_get_gmt() );
         }
 
         SQLFreeHandle( SQL_HANDLE_STMT, stmt );
     }
-    LOG_print( "[%s]\tODBC_exec.\n", TIME_get_gmt() );
+    LOG_print( log, "[%s]\tODBC_exec.\n", TIME_get_gmt() );
     pthread_mutex_unlock( &db_exec_mutex );
 
     return 1;

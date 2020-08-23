@@ -3,10 +3,13 @@
 
 #include "../shared.h"
 
-extern char     LOG_filename[MAX_PATH_LENGTH];
+typedef struct LOG_OBJECT {
+    char        filename[ MAX_PATH_LENGTH ];
+    char        buffer[ LARGE_BUFF_SIZE ];
+} LOG_OBJECT;
 
-void LOG_print( char *fmt, ... );
-void LOG_save( void );
-void LOG_init( const char *prefix );
+void LOG_print( LOG_OBJECT *log, char *fmt, ... );
+void LOG_save( LOG_OBJECT *log, const char *app_path );
+void LOG_init( LOG_OBJECT *log, const char *prefix );
 
 #endif

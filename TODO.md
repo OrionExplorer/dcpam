@@ -131,10 +131,11 @@
 * [ ] Process flat file data before each ETL start:
 	* [ ] CSV parser.
 	* [ ] Load CSV data to desired table.
-* [ ] DCPAM log rebuild:
-	* [ ] Each processed source has dedicated log file.
-	* [ ] Init log files during `etl_config.json` load.
-	* [ ] Rebuild `LOG_print` function to support additional parameter: `log_name`.
+* [x] Major DCPAM log rebuild for clean parallel execution and logging:
+	* [x] Each processed source has dedicated log file.
+	* [x] Init log files during `etl_config.json` load.
+	* [x] Rebuild `LOG_*` functions.
+	* [x] Modify every source file where logging ocurrs.
 * [ ] DCPAM ETL must not know about P_DCPAM_APP and DPCAM WDS about DCPAM_APP.
 * [ ] ETL process interval can vary between system[].queries[].
 * [ ] Move DCPAM ETL configuration to database:

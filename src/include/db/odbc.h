@@ -27,7 +27,8 @@ int ODBC_connect(
     const char* user,
     const char* password,
     const char* connection_string,
-    const char* name
+    const char* name,
+    LOG_OBJECT* log
 );
 
 int  ODBC_exec(
@@ -42,8 +43,10 @@ int  ODBC_exec(
     const char* const *param_types,
     qec* query_exec_callback,
     void* data_ptr1,
-    void* data_ptr2
+    void* data_ptr2,
+    LOG_OBJECT* log
 );
-void ODBC_disconnect( ODBC_CONNECTION* db_connection );
+
+void ODBC_disconnect( ODBC_CONNECTION* db_connection, LOG_OBJECT* log );
 
 #endif

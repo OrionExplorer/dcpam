@@ -9,8 +9,8 @@
 static pthread_mutex_t      db_exec_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 
-void MARIADB_disconnect( MARIADB_CONNECTION* db_connection ) {
-    LOG_print( "[%s]\tMARIADB_disconnect( <'%s'> ).\n", TIME_get_gmt(), db_connection->id ? db_connection->id : "" );
+void MARIADB_disconnect( MARIADB_CONNECTION* db_connection, LOG_OBJECT *log ) {
+    LOG_print( log, "[%s]\tMARIADB_disconnect( <'%s'> ).\n", TIME_get_gmt(), db_connection->id ? db_connection->id : "" );
 
     if( db_connection->connection ) {
         mysql_close( db_connection->connection );
@@ -22,7 +22,7 @@ void MARIADB_disconnect( MARIADB_CONNECTION* db_connection ) {
         db_connection->id = NULL;
     }
 
-    LOG_print( "[%s]\tMARIADB_disconnect.\n", TIME_get_gmt() );
+    LOG_print( log, "[%s]\tMARIADB_disconnect.\n", TIME_get_gmt() );
 }
 
 
@@ -34,7 +34,8 @@ int MARIADB_connect(
     const char* user,
     const char* password,
     const char* connection_string,
-    const char* name
+    const char* name,
+    LOG_OBJECT *log
 ) {
 
     db_connection->id = ( char* )SAFECALLOC( 1024, sizeof( char ), __FILE__, __LINE__ );
@@ -49,13 +50,13 @@ int MARIADB_connect(
     if( mysql_real_connect( db_connection->connection, host, user, password, dbname, 0, NULL, 0 ) == NULL ) {
         db_connection->active = 0;
         free( db_connection->id ); db_connection->id = NULL;
-        LOG_print( "error. Message: \"%s\".\n", mysql_error( db_connection->connection ) );
+        LOG_print( log, "error. Message: \"%s\".\n", mysql_error( db_connection->connection ) );
         return 0;
     }
 
     db_connection->active = 1;
 
-    LOG_print( "ok.\n" );
+    LOG_print( log, "ok.\n" );
 
     return 1;
 }
@@ -73,7 +74,8 @@ int MARIADB_exec(
     const char* const* param_types,
     qec* query_exec_callback,
     void* data_ptr1,
-    void* data_ptr2
+    void* data_ptr2,
+    LOG_OBJECT *log
 ) {
     MYSQL_RES* mysql_result = NULL;
     MYSQL_ROW       mysql_row = NULL;
@@ -83,7 +85,7 @@ int MARIADB_exec(
     unsigned long* lengths = NULL;
     int             query_result = -1;
 
-    LOG_print( "[%s]\tMARIADB_exec( <'%s'>, \"%s\", ... ).\n", TIME_get_gmt(), db_connection->id, sql );
+    LOG_print( log, "[%s]\tMARIADB_exec( <'%s'>, \"%s\", ... ).\n", TIME_get_gmt(), db_connection->id, sql );
     pthread_mutex_lock( &db_exec_mutex );
 
 
@@ -112,7 +114,7 @@ int MARIADB_exec(
             if( query_result == 0 ) {
                 mysql_result = mysql_store_result( db_connection->connection );
             } else {
-                LOG_print( "[%s][ERROR]\tMARIADB_exec: #%d, %s (\"%s\", len=%d)\n", TIME_get_gmt(), query_result, mysql_error( db_connection->connection ), sql, sql_length );
+                LOG_print( log, "[%s][ERROR]\tMARIADB_exec: #%d, %s (\"%s\", len=%d)\n", TIME_get_gmt(), query_result, mysql_error( db_connection->connection ), sql, sql_length );
                 pthread_mutex_unlock( &db_exec_mutex );
                 return 0;
             }
@@ -165,7 +167,7 @@ int MARIADB_exec(
                         }
 
                         pthread_mutex_unlock( &db_exec_mutex );
-                        ( *query_exec_callback )( record, data_ptr1, data_ptr2 );
+                        ( *query_exec_callback )( record, data_ptr1, data_ptr2, log );
                     }
 
                     for( int i = 0; i < field_count; i++ ) {
@@ -211,14 +213,14 @@ int MARIADB_exec(
 
         } else if( params_count > 0 ) {
             /* Query with bind parameters */
-            LOG_print( "[%s] Warning: not yet implemented!\n", TIME_get_gmt() );
+            LOG_print( log, "[%s] Warning: not yet implemented!\n", TIME_get_gmt() );
         }
 
     } else {
-        LOG_print( "[%s][ERROR]\tMARIADB_exec: #%d, %s.\n", TIME_get_gmt(), query_result, mysql_error( db_connection->connection ) );
+        LOG_print( log, "[%s][ERROR]\tMARIADB_exec: #%d, %s.\n", TIME_get_gmt(), query_result, mysql_error( db_connection->connection ) );
     }
 
-    LOG_print( "[%s]\tMARIADB_exec.\n", TIME_get_gmt() );
+    LOG_print( log, "[%s]\tMARIADB_exec.\n", TIME_get_gmt() );
     pthread_mutex_unlock( &db_exec_mutex );
 
     return 1;

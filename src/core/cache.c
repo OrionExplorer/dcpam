@@ -9,8 +9,8 @@
 
 extern P_DCPAM_APP      P_APP;
 
-static inline void _DB_CACHE_show_usage( void ) {
-    LOG_print( "[%s] Total cached data: %ld/%ld KB.\n", TIME_get_gmt(), P_APP.CACHE_size / 1024, P_APP.CACHE_MAX_size );
+static inline void _DB_CACHE_show_usage( LOG_OBJECT *log ) {
+    LOG_print( log, "[%s] Total cached data: %ld/%ld KB.\n", TIME_get_gmt(), P_APP.CACHE_size / 1024, P_APP.CACHE_MAX_size );
 }
 
 void _DB_CACHE_add_size( D_CACHE *src ) {
@@ -39,10 +39,10 @@ void _DB_CACHE_calc_size( D_CACHE* src ) {
     }
 }
 
-int DB_CACHE_init( D_CACHE *dst, DATABASE_SYSTEM_DB *db, const char *sql ) {
+int DB_CACHE_init( D_CACHE *dst, DATABASE_SYSTEM_DB *db, const char *sql, LOG_OBJECT *log ) {
 
     if( dst && db ) {
-        LOG_print( "[%s] DB_CACHE_init( %s, \"%.30s(...)\" ) started...\n", TIME_get_gmt(), db->name, sql );
+        LOG_print( log, "[%s] DB_CACHE_init( %s, \"%.30s(...)\" ) started...\n", TIME_get_gmt(), db->name, sql );
         dst->query = SAFEMALLOC( sizeof( DB_QUERY ), __FILE__, __LINE__ );
         DB_QUERY_init( dst->query );
 
@@ -56,27 +56,28 @@ int DB_CACHE_init( D_CACHE *dst, DATABASE_SYSTEM_DB *db, const char *sql ) {
             dst->query,
             NULL,
             0,
-            NULL, NULL, NULL, NULL, NULL, NULL
+            NULL, NULL, NULL, NULL, NULL, NULL,
+            log
         );
 
-        LOG_print( "[%s] DB_CACHE_init( %s, \"%.30s(...)\" ) finished:\n", TIME_get_gmt(), db->name, sql );
+        LOG_print( log, "[%s] DB_CACHE_init( %s, \"%.30s(...)\" ) finished:\n", TIME_get_gmt(), db->name, sql );
         if( res == 1 ) {
             _DB_CACHE_calc_size( dst );
             _DB_CACHE_add_size( dst );
             if( ( P_APP.CACHE_size / 1024 ) > P_APP.CACHE_MAX_size ) {
-                LOG_print( "\t- Fatal error: memory limit exceeded!\n" );
-                LOG_print( "\t- Data would be removed from heap after completing this request.\n" );
-                _DB_CACHE_show_usage();
+                LOG_print( log, "\t- Fatal error: memory limit exceeded!\n" );
+                LOG_print( log, "\t- Data would be removed from heap after completing this request.\n" );
+                _DB_CACHE_show_usage( log );
                 return 2;
             }
-            LOG_print( "\t- Cached records: %d (%ld KB).\n", dst->query->row_count, dst->size / 1024 );
-            _DB_CACHE_show_usage();
+            LOG_print( log, "\t- Cached records: %d (%ld KB).\n", dst->query->row_count, dst->size / 1024 );
+            _DB_CACHE_show_usage( log );
         } else {
-            LOG_print( "\t- DB_exec failed!\n" );
+            LOG_print( log, "\t- DB_exec failed!\n" );
         }
         return res;
     } else {
-        LOG_print( "[%s] DB_CACHE_init error: not all parameters are valid!\n", TIME_get_gmt() );
+        LOG_print( log, "[%s] DB_CACHE_init error: not all parameters are valid!\n", TIME_get_gmt() );
         dst->db = NULL;
         dst->query = NULL;
     }
@@ -97,30 +98,30 @@ void DB_CACHE_get( const char* sql, DB_QUERY** dst ) {
     *dst = NULL;
 }
 
-void DB_CACHE_free( D_CACHE* dst ) {
+void DB_CACHE_free( D_CACHE* dst, LOG_OBJECT *log ) {
     if( dst ) {
         if( dst->query ) {
-            LOG_print( "[%s] DB_CACHE_free( %s, %s )...", TIME_get_gmt(), dst->query->sql, dst->db->name );
+            LOG_print( log, "[%s] DB_CACHE_free( %s, %s )...", TIME_get_gmt(), dst->query->sql, dst->db->name );
             DB_QUERY_free( dst->query );
             free( dst->query ); dst->query = NULL;
-            LOG_print( "ok.\n" );
+            LOG_print( log, "ok.\n" );
         }
         _DB_CACHE_sub_size( dst );
-        _DB_CACHE_show_usage();
+        _DB_CACHE_show_usage( log );
         dst->db = NULL;
         dst->size = 0;
     }
 }
 
-void DB_CACHE_print( D_CACHE *dst ) {
-    LOG_print( "[%s] DB_CACHE_print:\n", TIME_get_gmt() );
+void DB_CACHE_print( D_CACHE *dst, LOG_OBJECT *log ) {
+    LOG_print( log, "[%s] DB_CACHE_print:\n", TIME_get_gmt() );
 
     if( dst ) {
 
-        LOG_print( "\t- SQL: \"%s\"\n", dst->query->sql );
-        LOG_print( "\t- Cached records: %d, columns: %d\n", dst->query->row_count, dst->query->field_count );
+        LOG_print( log, "\t- SQL: \"%s\"\n", dst->query->sql );
+        LOG_print( log, "\t- Cached records: %d, columns: %d\n", dst->query->row_count, dst->query->field_count );
 
     } else {
-        LOG_print( "\t- fatal error: not all parameters are valid!\n" );
+        LOG_print( log, "\t- fatal error: not all parameters are valid!\n" );
     }
 }

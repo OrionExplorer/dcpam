@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include "../../utils/log.h"
 
 #ifdef _WIN32
 
@@ -41,6 +42,7 @@ typedef struct NET_CONN {
     SOCKET              socket;
     struct sockaddr_in  server;
     char                *response;
+    LOG_OBJECT          *log;
 } NET_CONN;
 
 int NET_CONN_connect( NET_CONN *connection, const char *host, const int port );

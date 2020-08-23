@@ -23,7 +23,8 @@ int DB_exec(
     const char          *param_types,
     qec                 *query_exec_callback,
     void                *data_ptr1,
-    void                *data_ptr2
+    void                *data_ptr2,
+    LOG_OBJECT          *log
 ) {
     char            *sql_bound = NULL;
     size_t          sql_bound_len = 0;
@@ -31,8 +32,8 @@ int DB_exec(
     size_t          *sql_len = &sql_length;
     int             q_ret = 0;
 
-    if( DB_QUERY_format( sql_template, &sql_bound, &sql_bound_len, param_values, params_count, param_lengths ) == FALSE ) {
-        LOG_print( "[%s] DB_QUERY_format error.\n", TIME_get_gmt() );
+    if( DB_QUERY_format( sql_template, &sql_bound, &sql_bound_len, param_values, params_count, param_lengths, log ) == FALSE ) {
+        LOG_print( log, "[%s] DB_QUERY_format error.\n", TIME_get_gmt() );
         return FALSE;
     }
 
@@ -41,27 +42,27 @@ int DB_exec(
 
     switch( db->driver ) {
         case D_POSTGRESQL : {
-            q_ret = PG_exec( &db->db_conn.pgsql_conn, sql, *sql_len, dst_result, NULL, 0, NULL, NULL, NULL, query_exec_callback, data_ptr1, data_ptr2 );
+            q_ret = PG_exec( &db->db_conn.pgsql_conn, sql, *sql_len, dst_result, NULL, 0, NULL, NULL, NULL, query_exec_callback, data_ptr1, data_ptr2, log );
         } break;
 
         case D_MYSQL : {
-            q_ret = MYSQL_exec( &db->db_conn.mysql_conn, sql, *sql_len, dst_result, NULL, 0, NULL, NULL, NULL, query_exec_callback, data_ptr1, data_ptr2 );
+            q_ret = MYSQL_exec( &db->db_conn.mysql_conn, sql, *sql_len, dst_result, NULL, 0, NULL, NULL, NULL, query_exec_callback, data_ptr1, data_ptr2, log );
         } break;
 
         case D_MARIADB : {
-            q_ret = MARIADB_exec( &db->db_conn.mariadb_conn, sql, *sql_len, dst_result, NULL, 0, NULL, NULL, NULL, query_exec_callback, data_ptr1, data_ptr2 );
+            q_ret = MARIADB_exec( &db->db_conn.mariadb_conn, sql, *sql_len, dst_result, NULL, 0, NULL, NULL, NULL, query_exec_callback, data_ptr1, data_ptr2, log );
         } break;
 
         case D_ODBC : {
-            q_ret = ODBC_exec( &db->db_conn.odbc_conn, sql, *sql_len, dst_result, NULL, 0, NULL, NULL, NULL, query_exec_callback, data_ptr1, data_ptr2 );
+            q_ret = ODBC_exec( &db->db_conn.odbc_conn, sql, *sql_len, dst_result, NULL, 0, NULL, NULL, NULL, query_exec_callback, data_ptr1, data_ptr2, log );
         } break;
 
         case D_ORACLE: {
-            q_ret = ORACLE_exec( &db->db_conn.oracle_conn, sql, *sql_len, dst_result, NULL, 0, NULL, NULL, query_exec_callback, data_ptr1, data_ptr2 );
+            q_ret = ORACLE_exec( &db->db_conn.oracle_conn, sql, *sql_len, dst_result, NULL, 0, NULL, NULL, query_exec_callback, data_ptr1, data_ptr2, log );
         } break;
 
         case D_SQLITE: {
-            q_ret = SQLITE_exec( &db->db_conn.sqlite_conn, sql, *sql_len, dst_result, NULL, 0, NULL, NULL, query_exec_callback, data_ptr1, data_ptr2 );
+            q_ret = SQLITE_exec( &db->db_conn.sqlite_conn, sql, *sql_len, dst_result, NULL, 0, NULL, NULL, query_exec_callback, data_ptr1, data_ptr2, log );
         }
     }
 
@@ -208,15 +209,16 @@ void DATABASE_SYSTEM_QUERY_add(
     DB_SYSTEM_MODE          mode,
     DB_SYSTEM_ETL           etl,
     DATABASE_SYSTEM_QUERY   *dst,
-    short                   verbose
+    short                   verbose,
+    LOG_OBJECT              *log
 ) {
     int     i = 0;
 
-    if( verbose > 0 ) LOG_print( "[%s] DATABASE_SYSTEM_QUERY_add(\"%s\", ... ).\n", TIME_get_gmt(), name );
+    if( verbose > 0 ) LOG_print( log, "[%s] DATABASE_SYSTEM_QUERY_add(\"%s\", ... ).\n", TIME_get_gmt(), name );
     size_t str_len = strlen( name );
     dst->name = ( char * )SAFECALLOC( str_len+1, sizeof( char ), __FILE__, __LINE__ );
     if( dst->name ) {
-        if( verbose > 0 ) LOG_print("\t· name=\"%s\"\n", name );
+        if( verbose > 0 ) LOG_print( log, "\t· name=\"%s\"\n", name );
         strncpy(
             dst->name,
             name,
@@ -227,102 +229,102 @@ void DATABASE_SYSTEM_QUERY_add(
     dst->mode = mode;
     dst->etl_config = etl;
 
-    if( verbose > 0 ) LOG_print("\t· mode = %s\n", mode == M_ETL ? "ETL" : "ELT" );
+    if( verbose > 0 ) LOG_print( log, "\t· mode = %s\n", mode == M_ETL ? "ETL" : "ELT" );
 
     if( etl.pre_actions_count > 0 ) {
-        if( verbose > 0 ) LOG_print( "\t· PreETL Actions:\n" );
+        if( verbose > 0 ) LOG_print( log, "\t· PreETL Actions:\n" );
 
         for( int i = 0; i < etl.pre_actions_count; i++ ) {
-            if( verbose > 0 ) LOG_print( "\t\t·\"%.70s(...)\"\n", etl.pre_actions[ i ]->sql );
+            if( verbose > 0 ) LOG_print( log, "\t\t·\"%.70s(...)\"\n", etl.pre_actions[ i ]->sql );
         }
     }
 
-    if( verbose > 0 ) LOG_print("\t· extract\n\t\t·inserted\n\t\t\t·primary_db_sql: \"%.70s(...)\"\n", etl.extract.inserted.primary_db_sql );
-    if( verbose > 0 ) LOG_print("\t\t\t·primary_db: \"%s\"\n", etl.extract.inserted.primary_db );
-    if( verbose > 0 ) LOG_print("\t\t\t·secondary_db_sql: \"%.70s(...)\"\n", etl.extract.inserted.secondary_db_sql );
-    if( verbose > 0 ) LOG_print("\t\t\t·secondary_db: \"%s\"\n", etl.extract.inserted.secondary_db );
-    if( verbose > 0 ) LOG_print("\t\t·modified\n\t\t\t·primary_db_sql: \"%.70s(...)\"\n", etl.extract.modified.primary_db_sql );
-    if( verbose > 0 ) LOG_print("\t\t\t·primary_db: \"%s\"\n", etl.extract.modified.primary_db );
-    if( verbose > 0 ) LOG_print("\t\t\t·secondary_db_sql: \"%.70s(...)\"\n", etl.extract.modified.secondary_db_sql );
-    if( verbose > 0 ) LOG_print("\t\t\t·secondary_db: \"%s\"\n", etl.extract.modified.secondary_db );
-    if( verbose > 0 ) LOG_print("\t\t·deleted\n\t\t\t·primary_db_sql: \"%.70s(...)\"\n", etl.extract.deleted.primary_db_sql );
-    if( verbose > 0 ) LOG_print("\t\t\t·primary_db: \"%s\"\n", etl.extract.deleted.primary_db );
-    if( verbose > 0 ) LOG_print("\t\t\t·secondary_db_sql: \"%.70s(...)\"\n", etl.extract.deleted.secondary_db_sql );
-    if( verbose > 0 ) LOG_print("\t\t\t·secondary_db: \"%s\"\n", etl.extract.deleted.secondary_db );
+    if( verbose > 0 ) LOG_print( log, "\t· extract\n\t\t·inserted\n\t\t\t·primary_db_sql: \"%.70s(...)\"\n", etl.extract.inserted.primary_db_sql );
+    if( verbose > 0 ) LOG_print( log, "\t\t\t·primary_db: \"%s\"\n", etl.extract.inserted.primary_db );
+    if( verbose > 0 ) LOG_print( log, "\t\t\t·secondary_db_sql: \"%.70s(...)\"\n", etl.extract.inserted.secondary_db_sql );
+    if( verbose > 0 ) LOG_print( log, "\t\t\t·secondary_db: \"%s\"\n", etl.extract.inserted.secondary_db );
+    if( verbose > 0 ) LOG_print( log, "\t\t·modified\n\t\t\t·primary_db_sql: \"%.70s(...)\"\n", etl.extract.modified.primary_db_sql );
+    if( verbose > 0 ) LOG_print( log, "\t\t\t·primary_db: \"%s\"\n", etl.extract.modified.primary_db );
+    if( verbose > 0 ) LOG_print( log, "\t\t\t·secondary_db_sql: \"%.70s(...)\"\n", etl.extract.modified.secondary_db_sql );
+    if( verbose > 0 ) LOG_print( log, "\t\t\t·secondary_db: \"%s\"\n", etl.extract.modified.secondary_db );
+    if( verbose > 0 ) LOG_print( log, "\t\t·deleted\n\t\t\t·primary_db_sql: \"%.70s(...)\"\n", etl.extract.deleted.primary_db_sql );
+    if( verbose > 0 ) LOG_print( log, "\t\t\t·primary_db: \"%s\"\n", etl.extract.deleted.primary_db );
+    if( verbose > 0 ) LOG_print( log, "\t\t\t·secondary_db_sql: \"%.70s(...)\"\n", etl.extract.deleted.secondary_db_sql );
+    if( verbose > 0 ) LOG_print( log, "\t\t\t·secondary_db: \"%s\"\n", etl.extract.deleted.secondary_db );
     
     if( etl.stage ) {
-        if( verbose > 0 ) LOG_print( "\t· stage\n\t\t·inserted\n\t\t\t·sql: \"%.70s(...)\"\n", etl.stage->inserted.sql );
-        if( verbose > 0 ) LOG_print( "\t\t\t·extracted_values: " );
+        if( verbose > 0 ) LOG_print( log, "\t· stage\n\t\t·inserted\n\t\t\t·sql: \"%.70s(...)\"\n", etl.stage->inserted.sql );
+        if( verbose > 0 ) LOG_print( log, "\t\t\t·extracted_values: " );
         for( i = 0; i < etl.stage->inserted.extracted_values_len; i++ ) {
-            if( verbose > 0 ) LOG_print( "'%s', ", etl.stage->inserted.extracted_values[ i ] );
+            if( verbose > 0 ) LOG_print( log, "'%s', ", etl.stage->inserted.extracted_values[ i ] );
         }
-        if( verbose > 0 ) LOG_print( "\n" );
-        if( verbose > 0 ) LOG_print( "\t\t·deleted\n\t\t\t·sql: \"%.70s(...)\"\n", etl.stage->deleted.sql );
-        if( verbose > 0 ) LOG_print( "\t\t\t·extracted_values: " );
+        if( verbose > 0 ) LOG_print( log, "\n" );
+        if( verbose > 0 ) LOG_print( log, "\t\t·deleted\n\t\t\t·sql: \"%.70s(...)\"\n", etl.stage->deleted.sql );
+        if( verbose > 0 ) LOG_print( log, "\t\t\t·extracted_values: " );
         for( i = 0; i < etl.stage->deleted.extracted_values_len; i++ ) {
-            if( verbose > 0 ) LOG_print( "'%s', ", etl.stage->deleted.extracted_values[ i ] );
+            if( verbose > 0 ) LOG_print( log, "'%s', ", etl.stage->deleted.extracted_values[ i ] );
         }
-        if( verbose > 0 ) LOG_print( "\n" );
-        if( verbose > 0 ) LOG_print( "\t\t·modified\n\t\t\t·sql: \"%.70s(...)\"\n", etl.stage->modified.sql );
-        if( verbose > 0 ) LOG_print( "\t\t\t·extracted_values: " );
+        if( verbose > 0 ) LOG_print( log, "\n" );
+        if( verbose > 0 ) LOG_print( log, "\t\t·modified\n\t\t\t·sql: \"%.70s(...)\"\n", etl.stage->modified.sql );
+        if( verbose > 0 ) LOG_print( log, "\t\t\t·extracted_values: " );
         for( i = 0; i < etl.stage->modified.extracted_values_len; i++ ) {
-            if( verbose > 0 ) LOG_print( "'%s', ", etl.stage->modified.extracted_values[ i ] );
+            if( verbose > 0 ) LOG_print( log, "'%s', ", etl.stage->modified.extracted_values[ i ] );
         }
 
-        if( verbose > 0 ) LOG_print( "\n" );
+        if( verbose > 0 ) LOG_print( log, "\n" );
     }
 
     for( int i = 0; i < etl.transform->inserted_count; i++ ) {
-        if( verbose > 0 ) LOG_print( "\t· transform\n\t\t·inserted\n\t\t\t·module: %.70s(...)\n", etl.transform->inserted[ i ]->module );
-        if( verbose > 0 ) LOG_print( "\t\t\t·staged_data: \"%.70s(...)\"\n", etl.transform->inserted[ i ]->staged_data );
-        if( verbose > 0 ) LOG_print( "\t\t\t·source_system_update: \"%.70s(...)\"\n", etl.transform->inserted[ i ]->source_system_update);
-        if( verbose > 0 ) LOG_print( "\t\t\t·api_key: \"%.70s(...)\"\n", etl.transform->inserted[ i ]->api_key );
+        if( verbose > 0 ) LOG_print( log, "\t· transform\n\t\t·inserted\n\t\t\t·module: %.70s(...)\n", etl.transform->inserted[ i ]->module );
+        if( verbose > 0 ) LOG_print( log, "\t\t\t·staged_data: \"%.70s(...)\"\n", etl.transform->inserted[ i ]->staged_data );
+        if( verbose > 0 ) LOG_print( log, "\t\t\t·source_system_update: \"%.70s(...)\"\n", etl.transform->inserted[ i ]->source_system_update);
+        if( verbose > 0 ) LOG_print( log, "\t\t\t·api_key: \"%.70s(...)\"\n", etl.transform->inserted[ i ]->api_key );
     }
 
     for( int i = 0; i < etl.transform->deleted_count; i++ ) {
-        if( verbose > 0 ) LOG_print( "\t· transform\n\t\t·deleted\n\t\t\t·module: %.70s(...)\n", etl.transform->deleted[ i ]->module );
-        if( verbose > 0 ) LOG_print( "\t\t\t·staged_data: \"%.70s(...)\"\n", etl.transform->deleted[ i ]->staged_data );
-        if( verbose > 0 ) LOG_print( "\t\t\t·source_system_update: \"%.70s(...)\"\n", etl.transform->deleted[ i ]->source_system_update );
-        if( verbose > 0 ) LOG_print( "\t\t\t·api_key: \"%.70s(...)\"\n", etl.transform->deleted[ i ]->api_key );
+        if( verbose > 0 ) LOG_print( log, "\t· transform\n\t\t·deleted\n\t\t\t·module: %.70s(...)\n", etl.transform->deleted[ i ]->module );
+        if( verbose > 0 ) LOG_print( log, "\t\t\t·staged_data: \"%.70s(...)\"\n", etl.transform->deleted[ i ]->staged_data );
+        if( verbose > 0 ) LOG_print( log, "\t\t\t·source_system_update: \"%.70s(...)\"\n", etl.transform->deleted[ i ]->source_system_update );
+        if( verbose > 0 ) LOG_print( log, "\t\t\t·api_key: \"%.70s(...)\"\n", etl.transform->deleted[ i ]->api_key );
     }
 
     for( int i = 0; i < etl.transform->modified_count; i++ ) {
-        if( verbose > 0 ) LOG_print( "\t· transform\n\t\t·modified\n\t\t\t·module: %.70s(...)\n", etl.transform->modified[ i ]->module );
-        if( verbose > 0 ) LOG_print( "\t\t\t·staged_data: \"%.70s(...)\"\n", etl.transform->modified[ i ]->staged_data );
-        if( verbose > 0 ) LOG_print( "\t\t\t·source_system_update: \"%.70s(...)\"\n", etl.transform->modified[ i ]->source_system_update );
-        if( verbose > 0 ) LOG_print( "\t\t\t·api_key: \"%.70s(...)\"\n", etl.transform->modified[ i ]->api_key );
+        if( verbose > 0 ) LOG_print( log, "\t· transform\n\t\t·modified\n\t\t\t·module: %.70s(...)\n", etl.transform->modified[ i ]->module );
+        if( verbose > 0 ) LOG_print( log, "\t\t\t·staged_data: \"%.70s(...)\"\n", etl.transform->modified[ i ]->staged_data );
+        if( verbose > 0 ) LOG_print( log, "\t\t\t·source_system_update: \"%.70s(...)\"\n", etl.transform->modified[ i ]->source_system_update );
+        if( verbose > 0 ) LOG_print( log, "\t\t\t·api_key: \"%.70s(...)\"\n", etl.transform->modified[ i ]->api_key );
     }
     
 
-    if( verbose > 0 ) LOG_print("\t· load\n\t\t·inserted\n\t\t\t·input_data_sql: \"%.70s(...)\"\n", etl.load.inserted.input_data_sql );
-    if( verbose > 0 ) LOG_print("\t\t\t·extracted_values: " );
+    if( verbose > 0 ) LOG_print( log, "\t· load\n\t\t·inserted\n\t\t\t·input_data_sql: \"%.70s(...)\"\n", etl.load.inserted.input_data_sql );
+    if( verbose > 0 ) LOG_print( log, "\t\t\t·extracted_values: " );
     for( i = 0; i < etl.load.inserted.extracted_values_len; i++ ) {
-        if( verbose > 0 ) LOG_print("'%s', ", etl.load.inserted.extracted_values[i]);
+        if( verbose > 0 ) LOG_print( log, "'%s', ", etl.load.inserted.extracted_values[i]);
     }
-    if( verbose > 0 ) LOG_print("\n");
-    if( verbose > 0 ) LOG_print( "\t\t\t·output_data_sql: \"%.70s(...)\"\n", etl.load.inserted.output_data_sql );
+    if( verbose > 0 ) LOG_print( log, "\n" );
+    if( verbose > 0 ) LOG_print( log, "\t\t\t·output_data_sql: \"%.70s(...)\"\n", etl.load.inserted.output_data_sql );
 
-    if( verbose > 0 ) LOG_print("\t\t·deleted\n\t\t\t·input_data_sql: \"%.70s(...)\"\n", etl.load.deleted.input_data_sql );
-    if( verbose > 0 ) LOG_print("\t\t\t·extracted_values: " );
+    if( verbose > 0 ) LOG_print( log, "\t\t·deleted\n\t\t\t·input_data_sql: \"%.70s(...)\"\n", etl.load.deleted.input_data_sql );
+    if( verbose > 0 ) LOG_print( log, "\t\t\t·extracted_values: " );
     for( i = 0; i < etl.load.deleted.extracted_values_len; i++ ) {
-        if( verbose > 0 ) LOG_print("'%s', ", etl.load.deleted.extracted_values[i]);
+        if( verbose > 0 ) LOG_print( log, "'%s', ", etl.load.deleted.extracted_values[i]);
     }
-    if( verbose > 0 ) LOG_print("\n");
-    if( verbose > 0 ) LOG_print( "\t\t\t·output_data_sql: \"%.70s(...)\"\n", etl.load.deleted.output_data_sql );
+    if( verbose > 0 ) LOG_print( log, "\n" );
+    if( verbose > 0 ) LOG_print( log, "\t\t\t·output_data_sql: \"%.70s(...)\"\n", etl.load.deleted.output_data_sql );
 
-    if( verbose > 0 ) LOG_print("\t\t·modified\n\t\t\t·input_data_sql: \"%.70s(...)\"\n", etl.load.modified.input_data_sql );
-    if( verbose > 0 ) LOG_print("\t\t\t·extracted_values: " );
+    if( verbose > 0 ) LOG_print( log, "\t\t·modified\n\t\t\t·input_data_sql: \"%.70s(...)\"\n", etl.load.modified.input_data_sql );
+    if( verbose > 0 ) LOG_print( log, "\t\t\t·extracted_values: " );
     for( i = 0; i < etl.load.modified.extracted_values_len; i++ ) {
-        if( verbose > 0 ) LOG_print("'%s', ", etl.load.modified.extracted_values[i]);
+        if( verbose > 0 ) LOG_print( log, "'%s', ", etl.load.modified.extracted_values[i]);
     }
-    if( verbose > 0 ) LOG_print("\n");
-    if( verbose > 0 ) LOG_print( "\t\t\t·output_data_sql: \"%.70s(...)\"\n", etl.load.modified.output_data_sql );
+    if( verbose > 0 ) LOG_print( log, "\n");
+    if( verbose > 0 ) LOG_print( log, "\t\t\t·output_data_sql: \"%.70s(...)\"\n", etl.load.modified.output_data_sql );
 
     if( etl.post_actions_count > 0 ) {
-        if( verbose > 0 ) LOG_print( "\t· PostETL Actions:\n" );
+        if( verbose > 0 ) LOG_print( log, "\t· PostETL Actions:\n" );
 
         for( int i = 0; i < etl.post_actions_count; i++ ) {
-            if( verbose > 0 ) LOG_print( "\t\t·\"%.70s(...)\"\n", etl.post_actions[ i ]->sql );
+            if( verbose > 0 ) LOG_print( log, "\t\t·\"%.70s(...)\"\n", etl.post_actions[ i ]->sql );
         }
     }
 }
@@ -337,15 +339,16 @@ void DATABASE_SYSTEM_DB_add(
     const char              *connection_string,
     DATABASE_SYSTEM_DB      *dst,
     const char              *name,
-    short                   verbose
+    short                   verbose,
+    LOG_OBJECT              *log
 ) {
 
     size_t str_len = 0;
 
     if( verbose > 0 ) {
-        LOG_print( "[%s] DATABASE_SYSTEM_DB_add(\"%s\", %d, \"%s\", \"%s\", ... ).\n", TIME_get_gmt(), ip, port, user, name );
-        LOG_print("\t· ip=\"%s\".\n", ip );
-        LOG_print("\t· name=\"%s\".\n", name );
+        LOG_print( log, "[%s] DATABASE_SYSTEM_DB_add(\"%s\", %d, \"%s\", \"%s\", ... ).\n", TIME_get_gmt(), ip, port, user, name );
+        LOG_print( log, "\t· ip=\"%s\".\n", ip );
+        LOG_print( log, "\t· name=\"%s\".\n", name );
     }
 
     str_len = strlen( name );
@@ -367,10 +370,10 @@ void DATABASE_SYSTEM_DB_add(
         );
     }
 
-    if( verbose > 0 ) LOG_print("\t· port=\"%d\"\n", port );
+    if( verbose > 0 ) LOG_print( log, "\t· port=\"%d\"\n", port );
     dst->port = port;
 
-    if( verbose > 0 ) LOG_print("\t· driver=\"%s\"\n", 
+    if( verbose > 0 ) LOG_print( log, "\t· driver=\"%s\"\n",
         driver == D_POSTGRESQL ? "PostgreSQL" 
         : driver == D_MYSQL ? "MySQL" 
         : driver == D_MARIADB ? "MariaDB" 
@@ -406,7 +409,7 @@ void DATABASE_SYSTEM_DB_add(
         }
     }
 
-    if( verbose > 0 ) LOG_print("\t· user=\"%s\"\n", user );
+    if( verbose > 0 ) LOG_print( log, "\t· user=\"%s\"\n", user );
     str_len = strlen(user);
     dst->user = SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
     if( dst->user ) {
@@ -417,7 +420,7 @@ void DATABASE_SYSTEM_DB_add(
         );
     }
 
-    if( verbose > 0 ) LOG_print("\t· password=\"%.1s***\"\n", password );
+    if( verbose > 0 ) LOG_print( log, "\t· password=\"%.1s***\"\n", password );
     str_len = strlen(password);
     dst->password = SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
     if( dst->password ) {
@@ -428,7 +431,7 @@ void DATABASE_SYSTEM_DB_add(
         );
     }
 
-    if( verbose > 0 ) LOG_print("\t· db=\"%s\"\n", db );
+    if( verbose > 0 ) LOG_print( log, "\t· db=\"%s\"\n", db );
     str_len = strlen(db);
     dst->db = SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
     if( dst->db ) {
@@ -440,7 +443,7 @@ void DATABASE_SYSTEM_DB_add(
     }
 
     if( connection_string != NULL ) {
-        if( verbose > 0 ) LOG_print("\t· connection_string=\"%s\"\n", connection_string );
+        if( verbose > 0 ) LOG_print( log, "\t· connection_string=\"%s\"\n", connection_string );
         str_len = strlen( connection_string );
         dst->connection_string = SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
         if( dst->connection_string ) {
@@ -453,53 +456,53 @@ void DATABASE_SYSTEM_DB_add(
     }
 }
 
-void DATABASE_SYSTEM_DB_close( DATABASE_SYSTEM_DB* db ) {
+void DATABASE_SYSTEM_DB_close( DATABASE_SYSTEM_DB* db, LOG_OBJECT *log ) {
 
     if( db->ip != NULL ) {
-        LOG_print( "[%s] DATABASE_SYSTEM_DB_close( %s@%s:%d )...\n", TIME_get_gmt(), db->user, db->ip, db->port );
+        LOG_print( log, "[%s] DATABASE_SYSTEM_DB_close( %s@%s:%d )...\n", TIME_get_gmt(), db->user, db->ip, db->port );
     }
 
     switch( db->driver ) {
         case D_POSTGRESQL:
         {
             if( db->db_conn.pgsql_conn.active == 1 ) {
-                LOG_print( "\t· Driver: \"PostgreSQL\". Disconnecting...\n" );
-                PG_disconnect( &db->db_conn.pgsql_conn );
+                LOG_print( log, "\t· Driver: \"PostgreSQL\". Disconnecting...\n" );
+                PG_disconnect( &db->db_conn.pgsql_conn, log );
             }
         } break;
         case D_MYSQL:
         {
             if( db->db_conn.mysql_conn.active == 1 ) {
-                LOG_print( "\t· Driver: \"MySQL\". Disconnecting...\n" );
-                MYSQL_disconnect( &db->db_conn.mysql_conn );
+                LOG_print( log, "\t· Driver: \"MySQL\". Disconnecting...\n" );
+                MYSQL_disconnect( &db->db_conn.mysql_conn, log );
             }
         } break;
         case D_MARIADB:
         {
             if( db->db_conn.mariadb_conn.active == 1 ) {
-                LOG_print( "\t· Driver: \"MariaDB\". Disconnecting...\n" );
-                MARIADB_disconnect( &db->db_conn.mariadb_conn );
+                LOG_print( log, "\t· Driver: \"MariaDB\". Disconnecting...\n" );
+                MARIADB_disconnect( &db->db_conn.mariadb_conn, log );
             }
         } break;
         case D_ODBC:
         {
             if( db->db_conn.odbc_conn.active == 1 ) {
-                LOG_print( "\t· Driver: \"ODBC\". Disconnecting...\n" );
-                ODBC_disconnect( &db->db_conn.odbc_conn );
+                LOG_print( log, "\t· Driver: \"ODBC\". Disconnecting...\n" );
+                ODBC_disconnect( &db->db_conn.odbc_conn, log );
             }
         } break;
         case D_ORACLE:
         {
             if( db->db_conn.oracle_conn.active == 1 ) {
-                LOG_print( "\t· Driver: \"Oracle\". Disconnecting...\n" );
-                ORACLE_disconnect( &db->db_conn.oracle_conn );
+                LOG_print( log, "\t· Driver: \"Oracle\". Disconnecting...\n" );
+                ORACLE_disconnect( &db->db_conn.oracle_conn, log );
             }
         } break;
         case D_SQLITE:
         {
             if( db->db_conn.sqlite_conn.active == 1 ) {
-                LOG_print( "\t· Driver: \"SQLite3\". Disconnecting...\n" );
-                SQLITE_disconnect( &db->db_conn.sqlite_conn );
+                LOG_print( log, "\t· Driver: \"SQLite3\". Disconnecting...\n" );
+                SQLITE_disconnect( &db->db_conn.sqlite_conn, log );
             }
         }
         default:
@@ -509,10 +512,10 @@ void DATABASE_SYSTEM_DB_close( DATABASE_SYSTEM_DB* db ) {
 }
 
 
-void DATABASE_SYSTEM_DB_free( DATABASE_SYSTEM_DB *db ) {
+void DATABASE_SYSTEM_DB_free( DATABASE_SYSTEM_DB *db, LOG_OBJECT *log ) {
 
     if( db->ip != NULL ) {
-        LOG_print( "[%s] DATABASE_SYSTEM_DB_free( %s@%s:%d )...\n", TIME_get_gmt(), db->user, db->ip, db->port );
+        LOG_print( log, "[%s] DATABASE_SYSTEM_DB_free( %s@%s:%d )...\n", TIME_get_gmt(), db->user, db->ip, db->port );
         free( db->ip ); db->ip = NULL;
     }
     if( db->user != NULL ) {
@@ -534,38 +537,38 @@ void DATABASE_SYSTEM_DB_free( DATABASE_SYSTEM_DB *db ) {
     switch( db->driver ) {
         case D_POSTGRESQL : {
             if( db->db_conn.pgsql_conn.active == 1 ) {
-                LOG_print( "\t· Driver: \"PostgreSQL\". Disconnecting...\n" );
-                PG_disconnect( &db->db_conn.pgsql_conn );
+                LOG_print( log, "\t· Driver: \"PostgreSQL\". Disconnecting...\n" );
+                PG_disconnect( &db->db_conn.pgsql_conn, log );
             }
         } break;
         case D_MYSQL : {
             if( db->db_conn.mysql_conn.active == 1 ) {
-                LOG_print( "\t· Driver: \"MySQL\". Disconnecting...\n" );
-                MYSQL_disconnect( &db->db_conn.mysql_conn );
+                LOG_print( log, "\t· Driver: \"MySQL\". Disconnecting...\n" );
+                MYSQL_disconnect( &db->db_conn.mysql_conn, log );
             }
         } break;
          case D_MARIADB : {
              if( db->db_conn.mariadb_conn.active == 1 ) {
-                 LOG_print( "\t· Driver: \"MariaDB\". Disconnecting...\n" );
-                 MARIADB_disconnect( &db->db_conn.mariadb_conn );
+                 LOG_print( log, "\t· Driver: \"MariaDB\". Disconnecting...\n" );
+                 MARIADB_disconnect( &db->db_conn.mariadb_conn, log );
             }
         } break;
         case D_ODBC : {
             if( db->db_conn.odbc_conn.active == 1 ) {
-                LOG_print( "\t· Driver: \"ODBC\". Disconnecting...\n" );
-                ODBC_disconnect( &db->db_conn.odbc_conn );
+                LOG_print( log, "\t· Driver: \"ODBC\". Disconnecting...\n" );
+                ODBC_disconnect( &db->db_conn.odbc_conn, log );
             }
         } break;
         case D_ORACLE : {
             if( db->db_conn.oracle_conn.active == 1 ) {
-                LOG_print( "\t· Driver: \"Oracle\". Disconnecting...\n" );
-                ORACLE_disconnect( &db->db_conn.oracle_conn );
+                LOG_print( log, "\t· Driver: \"Oracle\". Disconnecting...\n" );
+                ORACLE_disconnect( &db->db_conn.oracle_conn, log );
             }
         } break;
         case D_SQLITE : {
             if( db->db_conn.sqlite_conn.active == 1 ) {
-                LOG_print( "\t· Driver: \"SQLite3\". Disconnecting...\n" );
-                SQLITE_disconnect( &db->db_conn.sqlite_conn );
+                LOG_print( log, "\t· Driver: \"SQLite3\". Disconnecting...\n" );
+                SQLITE_disconnect( &db->db_conn.sqlite_conn, log );
             }
         }
         default : {
@@ -575,37 +578,37 @@ void DATABASE_SYSTEM_DB_free( DATABASE_SYSTEM_DB *db ) {
 }
 
 
-int DATABASE_SYSTEM_DB_init( DATABASE_SYSTEM_DB *db ) {
+int DATABASE_SYSTEM_DB_init( DATABASE_SYSTEM_DB *db, LOG_OBJECT *log ) {
     int         ret = FALSE;
 
     /* Connect with defined database */
     switch( db->driver ) {
         case D_POSTGRESQL : {
-            LOG_print( "\t· Driver: \"PostgreSQL\". Connecting..." );
-            ret = PG_connect( &db->db_conn.pgsql_conn, db->ip, db->port, db->db, db->user, db->password, db->connection_string, db->name );
+            LOG_print( log, "\t· Driver: \"PostgreSQL\". Connecting..." );
+            ret = PG_connect( &db->db_conn.pgsql_conn, db->ip, db->port, db->db, db->user, db->password, db->connection_string, db->name, log );
         } break;
         case D_MYSQL : {
-            LOG_print( "\t· Driver: \"MySQL\". Connecting..." );
-            ret = MYSQL_connect( &db->db_conn.mysql_conn, db->ip, db->port, db->db, db->user, db->password, db->connection_string, db->name );
+            LOG_print( log, "\t· Driver: \"MySQL\". Connecting..." );
+            ret = MYSQL_connect( &db->db_conn.mysql_conn, db->ip, db->port, db->db, db->user, db->password, db->connection_string, db->name, log );
         } break;
         case D_MARIADB : {
-            LOG_print( "\t· Driver: \"MariaDB\". Connecting..." );
-            ret = MARIADB_connect( &db->db_conn.mariadb_conn, db->ip, db->port, db->db, db->user, db->password, db->connection_string, db->name );
+            LOG_print( log, "\t· Driver: \"MariaDB\". Connecting..." );
+            ret = MARIADB_connect( &db->db_conn.mariadb_conn, db->ip, db->port, db->db, db->user, db->password, db->connection_string, db->name, log );
         } break;
         case D_ODBC : {
-            LOG_print( "\t· Driver: \"ODBC\". Connecting (%s)...", db->connection_string, db->name );
-            ret = ODBC_connect( &db->db_conn.odbc_conn, db->ip, db->port, db->db, db->user, db->password, db->connection_string, db->name );
+            LOG_print( log, "\t· Driver: \"ODBC\". Connecting (%s)...", db->connection_string, db->name );
+            ret = ODBC_connect( &db->db_conn.odbc_conn, db->ip, db->port, db->db, db->user, db->password, db->connection_string, db->name, log );
         } break;
         case D_ORACLE : {
-            LOG_print( "\t· Driver: \"Oracle\". Connecting..." );
-            ret = ORACLE_connect( &db->db_conn.oracle_conn, db->ip, db->port, db->db, db->user, db->password, db->connection_string, db->name );
+            LOG_print( log, "\t· Driver: \"Oracle\". Connecting..." );
+            ret = ORACLE_connect( &db->db_conn.oracle_conn, db->ip, db->port, db->db, db->user, db->password, db->connection_string, db->name, log );
         } break;
         case D_SQLITE : {
-            LOG_print( "\t· Driver: \"SQLite3\". Connecting..." );
-            ret = SQLITE_connect( &db->db_conn.sqlite_conn, db->connection_string /* As filename for now. DCPAM would download DB file in future. */, db->name );
+            LOG_print( log, "\t· Driver: \"SQLite3\". Connecting..." );
+            ret = SQLITE_connect( &db->db_conn.sqlite_conn, db->connection_string /* As filename for now. DCPAM would download DB file in future. */, db->name, log );
         } break;
         default : {
-            LOG_print( "Error: unknown driver: \"%d (%s)\".\n", db->driver, db->name );
+            LOG_print( log, "Error: unknown driver: \"%d (%s)\".\n", db->driver, db->name );
         }
     }
 
@@ -613,30 +616,32 @@ int DATABASE_SYSTEM_DB_init( DATABASE_SYSTEM_DB *db ) {
 }
 
 
-void DATABASE_SYSTEM_close( DATABASE_SYSTEM *system ) {
+void DATABASE_SYSTEM_close( DATABASE_SYSTEM *system, LOG_OBJECT *log ) {
 
     if( system != NULL ) {
         if( system->name != NULL ) {
-            LOG_print( "[%s] DATABASE_SYSTEM_close(\"%s\").\n", TIME_get_gmt(), system->name );
+            LOG_print( log, "[%s] DATABASE_SYSTEM_close(\"%s\").\n", TIME_get_gmt(), system->name );
             free( system->name ); system->name = NULL;
         }
         for( int i = 0; i < system->queries_len; i++ ) {
             SYSTEM_QUERY_free( &system->queries[ i ] );
         }
-        DATABASE_SYSTEM_DB_free( &system->system_db );
-        DATABASE_SYSTEM_DB_free( &system->dcpam_db );
+        DATABASE_SYSTEM_DB_free( &system->system_db, log );
+        DATABASE_SYSTEM_DB_free( &system->dcpam_db, log );
         if( system->staging_db ) {
-            DATABASE_SYSTEM_DB_free( system->staging_db );
+            DATABASE_SYSTEM_DB_free( system->staging_db, log );
             free( system->staging_db ); system->staging_db;
         }
-
-        free( system->flat_file->name ); system->flat_file->name = NULL;
-        free( system->flat_file->sql ); system->flat_file->sql = NULL;
-        for( int i = 0; i < system->flat_file->columns_len; i++ ) {
-            free( system->flat_file->columns[ i ] ); system->flat_file->columns[ i ] = NULL;
+        
+        if( system->flat_file ) {
+            free( system->flat_file->name ); system->flat_file->name = NULL;
+            free( system->flat_file->sql ); system->flat_file->sql = NULL;
+            for( int i = 0; i < system->flat_file->columns_len; i++ ) {
+                free( system->flat_file->columns[ i ] ); system->flat_file->columns[ i ] = NULL;
+            }
+            free( system->flat_file->columns ); system->flat_file->columns = NULL;
+            memset( system->flat_file->delimiter, '\0', 1 );
         }
-        free( system->flat_file->columns ); system->flat_file->columns = NULL;
-        memset( system->flat_file->delimiter, '\0', 1 );
     }
 }
 
@@ -649,10 +654,11 @@ void DATABASE_SYSTEM_add(
     DATABASE_SYSTEM_FLAT_FILE *flat_file,
     DATABASE_SYSTEM_QUERY   queries[ MAX_SYSTEM_QUERIES ],
     const int               queries_len,
-    short                   verbose
+    short                   verbose,
+    LOG_OBJECT              *log
 ) {
 
-    if( verbose > 0 ) LOG_print( "[%s] DATABASE_SYSTEM_add( \"%s\", ... ).\n", TIME_get_gmt(), name );
+    if( verbose > 0 ) LOG_print( log, "[%s] DATABASE_SYSTEM_add( \"%s\", ... ).\n", TIME_get_gmt(), name );
     if( DATABASE_SYSTEMS_COUNT < MAX_DATA_SYSTEMS ) {
 
         int j = 0;
@@ -677,7 +683,8 @@ void DATABASE_SYSTEM_add(
                 queries[ j ].mode,
                 queries[ j ].etl_config,
                 &DATABASE_SYSTEMS[ DATABASE_SYSTEMS_COUNT ].queries[ j ],
-                TRUE
+                TRUE,
+                log
             );
         }
 
@@ -696,7 +703,8 @@ void DATABASE_SYSTEM_add(
             source_db->connection_string ? source_db->connection_string : NULL,
             &DATABASE_SYSTEMS[ DATABASE_SYSTEMS_COUNT ].system_db,
             source_db->name,
-            TRUE
+            TRUE,
+            log
         );
 
         /* Create new instance of DCPAM DB connection */
@@ -710,7 +718,8 @@ void DATABASE_SYSTEM_add(
             dcpam_db->connection_string ? dcpam_db->connection_string : NULL,
             &DATABASE_SYSTEMS[ DATABASE_SYSTEMS_COUNT ].dcpam_db,
             dcpam_db->name,
-            TRUE
+            TRUE,
+            log
         );
 
         /* Create new instance od Staging Area connection */
@@ -727,7 +736,8 @@ void DATABASE_SYSTEM_add(
                 staging_db->connection_string ? staging_db->connection_string : NULL,
                 DATABASE_SYSTEMS[ DATABASE_SYSTEMS_COUNT ].staging_db,
                 staging_db->name,
-                TRUE
+                TRUE,
+                log
             );
         }
 
@@ -768,7 +778,7 @@ void DATABASE_SYSTEM_add(
 
         DATABASE_SYSTEMS_COUNT++;
     } else {
-        LOG_print( "error. Maximum data systems limit exceeded.\n" );
+        LOG_print( log, "error. Maximum data systems limit exceeded.\n" );
     }
 }
 

@@ -10,17 +10,18 @@
 
 char                    app_path[ MAX_PATH_LENGTH + 1 ];
 char                    LOG_filename[ MAX_PATH_LENGTH ];
+LOG_OBJECT              dcpam_rdp_log;
 R_DCPAM_APP             R_APP;
 
 void app_terminate( void ) {
-    printf( "\rService is being closed..." );
+    LOG_print( &dcpam_rdp_log, "\rService is being closed..." );
     SOCKET_stop();
-    printf( "ok.\n" );
+    LOG_print( &dcpam_rdp_log, "ok.\n" );
     return;
 }
 
 void DCPAM_script_exec( COMMUNICATION_SESSION *communication_session, CONNECTED_CLIENT *client  ) {
-    LOG_print( "[%s] Received data (%ld): %s\n", TIME_get_gmt(), communication_session->data_length, communication_session->content );
+    LOG_print( &dcpam_rdp_log, "[%s] Received data (%ld): %s\n", TIME_get_gmt(), communication_session->data_length, communication_session->content );
 
     if( strstr( communication_session->content, "m=./" ) && strstr( communication_session->content, ".." ) == NULL ) {
         FILE    *script = NULL;
@@ -43,37 +44,37 @@ void DCPAM_script_exec( COMMUNICATION_SESSION *communication_session, CONNECTED_
         for( int i = 0; i < R_APP.ALLOWED_HOSTS_len; i++ ) {
             if( strcmp( ip, R_APP.ALLOWED_HOSTS_[ i ]->ip ) == 0 ) {
                 if( strcmp( key, R_APP.ALLOWED_HOSTS_[ i ]->api_key ) != 0 ) {
-                    LOG_print( "[%s] Error: KEY in request is invalid.\n", TIME_get_gmt() );
+                    LOG_print( &dcpam_rdp_log, "[%s] Error: KEY in request is invalid.\n", TIME_get_gmt() );
                     SOCKET_send( communication_session, client, "-1", 2 );
                     return;
                 }
             }
         }
 
-        LOG_print( "[%s] Access granted for client %s with key %s.\n", TIME_get_gmt(), ip, key );
+        LOG_print( &dcpam_rdp_log, "[%s] Access granted for client %s with key %s.\n", TIME_get_gmt(), ip, key );
 
         snprintf( command, 4096, "%s --dhost %s --dport %d --duser %s --dpass %s --ddriver %d --dconn \"%s\" --shost %s --sport %d --suser %s --spass %s --sdriver %d --sconn \"%s\"", module, dhost, dport, duser, dpass, ddriver, dconn, shost, sport, suser, spass, sdriver, sconn );
-        LOG_print( "[%s] Executing local script %s...\n", TIME_get_gmt(), command );
+        LOG_print( &dcpam_rdp_log, "[%s] Executing local script %s...\n", TIME_get_gmt(), command );
 
         script = popen( command, READ_BINARY );
         if( script == NULL ) {
-            LOG_print( "[%s] Error executing script %s.\n", TIME_get_gmt(), command );
+            LOG_print( &dcpam_rdp_log, "[%s] Error executing script %s.\n", TIME_get_gmt(), command );
             SOCKET_send( communication_session, client, "-1", 2 );
             pclose( script );
             return;
         }
         res_len = fread( res, sizeof( char ), 1, script );
         if( res_len == 0 ) {
-            LOG_print( "[%s] Error executing script %s. No data returned.\n", TIME_get_gmt(), command );
+            LOG_print( &dcpam_rdp_log, "[%s] Error executing script %s. No data returned.\n", TIME_get_gmt(), command );
             SOCKET_send( communication_session, client, "-1", 2 );
             pclose( script );
             return;
         }
-        LOG_print( "[%s] Script %s finished with result: %s.\n", TIME_get_gmt(), command, res );
+        LOG_print( &dcpam_rdp_log, "[%s] Script %s finished with result: %s.\n", TIME_get_gmt(), command, res );
         SOCKET_send( communication_session, client, "1", 1 );
         pclose( script );
     } else {
-        LOG_print( "[%s] Error: input data is invalid.\n", TIME_get_gmt() );
+        LOG_print( &dcpam_rdp_log, "[%s] Error: input data is invalid.\n", TIME_get_gmt() );
         SOCKET_send( communication_session, client, "-1", 2 );
     }
 }
@@ -105,7 +106,7 @@ int DCPAM_RDP_load_configuration( const char* filename ) {
     char* config_string = NULL;
 
 
-    LOG_print( "[%s] DCPAM_RDP_load_configuration( %s ).\n", TIME_get_gmt(), filename );
+    LOG_print( &dcpam_rdp_log, "[%s] DCPAM_RDP_load_configuration( %s ).\n", TIME_get_gmt(), filename );
 
     config_string = file_get_content( filename );
 
@@ -122,7 +123,7 @@ int DCPAM_RDP_load_configuration( const char* filename ) {
                     R_APP.name = SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
                     snprintf( R_APP.name, str_len + 1, cfg_app_name->valuestring );
                 } else {
-                    LOG_print( "ERROR: \"app.name\" key not found.\n" );
+                    LOG_print( &dcpam_rdp_log, "ERROR: \"app.name\" key not found.\n" );
                     cJSON_Delete( config_json );
                     free( config_string ); config_string = NULL;
                     return FALSE;
@@ -133,9 +134,9 @@ int DCPAM_RDP_load_configuration( const char* filename ) {
                     size_t str_len = strlen( cfg_app_version->valuestring );
                     R_APP.version = SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
                     snprintf( R_APP.version, str_len + 1, cfg_app_version->valuestring );
-                    LOG_print( "%s v%s.\n", R_APP.name, R_APP.version );
+                    LOG_print( &dcpam_rdp_log, "%s v%s.\n", R_APP.name, R_APP.version );
                 } else {
-                    LOG_print( "ERROR: \"app.version\" key not found.\n" );
+                    LOG_print( &dcpam_rdp_log, "ERROR: \"app.version\" key not found.\n" );
                     cJSON_Delete( config_json );
                     free( config_string ); config_string = NULL;
                     return FALSE;
@@ -150,7 +151,7 @@ int DCPAM_RDP_load_configuration( const char* filename ) {
                     } else {
                         R_APP.network_port = 9090;
                     }
-                    LOG_print( "Network port is set to %d.\n", R_APP.network_port );
+                    LOG_print( &dcpam_rdp_log, "Network port is set to %d.\n", R_APP.network_port );
 
                     cfg_app_network_allowed_hosts = cJSON_GetObjectItem( cfg_app_network, "allowed_hosts" );
                     if( cfg_app_network_allowed_hosts ) {
@@ -179,19 +180,19 @@ int DCPAM_RDP_load_configuration( const char* filename ) {
                         }
 
                     } else {
-                        LOG_print( "ERROR: \"app.network.allowed_hosts\" key not found.\n" );
+                        LOG_print( &dcpam_rdp_log, "ERROR: \"app.network.allowed_hosts\" key not found.\n" );
                         cJSON_Delete( config_json );
                         free( config_string ); config_string = NULL;
                         return FALSE;
                     }
                 } else {
-                    LOG_print( "ERROR: \"app.network\" key not found.\n" );
+                    LOG_print( &dcpam_rdp_log, "ERROR: \"app.network\" key not found.\n" );
                     cJSON_Delete( config_json );
                     free( config_string ); config_string = NULL;
                     return FALSE;
                 }
             } else {
-                LOG_print( "ERROR: \"app\" key not found.\n " );
+                LOG_print( &dcpam_rdp_log, "ERROR: \"app\" key not found.\n " );
                 cJSON_Delete( config_json );
                 free( config_string ); config_string = NULL;
                 return FALSE;
@@ -204,7 +205,7 @@ int DCPAM_RDP_load_configuration( const char* filename ) {
 
         result = 1;
     } else {
-        LOG_print( "[%s] Fatal error: unable to open config file \"%s\"!\n", TIME_get_gmt(), filename );
+        LOG_print( &dcpam_rdp_log, "[%s] Fatal error: unable to open config file \"%s\"!\n", TIME_get_gmt(), filename );
     }
 
     return result;
@@ -220,13 +221,13 @@ int main( int argc, char** argv ) {
     signal( SIGABRT, ( __sighandler_t )&app_terminate );
     signal( SIGTERM, ( __sighandler_t )&app_terminate );
 
-    LOG_init( "dcpam-rdp" );
+    LOG_init( &dcpam_rdp_log, "dcpam-rdp" );
     memset( config_file, '\0', MAX_PATH_LENGTH );
     if( argc <= 1 ) {
         snprintf( config_file, MAX_PATH_LENGTH, "./conf/rdp_config.json" );
     } else {
         if( strlen( argv[ 1 ] ) > MAX_PATH_LENGTH ) {
-            LOG_print( "[%s] Notice: \"%s\" is not valid config file name.\n", TIME_get_gmt(), argv[ 1 ] );
+            LOG_print( &dcpam_rdp_log, "[%s] Notice: \"%s\" is not valid config file name.\n", TIME_get_gmt(), argv[ 1 ] );
             snprintf( config_file, MAX_PATH_LENGTH, "rdp_config.json" );
         } else {
             snprintf( config_file, MAX_PATH_LENGTH, "%s", argv[ 1 ] );
@@ -234,7 +235,7 @@ int main( int argc, char** argv ) {
     }
 
     if( DCPAM_RDP_load_configuration( config_file ) == 1 ) {
-        LOG_print( "[%s] DCPAM Remote Data Processor configuration loaded.\n", TIME_get_gmt() );
+        LOG_print( &dcpam_rdp_log, "[%s] DCPAM Remote Data Processor configuration loaded.\n", TIME_get_gmt() );
 
         spc exec_script = ( spc )&DCPAM_script_exec;
         char **allowed_hosts_ip = SAFEMALLOC( R_APP.ALLOWED_HOSTS_len * sizeof * R_APP.ALLOWED_HOSTS_, __FILE__, __LINE__ );
@@ -245,7 +246,7 @@ int main( int argc, char** argv ) {
             snprintf( allowed_hosts_ip[ i ], str_len + 1, R_APP.ALLOWED_HOSTS_[ i ]->ip );
         }
 
-        SOCKET_main( &exec_script, R_APP.network_port, ( const char** )&(*allowed_hosts_ip), R_APP.ALLOWED_HOSTS_len );
+        SOCKET_main( &exec_script, R_APP.network_port, ( const char** )&(*allowed_hosts_ip), R_APP.ALLOWED_HOSTS_len, &dcpam_rdp_log );
     }
 
     return 0;

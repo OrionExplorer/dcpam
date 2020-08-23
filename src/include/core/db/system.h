@@ -12,7 +12,8 @@ void DATABASE_SYSTEM_add(
             DATABASE_SYSTEM_FLAT_FILE* flat_file,
             DATABASE_SYSTEM_QUERY   queries[ MAX_SYSTEM_QUERIES ],
             const int               queries_len,
-            short                   verbose
+            short                   verbose,
+            LOG_OBJECT              *log
 );
 
 
@@ -26,25 +27,30 @@ void DATABASE_SYSTEM_DB_add(
             const char              *connection_string,
             DATABASE_SYSTEM_DB      *dst,
             const char              *name,
-            short                   verbose
+            short                   verbose,
+            LOG_OBJECT              *log
 );
 
 
 int DATABASE_SYSTEM_DB_init (
-            DATABASE_SYSTEM_DB      *db
+            DATABASE_SYSTEM_DB      *db,
+            LOG_OBJECT              *log
 );
 
 
 void DATABASE_SYSTEM_DB_free(
-            DATABASE_SYSTEM_DB      *db
+            DATABASE_SYSTEM_DB      *db,
+            LOG_OBJECT              *log
 );
 
 void DATABASE_SYSTEM_DB_close(
-            DATABASE_SYSTEM_DB      *db
+            DATABASE_SYSTEM_DB      *db,
+            LOG_OBJECT              *log
 );
 
 void DATABASE_SYSTEM_close(
-            DATABASE_SYSTEM         *system
+            DATABASE_SYSTEM         *system,
+            LOG_OBJECT              *log
 );
 
 
@@ -53,7 +59,8 @@ void DATABASE_SYSTEM_QUERY_add(
             DB_SYSTEM_MODE          mode,
             DB_SYSTEM_ETL           etl,
             DATABASE_SYSTEM_QUERY   *dst,
-            short                   verbose
+            short                   verbose,
+            LOG_OBJECT              *log
 );
 
 int DB_exec(
@@ -68,7 +75,8 @@ int DB_exec(
             const char              *param_types,
             qec                     *query_exec_callback,
             void                    *data_ptr1,
-            void                    *data_ptr2
+            void                    *data_ptr2,
+            LOG_OBJECT              *log
 );
 
 DATABASE_SYSTEM_DB *DATABASE_SYSTEM_DB_get(

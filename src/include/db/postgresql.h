@@ -24,7 +24,8 @@ int PG_connect(
     const char* user,
     const char* password,
     const char* connection_string,
-    const char* name
+    const char* name,
+    LOG_OBJECT* log
 );
 
 int PG_exec(
@@ -39,8 +40,10 @@ int PG_exec(
     Oid *param_types,
     qec *query_exec_callback,
     void *data_ptr1,
-    void *data_ptr2
+    void *data_ptr2,
+    LOG_OBJECT* log
 );
-void PG_disconnect( PG_CONNECTION* db_connection );
+
+void PG_disconnect( PG_CONNECTION* db_connection, LOG_OBJECT* log );
 
 #endif

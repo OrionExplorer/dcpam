@@ -32,24 +32,24 @@ struct in_addr          addr;
 
 int                     http_conn_count = 0;
 
-void     SOCKET_initialization( const int port );
-void     SOCKET_prepare( void );
-void     SOCKET_process( int socket_fd, spc *socket_process_callback );
+void     SOCKET_initialization( const int port, LOG_OBJECT *log );
+void     SOCKET_prepare( LOG_OBJECT *log );
+void     SOCKET_process( int socket_fd, spc *socket_process_callback, LOG_OBJECT *log );
 void     SOCKET_stop( void );
 
-void SOCKET_initialization( const int port ) {
-    LOG_print("[%s] Initializing network...", TIME_get_gmt() );
+void SOCKET_initialization( const int port, LOG_OBJECT *log ) {
+    LOG_print( log, "[%s] Initializing network...", TIME_get_gmt() );
 
     #ifdef _WIN32
         if ( WSAStartup( MAKEWORD( 2, 2 ), &wsk ) != 0 ) {
-            LOG_print( "error creating Winsock.\n" );
+            LOG_print( log, "error creating Winsock.\n" );
             exit( EXIT_FAILURE );
         }
     #endif
 
     socket_server = socket( AF_INET, SOCK_STREAM, IPPROTO_TCP );
     if ( socket_server == SOCKET_ERROR ) {
-        LOG_print( "error creating socket.\n" );
+        LOG_print( log, "error creating socket.\n" );
         SOCKET_stop();
         exit( EXIT_FAILURE );
     }
@@ -62,7 +62,7 @@ void SOCKET_initialization( const int port ) {
     server_address.sin_port = htons( ( unsigned short )active_port );
 }
 
-void SOCKET_prepare( void ) {
+void SOCKET_prepare( LOG_OBJECT *log ) {
     unsigned long b = 0;
     int i = 1;
     int wsa_result = 0;
@@ -81,46 +81,46 @@ void SOCKET_prepare( void ) {
 
     if( setsockopt( socket_server, SOL_SOCKET, SO_REUSEADDR, &i, sizeof( int ) ) == SOCKET_ERROR ) {
         wsa_result = WSAGetLastError();
-        LOG_print( "setsockopt( SO_REUSEADDR ) error: %d.\n", wsa_result );
+        LOG_print( log, "setsockopt( SO_REUSEADDR ) error: %d.\n", wsa_result );
     }
 
     if ( bind( socket_server, ( struct sockaddr* )&server_address, sizeof( server_address ) ) == SOCKET_ERROR ) {
         wsa_result = WSAGetLastError();
-        LOG_print( "bind error: %d.\n", wsa_result );
+        LOG_print( log, "bind error: %d.\n", wsa_result );
         SOCKET_stop();
         exit( EXIT_FAILURE );
     }
 
     if( setsockopt( socket_server, SOL_SOCKET, SO_RCVTIMEO, ( char* )&tv, sizeof( struct timeval ) ) == SOCKET_ERROR ) {
         wsa_result = WSAGetLastError();
-        LOG_print( "setsockopt( SO_RCVTIMEO ) error: %d.\n", wsa_result );
+        LOG_print( log, "setsockopt( SO_RCVTIMEO ) error: %d.\n", wsa_result );
     }
 
     if( setsockopt( socket_server, SOL_SOCKET, SO_SNDTIMEO, ( char* )&tv, sizeof( struct timeval ) ) == SOCKET_ERROR ) {
         wsa_result = WSAGetLastError();
-        LOG_print( "setsockopt( SO_SNDTIMEO ) error: %d.\n", wsa_result );
+        LOG_print( log, "setsockopt( SO_SNDTIMEO ) error: %d.\n", wsa_result );
     }
 
     if( setsockopt( socket_server, IPPROTO_TCP, TCP_NODELAY, ( char * )&i, sizeof( i ) ) == SOCKET_ERROR ) {
         wsa_result = WSAGetLastError();
-        LOG_print( "setsockopt( TCP_NODELAY ) error: %d.\n", wsa_result );
+        LOG_print( log, "setsockopt( TCP_NODELAY ) error: %d.\n", wsa_result );
     }
 
     if( fcntl( socket_server, F_SETFL, &b ) == SOCKET_ERROR ) {
         wsa_result = WSAGetLastError();
-        LOG_print( "ioctlsocket error: %d.\n", wsa_result );
+        LOG_print( log, "ioctlsocket error: %d.\n", wsa_result );
         SOCKET_stop();
         exit( EXIT_FAILURE );
     }
 
     if( listen( socket_server, MAX_CLIENTS ) == SOCKET_ERROR ) {
         wsa_result = WSAGetLastError();
-        LOG_print( "listen error: %d.\n", wsa_result );
+        LOG_print( log, "listen error: %d.\n", wsa_result );
         SOCKET_stop();
         exit( EXIT_FAILURE );
     }
 
-    LOG_print( "ok.\n" );
+    LOG_print( log, "ok.\n" );
 }
 
 int SOCKET_client_host_allowed( const char *ip, const char **allowed_hosts, int hosts_len ) {
@@ -134,7 +134,7 @@ int SOCKET_client_host_allowed( const char *ip, const char **allowed_hosts, int 
     return 0;
 }
 
-void SOCKET_run( spc *socket_process_callback, const char **allowed_hosts, const int hosts_len ) {
+void SOCKET_run( spc *socket_process_callback, const char **allowed_hosts, const int hosts_len, LOG_OBJECT *log ) {
     struct timeval tv;
     pthread_t sthread;
 
@@ -162,33 +162,33 @@ void SOCKET_run( spc *socket_process_callback, const char **allowed_hosts, const
                     newfd = accept( socket_server, ( struct sockaddr* )&communication_session_.address, &communication_session_.data_length );
                     int client_allowed = SOCKET_client_host_allowed( inet_ntoa( communication_session_.address.sin_addr ), &( *allowed_hosts ), hosts_len );
                     if( client_allowed == 0 ) {
-                        SOCKET_unregister_client( newfd );
+                        SOCKET_unregister_client( newfd, log );
                         SOCKET_close( newfd );
-                        LOG_print( "[%s] WARNING: host %s is not allowed.\n", TIME_get_gmt(), inet_ntoa( communication_session_.address.sin_addr ) );
+                        LOG_print( log, "[%s] WARNING: host %s is not allowed.\n", TIME_get_gmt(), inet_ntoa( communication_session_.address.sin_addr ) );
                         continue;
                     } else {
-                        LOG_print( "[%s] Client IP: %s.\n", TIME_get_gmt(), inet_ntoa( communication_session_.address.sin_addr ) );
+                        LOG_print( log, "[%s] Client IP: %s.\n", TIME_get_gmt(), inet_ntoa( communication_session_.address.sin_addr ) );
                     }
                     communication_session_.socket_descriptor = newfd;
 
                     if( newfd == -1 ) {
-                        LOG_print( "[%s] Socket closed.\n", TIME_get_gmt() );
+                        LOG_print( log, "[%s] Socket closed.\n", TIME_get_gmt() );
                     } else {
-                        SOCKET_register_client( newfd );
+                        SOCKET_register_client( newfd, log );
                         FD_SET( newfd, &master );
                         if( newfd > fdmax ) {
                             fdmax = newfd;
                         }
                     }
                 } else {
-                    SOCKET_process( i, socket_process_callback ? socket_process_callback : NULL );
+                    SOCKET_process( i, socket_process_callback ? socket_process_callback : NULL, log );
                 }
             }
         }
     }
 }
 
-void SOCKET_process( int socket_fd, spc *socket_process_callback ) {
+void SOCKET_process( int socket_fd, spc *socket_process_callback, LOG_OBJECT *log ) {
     CONNECTED_CLIENT *client = SOCKET_find_client( socket_fd );
     extern int errno;
 
@@ -199,15 +199,15 @@ void SOCKET_process( int socket_fd, spc *socket_process_callback ) {
     communication_session_.data_length = recv( ( int )socket_fd, communication_session_.content, MAX_BUFFER, 0 );
 
     if( errno > 1) {
-        SOCKET_unregister_client( socket_fd );
+        SOCKET_unregister_client( socket_fd, log );
         SOCKET_close( socket_fd );
     } else {
         if ( communication_session_.data_length <= 0 ) {
-            SOCKET_unregister_client( socket_fd );
+            SOCKET_unregister_client( socket_fd, log );
             SOCKET_close( socket_fd );
         } else {
             if( socket_process_callback ) {
-                    ( *socket_process_callback )( &communication_session_, client );
+                    ( *socket_process_callback )( &communication_session_, client, log );
             }
         }
     }
@@ -280,34 +280,34 @@ char* SOCKET_get_remote_ip( COMMUNICATION_SESSION *communication_session ) {
     return ( ( char* )&ip_addr );
 }
 
-void SOCKET_main( spc* socket_process_callback, const int port, const char** allowed_hosts, const int hosts_len ) {
-    SOCKET_initialization( port );
-    SOCKET_prepare();
-    SOCKET_run( socket_process_callback, &(*allowed_hosts), hosts_len );
+void SOCKET_main( spc* socket_process_callback, const int port, const char** allowed_hosts, const int hosts_len, LOG_OBJECT *log ) {
+    SOCKET_initialization( port, log );
+    SOCKET_prepare( log );
+    SOCKET_run( socket_process_callback, &(*allowed_hosts), hosts_len, log );
     SOCKET_stop();
 }
 
-void SOCKET_register_client( int socket_descriptor ) {
+void SOCKET_register_client( int socket_descriptor, LOG_OBJECT *log ) {
     int i;
 
     for( i = 0; i < MAX_CLIENTS; i++ ){
         if( connected_clients[ i ].socket_descriptor == 0 ) {
             connected_clients[ i ].socket_descriptor = socket_descriptor;
             connected_clients[ i ].connected = 1;
-            LOG_print( "[%s] Client connected with descriptor %d.\n", TIME_get_gmt(), socket_descriptor );
+            LOG_print( log, "[%s] Client connected with descriptor %d.\n", TIME_get_gmt(), socket_descriptor );
             return;
         }
     }
 }
 
-void SOCKET_unregister_client( int socket_descriptor ) {
+void SOCKET_unregister_client( int socket_descriptor, LOG_OBJECT *log ) {
     int i;
 
     for( i = 0; i < MAX_CLIENTS; i++ ){
         if( connected_clients[ i ].socket_descriptor == socket_descriptor ) {
             connected_clients[ i ].socket_descriptor = 0;
             connected_clients[ i ].connected = 0;
-            LOG_print( "[%s] Client disconnected: %d.\n", TIME_get_gmt(), socket_descriptor );
+            LOG_print( log, "[%s] Client disconnected: %d.\n", TIME_get_gmt(), socket_descriptor );
             break;
         }
     }

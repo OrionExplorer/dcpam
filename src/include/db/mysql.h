@@ -24,7 +24,8 @@ int MYSQL_connect(
     const char* user,
     const char* password,
     const char* connection_string,
-    const char* name
+    const char* name,
+    LOG_OBJECT* log
 );
 
 int MYSQL_exec(
@@ -39,9 +40,10 @@ int MYSQL_exec(
     const char* const *param_types,
     qec* query_exec_callback,
     void* data_ptr1,
-    void* data_ptr2
+    void* data_ptr2,
+    LOG_OBJECT* log
 );
 
-void MYSQL_disconnect( MYSQL_CONNECTION* db_connection );
+void MYSQL_disconnect( MYSQL_CONNECTION* db_connection, LOG_OBJECT* log );
 
 #endif

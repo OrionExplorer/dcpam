@@ -201,7 +201,7 @@ DB_QUERY_TYPE DB_QUERY_get_type( const char* sql ) {
     }
 }
 
-int DB_QUERY_format( const char* src, char **dst, size_t *dst_length, const char* const* param_values, const int params_count, const int *param_lengths ) {
+int DB_QUERY_format( const char* src, char **dst, size_t *dst_length, const char* const* param_values, const int params_count, const int *param_lengths, LOG_OBJECT *log ) {
     size_t      src_len = 0;
     size_t      dst_len = 0;
     int         i = 0;
@@ -213,15 +213,15 @@ int DB_QUERY_format( const char* src, char **dst, size_t *dst_length, const char
 
     /* Main checks */
     if( src == NULL ) {
-        LOG_print( "Error: src pointer is NULL.\n" );
+        LOG_print( log, "Error: src pointer is NULL.\n" );
         return FALSE;
     }
     if( strstr( ptr_src, "?" ) == NULL ) {
-        LOG_print( "Notice: SQL statement does not qualify to format.\n" );
+        LOG_print( log, "[%s] Notice: SQL statement does not qualify to format.\n", TIME_get_gmt() );
         return TRUE;
     }
     if( *dst != NULL ) {
-        LOG_print( "Error: dst pointer is already initialized.\n" );
+        LOG_print( log, "Error: dst pointer is already initialized.\n" );
         return FALSE;
     }
     /* Get SQL statement template length */
@@ -241,8 +241,8 @@ int DB_QUERY_format( const char* src, char **dst, size_t *dst_length, const char
     }
     /* Check if "?" count is equal to params_count */
     if( src_params_count > params_count ) {
-        LOG_print( "Error: too few extracted_values! %d are set, but %d are provided!\n", src_params_count, params_count );
-        LOG_print( "SQL: %s\n", src );
+        LOG_print( log, "Error: too few extracted_values! %d are set, but %d are provided!\n", src_params_count, params_count );
+        LOG_print( log, "SQL: %s\n", src );
         return FALSE;
     }
     /* Init dst buffer */

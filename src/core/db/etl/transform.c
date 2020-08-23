@@ -19,10 +19,10 @@
 
 extern DCPAM_APP           APP;
 
-int CDC_TransformGeneric( DB_SYSTEM_ETL_TRANSFORM_QUERY *transform_element, DATABASE_SYSTEM_DB* dcpam_db, DATABASE_SYSTEM_DB* system_db );
+int CDC_TransformGeneric( DB_SYSTEM_ETL_TRANSFORM_QUERY *transform_element, DATABASE_SYSTEM_DB* dcpam_db, DATABASE_SYSTEM_DB* system_db, LOG_OBJECT *log );
 
 
-int CDC_TransformGeneric( DB_SYSTEM_ETL_TRANSFORM_QUERY *transform_element, DATABASE_SYSTEM_DB* dcpam_db, DATABASE_SYSTEM_DB* system_db ) {
+int CDC_TransformGeneric( DB_SYSTEM_ETL_TRANSFORM_QUERY *transform_element, DATABASE_SYSTEM_DB* dcpam_db, DATABASE_SYSTEM_DB* system_db, LOG_OBJECT *log ) {
     if( strstr( transform_element->module, "dcpam://" ) == NULL && strstr( transform_element->module, "./" ) && strstr( transform_element->module, ".." )  == NULL ) {
         FILE    *script = NULL;
         char    command[ 4096 ];
@@ -49,22 +49,22 @@ int CDC_TransformGeneric( DB_SYSTEM_ETL_TRANSFORM_QUERY *transform_element, DATA
             system_db->connection_string
         );
 
-        LOG_print( "[%s] Running local transform data process at %s.", TIME_get_gmt(), command );
-        LOG_print( "[%s] Executing local script %s...\n", TIME_get_gmt(), command );
+        LOG_print( log, "[%s] Running local transform data process at %s.", TIME_get_gmt(), command );
+        LOG_print( log, "[%s] Executing local script %s...\n", TIME_get_gmt(), command );
         script = popen( command, READ_BINARY );
         if( script == NULL ) {
-            LOG_print( "[%s] Error executing script %s.\n", TIME_get_gmt(), command );
+            LOG_print( log, "[%s] Error executing script %s.\n", TIME_get_gmt(), command );
             pclose( script );
             return 0;
         }
         res_len = fread( res, sizeof( char ), 1, script );
         if( res_len == 0 ) {
-            LOG_print( "[%s] Error executing script %s. No data returned.\n", TIME_get_gmt(), command );
+            LOG_print( log, "[%s] Error executing script %s. No data returned.\n", TIME_get_gmt(), command );
             pclose( script );
             return 0;
         }
         res[ res_len ] = 0;
-        LOG_print( "[%s] Script %s finished with result: %s.\n", TIME_get_gmt(), command, res );
+        LOG_print( log, "[%s] Script %s finished with result: %s.\n", TIME_get_gmt(), command, res );
         pclose( script );
 
         return 1;
@@ -95,31 +95,35 @@ int CDC_TransformGeneric( DB_SYSTEM_ETL_TRANSFORM_QUERY *transform_element, DATA
             transform_element->api_key
         );
 
-        LOG_print( "[%s] Running remote transform data process at dcpam://%s:%d with payload %s\n", TIME_get_gmt(), host, port, command );
+        LOG_print( log, "[%s] Running remote transform data process at dcpam://%s:%d with payload %s\n", TIME_get_gmt(), host, port, command );
 
         transform_element->connection = SAFEMALLOC( sizeof( NET_CONN ), __FILE__, __LINE__ );
+        transform_element->connection->log = log;
         if( NET_CONN_connect( transform_element->connection, host, port ) == 1 ) {
 
-            LOG_print( "[%s] NET_CONN_send...", TIME_get_gmt() );
+            LOG_print( log, "[%s] NET_CONN_send...", TIME_get_gmt() );
             if( NET_CONN_send( transform_element->connection, command, strlen( command ) ) == 1 ) {
-                LOG_print( "ok.\n" );
-                LOG_print( "[%s] Received response: %s\n", TIME_get_gmt(), transform_element->connection->response );
+                LOG_print( log, "ok.\n" );
+                LOG_print( log, "[%s] Received response: %s\n", TIME_get_gmt(), transform_element->connection->response );
                 if( strstr( transform_element->connection->response, "0") ) {
-                    LOG_print( "[%s] Transform process exited with failure.\n" );
+                    LOG_print( log, "[%s] Transform process exited with failure.\n" );
                     free( transform_element->connection ); transform_element->connection = NULL;
                     return 0;
                 }
             } else {
-                LOG_print( "error.\n" );
+                LOG_print( log, "error.\n" );
                 NET_CONN_disconnect( transform_element->connection );
+                transform_element->connection->log = NULL;
                 free( transform_element->connection ); transform_element->connection = NULL;
                 return 0;
             }
             NET_CONN_disconnect( transform_element->connection );
         } else {
+            transform_element->connection->log = NULL;
             free( transform_element->connection ); transform_element->connection = NULL;
             return 0;
         }
+        transform_element->connection->log = NULL;
         free( transform_element->connection ); transform_element->connection = NULL;
     }
 
@@ -127,42 +131,42 @@ int CDC_TransformGeneric( DB_SYSTEM_ETL_TRANSFORM_QUERY *transform_element, DATA
 }
 
 
-int DB_CDC_TransformInserted( DB_SYSTEM_ETL_TRANSFORM_QUERY **transform_elements, const int count, DATABASE_SYSTEM_DB* dcpam_db, DATABASE_SYSTEM_DB* system_db ) {
+int DB_CDC_TransformInserted( DB_SYSTEM_ETL_TRANSFORM_QUERY **transform_elements, const int count, DATABASE_SYSTEM_DB* dcpam_db, DATABASE_SYSTEM_DB* system_db, LOG_OBJECT *log ) {
     if( transform_elements && dcpam_db && system_db ) {
-        LOG_print( "\t· [CDC - TRANSFORM::INSERTED]:\n" );
+        LOG_print( log, "\t· [CDC - TRANSFORM::INSERTED]:\n" );
         for( int i = 0; i < count; i++ ) {
-            return CDC_TransformGeneric( transform_elements[ i ], dcpam_db, system_db );
+            return CDC_TransformGeneric( transform_elements[ i ], dcpam_db, system_db, log );
         }
         return 1;
     } else {
-        LOG_print( "\t· [CDC - TRANSFORM::INSERTED] Fatal error: not all DB_CDC_TransformInserted parameters are valid!\n" );
+        LOG_print( log, "\t· [CDC - TRANSFORM::INSERTED] Fatal error: not all DB_CDC_TransformInserted parameters are valid!\n" );
         return 0;
     }
 
 }
 
-int DB_CDC_TransformDeleted( DB_SYSTEM_ETL_TRANSFORM_QUERY **transform_elements, const int count, DATABASE_SYSTEM_DB* dcpam_db, DATABASE_SYSTEM_DB* system_db ) {
+int DB_CDC_TransformDeleted( DB_SYSTEM_ETL_TRANSFORM_QUERY **transform_elements, const int count, DATABASE_SYSTEM_DB* dcpam_db, DATABASE_SYSTEM_DB* system_db, LOG_OBJECT *log ) {
     if( transform_elements && dcpam_db && system_db ) {
-        LOG_print( "\t· [CDC - TRANSFORM::DELETED]:\n" );
+        LOG_print( log, "\t· [CDC - TRANSFORM::DELETED]:\n" );
         for( int i = 0; i < count; i++ ) {
-            return CDC_TransformGeneric( transform_elements[ i ], dcpam_db, system_db );
+            return CDC_TransformGeneric( transform_elements[ i ], dcpam_db, system_db, log );
         }
         return 1;
     } else {
-        LOG_print( "\t· [CDC - TRANSFORM::DELETED] Fatal error: not all DB_CDC_TransformDeleted parameters are valid!\n" ); 
+        LOG_print( log, "\t· [CDC - TRANSFORM::DELETED] Fatal error: not all DB_CDC_TransformDeleted parameters are valid!\n" ); 
         return 0;
     }
 }
 
-int DB_CDC_TransformModified( DB_SYSTEM_ETL_TRANSFORM_QUERY **transform_elements, const int count, DATABASE_SYSTEM_DB* dcpam_db, DATABASE_SYSTEM_DB* system_db ) {
+int DB_CDC_TransformModified( DB_SYSTEM_ETL_TRANSFORM_QUERY **transform_elements, const int count, DATABASE_SYSTEM_DB* dcpam_db, DATABASE_SYSTEM_DB* system_db, LOG_OBJECT *log ) {
     if( transform_elements && dcpam_db && system_db ) {
-        LOG_print( "\t· [CDC - TRANSFORM::MODIFIED]:\n" );
+        LOG_print( log, "\t· [CDC - TRANSFORM::MODIFIED]:\n" );
         for( int i = 0; i < count; i++ ) {
-            return CDC_TransformGeneric( transform_elements[ i ], dcpam_db, system_db );
+            return CDC_TransformGeneric( transform_elements[ i ], dcpam_db, system_db, log );
         }
         return 1;
     } else {
-        LOG_print( "\t· [CDC - TRANSFORM::MODIFIED] Fatal error: not all DB_CDC_TransformModified parameters are valid!\n" );
+        LOG_print( log, "\t· [CDC - TRANSFORM::MODIFIED] Fatal error: not all DB_CDC_TransformModified parameters are valid!\n" );
         return 0;
     }
 }

@@ -5,11 +5,11 @@
 
 int NET_CONN_connect( NET_CONN *connection, const char *host, const int port ) {
 
-    LOG_print( "[%s] NET_CONN_connect( %s, %d )...", TIME_get_gmt(), host, port );
+    LOG_print( connection->log, "[%s] NET_CONN_connect( %s, %d )...", TIME_get_gmt(), host, port );
 
     connection->socket = socket( AF_INET, SOCK_STREAM, 0 );
     if ( connection->socket == -1) {
-        LOG_print("error. Could not create socket.\n");
+        LOG_print( connection->log, "error. Could not create socket.\n");
     }
     
     connection->server.sin_addr.s_addr = inet_addr( host );
@@ -22,29 +22,29 @@ int NET_CONN_connect( NET_CONN *connection, const char *host, const int port ) {
     snprintf( connection->host, 255, host );
     connection->port = port;
 
-    LOG_print( "ok. Connecting...", TIME_get_gmt() );
+    LOG_print( connection->log, "ok. Connecting...", TIME_get_gmt() );
     if (connect( connection->socket , (struct sockaddr *)&connection->server , sizeof( connection->server ) ) < 0 ) {
-        LOG_print( "error.\n" );
+        LOG_print( connection->log, "error.\n" );
         free( connection->host ); connection->host = NULL;
         return 0;
     }
 
-    LOG_print("ok.\n");
+    LOG_print( connection->log, "ok.\n" );
     return 1;
 }
 
 int NET_CONN_disconnect( NET_CONN *connection ) {
     if( connection ) {
-        LOG_print( "[%s] NET_CONN_disconnect( %s, %d )...", TIME_get_gmt(), connection->host, connection->port );
+        LOG_print( connection->log, "[%s] NET_CONN_disconnect( %s, %d )...", TIME_get_gmt(), connection->host, connection->port );
 
         free( connection->host ); connection->host = NULL;
         free( connection->response ); connection->response = NULL;
 
-        LOG_print( "ok.\n" );
+        LOG_print( connection->log, "ok.\n" );
 
         return closesocket( connection->socket );
     } else {
-        LOG_print( "error. Connection pointer is not valid.\n" );
+        LOG_print( connection->log, "error. Connection pointer is not valid.\n" );
         return 0;
     }
 }
@@ -53,7 +53,7 @@ int NET_CONN_send( NET_CONN *connection, const char *data, size_t data_len ) {
 
     if( connection ) {
         if( send( connection->socket, data, data_len, 0 ) < 0 ) {
-            LOG_print( "[%s] Error sending data to %s.\n", TIME_get_gmt(), connection->host );
+            LOG_print( connection->log, "[%s] Error sending data to %s.\n", TIME_get_gmt(), connection->host );
             return 0;
         }
 
@@ -61,7 +61,7 @@ int NET_CONN_send( NET_CONN *connection, const char *data, size_t data_len ) {
 
         int response_len = recv( connection->socket, response, 255, 0 );
         if( response_len < 0 ) {
-            LOG_print( "[%s] Error receiving data to %s.\n", TIME_get_gmt(), connection->host );
+            LOG_print( connection->log, "[%s] Error receiving data to %s.\n", TIME_get_gmt(), connection->host );
             return 0;
         }
 
@@ -74,7 +74,7 @@ int NET_CONN_send( NET_CONN *connection, const char *data, size_t data_len ) {
 
         return 1;
     } else {
-        LOG_print( "[connection pointer is not valid]..." );
+        LOG_print( connection->log, "[connection pointer is not valid]..." );
         return 0;
     }
 }

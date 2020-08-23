@@ -57,9 +57,4 @@ typedef enum ACTION_TYPE {
     AT_WRITE
 } ACTION_TYPE;
 
-
-extern char                     app_path[ MAX_PATH_LENGTH + 1 ];
-
-
-
 #endif

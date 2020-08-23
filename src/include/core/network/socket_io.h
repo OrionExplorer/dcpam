@@ -2,6 +2,7 @@
 #define SOCKET_IO_H
 
 #include "../../shared.h"
+#include "../../utils/log.h"
 
 #define FD_SETSIZE  1024
 
@@ -74,10 +75,10 @@ typedef struct {
 CONNECTED_CLIENT                connected_clients[ MAX_CLIENTS ];
 
 
-typedef void ( *spc )( COMMUNICATION_SESSION*, CONNECTED_CLIENT* ); /* Socket Process Callback */
+typedef void ( *spc )( COMMUNICATION_SESSION*, CONNECTED_CLIENT*, LOG_OBJECT* ); /* Socket Process Callback */
 
-void                SOCKET_main( spc* socket_process_callback, const int port, const char** allowed_hosts, const int hosts_len );
-void                SOCKET_run( spc* socket_process_callback, const char** allowed_hosts, const int hosts_len );
+void                SOCKET_main( spc* socket_process_callback, const int port, const char** allowed_hosts, const int hosts_len, LOG_OBJECT *log );
+void                SOCKET_run( spc* socket_process_callback, const char** allowed_hosts, const int hosts_len, LOG_OBJECT *log );
 void                SOCKET_stop( void );
 int                 SOCKET_client_host_allowed( const char *ip, const char **allowed_hosts, int hosts_len );
 
@@ -88,8 +89,8 @@ void                SOCKET_release( COMMUNICATION_SESSION *communication_session
 char*               SOCKET_get_remote_ip( COMMUNICATION_SESSION *communication_session );
 void                SOCKET_close( int socket_descriptor );
 void                SOCKET_modify_clients_count( int mod );
-void                SOCKET_register_client( int socket_descriptor );
-void                SOCKET_unregister_client( int socket_descriptor );
+void                SOCKET_register_client( int socket_descriptor, LOG_OBJECT *log );
+void                SOCKET_unregister_client( int socket_descriptor, LOG_OBJECT *log );
 CONNECTED_CLIENT*   SOCKET_find_client( int socket_descriptor );
 
 #endif

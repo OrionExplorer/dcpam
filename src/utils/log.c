@@ -9,56 +9,54 @@
 #include <pthread.h>
 #include <sys/stat.h>
 
-static char                 log_object[LARGE_BUFF_SIZE];
-char                        LOG_filename[MAX_PATH_LENGTH];
 static pthread_mutex_t      printf_mutex = PTHREAD_MUTEX_INITIALIZER;
 
-static void LOG_prepare( const char *prefix ) {
-
-    snprintf( LOG_filename, MAX_PATH_LENGTH, "%s%s%s-log.txt", app_path, LOGS_PATH, prefix ? prefix : "dcpam" );
-    LOG_print( "\n[%s] Session start.\n", TIME_get_gmt() );
+void LOG_prepare( LOG_OBJECT *log, const char *prefix, const char *app_path ) {
+    memset( log->buffer, '\0', LARGE_BUFF_SIZE );
+    snprintf( log->filename, MAX_PATH_LENGTH, "%s%s%s-log.txt", app_path, LOGS_PATH, prefix ? prefix : "dcpam" );
+    LOG_print( log, "\n[%s] Session start.\n", TIME_get_gmt() );
 
 }
 
 
-static void LOG_validate_paths( const char *prefix ) {
+static void LOG_validate_paths( LOG_OBJECT *log, const char *prefix, const char *app_path ) {
     char *log_path = malloc( MAX_PATH_LENGTH_CHAR + 1 );
 
     if( log_path ) {
         snprintf( log_path, MAX_PATH_LENGTH, "%s%s", app_path, LOGS_PATH );
         if( directory_exists( log_path ) == 0 ) {
             if( mkdir( log_path, 0777 ) != 0 ) {
-                LOG_print( "Error creating path!\n" );
+                LOG_print( log, "Error creating path!\n" );
             }
             if( chdir( app_path ) != 0 ) {
-                LOG_print( "Error: chdir().\n" );
+                LOG_print( log, "Error: chdir().\n" );
                 return;
             }
         }
-
-        LOG_prepare( prefix );
+        LOG_prepare( log, prefix, app_path );
 
         free( log_path );
         log_path = NULL;
     } else {
-        LOG_print( "LOG_validate_paths error: unable to allocate memory.");
+        LOG_print( log, "LOG_validate_paths error: unable to allocate memory.");
     }
     
 }
 
-void LOG_init( const char *prefix) {
-    snprintf( app_path, MAX_PATH_LENGTH, get_app_path() );
+void LOG_init( LOG_OBJECT *log, const char *prefix) {
+    char _app_path[ MAX_PATH_LENGTH ];
+    snprintf( _app_path, MAX_PATH_LENGTH, get_app_path() );
     /*strncpy( app_path, get_app_path(), MAX_PATH_LENGTH );*/
 
-    ( void )LOG_validate_paths( prefix );
+    ( void )LOG_validate_paths( log, prefix, _app_path );
 
-    LOG_print( "[%s] Start path: \"%s\".\n", TIME_get_gmt(), app_path );
+    LOG_print( log, "[%s] Start path: \"%s\".\n", TIME_get_gmt(), _app_path );
 
-    LOG_save();
+    LOG_save( log, _app_path );
 
 }
 
-void LOG_print( char *fmt, ... ) {
+void LOG_print( LOG_OBJECT *log, char *fmt, ... ) {
     char *output_text;
     FILE *f_LOG;
     va_list args;
@@ -70,45 +68,45 @@ void LOG_print( char *fmt, ... ) {
     vsnprintf( output_text, LARGE_BUFF_SIZE, fmt, args );
     va_end( args );
 
-    strncat( log_object, output_text, LARGE_BUFF_SIZE );
+    strncat( log->buffer, output_text, LARGE_BUFF_SIZE );
     printf( "%s", output_text );
 
     free( output_text );
     output_text = NULL;
 
-    f_LOG = fopen( LOG_filename, "a+" );
+    f_LOG = fopen( log->filename, "a+" );
     if( f_LOG ) {
         fseek( f_LOG, 0, SEEK_END );
-        fwrite( log_object, strlen( log_object ), 1, f_LOG );
+        fwrite( log->buffer, strlen( log->buffer ), 1, f_LOG );
         if( fclose( f_LOG ) == EOF ) {
-            LOG_print( "Error: unable to save log object!\n" );
+            LOG_print( log, "Error: unable to save log object!\n" );
         }
     }
 
-    memset( log_object, '\0', LARGE_BUFF_SIZE );
-    if( chdir( app_path ) != 0 ) {
-        LOG_print( "Error: unable to perform chdir( %s ).\n", app_path );
-    }
+    memset( log->buffer, '\0', LARGE_BUFF_SIZE );
+    //if( chdir( app_path ) != 0 ) {
+    //    LOG_print( log, "Error: unable to perform chdir( %s ).\n", app_path );
+    //}
     pthread_mutex_unlock( &printf_mutex );
 }
 
-void LOG_save( void ) {
+void LOG_save( LOG_OBJECT *log, const char *app_path ) {
     FILE *f_LOG;
 
-    f_LOG = fopen( LOG_filename, "a+" );
+    f_LOG = fopen( log->filename, "a+" );
     if( f_LOG ) {
         fseek( f_LOG, 0, SEEK_END );
-        fwrite( log_object, strlen( log_object ), 1, f_LOG );
+        fwrite( log->buffer, strlen( log->buffer ), 1, f_LOG );
         if( fclose( f_LOG ) == EOF ) {
-            LOG_print( "Error: unable to save log object!\n" );
+            LOG_print( log, "Error: unable to save log object!\n" );
         }
     } else {
-        LOG_print( "Error: unable to open log file.\n" );
+        LOG_print( log, "Error: unable to open log file.\n" );
         exit( EXIT_FAILURE );
     }
 
-    memset( log_object, 0, LARGE_BUFF_SIZE );
+    memset( log->buffer, 0, LARGE_BUFF_SIZE );
     if( chdir( app_path ) != 0 ) {
-        LOG_print( "Error: unable to perform chdir( %s ).\n", app_path );
+        LOG_print( log, "Error: unable to perform chdir( %s ).\n", app_path );
     }
 }
