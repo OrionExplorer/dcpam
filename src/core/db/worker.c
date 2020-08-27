@@ -7,6 +7,7 @@
 #include "../../include/core/schema.h"
 #include "../../include/utils/memory.h"
 #include "../../include/utils/log.h"
+#include "../../include/core/file/preload.h"
 #include "../../include/core/db/system.h"
 #include "../../include/core/db/etl/extract.h"
 #include "../../include/core/db/etl/stage.h"
@@ -52,29 +53,11 @@ int DB_WORKER_init( LOG_OBJECT *log ) {
 
     for( i = 0; i < DATABASE_SYSTEMS_COUNT; i++ ) {
         log_object[ i ] = SAFEMALLOC( sizeof( LOG_OBJECT ), __FILE__, __LINE__ );
-        printf("CREATING LOG %d/%d: %s...\n", i+1, DATABASE_SYSTEMS_COUNT, DATABASE_SYSTEMS[ i ].name );
+        LOG_print( log, "[%s] Initializing log file: %s...\n", TIME_get_gmt(), DATABASE_SYSTEMS[ i ].name );
         LOG_init( log_object[ i ], DATABASE_SYSTEMS[ i ].name );
     }
 
     while( app_terminated == 0 ) {
-        /*
-            Preload all flat files
-        */
-        for( i = 0; i < DATABASE_SYSTEMS_COUNT; i++ ) {
-
-            if( DATABASE_SYSTEMS[ i ].failure == 0 ) {
-
-                if( DATABASE_SYSTEMS[ i ].flat_file ) {
-                    /* TODO */
-                }
-            } else {
-                LOG_print( log, "===========================================================\n[%s] DB_WORKER_init: not spawning flat file preload thread due to previous failure.\n", TIME_get_gmt() );
-            }
-        }
-        for( i = 0; i < DATABASE_SYSTEMS_COUNT; i++ ) {
-            pthread_join( w_watcher_thread[ i ], NULL );
-        }
-        LOG_print( log, "[%s] DB_WORKER_init: all flat files preload threads are completed.\n", TIME_get_gmt() );
 
         /*
             Spawn all Extract processes.
@@ -170,6 +153,7 @@ int DB_WORKER_init( LOG_OBJECT *log ) {
         free( log_object[ i ] ); log_object[ i ] = NULL;
     }
     free( log_object ); log_object = NULL;
+
     LOG_print( log, "All threads are terminated.\n" );
 
     return TRUE;
@@ -186,6 +170,13 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
         DATA_SYSTEM->name,
         curr_etl_step == ETL_EXTRACT ? "EXTRACT" : curr_etl_step == ETL_TRANSFORM ? "TRANSFORM/LOAD" : curr_etl_step == ETL_LOAD ? "LOAD/TRANSFORM" : "UNKNOWN"
     );
+
+    if( DATA_SYSTEM->failure == 1 ) {
+        LOG_print( log, "[%s] DB_WORKER_watcher put on hold due to previous problems with data processing.\n", TIME_get_gmt() );
+        pthread_exit( NULL );
+        return FALSE;
+
+    }
 
     LOG_print( log, "Init DCPAM database connection for \"%s\":\n", DATA_SYSTEM->name );
     if( DATABASE_SYSTEM_DB_init( &DATA_SYSTEM->dcpam_db, log ) == FALSE ) {
@@ -231,59 +222,73 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
         }
         LOG_print( log, "[%s] Finished run of PreETL Actions.\n", TIME_get_gmt() );
 
-        /* Extract and store data in the Staging Area / target tables. */
-        for( i = 0; i < DATA_SYSTEM->queries_len; i++ ) {
-
-            /* Init query structs */
-            qec extract_inserted_callback = DATA_SYSTEM->queries[ i ].etl_config.stage ? ( qec )&_ExtractInserted_callback : ( qec )&_LoadInserted_callback;
-            qec extract_deleted_callback = DATA_SYSTEM->queries[ i ].etl_config.stage ? ( qec )&_ExtractDeleted_callback : ( qec )&_LoadDeleted_callback;
-            qec extract_modified_callback = DATA_SYSTEM->queries[ i ].etl_config.stage ? ( qec )&_ExtractModified_callback : ( qec )&_LoadModified_callback;
-
-            LOG_print( log, "\t· [EXTRACT] Query #%d: %s\n", i + 1, DATA_SYSTEM->queries[ i ].name );
-
-            int ei_res = DB_CDC_ExtractInserted(
-                &DATA_SYSTEM->queries[ i ].etl_config.extract,
-                &DATA_SYSTEM->system_db,
-                &DATA_SYSTEM->dcpam_db,
-                &extract_inserted_callback,
-                DATA_SYSTEM->queries[ i ].etl_config.stage ? ( void* )DATA_SYSTEM->queries[ i ].etl_config.stage : ( void* )&DATA_SYSTEM->queries[ i ].etl_config.load,
-                DATA_SYSTEM->staging_db ? ( void* )DATA_SYSTEM->staging_db : ( void* )&DATA_SYSTEM->dcpam_db,
-                log
-            );
-            if( ei_res == 0 ) {
-                LOG_print( log, "[%s] Fatal error: process exited with failure. %s processing is put on hold.\n", TIME_get_gmt(), DATA_SYSTEM->name );
-                DATA_SYSTEM->failure = 1;
-                continue;
+        /* If configured, preload flat file to the DB table. */
+        if( DATA_SYSTEM->flat_file ) {
+            LOG_print( log, "[%s] Loading data from file %s...", TIME_get_gmt(), DATA_SYSTEM->flat_file->name );
+            DATA_SYSTEM->failure = FILE_ETL_preload( DATA_SYSTEM->flat_file->file, DATA_SYSTEM->flat_file->name ) == 0 ? 1 : 0;
+            if( DATA_SYSTEM->failure == 0 ) {
+                LOG_print( log, "[%s] File %s loaded.\n", TIME_get_gmt(), DATA_SYSTEM->flat_file->name );
+            } else {
+                LOG_print( log, "[%s] Fatal error: file %s could not be loaded.\n", TIME_get_gmt(), DATA_SYSTEM->flat_file->name );
             }
+        }
 
-            int ed_res = DB_CDC_ExtractDeleted(
-                &DATA_SYSTEM->queries[ i ].etl_config.extract,
-                &DATA_SYSTEM->system_db,
-                &DATA_SYSTEM->dcpam_db,
-                &extract_deleted_callback,
-                DATA_SYSTEM->queries[ i ].etl_config.stage ? ( void* )DATA_SYSTEM->queries[ i ].etl_config.stage : ( void* )&DATA_SYSTEM->queries[ i ].etl_config.load,
-                DATA_SYSTEM->staging_db ? ( void* )DATA_SYSTEM->staging_db : ( void* )&DATA_SYSTEM->dcpam_db,
-                log
-            );
-            if( ed_res == 0 ) {
-                LOG_print( log, "[%s] Fatal error: process exited with failure. %s processing is put on hold.\n", TIME_get_gmt(), DATA_SYSTEM->name );
-                DATA_SYSTEM->failure = 1;
-                continue;
-            }
+        if( DATA_SYSTEM->failure == 0 ) {
 
-            int em_res = DB_CDC_ExtractModified(
-                &DATA_SYSTEM->queries[ i ].etl_config.extract,
-                &DATA_SYSTEM->system_db,
-                &DATA_SYSTEM->dcpam_db,
-                &extract_modified_callback,
-                DATA_SYSTEM->queries[ i ].etl_config.stage ? ( void* )DATA_SYSTEM->queries[ i ].etl_config.stage : ( void* )&DATA_SYSTEM->queries[ i ].etl_config.load,
-                DATA_SYSTEM->staging_db ? ( void* )DATA_SYSTEM->staging_db : ( void* )&DATA_SYSTEM->dcpam_db,
-                log
-            );
-            if( em_res == 0 ) {
-                LOG_print( log, "[%s] Fatal error: process exited with failure. %s processing is put on hold.\n", TIME_get_gmt(), DATA_SYSTEM->name );
-                DATA_SYSTEM->failure = 1;
-                continue;
+            /* Extract and store data in the Staging Area / target tables. */
+            for( i = 0; i < DATA_SYSTEM->queries_len; i++ ) {
+
+                /* Init query structs */
+                qec extract_inserted_callback = DATA_SYSTEM->queries[ i ].etl_config.stage ? ( qec )&_ExtractInserted_callback : ( qec )&_LoadInserted_callback;
+                qec extract_deleted_callback = DATA_SYSTEM->queries[ i ].etl_config.stage ? ( qec )&_ExtractDeleted_callback : ( qec )&_LoadDeleted_callback;
+                qec extract_modified_callback = DATA_SYSTEM->queries[ i ].etl_config.stage ? ( qec )&_ExtractModified_callback : ( qec )&_LoadModified_callback;
+
+                LOG_print( log, "\t· [EXTRACT] Query #%d: %s\n", i + 1, DATA_SYSTEM->queries[ i ].name );
+
+                int ei_res = DB_CDC_ExtractInserted(
+                    &DATA_SYSTEM->queries[ i ].etl_config.extract,
+                    &DATA_SYSTEM->system_db,
+                    &DATA_SYSTEM->dcpam_db,
+                    &extract_inserted_callback,
+                    DATA_SYSTEM->queries[ i ].etl_config.stage ? ( void* )DATA_SYSTEM->queries[ i ].etl_config.stage : ( void* )&DATA_SYSTEM->queries[ i ].etl_config.load,
+                    DATA_SYSTEM->staging_db ? ( void* )DATA_SYSTEM->staging_db : ( void* )&DATA_SYSTEM->dcpam_db,
+                    log
+                );
+                if( ei_res == 0 ) {
+                    LOG_print( log, "[%s] Fatal error: process exited with failure. %s processing is put on hold.\n", TIME_get_gmt(), DATA_SYSTEM->name );
+                    DATA_SYSTEM->failure = 1;
+                    continue;
+                }
+
+                int ed_res = DB_CDC_ExtractDeleted(
+                    &DATA_SYSTEM->queries[ i ].etl_config.extract,
+                    &DATA_SYSTEM->system_db,
+                    &DATA_SYSTEM->dcpam_db,
+                    &extract_deleted_callback,
+                    DATA_SYSTEM->queries[ i ].etl_config.stage ? ( void* )DATA_SYSTEM->queries[ i ].etl_config.stage : ( void* )&DATA_SYSTEM->queries[ i ].etl_config.load,
+                    DATA_SYSTEM->staging_db ? ( void* )DATA_SYSTEM->staging_db : ( void* )&DATA_SYSTEM->dcpam_db,
+                    log
+                );
+                if( ed_res == 0 ) {
+                    LOG_print( log, "[%s] Fatal error: process exited with failure. %s processing is put on hold.\n", TIME_get_gmt(), DATA_SYSTEM->name );
+                    DATA_SYSTEM->failure = 1;
+                    continue;
+                }
+
+                int em_res = DB_CDC_ExtractModified(
+                    &DATA_SYSTEM->queries[ i ].etl_config.extract,
+                    &DATA_SYSTEM->system_db,
+                    &DATA_SYSTEM->dcpam_db,
+                    &extract_modified_callback,
+                    DATA_SYSTEM->queries[ i ].etl_config.stage ? ( void* )DATA_SYSTEM->queries[ i ].etl_config.stage : ( void* )&DATA_SYSTEM->queries[ i ].etl_config.load,
+                    DATA_SYSTEM->staging_db ? ( void* )DATA_SYSTEM->staging_db : ( void* )&DATA_SYSTEM->dcpam_db,
+                    log
+                );
+                if( em_res == 0 ) {
+                    LOG_print( log, "[%s] Fatal error: process exited with failure. %s processing is put on hold.\n", TIME_get_gmt(), DATA_SYSTEM->name );
+                    DATA_SYSTEM->failure = 1;
+                    continue;
+                }
             }
         }
     }

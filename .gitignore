@@ -5,6 +5,7 @@
 .odbc.ini
 Debug/
 Release/
+log/
 x64/
 *.vcx*
 *.sln

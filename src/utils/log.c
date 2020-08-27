@@ -62,7 +62,7 @@ void LOG_print( LOG_OBJECT *log, char *fmt, ... ) {
     va_list args;
 
     pthread_mutex_lock( &printf_mutex );
-    output_text = ( char* )calloc( LARGE_BUFF_SIZE + 1, sizeof( char ) );
+    output_text = calloc( LARGE_BUFF_SIZE + 1, sizeof( char ) );
 
     va_start( args, fmt );
     vsnprintf( output_text, LARGE_BUFF_SIZE, fmt, args );

@@ -185,7 +185,7 @@
 			"name" : "/tmp/otrs_history_data.csv",
 			"delimiter" : ";",
 			"columns" : ["id", "name", "history_type_id", "ticket_id", "article_id", "type_id", "queue_id", "owner_id", "priority_id", "state_id", "create_time", "create_by", "change_time", "change_by"],
-			"sql" : "INSERT INTO ff_ticket_history_data (id, name, history_type_id, ticket_id, article_id, type_id, queue_id, owner_id, priority_id, state_id, create_time, create_by, change_time, change_by) VALUES (?, '?', ?, ?, ?, ?, ?, ?, ?, ?, '?', ?, '?', ?)"
+			"load_sql" : "INSERT INTO ff_ticket_history_data (id, name, history_type_id, ticket_id, article_id, type_id, queue_id, owner_id, priority_id, state_id, create_time, create_by, change_time, change_by) VALUES (?, '?', ?, ?, ?, ?, ?, ?, ?, ?, '?', ?, '?', ?)"
 		},
 		"DB" : {
 			"name" : "Flat Files Area",

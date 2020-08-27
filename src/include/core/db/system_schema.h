@@ -7,6 +7,7 @@
 #include "../../db/odbc.h"
 #include "../../db/oracle.h"
 #include "../../db/sqlite.h"
+#include "../../file/csv.h"
 #include "etl_schema.h"
 
 #define MAX_SYSTEM_QUERIES      32
@@ -51,8 +52,9 @@ typedef struct DATABASE_SYSTEM_FLAT_FILE {
     char                        *name;
     char                        **columns;
     int                         columns_len;
-    char                        *sql;
+    char                        *load_sql;
     char                        delimiter[1];
+    CSV_FILE                    *file;
 } DATABASE_SYSTEM_FLAT_FILE;
 
 typedef struct DATABASE_SYSTEM {

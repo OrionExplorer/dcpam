@@ -49,7 +49,7 @@ int CDC_TransformGeneric( DB_SYSTEM_ETL_TRANSFORM_QUERY *transform_element, DATA
             system_db->connection_string
         );
 
-        LOG_print( log, "[%s] Running local transform data process at %s.", TIME_get_gmt(), command );
+        LOG_print( log, "[%s] Running local transform data process at %s.\n", TIME_get_gmt(), command );
         LOG_print( log, "[%s] Executing local script %s...\n", TIME_get_gmt(), command );
         script = popen( command, READ_BINARY );
         if( script == NULL ) {
