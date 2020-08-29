@@ -635,7 +635,7 @@ void DATABASE_SYSTEM_close( DATABASE_SYSTEM *system, LOG_OBJECT *log ) {
         
         if( system->flat_file ) {
             free( system->flat_file->name ); system->flat_file->name = NULL;
-            free( system->flat_file->sql ); system->flat_file->sql = NULL;
+            free( system->flat_file->load_sql ); system->flat_file->load_sql = NULL;
             for( int i = 0; i < system->flat_file->columns_len; i++ ) {
                 free( system->flat_file->columns[ i ] ); system->flat_file->columns[ i ] = NULL;
             }
@@ -757,9 +757,9 @@ void DATABASE_SYSTEM_add(
                 snprintf( DATABASE_SYSTEMS[ DATABASE_SYSTEMS_COUNT ].flat_file->columns[ i ], col_name_len + 1, flat_file->columns[ i ] );
             }
 
-            size_t sql_len = strlen( flat_file->sql );
-            DATABASE_SYSTEMS[ DATABASE_SYSTEMS_COUNT ].flat_file->sql = SAFECALLOC( sql_len + 1, sizeof( char ), __FILE__, __LINE__ );
-            snprintf( DATABASE_SYSTEMS[ DATABASE_SYSTEMS_COUNT ].flat_file->sql, sql_len + 1, flat_file->sql );
+            size_t sql_len = strlen( flat_file->load_sql );
+            DATABASE_SYSTEMS[ DATABASE_SYSTEMS_COUNT ].flat_file->load_sql= SAFECALLOC( sql_len + 1, sizeof( char ), __FILE__, __LINE__ );
+            snprintf( DATABASE_SYSTEMS[ DATABASE_SYSTEMS_COUNT ].flat_file->load_sql, sql_len + 1, flat_file->load_sql );
 
             snprintf( DATABASE_SYSTEMS[ DATABASE_SYSTEMS_COUNT ].flat_file->delimiter, 1, flat_file->delimiter );
 
