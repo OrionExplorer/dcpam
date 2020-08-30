@@ -89,6 +89,7 @@ int FILE_ETL_preload( DATABASE_SYSTEM *system, const char* filename, LOG_OBJECT 
 
     if( system->flat_file == NULL ) {
         LOG_print( log, "[%s] Fatal error: file pointer is invalid.\n", TIME_get_gmt() );
+        return 0;
     }
 
     if( system->flat_file->type == FFT_CSV ) {
