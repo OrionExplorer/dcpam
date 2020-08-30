@@ -169,14 +169,16 @@ DCPAM Access is going to be dedicated Bussiness Inteligence web application.
 
 ### Data sources
 DCPAM development is still in progress with following data sources available:
-|  ID  | Data source                        | Type            | Support          |
-|:----:|:-----------------------------------|:---------------:|:----------------:|
-| 1    | PostgreSQL                         | database        | native           |
-| 2    | MySQL 8                            | database        | native           |
-| 3    | MariaDB/MySQL 5                    | database        | native           |
-| 4    | SQL Server/Azure SQL Database      | database        | native via ODBC* |
-| 5    | Oracle Database                    | database        | native           |
-| 6    | SQLite3                            | database        | native           |
+| Data source                        | Type            | Support          |
+|:-----------------------------------|:---------------:|:----------------:|
+| PostgreSQL                         | database        | native           |
+| MySQL 8                            | database        | native           |
+| MariaDB/MySQL 5                    | database        | native           |
+| SQL Server/Azure SQL Database      | database        | native via ODBC* |
+| Oracle Database                    | database        | native           |
+| SQLite3                            | database        | native           |
+| CSV                                | file            | native           |
+
 
 > \* SQL Server/Azure SQL Database: [ODBC is the primary native data access API for applications written in C and C++ for SQL Server](https://docs.microsoft.com/en-us/sql/connect/odbc/microsoft-odbc-driver-for-sql-server).
 

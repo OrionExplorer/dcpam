@@ -123,13 +123,13 @@ After Loading process is finished, it is possible to run set of SQL queries to p
 ![Architecture overview](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/architecture.png)
 
 #### ETL and Change Data Capture
-Change Data Capture [[4]] solutions depends on the data sources (currently it's database only):
+Change Data Capture [[4]] solutions depends on the data sources and their quality.
 
 | CDC solution                            | Source        |
 |-----------------------------------------|:-------------:| 
-| SQL query for timestamps (eg. MIN, MAX) | Database      |
-| SQL query for indices                   | Database      |
-| SQL query for diffs (eg. IN, NOT IN)    | Database      |
+| SQL query for timestamps (eg. MIN, MAX) | database/file |
+| SQL query for indices                   | database/file |
+| SQL query for diffs (eg. IN, NOT IN)    | database/file |
 
 > **Notice**: Only Extract and Load processes are available. Transform process development is in progress.
 
@@ -138,15 +138,16 @@ Change Data Capture [[4]] solutions depends on the data sources (currently it's 
 * Many instances of DCPAM ETL can run on one or more servers simultaneously.
 
 ### Data sources
-DCPAM ETL development is still in progress with following data sources available:
-|  ID  | Data source                        | Type            | Support          |
-|:----:|:-----------------------------------|:---------------:|:----------------:|
-| 1    | PostgreSQL                         | database        | native           |
-| 2    | MySQL 8                            | database        | native           |
-| 3    | MariaDB/MySQL 5                    | database        | native           |
-| 4    | SQL Server/Azure SQL Database      | database        | native via ODBC* |
-| 5    | Oracle Database                    | database        | native           |
-| 6    | SQLite3                            | database        | native           |
+DCPAM development is still in progress with following data sources available:
+| Data source                        | Type            | Support          |
+|:-----------------------------------|:---------------:|:----------------:|
+| PostgreSQL                         | database        | native           |
+| MySQL 8                            | database        | native           |
+| MariaDB/MySQL 5                    | database        | native           |
+| SQL Server/Azure SQL Database      | database        | native via ODBC* |
+| Oracle Database                    | database        | native           |
+| SQLite3                            | database        | native           |
+| CSV                                | file            | native           |
 
 > \* SQL Server/Azure SQL Database: [ODBC is the primary native data access API for applications written in C and C++ for SQL Server](https://docs.microsoft.com/en-us/sql/connect/odbc/microsoft-odbc-driver-for-sql-server).
 
