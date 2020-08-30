@@ -1,6 +1,6 @@
 {
 	"system" : [{
-		"enabled" : 1,
+		"enabled" : 0,
 		"name" : "OTRS",
 		"DB" : {
 			"name" : "OTRS-source",
@@ -170,7 +170,7 @@
 			}
 		}]
 	}, {
-		"enabled" : 0,
+		"enabled" : 1,
 		"name" : "OTRS-History-Data-CSV-source",
 
 		"file_comment#00" : "##################################################################################################",
@@ -182,10 +182,10 @@
 		"file_comment#06" : "# Remote files are going to be supported with battery-http-server.",
 		"file_comment#07" : "##################################################################################################",
 		"FILE" : {
-			"name" : "/tmp/otrs_history_data.csv",
+			"name" : "/tmp/otrs_time_accounting_data.csv",
 			"delimiter" : ";",
-			"columns" : ["id", "name", "history_type_id", "ticket_id", "article_id", "type_id", "queue_id", "owner_id", "priority_id", "state_id", "create_time", "create_by", "change_time", "change_by"],
-			"load_sql" : "INSERT INTO ff_ticket_history_data (id, name, history_type_id, ticket_id, article_id, type_id, queue_id, owner_id, priority_id, state_id, create_time, create_by, change_time, change_by) VALUES (?, '?', ?, ?, ?, ?, ?, ?, ?, ?, '?', ?, '?', ?)"
+			"columns" : ["id", "ticket_id", "article_id", "time_unit", "create_time", "create_by", "change_time", "change_by"],
+			"load_sql" : "INSERT INTO ff_time_accounting (id, ticket_id, article_id, time_unit, create_time, create_by, change_time, change_by) VALUES (?, ?, ?, ?, '?', ?, '?', ?)"
 		},
 		"DB" : {
 			"name" : "Flat Files Area",
@@ -204,7 +204,8 @@
 			"etl" : {
 
 				"pre_actions" : [
-					"DELETE FROM stage_accounted_time"
+					"DELETE FROM stage_accounted_time",
+					"DELETE FROM ff_time_accounting"
 				],
 
 
@@ -213,7 +214,7 @@
 						"primary_db" : "dcpam",
 						"primary_db_sql" : "SELECT system_worklog_id FROM accounted_time WHERE system = 'OTRS'",
 						"secondary_db" : "this",
-						"secondary_db_sql" : "SELECT t.id AS system_object_id, ta.id AS system_worklog_id, t.customer_id AS system_customer, ta.create_by AS system_agent_id, ta.time_unit AS system_accounted_time, ta.create_time AS system_created FROM time_accounting ta LEFT JOIN ticket t ON t.id = ta.ticket_id WHERE ta.id NOT IN (%s)"
+						"secondary_db_sql" : "SELECT t.id AS system_object_id, ta.id AS system_worklog_id, t.customer_id AS system_customer, ta.create_by AS system_agent_id, ta.time_unit AS system_accounted_time, ta.create_time AS system_created FROM ff_time_accounting ta LEFT JOIN ticket t ON t.id = ta.ticket_id WHERE ta.id NOT IN (%s)"
 					},
 					"deleted" : {
 						"primary_db" : "this",

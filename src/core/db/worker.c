@@ -85,7 +85,9 @@ int DB_WORKER_init( LOG_OBJECT *log ) {
         }
 
         for( i = 0; i < DATABASE_SYSTEMS_COUNT; i++ ) {
-            pthread_join( w_watcher_thread[ i ], NULL );
+            if( DATABASE_SYSTEMS[ i ].failure == 0 ) {
+                pthread_join( w_watcher_thread[ i ], NULL );
+            }
         }
         LOG_print( log, "[%s] DB_WORKER_init: all EXTRACT threads are completed.\n", TIME_get_gmt() );
 
@@ -114,7 +116,9 @@ int DB_WORKER_init( LOG_OBJECT *log ) {
         }
 
         for( i = 0; i < DATABASE_SYSTEMS_COUNT; i++ ) {
-            pthread_join( w_watcher_thread[ i ], NULL );
+            if( DATABASE_SYSTEMS[ i ].failure == 0 ) {
+                pthread_join( w_watcher_thread[ i ], NULL );
+            }
         }
         LOG_print( log, "[%s] DB_WORKER_init: all TRANSFORM/LOAD threads are completed.\n", TIME_get_gmt() );
 
@@ -142,7 +146,9 @@ int DB_WORKER_init( LOG_OBJECT *log ) {
         }
 
         for( i = 0; i < DATABASE_SYSTEMS_COUNT; i++ ) {
-            pthread_join( w_watcher_thread[ i ], NULL );
+            if( DATABASE_SYSTEMS[ i ].failure == 0 ) {
+                pthread_join( w_watcher_thread[ i ], NULL );
+            }
         }
         LOG_print( log, "[%s] DB_WORKER_init: all LOAD/TRANSFORM threads are completed.\n", TIME_get_gmt() );
     }
@@ -224,8 +230,8 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
 
         /* If configured, preload flat file to the DB table. */
         if( DATA_SYSTEM->flat_file ) {
-            LOG_print( log, "[%s] Loading data from file %s...", TIME_get_gmt(), DATA_SYSTEM->flat_file->name );
-            DATA_SYSTEM->failure = FILE_ETL_preload( DATA_SYSTEM->flat_file->file, DATA_SYSTEM->flat_file->name ) == 0 ? 1 : 0;
+            LOG_print( log, "[%s] Loading data from file %s...\n", TIME_get_gmt(), DATA_SYSTEM->flat_file->name );
+            DATA_SYSTEM->failure = FILE_ETL_preload( DATA_SYSTEM, DATA_SYSTEM->flat_file->name, log ) == 0 ? 1 : 0;
             if( DATA_SYSTEM->failure == 0 ) {
                 LOG_print( log, "[%s] File %s loaded.\n", TIME_get_gmt(), DATA_SYSTEM->flat_file->name );
             } else {

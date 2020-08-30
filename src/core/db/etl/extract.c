@@ -157,6 +157,11 @@ int CDC_ExtractGeneric( DB_SYSTEM_ETL_EXTRACT *extract, DB_SYSTEM_ETL_EXTRACT_QU
 
                         if( secondary_ret == 1 ) {
                             LOG_print( log, "\t· [CDC - EXTRACT] Completed.\n" );
+                        } else {
+                            free( secondary_db_sql_p );
+                            secondary_db_sql_p = NULL;
+
+                            return 0;
                         }
 
                         free( secondary_db_sql_p );
@@ -183,6 +188,7 @@ int CDC_ExtractGeneric( DB_SYSTEM_ETL_EXTRACT *extract, DB_SYSTEM_ETL_EXTRACT_QU
         } else {
             /* In case of error, free query result struct */
             DB_QUERY_free( &primary_db_sql_res );
+            return 0;
         }
     }
 

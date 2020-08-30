@@ -1,7 +1,11 @@
 #ifndef PRELOAD_H
 #define PRELOAD_H
 
+#include "../../file/csv.h"
+#include "../../utils/log.h"
+#include "../../core/db/system_schema.h"
 
-int FILE_ETL_preload( CSV_FILE *dst, const char *filename );
+
+int FILE_ETL_preload( DATABASE_SYSTEM* cfg, const char* filename, LOG_OBJECT* log );
 
 #endif

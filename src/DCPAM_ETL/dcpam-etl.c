@@ -446,9 +446,9 @@ int DCPAM_load_configuration( const char* filename ) {
                             snprintf( tmp_flat_file->columns[ j ], str_len_col + 1, cfg_system_flat_file_columns_item->valuestring );
                         }
 
-                        cfg_system_flat_file_load_sql = cJSON_GetObjectItem( cfg_system_flat_file, "sql" );
+                        cfg_system_flat_file_load_sql = cJSON_GetObjectItem( cfg_system_flat_file, "load_sql" );
                         if( cfg_system_flat_file_load_sql == NULL ) {
-                            LOG_print( &dcpam_etl_log, "ERROR: \"system[%d].FILE.sql\" key not found.\n", i );
+                            LOG_print( &dcpam_etl_log, "ERROR: \"system[%d].FILE.load_sql\" key not found.\n", i );
                             cJSON_Delete( config_json );
                             free( config_string ); config_string = NULL;
                             return FALSE;
@@ -460,6 +460,7 @@ int DCPAM_load_configuration( const char* filename ) {
 
                         if( strstr( tmp_flat_file->name, ".csv" ) ) {
 
+                            tmp_flat_file->type = FFT_CSV;
                             tmp_flat_file->file = SAFEMALLOC( sizeof( CSV_FILE ), __FILE__, __LINE__ );
 
                             cfg_system_flat_file_delimiter = cJSON_GetObjectItem( cfg_system_flat_file, "delimiter" );
@@ -469,8 +470,7 @@ int DCPAM_load_configuration( const char* filename ) {
                                 free( config_string ); config_string = NULL;
                                 return FALSE;
                             }
-
-                            snprintf( tmp_flat_file->delimiter, 1, cfg_system_flat_file_delimiter->valuestring );
+                            snprintf( tmp_flat_file->delimiter, 2, cfg_system_flat_file_delimiter->valuestring );
                         }
                     }
 

@@ -1,3 +1,4 @@
+*.csv
 *.o
 *.log
 *log.txt

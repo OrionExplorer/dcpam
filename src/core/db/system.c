@@ -744,6 +744,9 @@ void DATABASE_SYSTEM_add(
         /* Flat file configuration */
         if( flat_file ) {
             DATABASE_SYSTEMS[ DATABASE_SYSTEMS_COUNT ].flat_file = SAFEMALLOC( sizeof( DATABASE_SYSTEM_FLAT_FILE ), __FILE__, __LINE__ );
+            DATABASE_SYSTEMS[ DATABASE_SYSTEMS_COUNT ].flat_file->file = SAFEMALLOC( sizeof( CSV_FILE ), __FILE__, __LINE__ );
+            DATABASE_SYSTEMS[ DATABASE_SYSTEMS_COUNT ].flat_file->file->loaded = 0;
+            DATABASE_SYSTEMS[ DATABASE_SYSTEMS_COUNT ].flat_file->type = flat_file->type;
 
             size_t name_len = strlen( flat_file->name );
             DATABASE_SYSTEMS[ DATABASE_SYSTEMS_COUNT ].flat_file->name = SAFECALLOC( name_len + 1, sizeof( char ), __FILE__, __LINE__ );
@@ -761,7 +764,10 @@ void DATABASE_SYSTEM_add(
             DATABASE_SYSTEMS[ DATABASE_SYSTEMS_COUNT ].flat_file->load_sql= SAFECALLOC( sql_len + 1, sizeof( char ), __FILE__, __LINE__ );
             snprintf( DATABASE_SYSTEMS[ DATABASE_SYSTEMS_COUNT ].flat_file->load_sql, sql_len + 1, flat_file->load_sql );
 
-            snprintf( DATABASE_SYSTEMS[ DATABASE_SYSTEMS_COUNT ].flat_file->delimiter, 1, flat_file->delimiter );
+            snprintf( DATABASE_SYSTEMS[ DATABASE_SYSTEMS_COUNT ].flat_file->delimiter, 2, flat_file->delimiter );
+            snprintf( DATABASE_SYSTEMS[ DATABASE_SYSTEMS_COUNT ].flat_file->file->delimiter, 2, flat_file->delimiter );
+
+
 
         }
         

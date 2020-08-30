@@ -30,6 +30,12 @@ typedef enum {
     D_SQLITE
 } DB_DRIVER;
 
+typedef enum {
+    FFT_CSV = 1,
+    FFT_JSON,
+    FFT_XML
+} FLAT_FILE_TYPE;
+
 typedef struct DATABASE_SYSTEM_DB {
     char                        *ip;
     int                         port;
@@ -55,6 +61,7 @@ typedef struct DATABASE_SYSTEM_FLAT_FILE {
     char                        *load_sql;
     char                        delimiter[1];
     CSV_FILE                    *file;
+    FLAT_FILE_TYPE              type;
 } DATABASE_SYSTEM_FLAT_FILE;
 
 typedef struct DATABASE_SYSTEM {
