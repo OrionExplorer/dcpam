@@ -183,7 +183,7 @@
 		"file_comment#07" : "##################################################################################################",
 		"FILE" : {
 			"_name" : "/tmp/otrs_time_accounting_data.csv",
-			"name" : "http://127.0.0.1/otrs.csv",
+			"name" : "http://144.174.16.102:80/~jburkardt/data/csv/addresses.csv",
 			"delimiter" : ";",
 			"columns" : ["id", "ticket_id", "article_id", "time_unit", "create_time", "create_by", "change_time", "change_by"],
 			"load_sql" : "INSERT INTO ff_time_accounting (id, ticket_id, article_id, time_unit, create_time, create_by, change_time, change_by) VALUES (?, ?, ?, ?, '?', ?, '?', ?)"

@@ -1,12 +1,18 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "../../include/file/csv.h"
+#include "../../include/file/json.h"
 #include "../../include/core/file/preload.h"
 #include "../../include/utils/log.h"
 #include "../../include/utils/time.h"
 #include "../../include/core/db/system.h"
 #include "../../include/utils/memory.h"
 
+
+void _JSON_load_callback( JSON_RECORD* record, void* data_ptr1, void* data_ptr2, LOG_OBJECT* log ) {
+    return;
+}
 
 void _CSV_load_callback( CSV_RECORD* record, void *data_ptr1, void *data_ptr2, LOG_OBJECT *log ) {
     DATABASE_SYSTEM_FLAT_FILE   *flat_file = ( DATABASE_SYSTEM_FLAT_FILE* )data_ptr1;
@@ -96,10 +102,21 @@ int FILE_ETL_preload( DATABASE_SYSTEM *system, const char* filename, LOG_OBJECT 
     if( system->flat_file->type == FFT_CSV ) {
         clc csv_load_callback = ( clc )&_CSV_load_callback;
 
-        CSV_FILE_load(
-            system->flat_file->file,
+        return CSV_FILE_load(
+            system->flat_file->csv_file,
             filename,
             &csv_load_callback,
+            ( void* )system->flat_file,
+            ( void* )&system->system_db,
+            log
+        );
+    } else if( system->flat_file->type == FFT_JSON ) {
+        jlc json_load_callback = ( jlc )&_JSON_load_callback;
+
+        return JSON_FILE_load(
+            system->flat_file->json_file,
+            filename,
+            &json_load_callback,
             ( void* )system->flat_file,
             ( void* )&system->system_db,
             log

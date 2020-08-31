@@ -26,17 +26,33 @@ FILE* FILE_open( const char *filename, LOG_OBJECT *log ) {
         int     port = 80;
         char    path[ 1024 ];
 
-        sscanf( filename, "http://%99[^:]:%99d/%1023[^\n]", host, &port, path );
+        if( sscanf( filename, "http://%99[^:]:%99d/%1023[^\n]", host, &port, path ) != 3 ) {
+            LOG_print( log, "[%s] FILE_open error: URL must contain host, port number and path.\n", TIME_get_gmt() );
+            return NULL;
+        }
 
         /* Download file */
         HTTP_CLIENT *http_c = SAFEMALLOC( sizeof( HTTP_CLIENT ), __FILE__, __LINE__ );
         size_t f_content_len = 0;
         char *f_content = HTTP_CLIENT_get_file( http_c, host, path, port, &f_content_len, log );
 
-        /* Create temporary file */
-        char *tmp_file_name = mkrndstr( 16 );
-        FILE *tmp_f = fopen( tmp_file_name, "wb");
-        fclose( tmp_f );
+        if( f_content ) {
+            /* Create temporary file */
+            char *tmp_file_name = mkrndstr( 16 );
+            FILE *tmp_f = fopen( tmp_file_name, "wb");
+            size_t data_saved = fwrite( f_content, f_content_len, 1, tmp_f );
+            if( data_saved != f_content_len ) {
+                LOG_print( log, "[%s] FILE_open fatal error: unable to save requested file.\n", TIME_get_gmt() );
+                free( http_c ); http_c = NULL;
+                free( f_content ); f_content = NULL;
+                return NULL;
+            }
+            fclose( tmp_f );
+        } else {
+            LOG_print( log, "[%s] FILE_open fatal error: requested URL \"%s\" returned no data.\n", TIME_get_gmt(), filename );
+            free( http_c ); http_c = NULL;
+            return NULL;
+        }
 
         free( http_c ); http_c = NULL;
 
@@ -51,7 +67,7 @@ FILE* FILE_open( const char *filename, LOG_OBJECT *log ) {
 
 
 char* get_app_path( void ) {
-    static char		buf[MAX_PATH_LENGTH];
+    static char		buf[ MAX_PATH_LENGTH ];
 
     if( getcwd( buf, MAX_PATH_LENGTH ) ) {
         return strncat( buf, "", MAX_PATH_LENGTH - strlen( buf ) );

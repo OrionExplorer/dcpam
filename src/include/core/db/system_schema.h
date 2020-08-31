@@ -8,6 +8,7 @@
 #include "../../db/oracle.h"
 #include "../../db/sqlite.h"
 #include "../../file/csv.h"
+#include "../../file/json.h"
 #include "etl_schema.h"
 
 #define MAX_SYSTEM_QUERIES      32
@@ -60,7 +61,8 @@ typedef struct DATABASE_SYSTEM_FLAT_FILE {
     int                         columns_len;
     char                        *load_sql;
     char                        delimiter[1];
-    CSV_FILE                    *file;
+    CSV_FILE                    *csv_file;
+    JSON_FILE                   *json_file;
     FLAT_FILE_TYPE              type;
 } DATABASE_SYSTEM_FLAT_FILE;
 

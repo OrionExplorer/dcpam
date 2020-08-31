@@ -423,7 +423,8 @@ int DCPAM_load_configuration( const char* filename ) {
                         }
 
                         tmp_flat_file = SAFEMALLOC( sizeof( DATABASE_SYSTEM_FLAT_FILE ), __FILE__, __LINE__ );
-                        tmp_flat_file->file = NULL;
+                        tmp_flat_file->csv_file = NULL;
+                        tmp_flat_file->json_file = NULL;
 
                         size_t str_len = strlen( cfg_system_flat_file_name->valuestring );
                         tmp_flat_file->name = SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
@@ -461,7 +462,7 @@ int DCPAM_load_configuration( const char* filename ) {
                         if( strstr( tmp_flat_file->name, ".csv" ) ) {
 
                             tmp_flat_file->type = FFT_CSV;
-                            tmp_flat_file->file = SAFEMALLOC( sizeof( CSV_FILE ), __FILE__, __LINE__ );
+                            tmp_flat_file->csv_file = SAFEMALLOC( sizeof( CSV_FILE ), __FILE__, __LINE__ );
 
                             cfg_system_flat_file_delimiter = cJSON_GetObjectItem( cfg_system_flat_file, "delimiter" );
                             if( cfg_system_flat_file_delimiter == NULL ) {

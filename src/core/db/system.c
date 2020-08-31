@@ -641,6 +641,13 @@ void DATABASE_SYSTEM_close( DATABASE_SYSTEM *system, LOG_OBJECT *log ) {
             }
             free( system->flat_file->columns ); system->flat_file->columns = NULL;
             memset( system->flat_file->delimiter, '\0', 1 );
+
+            if( system->flat_file->type == FFT_CSV ) {
+                free( system->flat_file->csv_file ); system->flat_file->csv_file = NULL;
+            } else if( system->flat_file->type == FFT_JSON ) {
+                free( system->flat_file->json_file ); system->flat_file->json_file = NULL;
+            }
+            free( system->flat_file );
         }
     }
 }
@@ -744,8 +751,14 @@ void DATABASE_SYSTEM_add(
         /* Flat file configuration */
         if( flat_file ) {
             DATABASE_SYSTEMS[ DATABASE_SYSTEMS_COUNT ].flat_file = SAFEMALLOC( sizeof( DATABASE_SYSTEM_FLAT_FILE ), __FILE__, __LINE__ );
-            DATABASE_SYSTEMS[ DATABASE_SYSTEMS_COUNT ].flat_file->file = SAFEMALLOC( sizeof( CSV_FILE ), __FILE__, __LINE__ );
-            DATABASE_SYSTEMS[ DATABASE_SYSTEMS_COUNT ].flat_file->file->loaded = 0;
+            if( flat_file->type == FFT_CSV ) {
+                DATABASE_SYSTEMS[ DATABASE_SYSTEMS_COUNT ].flat_file->csv_file = SAFEMALLOC( sizeof( CSV_FILE ), __FILE__, __LINE__ );
+                DATABASE_SYSTEMS[ DATABASE_SYSTEMS_COUNT ].flat_file->csv_file->loaded = 0;
+            } else if( flat_file->type == FFT_JSON ) {
+                DATABASE_SYSTEMS[ DATABASE_SYSTEMS_COUNT ].flat_file->json_file = SAFEMALLOC( sizeof( JSON_FILE ), __FILE__, __LINE__ );
+                DATABASE_SYSTEMS[ DATABASE_SYSTEMS_COUNT ].flat_file->json_file->loaded = 0;
+            }
+            
             DATABASE_SYSTEMS[ DATABASE_SYSTEMS_COUNT ].flat_file->type = flat_file->type;
 
             size_t name_len = strlen( flat_file->name );
@@ -764,13 +777,11 @@ void DATABASE_SYSTEM_add(
             DATABASE_SYSTEMS[ DATABASE_SYSTEMS_COUNT ].flat_file->load_sql= SAFECALLOC( sql_len + 1, sizeof( char ), __FILE__, __LINE__ );
             snprintf( DATABASE_SYSTEMS[ DATABASE_SYSTEMS_COUNT ].flat_file->load_sql, sql_len + 1, flat_file->load_sql );
 
-            snprintf( DATABASE_SYSTEMS[ DATABASE_SYSTEMS_COUNT ].flat_file->delimiter, 2, flat_file->delimiter );
-            snprintf( DATABASE_SYSTEMS[ DATABASE_SYSTEMS_COUNT ].flat_file->file->delimiter, 2, flat_file->delimiter );
-
-
-
+            if( flat_file->type == FFT_CSV ) {
+                snprintf( DATABASE_SYSTEMS[ DATABASE_SYSTEMS_COUNT ].flat_file->delimiter, 2, flat_file->delimiter );
+                snprintf( DATABASE_SYSTEMS[ DATABASE_SYSTEMS_COUNT ].flat_file->csv_file->delimiter, 2, flat_file->delimiter );
+            }
         }
-        
 
         free( source_db->ip ); source_db->ip = NULL;
         free( source_db->user ); source_db->user = NULL;

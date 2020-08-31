@@ -23,8 +23,9 @@ int NET_CONN_connect( NET_CONN *connection, const char *host, const int port ) {
     connection->port = port;
 
     LOG_print( connection->log, "ok. Connecting...", TIME_get_gmt() );
-    if (connect( connection->socket , (struct sockaddr *)&connection->server , sizeof( connection->server ) ) < 0 ) {
-        LOG_print( connection->log, "error.\n" );
+    int conn_res = connect( connection->socket, ( struct sockaddr* )&connection->server, sizeof( connection->server ) );
+    if ( conn_res < 0 ) {
+        LOG_print( connection->log, "error (%d): %s.\n", conn_res, strerror( errno ) );
         free( connection->host ); connection->host = NULL;
         return 0;
     }
@@ -66,6 +67,7 @@ int NET_CONN_send( NET_CONN *connection, const char *data, size_t data_len ) {
         }
 
         connection->response = SAFECALLOC( response_len + 1, sizeof( char ), __FILE__, __LINE__ );
+        connection->response_len = response_len;
         strncpy(
             connection->response,
             response,

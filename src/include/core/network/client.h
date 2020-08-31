@@ -42,6 +42,7 @@ typedef struct NET_CONN {
     SOCKET              socket;
     struct sockaddr_in  server;
     char                *response;
+    size_t              response_len;
     LOG_OBJECT          *log;
 } NET_CONN;
 

@@ -132,9 +132,12 @@
 	* Prevent DCPAM components to write the log files with every call of the `LOG_print` function.
 	* [ ] Define LOG_BUFFER.
 	* [ ] Rebuild `LOG_print` function.
-* [x] Process flat file data before each ETL start:
+* [x] Process CSV file data before each ETL start:
 	* [x] CSV parser.
 	* [x] Load CSV data to desired table.
+* [ ] Process JSON file data before each ETL start:
+	* [ ] JSON parser.
+	* [ ] Load JSON data to desired table.
 * [ ] Download remote flat files on the fly:
 	* [ ] Minimal client-side HTTP implementation.
 	* [ ] Downloaded file is temporary.

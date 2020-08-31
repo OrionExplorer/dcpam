@@ -8,7 +8,7 @@
 int JSON_FILE_load( JSON_FILE* dst, const char* filename, jlc* json_load_callback, void *data_ptr1, void *data_ptr2, LOG_OBJECT* log ) {
 
     LOG_print( log, "[%s] JSON_FILE_load( %s )...\n", TIME_get_gmt(), filename );
-    FILE* json_f = fopen( filename , "r" );
+    /*FILE* json_f = fopen( filename , "r" );
 
     if( json_f == NULL ) {
         LOG_print( log, "[%s] JSON_FILE_load failed.\n", TIME_get_gmt() );
@@ -21,6 +21,6 @@ int JSON_FILE_load( JSON_FILE* dst, const char* filename, jlc* json_load_callbac
     char        **row_values = NULL;
     JSON_RECORD *json_columns = SAFEMALLOC( sizeof( JSON_RECORD ), __FILE__, __LINE__ );
 
-    fclose( json_f );
+    fclose( json_f );*/
     return 1;
 }
