@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "../include/utils/filesystem.h"
 #include "../include/file/csv.h"
 #include "../include/utils/time.h"
 #include "../include/utils/memory.h"
@@ -58,7 +59,7 @@ char** _CSV_parse_line( const char* line, const char* delimiter, int *dst_count,
 int CSV_FILE_load( CSV_FILE* dst, const char* filename, clc* csv_load_callback, void *data_ptr1, void *data_ptr2, LOG_OBJECT* log ) {
 
     LOG_print( log, "[%s] CSV_FILE_load( %s )...\n", TIME_get_gmt(), filename );
-    FILE* csv_f = fopen( filename , "r" );
+    FILE* csv_f = FILE_open( filename, log );//fopen( filename , "r" );
 
     if( csv_f == NULL ) {
         LOG_print( log, "[%s] CSV_FILE_load failed.\n", TIME_get_gmt() );

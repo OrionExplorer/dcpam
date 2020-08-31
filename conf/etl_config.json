@@ -182,7 +182,8 @@
 		"file_comment#06" : "# Remote files are going to be supported with battery-http-server.",
 		"file_comment#07" : "##################################################################################################",
 		"FILE" : {
-			"name" : "/tmp/otrs_time_accounting_data.csv",
+			"_name" : "/tmp/otrs_time_accounting_data.csv",
+			"name" : "http://127.0.0.1/otrs.csv",
 			"delimiter" : ";",
 			"columns" : ["id", "ticket_id", "article_id", "time_unit", "create_time", "create_by", "change_time", "change_by"],
 			"load_sql" : "INSERT INTO ff_time_accounting (id, ticket_id, article_id, time_unit, create_time, create_by, change_time, change_by) VALUES (?, ?, ?, ?, '?', ?, '?', ?)"

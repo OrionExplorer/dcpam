@@ -7,6 +7,7 @@
 #include "../../include/core/db/system.h"
 #include "../../include/utils/memory.h"
 
+
 void _CSV_load_callback( CSV_RECORD* record, void *data_ptr1, void *data_ptr2, LOG_OBJECT *log ) {
     DATABASE_SYSTEM_FLAT_FILE   *flat_file = ( DATABASE_SYSTEM_FLAT_FILE* )data_ptr1;
     DATABASE_SYSTEM_DB          *system_db = ( DATABASE_SYSTEM_DB* )data_ptr2;

@@ -132,9 +132,13 @@
 	* Prevent DCPAM components to write the log files with every call of the `LOG_print` function.
 	* [ ] Define LOG_BUFFER.
 	* [ ] Rebuild `LOG_print` function.
-* [ ] Process flat file data before each ETL start:
-	* [ ] CSV parser.
-	* [ ] Load CSV data to desired table.
+* [x] Process flat file data before each ETL start:
+	* [x] CSV parser.
+	* [x] Load CSV data to desired table.
+* [ ] Download remote flat files on the fly:
+	* [ ] Minimal client-side HTTP implementation.
+	* [ ] Downloaded file is temporary.
+	* [ ] Function to download and return a FILE pointer.
 * [x] Major DCPAM log rebuild for clean parallel execution and logging:
 	* [x] Each processed source has dedicated log file.
 	* [x] Init log files during `etl_config.json` load.
@@ -155,7 +159,7 @@
 	* [x] SQLite
 	* [ ] IBM Db2
 	* [ ] MongoDB
-	* [ ] CSV
+	* [x] CSV
 	* [ ] URL
 	* [ ] JSON
 	* [ ] LDAP

@@ -5,7 +5,7 @@
  Copyright © 2020 Marcin Kelar
 ###### _Data Construct-Populate-Access-Manage_ 
 #### Data Warehouse
-![PostgreSQL](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/postgresql102x100.png) ![MySQL ](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/mysql159x100.png) ![MariaDB ](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/mariadb100x100.png) ![Microsoft SQL Server ](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/sqlserver134x100.png) ![Oracle Database ](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/oracle100x100.png) ![ODBC ](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/odbc199x100.png) ![SQLite3 ](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/sqlite171x100.png) ![CSV ](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/csv100x100.png) ![Linux ](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/linux100x100.png) ![Windows 10 ](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/windows87x100.png)
+![PostgreSQL](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/postgresql102x100.png) ![MySQL](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/mysql159x100.png) ![MariaDB](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/mariadb100x100.png) ![Microsoft SQL Server](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/sqlserver134x100.png) ![Oracle Database](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/oracle100x100.png) ![ODBC](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/odbc199x100.png) ![SQLite3](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/sqlite171x100.png) ![CSV](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/csv100x100.png) ![Linux](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/linux100x100.png) ![Windows 10](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/windows87x100.png)
 
 * DCPAM helps to create central repositories of integrated data from one or disparate sources [[1]].
 * DCPAM goal is to deliver full range of Data Warehouse possibilities without need to include or hire more engineers for this specific task.
@@ -30,6 +30,8 @@
       * [DCPAM Construct](https://github.com/OrionExplorer/dcpam#dcpam-construct)
       * [DCPAM Access](https://github.com/OrionExplorer/dcpam#dcpam-access)
     * [Data Sources](https://github.com/OrionExplorer/dcpam#data-sources)
+      * [Databases](https://github.com/OrionExplorer/dcpam#databases)
+      * [Flat Files](https://github.com/OrionExplorer/dcpam#flat-files)
     * [DCPAM Database](https://github.com/OrionExplorer/dcpam#dcpam-database)
 * [Roadmap](https://github.com/OrionExplorer/dcpam#roadmap)
 
@@ -87,7 +89,8 @@ As DCPAM is extremely modular and highly scalabe, it can serve both as Data Ware
   * One or many instances of DCPAM can work as Data Warehouse (extracting and processing data from disparate sources).
   * In the same time different DCPAM instances can use Data Warehouse to feed Data Marts with specific business-oriented data.
 * Data sources:
-  * [Databases](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL#data-sources)
+  * [Databases](https://github.com/OrionExplorer/dcpam#data-sources)
+  * [Flat files](https://github.com/OrionExplorer/dcpam#data-sources)
 * Access DCPAM Database with any system for analytics (Power BI, Tableau, Redash etc.).
 
 ### Elements yet to be covered by DCPAM
@@ -111,7 +114,7 @@ As DCPAM is extremely modular and highly scalabe, it can serve both as Data Ware
   * Configure ETL processes.
   * Manage DCPAM BI users.
 * Data sources:
-  * Local and remote flat files (csv, json)
+  * Local and remote flat files (json, xml)
   * LDAP
   * API
 
@@ -169,20 +172,25 @@ DCPAM Access is going to be dedicated Bussiness Inteligence web application.
 
 ### Data sources
 DCPAM development is still in progress with following data sources available:
-| Data source                        | Type            | Support          |
-|:-----------------------------------|:---------------:|:----------------:|
-| PostgreSQL                         | database        | native           |
-| MySQL 8                            | database        | native           |
-| MariaDB/MySQL 5                    | database        | native           |
-| SQL Server/Azure SQL Database      | database        | native via ODBC* |
-| Oracle Database                    | database        | native           |
-| SQLite3                            | database        | native           |
-| CSV                                | file            | native           |
 
+#### Databases
+| Data source                        | Support          |
+|:-----------------------------------|:----------------:|
+| PostgreSQL                         | native           |
+| MySQL 8                            | native           |
+| MariaDB/MySQL 5                    | native           |
+| SQL Server/Azure SQL Database      | native via ODBC* |
+| Oracle Database                    | native           |
+| SQLite3                            | native           |
 
 > \* SQL Server/Azure SQL Database: [ODBC is the primary native data access API for applications written in C and C++ for SQL Server](https://docs.microsoft.com/en-us/sql/connect/odbc/microsoft-odbc-driver-for-sql-server).
 
 **Please note that DCPAM provides support for every ODBC-compliant data source**.
+
+#### Flat Files
+| Data source                        | Support          |
+|:-----------------------------------|:----------------:|
+| CSV                                | native           |
 
 ### DCPAM Database
 DCPAM is designed to be as most customizable as it needs to be.
@@ -198,8 +206,8 @@ Therefore every database listed above as available data source can also be used 
 | 2020 | :white_check_mark: DCPAM WDS             | Done (2020-08-17) |
 | 2020 | :white_check_mark: API keys              | Done (2020-08-19) |
 | 2020 | :white_check_mark: Data source: CSV      | Done (2020-08-30) |
-| 2020 | :construction: Data source: JSON         | Not implemented   |
-| 2020 | :construction: Remote flat files         | Not implemented   |
+| 2020 | :construction: Data source: JSON         | In progress       |
+| 2020 | :construction: Remote flat files         | In progress       |
 | 2020 | DCPAM Access (BI web application)        | Not implemented   |
 | 2021 | Data source: XML                         | Not implemented   |
 | 2021 | DCPAM Construct (admin web application)  | Not implemented   |

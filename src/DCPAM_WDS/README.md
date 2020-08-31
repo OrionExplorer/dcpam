@@ -5,7 +5,7 @@
  Copyright © 2020 Marcin Kelar
 ###### _Data Construct-Populate-Access-Manage_ 
 #### Warehouse Data Server
-![PostgreSQL](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/postgresql102x100.png) ![MySQL ](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/mysql159x100.png) ![MariaDB ](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/mariadb100x100.png) ![Microsoft SQL Server ](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/sqlserver134x100.png) ![Oracle Database ](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/oracle100x100.png) ![ODBC ](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/odbc199x100.png) ![SQLite3 ](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/sqlite171x100.png) ![CSV ](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/csv100x100.png) ![Linux ](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/linux100x100.png) ![Windows 10 ](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/windows87x100.png)
+![PostgreSQL](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/postgresql102x100.png) ![MySQL](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/mysql159x100.png) ![MariaDB](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/mariadb100x100.png) ![Microsoft SQL Server](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/sqlserver134x100.png) ![Oracle Database](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/oracle100x100.png) ![ODBC](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/odbc199x100.png) ![SQLite3](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/sqlite171x100.png) ![CSV](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/csv100x100.png) ![Linux](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/linux100x100.png) ![Windows 10](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/windows87x100.png)
 
 ##### Currently under active development
 * [ ] To be announced.
@@ -15,6 +15,8 @@
 * [Technology](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_WDS#technology)
     * [Architecture Overview](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_WDS#architecture-overview)
     * [Data Sources](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_WDS#data-sources)
+        * [Databases](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_WDS#databases)
+        * [Flat Files](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_WDS#flat-files)
     * [DCPAM Database](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_WDS#dcpam-database)
     * [Configuration](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_WDS#configuration)
     * [Compilation (Linux)](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_WDS#compilation-linux)
@@ -30,26 +32,32 @@ DCPAM WDS is dedicated endpoint for querying predefined business data with custo
 * Connections accepted from allowed hosts only with valid API key.
 * JSON-based communication with client applications.
 * Builds the in-memory cache for queries predefined in `wds_config.json` on startup:
-	* For one or more DCPAM Database nodes.
+    * For one or more DCPAM Database nodes.
 * Caches data on the fly for new requests.
 * Maximum allowed memory usage configuration.
 * May need a lot of RAM.
 
 ### Data sources
 DCPAM development is still in progress with following data sources available:
-| Data source                        | Type            | Support          |
-|:-----------------------------------|:---------------:|:----------------:|
-| PostgreSQL                         | database        | native           |
-| MySQL 8                            | database        | native           |
-| MariaDB/MySQL 5                    | database        | native           |
-| SQL Server/Azure SQL Database      | database        | native via ODBC* |
-| Oracle Database                    | database        | native           |
-| SQLite3                            | database        | native           |
-| CSV                                | file            | native           |
+
+#### Databases
+| Data source                        | Support          |
+|:-----------------------------------|:----------------:|
+| PostgreSQL                         | native           |
+| MySQL 8                            | native           |
+| MariaDB/MySQL 5                    | native           |
+| SQL Server/Azure SQL Database      | native via ODBC* |
+| Oracle Database                    | native           |
+| SQLite3                            | native           |
 
 > \* SQL Server/Azure SQL Database: [ODBC is the primary native data access API for applications written in C and C++ for SQL Server](https://docs.microsoft.com/en-us/sql/connect/odbc/microsoft-odbc-driver-for-sql-server).
 
-**Please note that DCPAM WDS provides support for every ODBC-compliant data source**.
+**Please note that DCPAM provides support for every ODBC-compliant data source**.
+
+#### Flat Files
+| Data source                        | Support          |
+|:-----------------------------------|:----------------:|
+| CSV                                | native           |
 
 ### DCPAM Database
 DCPAM is designed to be as most customizable as it needs to be.

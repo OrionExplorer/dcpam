@@ -1,6 +1,8 @@
 #include "../include/shared.h"
 #include "../include/utils/filesystem.h"
 #include "../include/utils/memory.h"
+#include "../include/utils/strings.h"
+#include "../include/core/network/http.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -8,6 +10,44 @@
 #ifndef _WIN32
 #include <unistd.h>
 #endif
+
+FILE* FILE_open( const char *filename, LOG_OBJECT *log ) {
+
+    if( filename == NULL ) {
+        LOG_print( log, "[%s] FILE_open fatal error: filename argument is missing.\n", TIME_get_gmt() );
+        return NULL;
+    }
+
+    /* HTTP protocol */
+    if( strstr( filename, "http://" ) ) {
+        LOG_print( log, "[%s] FILE_open error: HTTP protocol is not yet supported.\n", TIME_get_gmt() );
+
+        char    host[ 100 ];
+        int     port = 80;
+        char    path[ 1024 ];
+
+        sscanf( filename, "http://%99[^:]:%99d/%1023[^\n]", host, &port, path );
+
+        /* Download file */
+        HTTP_CLIENT *http_c = SAFEMALLOC( sizeof( HTTP_CLIENT ), __FILE__, __LINE__ );
+        size_t f_content_len = 0;
+        char *f_content = HTTP_CLIENT_get_file( http_c, host, path, port, &f_content_len, log );
+
+        /* Create temporary file */
+        char *tmp_file_name = mkrndstr( 16 );
+        FILE *tmp_f = fopen( tmp_file_name, "wb");
+        fclose( tmp_f );
+
+        free( http_c ); http_c = NULL;
+
+        return NULL;
+    }
+
+    LOG_print( log, "[%s] FILE_open( %s )...\n", TIME_get_gmt(), filename );
+
+    /* Local file */
+    return fopen( filename, "r" );
+}
 
 
 char* get_app_path( void ) {

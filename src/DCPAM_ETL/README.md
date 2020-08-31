@@ -5,7 +5,7 @@
  Copyright © 2020 Marcin Kelar
 ###### _Data Construct-Populate-Access-Manage_ 
 #### Extract-Transform-Load Engine
-![PostgreSQL](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/postgresql102x100.png) ![MySQL ](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/mysql159x100.png) ![MariaDB ](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/mariadb100x100.png) ![Microsoft SQL Server ](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/sqlserver134x100.png) ![Oracle Database ](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/oracle100x100.png) ![ODBC ](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/odbc199x100.png) ![SQLite3 ](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/sqlite171x100.png) ![CSV ](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/csv100x100.png) ![Linux ](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/linux100x100.png) ![Windows 10 ](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/windows87x100.png)
+![PostgreSQL](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/postgresql102x100.png) ![MySQL](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/mysql159x100.png) ![MariaDB](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/mariadb100x100.png) ![Microsoft SQL Server](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/sqlserver134x100.png) ![Oracle Database](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/oracle100x100.png) ![ODBC](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/odbc199x100.png) ![SQLite3](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/sqlite171x100.png) ![CSV](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/csv100x100.png) ![Linux](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/linux100x100.png) ![Windows 10](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/windows87x100.png)
 
 ##### Currently under active development
 * [x] Data source: CSV.
@@ -19,6 +19,8 @@
     * [ETL and Change Data Capture](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL#etl-and-change-data-capture)
     * [Parallel Execution](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL#parallel-execution)
     * [Data Sources](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL#data-sources)
+      * [Databases](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL#databases)
+      * [Flat Files](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL#flat-files)
     * [DCPAM Database](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL#dcpam-database)
     * [Configuration](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL#configuration)
     * [Compilation (Linux)](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL#compilation-linux)
@@ -139,19 +141,25 @@ Change Data Capture [[4]] solutions depends on the data sources and their qualit
 
 ### Data sources
 DCPAM development is still in progress with following data sources available:
-| Data source                        | Type            | Support          |
-|:-----------------------------------|:---------------:|:----------------:|
-| PostgreSQL                         | database        | native           |
-| MySQL 8                            | database        | native           |
-| MariaDB/MySQL 5                    | database        | native           |
-| SQL Server/Azure SQL Database      | database        | native via ODBC* |
-| Oracle Database                    | database        | native           |
-| SQLite3                            | database        | native           |
-| CSV                                | file            | native           |
+
+#### Databases
+| Data source                        | Support          |
+|:-----------------------------------|:----------------:|
+| PostgreSQL                         | native           |
+| MySQL 8                            | native           |
+| MariaDB/MySQL 5                    | native           |
+| SQL Server/Azure SQL Database      | native via ODBC* |
+| Oracle Database                    | native           |
+| SQLite3                            | native           |
 
 > \* SQL Server/Azure SQL Database: [ODBC is the primary native data access API for applications written in C and C++ for SQL Server](https://docs.microsoft.com/en-us/sql/connect/odbc/microsoft-odbc-driver-for-sql-server).
 
-**Please note that DCPAM ETL provides support for every ODBC-compliant data source**.
+**Please note that DCPAM provides support for every ODBC-compliant data source**.
+
+#### Flat Files
+| Data source                        | Support          |
+|:-----------------------------------|:----------------:|
+| CSV                                | native           |
 
 ### DCPAM Database
 DCPAM is designed to be as most customizable as it needs to be.
