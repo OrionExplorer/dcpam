@@ -64,7 +64,6 @@ int NET_CONN_send( NET_CONN *connection, const char *data, size_t data_len ) {
         }
 
         char* buffer = NULL;
-        unsigned int i = 0;
         unsigned long LEN = 8196;
         unsigned long cur_size = LEN;
         int status = 0;
