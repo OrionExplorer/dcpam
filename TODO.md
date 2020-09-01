@@ -138,10 +138,9 @@
 * [ ] Process JSON file data before each ETL start:
 	* [ ] JSON parser.
 	* [ ] Load JSON data to desired table.
-* [ ] Download remote flat files on the fly:
-	* [ ] Minimal client-side HTTP implementation.
-	* [ ] Downloaded file is temporary.
-	* [ ] Function to download and return a FILE pointer.
+* [x] Download remote flat files on the fly:
+	* [x] Minimal client-side HTTP implementation.
+	* [x] Function to download and return a FILE pointer.
 * [x] Major DCPAM log rebuild for clean parallel execution and logging:
 	* [x] Each processed source has dedicated log file.
 	* [x] Init log files during `etl_config.json` load.

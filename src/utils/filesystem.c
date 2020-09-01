@@ -11,7 +11,7 @@
 #include <unistd.h>
 #endif
 
-FILE* FILE_open( const char *filename, LOG_OBJECT *log ) {
+FILE* FILE_open( const char *filename, const char *r_mode, const char *w_mode, LOG_OBJECT *log ) {
 
     if( filename == NULL ) {
         LOG_print( log, "[%s] FILE_open fatal error: filename argument is missing.\n", TIME_get_gmt() );
@@ -34,20 +34,30 @@ FILE* FILE_open( const char *filename, LOG_OBJECT *log ) {
         /* Download file */
         HTTP_CLIENT *http_c = SAFEMALLOC( sizeof( HTTP_CLIENT ), __FILE__, __LINE__ );
         size_t f_content_len = 0;
-        char *f_content = HTTP_CLIENT_get_file( http_c, host, path, port, &f_content_len, log );
+        char *f_content = HTTP_CLIENT_get_content( http_c, host, path, port, &f_content_len, log );
 
         if( f_content ) {
             /* Create temporary file */
             char *tmp_file_name = mkrndstr( 16 );
-            FILE *tmp_f = fopen( tmp_file_name, "wb");
+            LOG_print( log, "[%s] Temporary file name: %s\n", TIME_get_gmt(), tmp_file_name );
+            FILE *tmp_f = fopen( tmp_file_name, w_mode );
             size_t data_saved = fwrite( f_content, f_content_len, 1, tmp_f );
-            if( data_saved != f_content_len ) {
+            if( data_saved != 1 ) {
                 LOG_print( log, "[%s] FILE_open fatal error: unable to save requested file.\n", TIME_get_gmt() );
                 free( http_c ); http_c = NULL;
                 free( f_content ); f_content = NULL;
                 return NULL;
             }
-            fclose( tmp_f );
+
+            free( http_c ); http_c = NULL;
+            free( f_content ); f_content = NULL;
+
+            if( fclose( tmp_f ) == 0 ) {
+                return fopen( tmp_file_name, r_mode );
+            } else {
+                return NULL;
+            }
+
         } else {
             LOG_print( log, "[%s] FILE_open fatal error: requested URL \"%s\" returned no data.\n", TIME_get_gmt(), filename );
             free( http_c ); http_c = NULL;
@@ -62,7 +72,7 @@ FILE* FILE_open( const char *filename, LOG_OBJECT *log ) {
     LOG_print( log, "[%s] FILE_open( %s )...\n", TIME_get_gmt(), filename );
 
     /* Local file */
-    return fopen( filename, "r" );
+    return fopen( filename, r_mode );
 }
 
 

@@ -1537,6 +1537,7 @@ int main( int argc, char** argv ) {
     signal( SIGABRT, (__sighandler_t)&app_terminate );
     signal( SIGTERM, (__sighandler_t)&app_terminate );
 
+    srand( time( NULL ) );
     LOG_init( &dcpam_etl_log, "dcpam-etl" );
 
     memset( config_file, '\0', MAX_PATH_LENGTH );

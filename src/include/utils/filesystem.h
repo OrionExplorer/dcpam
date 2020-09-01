@@ -7,7 +7,7 @@
 #define getcwd _getcwd
 #endif // _WIN32
 
-FILE* FILE_open( const char *filename, LOG_OBJECT *log );
+FILE* FILE_open( const char *filename, const char *r_mode, const char *w_mode, LOG_OBJECT *log );
 char* get_app_path( void );
 short directory_exists( const char *path );
 char* file_get_content( const char *filename );

@@ -101,9 +101,7 @@ int CDC_TransformGeneric( DB_SYSTEM_ETL_TRANSFORM_QUERY *transform_element, DATA
         transform_element->connection->log = log;
         if( NET_CONN_connect( transform_element->connection, host, port ) == 1 ) {
 
-            LOG_print( log, "[%s] NET_CONN_send...", TIME_get_gmt() );
             if( NET_CONN_send( transform_element->connection, command, strlen( command ) ) == 1 ) {
-                LOG_print( log, "ok.\n" );
                 LOG_print( log, "[%s] Received response: %s\n", TIME_get_gmt(), transform_element->connection->response );
                 if( strstr( transform_element->connection->response, "0") ) {
                     LOG_print( log, "[%s] Transform process exited with failure.\n" );
@@ -111,7 +109,6 @@ int CDC_TransformGeneric( DB_SYSTEM_ETL_TRANSFORM_QUERY *transform_element, DATA
                     return 0;
                 }
             } else {
-                LOG_print( log, "error.\n" );
                 NET_CONN_disconnect( transform_element->connection );
                 transform_element->connection->log = NULL;
                 free( transform_element->connection ); transform_element->connection = NULL;

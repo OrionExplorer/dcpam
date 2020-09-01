@@ -192,12 +192,14 @@ DCPAM development is still in progress with following data sources available:
 |:-----------------------------------|:----------------:|
 | CSV                                | native           |
 
+DCPAM can access flat files from local directories or remote servers via HTTP protocol.
+
 ### DCPAM Database
 DCPAM is designed to be as most customizable as it needs to be.
 Therefore every database listed above as available data source can also be used as DCPAM target database.
 
 ##### Currently under active development
-* [ ] To be announced.
+* [x] Data source: JSON.
 
 ## Roadmap
 | Year | Feature                                  | Status            |
@@ -206,8 +208,8 @@ Therefore every database listed above as available data source can also be used 
 | 2020 | :white_check_mark: DCPAM WDS             | Done (2020-08-17) |
 | 2020 | :white_check_mark: API keys              | Done (2020-08-19) |
 | 2020 | :white_check_mark: Data source: CSV      | Done (2020-08-30) |
+| 2020 | :white_check_mark: Remote flat files     | Done (2020-09-01) |
 | 2020 | :construction: Data source: JSON         | In progress       |
-| 2020 | :construction: Remote flat files         | In progress       |
 | 2020 | DCPAM Access (BI web application)        | Not implemented   |
 | 2021 | Data source: XML                         | Not implemented   |
 | 2021 | DCPAM Construct (admin web application)  | Not implemented   |

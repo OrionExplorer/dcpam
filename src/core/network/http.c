@@ -2,7 +2,22 @@
 #include "../../include/utils/time.h"
 #include "../../include/utils/memory.h"
 
-char* HTTP_CLIENT_get_file( HTTP_CLIENT *client, const char *host, const char *path, const int port, size_t *content_len, LOG_OBJECT *log ) {
+size_t _HTTP_CLIENT_get_ContentLength( HTTP_CLIENT* client ) {
+    size_t result = 0;
+
+    if( client && client->connection && client->connection->response && client->connection->response_len > 0 ) {
+        char* ptr = strstr( client->connection->response, "Content-Length:" );
+        if( ptr ) {
+            if( sscanf( ptr, "%*s %zu", &result ) == 1 ) {
+                return result;
+            }
+        }
+    }
+    return 0;
+}
+
+char* HTTP_CLIENT_get_content( HTTP_CLIENT *client, const char *host, const char *path, const int port, size_t *content_len, LOG_OBJECT *log ) {
+    char *raw_content = NULL;
     char *content = NULL;
 
     if( client ) {
@@ -25,22 +40,35 @@ char* HTTP_CLIENT_get_file( HTTP_CLIENT *client, const char *host, const char *p
         int http_res = -1;
         if( sscanf( client->connection->response, "HTTP/1.1 %999d", &http_res ) == 1 ) {
 
-            LOG_print( log, "[%s] HTTP_CLIENT_get_file( %s ) response code: %d.\n", TIME_get_gmt(), path, http_res );
+            LOG_print( log, "[%s] HTTP_CLIENT_get_content( %s ) response code: %d.\n", TIME_get_gmt(), path, http_res );
 
             if( http_res != 200 ) {
                 LOG_print( log, "[%s] Error: response is not valid.\n", TIME_get_gmt() );
             } else {
-                printf( "\n====RECV:\n%s\n========\n", client->connection->response );
-                content = SAFEMALLOC( client->connection->response_len * sizeof( char ), __FILE__, __LINE__ );
+                raw_content = SAFEMALLOC( client->connection->response_len * sizeof( char ), __FILE__, __LINE__ );
                 memcpy(
-                    content,
+                    raw_content,
                     client->connection->response,
                     client->connection->response_len
                 );
 
-                if( content_len ) {
-                    *content_len = client->connection->response_len;
+                size_t file_size = _HTTP_CLIENT_get_ContentLength( client );
+
+                LOG_print( log, "[%s] Received file with size %zu bytes.\n", TIME_get_gmt(), file_size );
+
+                content = SAFEMALLOC( file_size * sizeof( char ), __FILE__, __LINE__ );
+                char *start_pos = strstr( raw_content, "\r\n\r\n" ) + 4;
+                for( size_t i = 0; i < file_size; i++ ) {
+                    content[ i ] = start_pos[ i ];
                 }
+
+                if( content_len ) {
+                    *content_len = file_size;
+                }
+
+                free( raw_content ); raw_content = NULL;
+
+                NET_CONN_disconnect( client->connection );
 
                 return content;
             }

@@ -59,6 +59,8 @@ DCPAM development is still in progress with following data sources available:
 |:-----------------------------------|:----------------:|
 | CSV                                | native           |
 
+DCPAM can access flat files from local directories or remote servers via HTTP protocol.
+
 ### DCPAM Database
 DCPAM is designed to be as most customizable as it needs to be.
 Therefore every database listed above as available data source can also be used as DCPAM target database.

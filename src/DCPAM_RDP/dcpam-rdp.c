@@ -46,6 +46,7 @@ void DCPAM_script_exec( COMMUNICATION_SESSION *communication_session, CONNECTED_
                 if( strcmp( key, R_APP.ALLOWED_HOSTS_[ i ]->api_key ) != 0 ) {
                     LOG_print( &dcpam_rdp_log, "[%s] Error: KEY in request is invalid.\n", TIME_get_gmt() );
                     SOCKET_send( communication_session, client, "-1", 2 );
+                    SOCKET_disconnect_client( communication_session );
                     return;
                 }
             }
@@ -60,6 +61,7 @@ void DCPAM_script_exec( COMMUNICATION_SESSION *communication_session, CONNECTED_
         if( script == NULL ) {
             LOG_print( &dcpam_rdp_log, "[%s] Error executing script %s.\n", TIME_get_gmt(), command );
             SOCKET_send( communication_session, client, "-1", 2 );
+            SOCKET_disconnect_client( communication_session );
             pclose( script );
             return;
         }
@@ -67,15 +69,18 @@ void DCPAM_script_exec( COMMUNICATION_SESSION *communication_session, CONNECTED_
         if( res_len == 0 ) {
             LOG_print( &dcpam_rdp_log, "[%s] Error executing script %s. No data returned.\n", TIME_get_gmt(), command );
             SOCKET_send( communication_session, client, "-1", 2 );
+            SOCKET_disconnect_client( communication_session );
             pclose( script );
             return;
         }
         LOG_print( &dcpam_rdp_log, "[%s] Script %s finished with result: %s.\n", TIME_get_gmt(), command, res );
         SOCKET_send( communication_session, client, "1", 1 );
+        SOCKET_disconnect_client( communication_session );
         pclose( script );
     } else {
         LOG_print( &dcpam_rdp_log, "[%s] Error: input data is invalid.\n", TIME_get_gmt() );
         SOCKET_send( communication_session, client, "-1", 2 );
+        SOCKET_disconnect_client( communication_session );
     }
 }
 
