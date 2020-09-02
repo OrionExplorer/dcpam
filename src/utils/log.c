@@ -62,10 +62,8 @@ void LOG_free( LOG_OBJECT* log ) {
 
 void LOG_print( LOG_OBJECT *log, char *fmt, ... ) {
     char            *output_text;
-    FILE            *f_LOG;
     va_list         args;
     int             buf_len = 0;
-    int             len = 0;
     const size_t    FORMATTED_TEXT_LEN = 1024;
     const size_t    BUFFER_SIZE = 32768;
 
@@ -85,6 +83,7 @@ void LOG_print( LOG_OBJECT *log, char *fmt, ... ) {
 
     buf_len = strlen( log->buffer );
     if( buf_len >= BUFFER_SIZE ) {
+        int     len = 0;
 
         if( buf_len > BUFFER_SIZE ) {
             len = buf_len - BUFFER_SIZE;
@@ -96,7 +95,7 @@ void LOG_print( LOG_OBJECT *log, char *fmt, ... ) {
             tmp_buf = NULL;
         }
 
-        f_LOG = fopen( log->filename, "a+" );
+        FILE *f_LOG = fopen( log->filename, "a+" );
         if( f_LOG ) {
             fseek( f_LOG, 0, SEEK_END );
             fwrite( log->buffer, BUFFER_SIZE + len, 1, f_LOG );
