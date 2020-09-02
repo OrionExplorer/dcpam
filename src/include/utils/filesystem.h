@@ -7,6 +7,7 @@
 #define getcwd _getcwd
 #endif // _WIN32
 
+int FILE_download( const char* src, const char* dst, const char* w_mode, LOG_OBJECT* log );
 FILE* FILE_open( const char *filename, const char *r_mode, const char *w_mode, LOG_OBJECT *log );
 char* get_app_path( void );
 short directory_exists( const char *path );
