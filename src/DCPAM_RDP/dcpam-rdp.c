@@ -226,7 +226,7 @@ int main( int argc, char** argv ) {
     signal( SIGABRT, ( __sighandler_t )&app_terminate );
     signal( SIGTERM, ( __sighandler_t )&app_terminate );
 
-    LOG_init( &dcpam_rdp_log, "dcpam-rdp" );
+    LOG_init( &dcpam_rdp_log, "dcpam-rdp", 65535 );
     memset( config_file, '\0', MAX_PATH_LENGTH );
     if( argc <= 1 ) {
         snprintf( config_file, MAX_PATH_LENGTH, "./conf/rdp_config.json" );
@@ -253,6 +253,8 @@ int main( int argc, char** argv ) {
 
         SOCKET_main( &exec_script, R_APP.network_port, ( const char** )&(*allowed_hosts_ip), R_APP.ALLOWED_HOSTS_len, &dcpam_rdp_log );
     }
+
+    LOG_free( &dcpam_rdp_log );
 
     return 0;
 }

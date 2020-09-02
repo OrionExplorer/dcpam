@@ -9,8 +9,8 @@
 #define MAX_BUFFER_CHAR                     65535*sizeof( char )
 #define UPLOAD_BUFFER                       16384
 #define UPLOAD_BUFFER_CHAR                  16384*sizeof( char )
-#define LOG_BUFFER                          128
-#define LOG_BUFFER_CHAR                     128*sizeof( char )
+#define LOG_BUFFER                          512
+#define LOG_BUFFER_CHAR                     512*sizeof( char )
 #define LARGE_BUFF_SIZE                     8192
 #define LARGE_BUFF_SIZE_CHAR                8192*sizeof( char )
 #define BIG_BUFF_SIZE                       2048

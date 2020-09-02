@@ -128,10 +128,10 @@
 	* [x] New DATABASE_SYSTEM element: DATABASE_SYSTEM_FLAT_FILE.
 	* [x] Update `etl_config.json` with "FILE" section.
 	* [x] Load DATABASE_SYSTEM_FLAT_FILE data from `etl_config.json`.
-* [ ] Buffered log:
+* [x] Buffered log:
 	* Prevent DCPAM components to write the log files with every call of the `LOG_print` function.
-	* [ ] Define LOG_BUFFER.
-	* [ ] Rebuild `LOG_print` function.
+	* [x] Define LOG_BUFFER.
+	* [x] Rebuild `LOG_print` function.
 * [x] Process CSV file data before each ETL start:
 	* [x] CSV parser.
 	* [x] Load CSV data to desired table.

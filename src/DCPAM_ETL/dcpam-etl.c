@@ -1538,7 +1538,7 @@ int main( int argc, char** argv ) {
     signal( SIGTERM, (__sighandler_t)&app_terminate );
 
     srand( time( NULL ) );
-    LOG_init( &dcpam_etl_log, "dcpam-etl" );
+    LOG_init( &dcpam_etl_log, "dcpam-etl", 65535 );
 
     memset( config_file, '\0', MAX_PATH_LENGTH );
     if( argc <= 1 ) {
@@ -1559,6 +1559,8 @@ int main( int argc, char** argv ) {
     }
 
     DCPAM_free_configuration();
+
+    LOG_free( &dcpam_etl_log );
 
     return 0;
 }

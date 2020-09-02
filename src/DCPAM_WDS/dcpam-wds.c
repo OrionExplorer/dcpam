@@ -716,7 +716,7 @@ int main( int argc, char** argv ) {
     signal( SIGABRT, (__sighandler_t)&app_terminate );
     signal( SIGTERM, (__sighandler_t)&app_terminate );
 
-    LOG_init( &dcpam_wds_log, "dcpam-wds" );
+    LOG_init( &dcpam_wds_log, "dcpam-wds", 65535 );
 
     memset( config_file, '\0', MAX_PATH_LENGTH );
     if( argc <= 1 ) {
@@ -755,5 +755,8 @@ int main( int argc, char** argv ) {
     }
 
     LOG_print( &dcpam_wds_log, "[%s] DCPAM Warehouse Data Server finished.\n", TIME_get_gmt() );
+
+    LOG_free( &dcpam_wds_log );
+
     return 0;
 }

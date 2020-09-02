@@ -54,7 +54,7 @@ int DB_WORKER_init( LOG_OBJECT *log ) {
     for( i = 0; i < DATABASE_SYSTEMS_COUNT; i++ ) {
         log_object[ i ] = SAFEMALLOC( sizeof( LOG_OBJECT ), __FILE__, __LINE__ );
         LOG_print( log, "[%s] Initializing log file: %s...\n", TIME_get_gmt(), DATABASE_SYSTEMS[ i ].name );
-        LOG_init( log_object[ i ], DATABASE_SYSTEMS[ i ].name );
+        LOG_init( log_object[ i ], DATABASE_SYSTEMS[ i ].name, 65535 );
     }
 
     while( app_terminated == 0 ) {
@@ -156,6 +156,7 @@ int DB_WORKER_init( LOG_OBJECT *log ) {
     mysql_library_end();
 
     for( i = 0; i < DATABASE_SYSTEMS_COUNT; i++ ) {
+        LOG_free( log_object[ i ] );
         free( log_object[ i ] ); log_object[ i ] = NULL;
     }
     free( log_object ); log_object = NULL;
