@@ -30,7 +30,7 @@ char* HTTP_CLIENT_get_content( HTTP_CLIENT *client, const char *host, const char
 
         char send_data[ 1024 ];
 
-        snprintf( send_data, sizeof( send_data ), "GET /%s HTTP/1.1\r\nHost: %s\r\n\r\n", path, host );
+        snprintf( send_data, sizeof( send_data ), "GET /%s HTTP/1.1\r\nHost: %s\r\nConnection: close\r\n\r\n", path, host );
 
         if( NET_CONN_send( client->connection, send_data, strlen( send_data ) ) == 0 ) {
             free( client->connection ); client->connection = NULL;

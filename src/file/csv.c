@@ -66,13 +66,13 @@ int CSV_FILE_load( CSV_FILE* dst, const char* filename, clc* csv_load_callback, 
         return 0;
     }
 
-    char        buf[ 1024 ];
+    char        buf[ 8192 ];
     int         row_count = 0;
     char        **columns = NULL;
     char        **row_values = NULL;
     CSV_RECORD  *csv_columns = SAFEMALLOC( sizeof( CSV_RECORD ), __FILE__, __LINE__ );
 
-    while( fgets( buf, 1024, csv_f ) ) {
+    while( fgets( buf, 8192, csv_f ) ) {
         row_count++;
         if( row_count == 1 ) {
             columns = _CSV_parse_line( buf, dst->delimiter, &csv_columns->field_count, log );

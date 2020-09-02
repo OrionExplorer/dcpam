@@ -20,8 +20,6 @@ FILE* FILE_open( const char *filename, const char *r_mode, const char *w_mode, L
 
     /* HTTP protocol */
     if( strstr( filename, "http://" ) ) {
-        LOG_print( log, "[%s] FILE_open error: HTTP protocol is not yet supported.\n", TIME_get_gmt() );
-
         char    host[ 100 ];
         int     port = 80;
         char    path[ 1024 ];
