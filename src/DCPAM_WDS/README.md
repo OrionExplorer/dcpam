@@ -5,7 +5,7 @@
  Copyright © 2020 Marcin Kelar
 ###### _Data Construct-Populate-Access-Manage_ 
 #### Warehouse Data Server
-![PostgreSQL](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/postgresql102x100.png) ![MySQL](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/mysql159x100.png) ![MariaDB](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/mariadb100x100.png) ![Microsoft SQL Server](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/sqlserver134x100.png) ![Oracle Database](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/oracle100x100.png) ![ODBC](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/odbc199x100.png) ![SQLite3](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/sqlite171x100.png) ![CSV](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/csv100x100.png) ![Linux](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/linux100x100.png) ![Windows 10](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/windows87x100.png)
+![PostgreSQL](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/postgresql102x100.png) ![MySQL](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/mysql159x100.png) ![MariaDB](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/mariadb100x100.png) ![Microsoft SQL Server](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/sqlserver134x100.png) ![Oracle Database](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/oracle100x100.png) ![ODBC](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/odbc199x100.png) ![SQLite3](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/sqlite171x100.png) ![CSV](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/csv100x100.png) ![JSON](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/json100x100.png) ![API](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/api100x100.png) ![Linux](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/linux100x100.png) ![Windows 10](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/windows87x100.png)
 
 ##### Currently under active development
 * [ ] To be announced.
@@ -16,7 +16,7 @@
     * [Architecture Overview](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_WDS#architecture-overview)
     * [Data Sources](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_WDS#data-sources)
         * [Databases](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_WDS#databases)
-        * [Flat Files](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_WDS#flat-files)
+        * [Files](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_WDS#files)
     * [DCPAM Database](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_WDS#dcpam-database)
     * [Configuration](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_WDS#configuration)
     * [Compilation (Linux)](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_WDS#compilation-linux)
@@ -54,12 +54,12 @@ DCPAM development is still in progress with following data sources available:
 
 **Please note that DCPAM provides support for every ODBC-compliant data source**.
 
-#### Flat Files
+#### Files
 | Data source                        | Support          |
 |:-----------------------------------|:----------------:|
 | CSV                                | native           |
 
-DCPAM can access flat files from local directories or remote servers via HTTP protocol.
+DCPAM can access files from local or remote locations. The latter are fetched via HTTP protocol.
 
 ### DCPAM Database
 DCPAM is designed to be as most customizable as it needs to be.

@@ -1,4 +1,5 @@
 *.csv
+otrs_time_accounting_data.json
 *.o
 *.log
 *log.txt

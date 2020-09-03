@@ -28,12 +28,15 @@ int FILE_download( const char* src, const char* dst, const char* w_mode, LOG_OBJ
 
     if( f_content ) {
         FILE* tmp_f = fopen( dst, w_mode );
-        size_t data_saved = fwrite( f_content, f_content_len, 1, tmp_f );
-        if( data_saved != 1 ) {
-            LOG_print( log, "[%s] FILE_download fatal error: unable to save requested file.\n", TIME_get_gmt() );
-            free( http_c ); http_c = NULL;
-            free( f_content ); f_content = NULL;
-            return 0;
+        if( tmp_f ) {
+            size_t data_saved = fwrite( f_content, f_content_len, 1, tmp_f );
+            if( data_saved != 1 ) {
+                LOG_print( log, "[%s] FILE_download fatal error: unable to save requested file.\n", TIME_get_gmt() );
+                fclose( tmp_f );
+                free( http_c ); http_c = NULL;
+                free( f_content ); f_content = NULL;
+                return 0;
+            }
         }
 
         free( http_c ); http_c = NULL;

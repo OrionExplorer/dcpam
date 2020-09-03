@@ -171,7 +171,7 @@
 		}]
 	}, {
 		"enabled" : 1,
-		"name" : "OTRS-History-Data-CSV-source",
+		"name" : "OTRS-History-Data-FILE-source",
 
 		"file_comment#00" : "##################################################################################################",
 		"file_comment#01" : "# FILE section is dedicated for schema definition of the flat files loader.",
@@ -182,8 +182,10 @@
 		"file_comment#06" : "# Remote files are going to be supported with battery-http-server.",
 		"file_comment#07" : "##################################################################################################",
 		"FILE" : {
-			"_name" : "/tmp/otrs_time_accounting_data.csv",
-			"name" : "http://172.25.118.191:80/otrs_time_accounting_data.csv",
+			"csv_name" : "/tmp/otrs_time_accounting_data.csv",
+			"csv_remote_name" : "http://172.25.118.191:80/otrs_time_accounting_data.csv",
+			"name" : "/tmp/otrs_time_accounting_data.json",
+			"json_remote_name" : "http://172.25.118.191:80/otrs_time_accounting_data.json",
 			"delimiter" : ";",
 			"columns" : ["id", "ticket_id", "article_id", "time_unit", "create_time", "create_by", "change_time", "change_by"],
 			"load_sql" : "INSERT INTO ff_time_accounting (id, ticket_id, article_id, time_unit, create_time, create_by, change_time, change_by) VALUES (?, ?, ?, ?, '?', ?, '?', ?)"
