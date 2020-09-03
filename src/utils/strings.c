@@ -5,16 +5,15 @@
 /* https://codereview.stackexchange.com/a/29276 */
 char *mkrndstr( size_t len ) {
     static char charset[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    char *randomString;
+    char *randomString = NULL;
 
     if ( len ) {
         randomString = malloc( len + 1 );
 
         if ( randomString ) {
             int l = ( int )( sizeof( charset ) - 1 );
-            int key;
             for ( int n = 0; n < len; n++ ) {
-                key = rand() % l;
+                int key = rand() % l;
                 randomString[ n ] = charset[ key ];
             }
 
