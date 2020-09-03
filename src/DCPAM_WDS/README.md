@@ -58,8 +58,10 @@ DCPAM development is still in progress with following data sources available:
 | Data source                        | Support          |
 |:-----------------------------------|:----------------:|
 | CSV                                | native           |
+| JSON                               | native           |
 
 DCPAM can access files from local or remote locations. The latter are fetched via HTTP protocol.
+Files are loaded to temporary tables in DCPAM or external database to make SQL operations possible for this kind of data.
 
 ### DCPAM Database
 DCPAM is designed to be as most customizable as it needs to be.
