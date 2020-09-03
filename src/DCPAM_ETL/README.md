@@ -20,7 +20,7 @@
     * [Parallel Execution](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL#parallel-execution)
     * [Data Sources](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL#data-sources)
       * [Databases](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL#databases)
-      * [Files](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL#files)
+      * [Flat Files](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL#flat-files)
     * [DCPAM Database](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL#dcpam-database)
     * [Configuration](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL#configuration)
     * [Compilation (Linux)](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL#compilation-linux)
@@ -156,7 +156,7 @@ DCPAM development is still in progress with following data sources available:
 
 **Please note that DCPAM provides support for every ODBC-compliant data source**.
 
-#### Files
+#### Flat Files
 | Data source                        | Support          |
 |:-----------------------------------|:----------------:|
 | CSV                                | native           |

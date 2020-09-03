@@ -31,7 +31,7 @@
       * [DCPAM Access](https://github.com/OrionExplorer/dcpam#dcpam-access)
     * [Data Sources](https://github.com/OrionExplorer/dcpam#data-sources)
       * [Databases](https://github.com/OrionExplorer/dcpam#databases)
-      * [Files](https://github.com/OrionExplorer/dcpam#files)
+      * [Flat Files](https://github.com/OrionExplorer/dcpam#flat-files)
     * [DCPAM Database](https://github.com/OrionExplorer/dcpam#dcpam-database)
 * [Roadmap](https://github.com/OrionExplorer/dcpam#roadmap)
 
@@ -186,7 +186,7 @@ DCPAM development is still in progress with following data sources available:
 
 **Please note that DCPAM provides support for every ODBC-compliant data source**.
 
-#### Files
+#### Flat Files
 | Data source                        | Support          |
 |:-----------------------------------|:----------------:|
 | CSV                                | native           |

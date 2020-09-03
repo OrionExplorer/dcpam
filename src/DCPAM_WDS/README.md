@@ -16,7 +16,7 @@
     * [Architecture Overview](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_WDS#architecture-overview)
     * [Data Sources](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_WDS#data-sources)
         * [Databases](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_WDS#databases)
-        * [Files](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_WDS#files)
+        * [Flat Files](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_WDS#flat-files)
     * [DCPAM Database](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_WDS#dcpam-database)
     * [Configuration](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_WDS#configuration)
     * [Compilation (Linux)](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_WDS#compilation-linux)
@@ -54,7 +54,7 @@ DCPAM development is still in progress with following data sources available:
 
 **Please note that DCPAM provides support for every ODBC-compliant data source**.
 
-#### Files
+#### Flat Files
 | Data source                        | Support          |
 |:-----------------------------------|:----------------:|
 | CSV                                | native           |
