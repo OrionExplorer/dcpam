@@ -36,7 +36,7 @@ Extraction is first major process. Main DCPAM ETL/ELT workflow consists of:
 ![Main Overview](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/dwh.png)
 
 #### Extraction
-DCPAM ETL is designed to perform both incremental and full online extraction without need to implement additional logic to the source system. This process is SQL-based all the way, thus precise configuration of various transaction logs is not required. Log scanning is great non-intrusive method for Change Data Capture, but DCPAM goal is to deliver full Data Warehouse possibilities without need to include or hire more engineers for this specific task.
+DCPAM ETL is designed to perform both incremental and full online/offline extraction without need to implement additional logic to the source system. This process is SQL-based all the way, thus precise configuration of various transaction logs is not required. Log scanning is great non-intrusive method for Change Data Capture, but DCPAM goal is to deliver full Data Warehouse possibilities without need to include or hire more engineers for this specific task.
 
 Extract process does handle of:
 1. **Extract Inserted** - find and fetch only new records.
@@ -162,6 +162,8 @@ DCPAM development is still in progress with following data sources available:
 | JSON                               | native           |
 
 DCPAM can access files from local or remote locations. The latter are fetched via HTTP protocol.
+
+Files are loaded to temporary tables in DCPAM or external database to make SQL operations possible for this kind of data.
 
 ### DCPAM Database
 DCPAM is designed to be as most customizable as it needs to be.
