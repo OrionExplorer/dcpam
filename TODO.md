@@ -135,9 +135,9 @@
 * [x] Process CSV file data before each ETL start:
 	* [x] CSV parser.
 	* [x] Load CSV data to desired table.
-* [ ] Process JSON file data before each ETL start:
-	* [ ] JSON parser.
-	* [ ] Load JSON data to desired table.
+* [x] Process JSON file data before each ETL start:
+	* [x] JSON parser.
+	* [x] Load JSON data to desired table.
 * [x] Download remote flat files on the fly:
 	* [x] Minimal client-side HTTP implementation.
 	* [x] Function to download and return a FILE pointer.
@@ -162,6 +162,6 @@
 	* [ ] IBM Db2
 	* [ ] MongoDB
 	* [x] CSV
-	* [ ] URL
-	* [ ] JSON
+	* [x] URL
+	* [x] JSON
 	* [ ] LDAP
