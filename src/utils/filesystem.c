@@ -42,7 +42,11 @@ int FILE_download( const char* src, const char* dst, const char* w_mode, LOG_OBJ
         free( http_c ); http_c = NULL;
         free( f_content ); f_content = NULL;
 
-        return fclose( tmp_f ) == 0 ? 1 : 0;
+        if( tmp_f ) {
+            return fclose( tmp_f ) == 0 ? 1 : 0;
+        } else {
+            return 0;
+        }
 
     } else {
         LOG_print( log, "[%s] FILE_download fatal error: requested URL \"%s\" returned no data.\n", TIME_get_gmt(), src );
