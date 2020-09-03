@@ -206,7 +206,7 @@ Therefore every database listed above as available data source can also be used 
 |:----:|:-----------------------------------------|:------------------|
 | 2020 | :white_check_mark: Transform process     | Done (2020-08-07) |
 | 2020 | :white_check_mark: DCPAM WDS             | Done (2020-08-17) |
-| 2020 | :white_check_mark: API keys              | Done (2020-08-19) |
+| 2020 | :white_check_mark: DCPAM auth keys       | Done (2020-08-19) |
 | 2020 | :white_check_mark: Data source: CSV      | Done (2020-08-30) |
 | 2020 | :white_check_mark: Remote files          | Done (2020-09-01) |
 | 2020 | :white_check_mark: Data source: JSON     | Done (2020-09-03) |
