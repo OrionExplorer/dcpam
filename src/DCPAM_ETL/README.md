@@ -133,7 +133,6 @@ Change Data Capture [[4]] solutions depends on the data sources and their qualit
 | SQL query for indices                   | database/file |
 | SQL query for diffs (eg. IN, NOT IN)    | database/file |
 
-> **Notice**: Only Extract and Load processes are available. Transform process development is in progress.
 
 ### Parallel Execution
 * It is possible to use multiple processes to accomplish single task. Instead of one configuration of many queries per source system, DCPAM ETL allows to create many configurations of the same source system with one or more queries.
@@ -160,6 +159,7 @@ DCPAM development is still in progress with following data sources available:
 | Data source                        | Support          |
 |:-----------------------------------|:----------------:|
 | CSV                                | native           |
+| JSON                               | native           |
 
 DCPAM can access files from local or remote locations. The latter are fetched via HTTP protocol.
 
