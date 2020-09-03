@@ -43,7 +43,7 @@ Extract process does handle of:
 2. **Extract Deleted** - find records that no longer exists in the source system.
 3. **Extract Modified** - find records that have been modified since last extraction.
 
-> **Information**: offline extraction (files) and other online sources will be available in the future.
+> **Information**: other online sources will be available in the future.
 
 Before Extract process begin, it is possible to run set of SQL queries to perform on DCPAM Database.
 
