@@ -159,7 +159,7 @@ DCPAM development is still in progress with following data sources available:
 | PSV                                | native           |
 | JSON                               | native           |
 
-DCPAM can access files from local or remote locations. The latter are fetched via HTTP protocol.
+DCPAM can access files from local or remote locations. The latter are fetched via HTTP protocol and [Battery HTTP Server](https://github.com/OrionExplorer/battery-http-server) is recommended.
 Files are loaded to temporary tables in DCPAM or external database to make SQL operations possible for this kind of data.
 
 ### DCPAM Database
