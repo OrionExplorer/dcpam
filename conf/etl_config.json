@@ -328,7 +328,7 @@
 			"password" : "tantive-4",
 			"db" : "dcpam"
 		},
-		"_STAGING" : {
+		"STAGING" : {
 			"comment#00" : "##################################################################################################",
 			"comment#01" : "# Staging Area configuration.",
 			"comment#02" : "# This step is optional. Use it to define remote database where extracted data is stored.",

@@ -159,7 +159,7 @@
 	* [x] MariaDB
 	* [x] Oracle Database
 	* [x] SQLite
-	* [ ] IBM Db2
+	* [x] IBM Db2
 	* [ ] MongoDB
 	* [x] CSV/TSV/PSV
 	* [x] URL
