@@ -109,7 +109,6 @@ int CSV_FILE_load( CSV_FILE* dst, const char* filename, clc* csv_load_callback, 
         free( columns[ i ] ); columns[ i ] = NULL;
     }
     columns = NULL;
-    free( csv_columns->fields ); csv_columns->fields = NULL;
     free( csv_columns ); csv_columns = NULL;
 
     fclose( csv_f );

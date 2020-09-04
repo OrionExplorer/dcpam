@@ -175,18 +175,29 @@
 
 		"file_comment#00" : "##################################################################################################",
 		"file_comment#01" : "# FILE section is dedicated for schema definition of the flat files loader.",
-		"file_comment#02" : "# The \"name\", \"columns\" and \"sql\" keys are required. For CSV files, \"delimeter\" is also required.",
-		"file_comment#03" : "# DCPAM ETL loads the file to the database set in \"DB\" section.",
-		"file_comment#04" : "# The same \"DB\" is later used as real source for DCPAM.",
-		"file_comment#05" : "# This is work in progress with support for local CSV files only.",
-		"file_comment#06" : "# Remote files are going to be supported with battery-http-server.",
-		"file_comment#07" : "##################################################################################################",
+		"file_comment#02" : "# The \"name\", \"columns\" and \"sql\" keys are required.",
+		"file_comment#03" : "# For CSV files, \"delimeter\" is also required.",
+		"file_comment#04" : "# For TSV and PSV files, \"delimeter\" is ignored.",
+		"file_comment#05" : "# JSON file structure must be array of objects.",
+		"file_comment#06" : "# DCPAM ETL loads the file to the database set in \"DB\" section.",
+		"file_comment#07" : "# The same \"DB\" is later used as real source for DCPAM.",
+		"file_comment#08" : "# This is work in progress with support for local CSV files only.",
+		"file_comment#09" : "# Remote files are going to be supported with battery-http-server.",
+		"file_comment#10" : "##################################################################################################",
 		"FILE" : {
 			"csv_name" : "/tmp/otrs_time_accounting_data.csv",
 			"csv_remote_name" : "http://172.25.118.191:80/otrs_time_accounting_data.csv",
-			"name" : "/tmp/otrs_time_accounting_data.json",
-			"json_remote_name" : "http://172.25.118.191:80/otrs_time_accounting_data.json",
 			"delimiter" : ";",
+
+			"name" : "/tmp/otrs_time_accounting_data.psv",
+			"psv_remote_name" : "http://172.25.118.191:80/otrs_time_accounting_data.psv",
+
+			"tsv_name" : "/tmp/otrs_time_accounting_data.tsv",
+			"tsv_remote_name" : "http://172.25.118.191:80/otrs_time_accounting_data.tsv",
+
+			"json_name" : "/tmp/otrs_time_accounting_data.json",
+			"json_remote_name" : "http://172.25.118.191:80/otrs_time_accounting_data.json",
+
 			"columns" : ["id", "ticket_id", "article_id", "time_unit", "create_time", "create_by", "change_time", "change_by"],
 			"load_sql" : "INSERT INTO ff_time_accounting (id, ticket_id, article_id, time_unit, create_time, create_by, change_time, change_by) VALUES (?, ?, ?, ?, '?', ?, '?', ?)"
 		},

@@ -1,4 +1,6 @@
 *.csv
+*.tsv
+*.psv
 otrs_time_accounting_data.json
 *.o
 *.log

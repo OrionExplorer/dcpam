@@ -1,14 +1,11 @@
-# DCPAM [![Build Status](https://travis-ci.org/OrionExplorer/dcpam.svg?branch=master)](https://travis-ci.org/OrionExplorer/dcpam) [![Build status](https://ci.appveyor.com/api/projects/status/43le8rn6721j8jtj/branch/master?svg=true)](https://ci.appveyor.com/project/OrionExplorer/dcpam/branch/master)
- 
- [![License: MIT](https://img.shields.io/badge/License-MIT-brightgreen.svg)](https://opensource.org/licenses/MIT) [![Codacy Badge](https://app.codacy.com/project/badge/Grade/f5c3afcc56ab4e14910d7f68038d732a)](https://www.codacy.com/manual/OrionExplorer/dcpam?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=OrionExplorer/dcpam&amp;utm_campaign=Badge_Grade)
- 
- Copyright © 2020 Marcin Kelar
-###### _Data Construct-Populate-Access-Manage_ 
-#### Data Warehouse
-![PostgreSQL](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/postgresql102x100.png) ![MySQL](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/mysql159x100.png) ![MariaDB](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/mariadb100x100.png) ![Microsoft SQL Server](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/sqlserver134x100.png) ![Oracle Database](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/oracle100x100.png) ![ODBC](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/odbc199x100.png) ![SQLite3](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/sqlite171x100.png) ![CSV](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/csv100x100.png) ![JSON](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/json100x100.png) ![API](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/api100x100.png) ![Linux](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/linux100x100.png) ![Windows 10](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/windows87x100.png) ![Cloud](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/cloud100x100.png)
+# DCPAM - Data Warehouse Solution
+[![Build Status](https://travis-ci.org/OrionExplorer/dcpam.svg?branch=master)](https://travis-ci.org/OrionExplorer/dcpam) [![Build status](https://ci.appveyor.com/api/projects/status/43le8rn6721j8jtj/branch/master?svg=true)](https://ci.appveyor.com/project/OrionExplorer/dcpam/branch/master) [![Codacy Badge](https://app.codacy.com/project/badge/Grade/f5c3afcc56ab4e14910d7f68038d732a)](https://www.codacy.com/manual/OrionExplorer/dcpam?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=OrionExplorer/dcpam&amp;utm_campaign=Badge_Grade) [![License: MIT](https://img.shields.io/badge/License-MIT-brightgreen.svg)](https://opensource.org/licenses/MIT)
+##### Copyright © 2020 Marcin Kelar  
+![PostgreSQL](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/postgresql102x100.png) ![MySQL](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/mysql159x100.png) ![MariaDB](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/mariadb100x100.png) ![Microsoft SQL Server](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/sqlserver134x100.png) ![Oracle Database](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/oracle100x100.png) ![ODBC](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/odbc199x100.png) ![SQLite3](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/sqlite171x100.png) ![CSV](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/csv100x100.png) ![TSV](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/tsv100x100.png) ![PSV](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/psv100x100.png) ![JSON](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/json100x100.png) ![API](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/api100x100.png) ![Linux](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/linux100x100.png) ![Windows 10](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/windows87x100.png) ![Cloud](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/cloud100x100.png)
 
+* DCPAM stands for Data Construct-Populate-Access-Manage.
 * DCPAM helps to create central repositories of integrated data from one or disparate sources [[1]].
-* DCPAM goal is to deliver full range of Data Warehouse possibilities without need to include or hire more engineers for this specific task.
+* DCPAM goal is to deliver full range of Data Warehouse possibilities without need to include or hire more engineers for this task.
 * DCPAM architecture is [highly flexible](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL#architecture-overview) and [provides unlimited scaling possibilities](https://github.com/OrionExplorer/dcpam#dcpam-rdp---remote-data-processor).
 * DCPAM allows to perform advanced data copy between technically different datasets.
 * DCPAM is multiplatform (Linux/Windows/Cloud).
@@ -190,6 +187,8 @@ DCPAM development is still in progress with following data sources available:
 | Data source                        | Support          |
 |:-----------------------------------|:----------------:|
 | CSV                                | native           |
+| TSV                                | native           |
+| PSV                                | native           |
 | JSON                               | native           |
 
 DCPAM can access files from local or remote locations. The latter are fetched via HTTP protocol.
@@ -203,18 +202,18 @@ Therefore every database listed above as available data source can also be used 
 * [ ] To be announced.
 
 ## Roadmap
-| Year | Feature                                  | Status            |
-|:----:|:-----------------------------------------|:------------------|
-| 2020 | :white_check_mark: Transform process     | Done (2020-08-07) |
-| 2020 | :white_check_mark: DCPAM WDS             | Done (2020-08-17) |
-| 2020 | :white_check_mark: DCPAM auth keys       | Done (2020-08-19) |
-| 2020 | :white_check_mark: Data source: CSV      | Done (2020-08-30) |
-| 2020 | :white_check_mark: Remote files          | Done (2020-09-01) |
-| 2020 | :white_check_mark: Data source: JSON     | Done (2020-09-03) |
-| 2020 | DCPAM Access (BI web application)        | Not implemented   |
-| 2021 | Data source: XML                         | Not implemented   |
-| 2021 | DCPAM Construct (admin web application)  | Not implemented   |
-| 2021 | DCPAM AI Platform                        | Not implemented   |
+| Year | Feature                                      | Status            |
+|:----:|:---------------------------------------------|:------------------|
+| 2020 | :white_check_mark: Transform process         | Done (2020-08-07) |
+| 2020 | :white_check_mark: DCPAM WDS                 | Done (2020-08-17) |
+| 2020 | :white_check_mark: DCPAM auth keys           | Done (2020-08-19) |
+| 2020 | :white_check_mark: Data source: CSV/TSV/PSV  | Done (2020-08-30) |
+| 2020 | :white_check_mark: Remote files              | Done (2020-09-01) |
+| 2020 | :white_check_mark: Data source: JSON         | Done (2020-09-03) |
+| 2020 | DCPAM Access (BI web application)            | Not implemented   |
+| 2021 | Data source: XML                             | Not implemented   |
+| 2021 | DCPAM Construct (admin web application)      | Not implemented   |
+| 2021 | DCPAM AI Platform                            | Not implemented   |
 
 ---
 This software uses:

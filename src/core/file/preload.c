@@ -168,7 +168,7 @@ int FILE_ETL_preload( DATABASE_SYSTEM *system, const char* filename, LOG_OBJECT 
         return 0;
     }
 
-    if( system->flat_file->type == FFT_CSV ) {
+    if( system->flat_file->type == FFT_CSV || system->flat_file->type == FFT_TSV || system->flat_file->type == FFT_PSV) {
         clc csv_load_callback = ( clc )&_CSV_load_callback;
 
         return CSV_FILE_load(
@@ -192,5 +192,5 @@ int FILE_ETL_preload( DATABASE_SYSTEM *system, const char* filename, LOG_OBJECT 
         );
     }
 
-    return 1;
+    return 0;
 }

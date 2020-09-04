@@ -161,7 +161,7 @@
 	* [x] SQLite
 	* [ ] IBM Db2
 	* [ ] MongoDB
-	* [x] CSV
+	* [x] CSV/TSV/PSV
 	* [x] URL
 	* [x] JSON
 	* [ ] LDAP

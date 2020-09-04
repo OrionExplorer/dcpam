@@ -1443,16 +1443,29 @@ int DCPAM_load_configuration( const char* filename ) {
 
                         if( strstr( tmp_flat_file->name, ".csv" ) ) {
                             tmp_flat_file->type = FFT_CSV;
+                        } else if( strstr( tmp_flat_file->name, ".tsv" ) ) {
+                            tmp_flat_file->type = FFT_TSV;
+                        } else if( strstr( tmp_flat_file->name, ".psv" ) ) {
+                            tmp_flat_file->type = FFT_PSV;
+                        }
+
+                        if( tmp_flat_file->type == FFT_CSV || tmp_flat_file->type == FFT_TSV || tmp_flat_file->type == FFT_PSV ) {
                             tmp_flat_file->csv_file = SAFEMALLOC( sizeof( CSV_FILE ), __FILE__, __LINE__ );
 
-                            cfg_system_flat_file_delimiter = cJSON_GetObjectItem( cfg_system_flat_file, "delimiter" );
-                            if( cfg_system_flat_file_delimiter == NULL ) {
-                                LOG_print( &dcpam_etl_log, "ERROR: \"system[%d].FILE.delimiter\" key not found.\n", i );
-                                cJSON_Delete( config_json );
-                                free( config_string ); config_string = NULL;
-                                return FALSE;
+                            if( tmp_flat_file->type == FFT_CSV ) {
+                                cfg_system_flat_file_delimiter = cJSON_GetObjectItem( cfg_system_flat_file, "delimiter" );
+                                if( cfg_system_flat_file_delimiter == NULL ) {
+                                    LOG_print( &dcpam_etl_log, "ERROR: \"system[%d].FILE.delimiter\" key not found.\n", i );
+                                    cJSON_Delete( config_json );
+                                    free( config_string ); config_string = NULL;
+                                    return FALSE;
+                                }
+                                snprintf( tmp_flat_file->delimiter, 2, cfg_system_flat_file_delimiter->valuestring );
+                            } else if( tmp_flat_file->type == FFT_TSV ) {
+                                snprintf( tmp_flat_file->delimiter, 2, "%s", "\t" );
+                            } else if( tmp_flat_file->type == FFT_PSV ) {
+                                snprintf( tmp_flat_file->delimiter, 2, "%s", "|" );
                             }
-                            snprintf( tmp_flat_file->delimiter, 2, cfg_system_flat_file_delimiter->valuestring );
                         } else if( strstr( tmp_flat_file->name, ".json" ) ) {
                             tmp_flat_file->type = FFT_JSON;
                             tmp_flat_file->json_file = SAFEMALLOC( sizeof( JSON_FILE ), __FILE__, __LINE__ );

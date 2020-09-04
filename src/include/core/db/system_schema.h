@@ -34,6 +34,8 @@ typedef enum {
 typedef enum {
     FFT_CSV = 1,
     FFT_JSON,
+    FFT_TSV,
+    FFT_PSV,
     FFT_XML
 } FLAT_FILE_TYPE;
 
