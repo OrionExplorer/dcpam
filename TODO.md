@@ -146,6 +146,9 @@
 	* [x] Init log files during `etl_config.json` load.
 	* [x] Rebuild `LOG_*` functions.
 	* [x] Modify every source file where logging ocurrs.
+* [ ] Parameter `max_memory` for DCPAM WDS must be slightly user-friendly:
+	* [ ] Value is two-piece string: size and unit (eg. `"max_memory" : "100MB"` which stands for 100 MB of maximum cache size).
+	* [ ] Supported units are "KB", MB" and "GB".
 * [ ] DCPAM ETL must not know about P_DCPAM_APP and DPCAM WDS about DCPAM_APP.
 * [ ] ETL process interval can vary between system[].queries[].
 * [ ] Move DCPAM ETL configuration to database:

@@ -24,8 +24,10 @@
       * [DCPAM ETL - Extract-Transform-Load / Extract-Load-Transform](#dcpam-etl---extract-transform-load--extract-load-transform)
       * [DCPAM WDS - Warehouse Data Server](#dcpam-wds---warehouse-data-server)
       * [DCPAM RDP - Remote Data Processor](#dcpam-rdp---remote-data-processor)
+      * [DCPAM LCS - Live Component State](#dcpam-lcs---live-component-state)
       * [DCPAM Construct](#dcpam-construct)
       * [DCPAM Access](#dcpam-access)
+      * [DCPAM Monitoring](#dcpam-monitoring)
     * [Data Sources](#data-sources)
       * [Databases](#databases)
       * [Flat Files](#flat-files)
@@ -110,6 +112,19 @@ As DCPAM is extremely modular and highly scalabe, it can serve both as Data Ware
   * Manage data sources.
   * Configure ETL processes.
   * Manage DCPAM BI users.
+* DCPAM LCS (Live Component State):
+  * Current running ETL processes:
+    * which one?
+    * what system?
+    * for how long?
+    * which node?
+  * Current running WDS queries:
+    * total size of cached data
+    * which users run queries?
+    * which node?
+  * Size of Warehouse databases:
+    * which node?
+* DCPAM Monitoring (web application for DCPAM LCS).
 * Data sources:
   * XML
   * LDAP
@@ -160,11 +175,17 @@ Following diagrams represents different configurations to deploy both Data Wareh
 ![DCPAM overview](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/dcpam-dm.png)
 *<p align=center>Data Marts with DCPAM Data Warehouse</p>*
 
+#### DCPAM LCS - Live Component State
+DCPAM LCS is going to be the central repository of information about all of DCPAM Components current state.
+
 #### DCPAM Construct
 DCPAM Construct is going to be the main system administration web application.
 
 #### DCPAM Access
 DCPAM Access is going to be dedicated Bussiness Inteligence web application.
+
+#### DCPAM Monitoring
+DCPAM Access is going to be web application for DCPAM LCS data presentation.
 
 ### Data sources
 DCPAM development is still in progress with following data sources available:
@@ -211,7 +232,8 @@ Therefore every database listed above as available data source can also be used 
 | 2020 | :white_check_mark: Data source: CSV/TSV/PSV  | Done (2020-08-30) |
 | 2020 | :white_check_mark: Remote files              | Done (2020-09-01) |
 | 2020 | :white_check_mark: Data source: JSON         | Done (2020-09-03) |
-| 2020 | DCPAM Access (BI web application)            | Not implemented   |
+| 2020 | DCPAM LCS                                    | Not implemented   |
+| 2021 | DCPAM Access (BI web application)            | Not implemented   |
 | 2021 | Data source: XML                             | Not implemented   |
 | 2021 | DCPAM Construct (admin web application)      | Not implemented   |
 | 2021 | DCPAM AI Platform                            | Not implemented   |
