@@ -7,21 +7,21 @@
 * [ ] To be announced.
 
 ### Table of contents
-* [Extraction, Staging and Change Data Capture](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL#extraction-staging-and-change-data-capture)
-* [Transformation](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL#transformation)
-* [Loading](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL#loading)
-* [Technology](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL#technology)
-    * [Architecture Overview](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL#architecture-overview)
-    * [ETL and Change Data Capture](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL#etl-and-change-data-capture)
-    * [Parallel Execution](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL#parallel-execution)
-    * [Data Sources](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL#data-sources)
-      * [Databases](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL#databases)
-      * [Flat Files](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL#flat-files)
-    * [DCPAM Database](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL#dcpam-database)
-    * [Configuration](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL#configuration)
-    * [Compilation (Linux)](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL#compilation-linux)
-    * [Linux Dependencies](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL#linux-dependencies)
-    * [Windows Dependencies](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL#windows-dependencies)
+* [Extraction, Staging and Change Data Capture](#extraction-staging-and-change-data-capture)
+* [Transformation](#transformation)
+* [Loading](#loading)
+* [Technology](#technology)
+    * [Architecture Overview](#architecture-overview)
+    * [ETL and Change Data Capture](#etl-and-change-data-capture)
+    * [Parallel Execution](#parallel-execution)
+    * [Data Sources](#data-sources)
+      * [Databases](#databases)
+      * [Flat Files](#flat-files)
+    * [DCPAM Database](#dcpam-database)
+    * [Configuration](#configuration)
+    * [Compilation (Linux)](#compilation-linux)
+    * [Linux Dependencies](#linux-dependencies)
+    * [Windows Dependencies](#windows-dependencies)
 
 ## Extraction, Staging and Change Data Capture
 Extraction is first major process. Main DCPAM ETL/ELT workflow consists of:

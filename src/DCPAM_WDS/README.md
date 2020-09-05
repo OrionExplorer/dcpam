@@ -7,17 +7,17 @@
 * [ ] To be announced.
 
 ### Table of contents
-* [Purpose of DCPAM WDS](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_WDS#purpose-of-dcpam-wds)
-* [Technology](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_WDS#technology)
-    * [Architecture Overview](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_WDS#architecture-overview)
-    * [Data Sources](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_WDS#data-sources)
-        * [Databases](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_WDS#databases)
-        * [Flat Files](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_WDS#flat-files)
-    * [DCPAM Database](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_WDS#dcpam-database)
-    * [Configuration](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_WDS#configuration)
-    * [Compilation (Linux)](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_WDS#compilation-linux)
-    * [Linux Dependencies](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_WDS#linux-dependencies)
-    * [Windows Dependencies](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_WDS#windows-dependencies)
+* [Purpose of DCPAM WDS](#purpose-of-dcpam-wds)
+* [Technology](#technology)
+    * [Architecture Overview](#architecture-overview)
+    * [Data Sources](#data-sources)
+        * [Databases](#databases)
+        * [Flat Files](#flat-files)
+    * [DCPAM Database](#dcpam-database)
+    * [Configuration](#configuration)
+    * [Compilation (Linux)](#compilation-linux)
+    * [Linux Dependencies](#linux-dependencies)
+    * [Windows Dependencies](#windows-dependencies)
 
 ## Purpose of DCPAM WDS
 DCPAM WDS is dedicated endpoint for querying predefined business data with custom caching system. DCPAM does not limit number of virtual and physical DCPAM Database nodes, therefore DCPAM WDS encapsulates every node of DCPAM Database into single data access point.

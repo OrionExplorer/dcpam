@@ -7,12 +7,12 @@
 * [ ] To be announced.
 
 ### Table of contents
-* [Purpose of DCPAM RDP](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_RDP#purpose-of-dcpam-rdp)
-* [Technology](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL#technology)
-    * [Architecture Overview](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL#architecture-overview)
-    * [Compilation (Linux)](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL#compilation-linux)
-    * [Linux Dependencies](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL#linux-dependencies)
-    * [Windows Dependencies](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL#windows-dependencies)
+* [Purpose of DCPAM RDP](#purpose-of-dcpam-rdp)
+* [Technology](#technology)
+    * [Architecture Overview](#architecture-overview)
+    * [Compilation (Linux)](#compilation-linux)
+    * [Linux Dependencies](#linux-dependencies)
+    * [Windows Dependencies](#windows-dependencies)
 
 ## Purpose of DCPAM RDP
 DCPAM RDP is used by DCPAM-ETL to execute scripts/applications for data transformation located on the remote servers. It is often used when performance hit caused by these computations may impact other ongoing operations (ie. data extraction/load or user queries).

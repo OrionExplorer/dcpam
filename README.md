@@ -6,31 +6,31 @@
 * DCPAM stands for Data Construct-Populate-Access-Manage.
 * DCPAM helps to create central repositories of integrated data from one or disparate sources [[1]].
 * DCPAM goal is to deliver full range of Data Warehouse possibilities without need to include or hire more engineers for this task.
-* DCPAM architecture is [highly flexible](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL#architecture-overview) and [provides unlimited scaling possibilities](https://github.com/OrionExplorer/dcpam#dcpam-rdp---remote-data-processor).
+* DCPAM architecture is [highly flexible](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL#architecture-overview) and [provides unlimited scaling possibilities](#dcpam-rdp---remote-data-processor).
 * DCPAM allows to perform advanced data copy between technically different datasets.
 * DCPAM is multiplatform (Linux/Windows/Cloud).
 
 ![Main Overview](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/dwh.png)
 
 ### Table of contents
-* [Business Value](https://github.com/OrionExplorer/dcpam#business-value)
-    * [Company data in DCPAM](https://github.com/OrionExplorer/dcpam#company-data-in-dcpam)
-* [Data Warehouse with DCPAM](https://github.com/OrionExplorer/dcpam#data-warehouse-with-dcpam)
-    * [What DCPAM covers in terms of Data Warehousing?](https://github.com/OrionExplorer/dcpam#what-dcpam-covers-in-terms-of-data-warehousing)
-    * [Elements yet to be covered by DCPAM](https://github.com/OrionExplorer/dcpam#elements-yet-to-be-covered-by-dcpam)
-    * [Other](https://github.com/OrionExplorer/dcpam#other)
-* [Technology](https://github.com/OrionExplorer/dcpam#technology)
-    * [DCPAM Components](https://github.com/OrionExplorer/dcpam#dcpam-components)
-      * [DCPAM ETL - Extract-Transform-Load / Extract-Load-Transform](https://github.com/OrionExplorer/dcpam#dcpam-etl---extract-transform-load--extract-load-transform)
-      * [DCPAM WDS - Warehouse Data Server](https://github.com/OrionExplorer/dcpam#dcpam-wds---warehouse-data-server)
-      * [DCPAM RDP - Remote Data Processor](https://github.com/OrionExplorer/dcpam#dcpam-rdp---remote-data-processor)
-      * [DCPAM Construct](https://github.com/OrionExplorer/dcpam#dcpam-construct)
-      * [DCPAM Access](https://github.com/OrionExplorer/dcpam#dcpam-access)
-    * [Data Sources](https://github.com/OrionExplorer/dcpam#data-sources)
-      * [Databases](https://github.com/OrionExplorer/dcpam#databases)
-      * [Flat Files](https://github.com/OrionExplorer/dcpam#flat-files)
-    * [DCPAM Database](https://github.com/OrionExplorer/dcpam#dcpam-database)
-* [Roadmap](https://github.com/OrionExplorer/dcpam#roadmap)
+* [Business Value](#business-value)
+    * [Company data in DCPAM](#company-data-in-dcpam)
+* [Data Warehouse with DCPAM](#data-warehouse-with-dcpam)
+    * [What DCPAM covers in terms of Data Warehousing?](#what-dcpam-covers-in-terms-of-data-warehousing)
+    * [Elements yet to be covered by DCPAM](#elements-yet-to-be-covered-by-dcpam)
+    * [Other](#other)
+* [Technology](#technology)
+    * [DCPAM Components](#dcpam-components)
+      * [DCPAM ETL - Extract-Transform-Load / Extract-Load-Transform](#dcpam-etl---extract-transform-load--extract-load-transform)
+      * [DCPAM WDS - Warehouse Data Server](#dcpam-wds---warehouse-data-server)
+      * [DCPAM RDP - Remote Data Processor](#dcpam-rdp---remote-data-processor)
+      * [DCPAM Construct](#dcpam-construct)
+      * [DCPAM Access](#dcpam-access)
+    * [Data Sources](#data-sources)
+      * [Databases](#databases)
+      * [Flat Files](#flat-files)
+    * [DCPAM Database](#dcpam-database)
+* [Roadmap](#roadmap)
 
 ## Business Value
 * [x] **Open source, cost-effective**.
@@ -86,8 +86,8 @@ As DCPAM is extremely modular and highly scalabe, it can serve both as Data Ware
   * One or many instances of DCPAM can work as Data Warehouse (extracting and processing data from disparate sources).
   * In the same time different DCPAM instances can use Data Warehouse to feed Data Marts with specific business-oriented data.
 * Data sources:
-  * [Databases](https://github.com/OrionExplorer/dcpam#data-sources)
-  * [Files](https://github.com/OrionExplorer/dcpam#files)
+  * [Databases](#data-sources)
+  * [Files](#files)
 * Access DCPAM Database with any system for analytics (Power BI, Tableau, Redash etc.).
 
 ### Elements yet to be covered by DCPAM
