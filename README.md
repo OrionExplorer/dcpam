@@ -89,7 +89,7 @@ As DCPAM is extremely modular and highly scalabe, it can serve both as Data Ware
   * In the same time different DCPAM instances can use Data Warehouse to feed Data Marts with specific business-oriented data.
 * Data sources:
   * [Databases](#data-sources)
-  * [Files](#files)
+  * [Flat Files](#flat-files)
 * Access DCPAM Database with any system for analytics (Power BI, Tableau, Redash etc.).
 
 ### Elements yet to be covered by DCPAM
@@ -176,7 +176,7 @@ Following diagrams represents different configurations to deploy both Data Wareh
 *<p align=center>Data Marts with DCPAM Data Warehouse</p>*
 
 #### DCPAM LCS - Live Component State
-DCPAM LCS is going to be the central repository of information about all of DCPAM Components current state.
+DCPAM LCS is going to be the central repository of information about all the DCPAM Components current state.
 
 #### DCPAM Construct
 DCPAM Construct is going to be the main system administration web application.
@@ -233,6 +233,7 @@ Therefore every database listed above as available data source can also be used 
 | 2020 | :white_check_mark: Remote files              | Done (2020-09-01) |
 | 2020 | :white_check_mark: Data source: JSON         | Done (2020-09-03) |
 | 2020 | DCPAM LCS                                    | Not implemented   |
+| 2021 | DCPAM Monitoring                             | Not implemented   |
 | 2021 | DCPAM Access (BI web application)            | Not implemented   |
 | 2021 | Data source: XML                             | Not implemented   |
 | 2021 | DCPAM Construct (admin web application)      | Not implemented   |
