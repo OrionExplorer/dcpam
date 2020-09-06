@@ -221,7 +221,7 @@ DCPAM is designed to be as most customizable as it needs to be.
 Therefore every database listed above as available data source can also be used as DCPAM target database.
 
 ##### Currently under active development
-* [x] DCPAM LCS.
+* [x] [DCPAM LCS](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_LCS/README.md).
 
 ## Roadmap
 | Year | Feature                                      | Status            |
