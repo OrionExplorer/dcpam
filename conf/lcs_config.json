@@ -1,0 +1,13 @@
+{
+	"app" : {
+		"name" : "DCPAM Live Component State",
+		"version" : "0.1",
+		"network" : {
+			"port" : 7777,
+			"allowed_hosts (not required here)" : [
+				{"ip" : "192.168.0.1", "key" : "asdqwe123"},
+				{"ip" : "127.0.0.1", "key" : "zxcasd321"}
+			]
+		}
+	}
+}

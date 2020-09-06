@@ -12,5 +12,6 @@ DATABASE_SYSTEM             DATABASE_SYSTEMS[ MAX_DATA_SYSTEMS ];   /* Database-
 
 DCPAM_APP                   APP;                                    /* Main application object | config.json => "app" */
 P_DCPAM_APP                 P_APP;                                  /* Main application object | config.json => "app" */
+L_DCPAM_APP                 L_APP;                                  /* Main application object | config.json => "app" */
 
 #endif

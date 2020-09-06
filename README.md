@@ -221,7 +221,7 @@ DCPAM is designed to be as most customizable as it needs to be.
 Therefore every database listed above as available data source can also be used as DCPAM target database.
 
 ##### Currently under active development
-* [ ] To be announced.
+* [x] DCPAM LCS.
 
 ## Roadmap
 | Year | Feature                                      | Status            |
@@ -232,7 +232,7 @@ Therefore every database listed above as available data source can also be used 
 | 2020 | :white_check_mark: Data source: CSV/TSV/PSV  | Done (2020-08-30) |
 | 2020 | :white_check_mark: Remote files              | Done (2020-09-01) |
 | 2020 | :white_check_mark: Data source: JSON         | Done (2020-09-03) |
-| 2020 | DCPAM LCS                                    | Not implemented   |
+| 2020 | :construction: DCPAM LCS                     | In progress       |
 | 2021 | DCPAM Monitoring                             | Not implemented   |
 | 2021 | DCPAM Access (BI web application)            | Not implemented   |
 | 2021 | Data source: XML                             | Not implemented   |

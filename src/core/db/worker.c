@@ -434,6 +434,10 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
     if( DATA_SYSTEM->name != NULL ) {
         DATABASE_SYSTEM_DB_close( &DATA_SYSTEM->dcpam_db, log );
         DATABASE_SYSTEM_DB_close( &DATA_SYSTEM->system_db, log );
+
+        if( DATA_SYSTEM->staging_db ) {
+            DATABASE_SYSTEM_DB_close( DATA_SYSTEM->staging_db, log );
+        }
     }
     pthread_exit( NULL );
     return FALSE;

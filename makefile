@@ -45,6 +45,9 @@ dcpam-wds.o: src/DCPAM_WDS/dcpam-wds.c
 dcpam-rdp.o: src/DCPAM_RDP/dcpam-rdp.c
 	$(CC) -c src/DCPAM_RDP/dcpam-rdp.c $(CFLAGS)
 
+dcpam-lcs.o: src/DCPAM_LCS/dcpam-lcs.c
+	$(CC) -c src/DCPAM_LCS/dcpam-lcs.c $(CFLAGS) $(ORACLE_DEP)
+
 log.o: src/utils/log.c
 	$(CC) -c src/utils/log.c $(CFLAGS)
 
@@ -87,6 +90,9 @@ preload.o: src/core/file/preload.c
 cache.o: src/core/cache.c
 	$(CC) -c src/core/cache.c $(CFLAGS)
 
+lcs_report.o: src/core/lcs_report.c
+	$(CC) -c src/core/lcs_report.c $(CFLAGS)
+
 time.o: src/utils/time.c
 	$(CC) -c src/utils/time.c $(CFLAGS)
 
@@ -108,11 +114,14 @@ memory.o: src/utils/memory.c
 strings.o: src/utils/strings.c
 	$(CC) -c src/utils/strings.c $(CFLAGS)
 
-dcpam-rdp: dcpam-rdp.o socket_io.o log.o time.o strings.o client.o http.o filesystem.o memory.o cJSON.o
-	$(CC) socket_io.o dcpam-rdp.o log.o time.o strings.o client.o http.o filesystem.o memory.o cJSON.o -o dcpam-rdp
+dcpam-rdp: dcpam-rdp.o socket_io.o log.o time.o strings.o client.o http.o filesystem.o memory.o cJSON.o lcs_report.o
+	$(CC) socket_io.o dcpam-rdp.o log.o time.o strings.o client.o http.o filesystem.o memory.o cJSON.o lcs_report.o -o dcpam-rdp
 
-dcpam-etl: dcpam-etl.o mysql.o mariadb.o odbc.o postgresql.o log.o time.o filesystem.o cJSON.o sqlite3.o memory.o http.o preload.o csv.o json.o db.o worker.o system.o extract.o stage.o transform.o load.o strings.o oracle.o sqlite.o client.o
-	$(CC) mysql.o mariadb.o odbc.o postgresql.o dcpam-etl.o log.o time.o filesystem.o cJSON.o sqlite3.o memory.o http.o preload.o csv.o json.o db.o worker.o system.o extract.o stage.o transform.o load.o strings.o oracle.o sqlite.o client.o -o dcpam-etl $(LIBS)
+dcpam-etl: dcpam-etl.o mysql.o mariadb.o odbc.o postgresql.o log.o time.o filesystem.o cJSON.o sqlite3.o memory.o http.o preload.o csv.o json.o db.o worker.o system.o extract.o stage.o transform.o load.o strings.o oracle.o sqlite.o client.o lcs_report.o
+	$(CC) mysql.o mariadb.o odbc.o postgresql.o dcpam-etl.o log.o time.o filesystem.o cJSON.o sqlite3.o memory.o http.o preload.o csv.o json.o db.o worker.o system.o extract.o stage.o transform.o load.o strings.o oracle.o sqlite.o client.o lcs_report.o -o dcpam-etl $(LIBS)
 
-dcpam-wds: dcpam-wds.o socket_io.o cache.o mysql.o mariadb.o odbc.o postgresql.o log.o time.o http.o filesystem.o cJSON.o sqlite3.o memory.o db.o system.o strings.o oracle.o sqlite.o client.o
-	$(CC) cache.o mysql.o socket_io.o mariadb.o odbc.o postgresql.o dcpam-wds.o log.o time.o http.o filesystem.o cJSON.o sqlite3.o memory.o db.o system.o strings.o oracle.o sqlite.o client.o -o dcpam-wds $(LIBS)
+dcpam-wds: dcpam-wds.o socket_io.o cache.o mysql.o mariadb.o odbc.o postgresql.o log.o time.o http.o filesystem.o cJSON.o sqlite3.o memory.o db.o system.o strings.o oracle.o sqlite.o client.o lcs_report.o
+	$(CC) cache.o mysql.o socket_io.o mariadb.o odbc.o postgresql.o dcpam-wds.o log.o time.o http.o filesystem.o cJSON.o sqlite3.o memory.o db.o system.o strings.o oracle.o sqlite.o client.o lcs_report.o -o dcpam-wds $(LIBS)
+
+dcpam-lcs: dcpam-lcs.o socket_io.o log.o time.o memory.o filesystem.o http.o client.o strings.o cJSON.o
+	$(CC) dcpam-lcs.o socket_io.o log.o time.o memory.o filesystem.o http.o client.o strings.o cJSON.o -o dcpam-lcs $(LIBS)

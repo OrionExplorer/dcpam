@@ -3,6 +3,7 @@
 
 #include "db/system_schema.h"
 #include "../core/cache.h"
+#include "../core/lcs_report.h"
 
 #define MAX_DCPAM_DATA_ITEMS                5
 #define MAX_DCPAM_DATA_ACTIONS              8
@@ -49,6 +50,7 @@ typedef struct DCPAM_APP {
     DATABASE_SYSTEM_DB      *STAGING;
     DCPAM_DATA              DATA[ MAX_DCPAM_DATA_ITEMS ];
     int                     DATA_len;
+    LCS_REPORT              lcs_report;
 } DCPAM_APP;
 
 /*
@@ -82,5 +84,18 @@ typedef struct R_DCPAM_APP {
     DCPAM_ALLOWED_HOST      **ALLOWED_HOSTS_;
     int                     ALLOWED_HOSTS_len;
 } R_DCPAM_APP;
+
+
+/*
+    lcs_config.json => app
+*/
+typedef struct L_DCPAM_APP {
+    char                    *version;
+    char                    *name;
+    int                     network_port;
+    char                    **ALLOWED_HOSTS;
+    DCPAM_ALLOWED_HOST      **ALLOWED_HOSTS_;
+    int                     ALLOWED_HOSTS_len;
+} L_DCPAM_APP;
 
 #endif

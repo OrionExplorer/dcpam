@@ -86,6 +86,9 @@ int NET_CONN_send( NET_CONN *connection, const char *data, size_t data_len ) {
             }
         } while( status > 0 );
 
+        if( connection->response ) {
+            free( connection->response ); connection->response = NULL;
+        }
         connection->response = SAFECALLOC( cur_size, sizeof( char ), __FILE__, __LINE__ );
         connection->response_len = cur_size;
 

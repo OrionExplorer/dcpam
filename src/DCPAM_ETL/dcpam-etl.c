@@ -46,6 +46,10 @@ void DCPAM_free_configuration( void ) {
         free( APP.STAGING ); APP.STAGING = NULL;
     }
 
+    if( APP.lcs_report.active == 1 ) {
+        LCS_REPORT_free( &APP.lcs_report );
+    }
+
     if( APP.version != NULL ) { free( APP.version ); APP.version = NULL; }
     if( APP.name != NULL ) { free( APP.name ); APP.name = NULL; }
 
@@ -66,6 +70,8 @@ void DCPAM_free_configuration( void ) {
 int DCPAM_load_configuration( const char* filename ) {
     cJSON* config_json = NULL;
 
+    cJSON* cfg_lcs = NULL;
+    cJSON* cfg_lcs_address = NULL;
     cJSON* cfg_app = NULL;
     cJSON* cfg_app_version = NULL;
     cJSON* cfg_app_name = NULL;
@@ -375,6 +381,37 @@ int DCPAM_load_configuration( const char* filename ) {
                 }
             } else {
                 LOG_print( &dcpam_etl_log, "ERROR: \"app\" key not found.\n " );
+                cJSON_Delete( config_json );
+                free( config_string ); config_string = NULL;
+                return FALSE;
+            }
+
+            cfg_lcs = cJSON_GetObjectItem( config_json, "LCS" );
+            if( cfg_lcs ) {
+
+                cfg_lcs_address = cJSON_GetObjectItem( cfg_lcs, "address" );
+
+                if( cfg_lcs_address ) {
+                    size_t address_len = strlen( cfg_lcs_address->valuestring );
+                    APP.lcs_report.address = SAFECALLOC( address_len + 1, sizeof( char ), __FILE__, __LINE__ );
+                    snprintf( APP.lcs_report.address, address_len + 1, cfg_lcs_address->valuestring );
+                    if( LCS_REPORT_init( &APP.lcs_report, APP.lcs_report.address, APP.name, APP.version, &dcpam_etl_log ) == 0 ) {
+                        LOG_print( &dcpam_etl_log, "ERROR: unable to connect to Live Component State host at %s.\n", APP.lcs_report.address );
+                        free( APP.lcs_report.address ); APP.lcs_report.address = NULL;
+                        free( APP.lcs_report.conn ); APP.lcs_report.conn = NULL;
+                        cJSON_Delete( config_json );
+                        free( config_string ); config_string = NULL;
+                        return FALSE;
+                    }
+                } else {
+                    LOG_print( &dcpam_etl_log, "ERROR: \"LCS.address\" key not found.\n " );
+                    cJSON_Delete( config_json );
+                    free( config_string ); config_string = NULL;
+                    return FALSE;
+                }
+
+            } else {
+                LOG_print( &dcpam_etl_log, "ERROR: \"LCS\" key not found.\n " );
                 cJSON_Delete( config_json );
                 free( config_string ); config_string = NULL;
                 return FALSE;

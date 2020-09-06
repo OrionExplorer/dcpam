@@ -1,6 +1,6 @@
 {
 	"system" : [{
-		"enabled" : 0,
+		"enabled" : 1,
 		"name" : "OTRS",
 		"DB" : {
 			"name" : "OTRS-source",
@@ -170,7 +170,7 @@
 			}
 		}]
 	}, {
-		"enabled" : 1,
+		"enabled" : 0,
 		"name" : "OTRS-History-Data-FILE-source",
 
 		"file_comment#00" : "##################################################################################################",
@@ -344,5 +344,8 @@
 			"password" : "tantive-4",
 			"db" : "dcpam"
 		}
+	},
+	"LCS" : {
+		"address" : "dcpam://127.0.0.1:7777"
 	}
 }

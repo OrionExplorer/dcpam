@@ -124,6 +124,10 @@ void SOCKET_prepare( LOG_OBJECT *log ) {
 }
 
 int SOCKET_client_host_allowed( const char *ip, const char **allowed_hosts, int hosts_len ) {
+    if( hosts_len == 0 ) {
+        return 1;
+    }
+
     if( ip && *allowed_hosts && hosts_len > 0 ) {
         for( int i = 0; i < hosts_len; i++ ) {
             if( strcmp( ip, allowed_hosts[ i ] ) == 0 ) {
