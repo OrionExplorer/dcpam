@@ -23,9 +23,11 @@ char* HTTP_CLIENT_get_content( HTTP_CLIENT *client, const char *host, const char
     if( client ) {
         client->connection = SAFEMALLOC( sizeof( NET_CONN ), __FILE__, __LINE__ );
         client->connection->log = log;
-        if( NET_CONN_connect( client->connection, host, port ) == 0 ) {
-            free( client->connection ); client->connection = NULL;
-            return NULL;
+        if( NET_CONN_init( client->connection, host, port ) == 1 ) {
+            if( NET_CONN_connect( client->connection, host, port ) == 0 ) {
+                free( client->connection ); client->connection = NULL;
+                return NULL;
+            }
         }
 
         char send_data[ 1024 ];

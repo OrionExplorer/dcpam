@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <signal.h>
 #include <string.h>
+#include <pthread.h>
 #include "../include/utils/log.h"
 #include "../include/core/db/worker.h"
 #include "../include/core/schema.h"
@@ -10,17 +11,19 @@
 #include "../include/utils/time.h"
 #include "../include/utils/strings.h"
 #include "../include/utils/filesystem.h"
+#include "../include/core/network/socket_io.h"
 #include "../include/core/db/system.h"
 
 #pragma warning( disable : 6031 )
 
 char                    app_path[ MAX_PATH_LENGTH + 1 ];
 LOG_OBJECT              dcpam_etl_log;
+LOG_OBJECT              dcpam_etl_lcs_log;
 extern int              app_terminated = 0;
 
 extern DATABASE_SYSTEM  DATABASE_SYSTEMS[ MAX_DATA_SYSTEMS ];
 extern int              DATABASE_SYSTEMS_COUNT;
-extern DCPAM_APP       APP;
+extern DCPAM_APP        APP;
 
 void DCPAM_free_configuration( void );
 
@@ -33,10 +36,12 @@ void app_terminate( void ) {
         DB_WORKER_shutdown( &dcpam_etl_log );
         DCPAM_free_configuration();
         LOG_print( &dcpam_etl_log, "[%s] DCPAM graceful shutdown finished. Waiting for all threads to terminate...\n", TIME_get_gmt() );
+        LOG_free( &dcpam_etl_lcs_log );
     }
 
     return;
 }
+
 
 void DCPAM_free_configuration( void ) {
 
@@ -46,9 +51,7 @@ void DCPAM_free_configuration( void ) {
         free( APP.STAGING ); APP.STAGING = NULL;
     }
 
-    if( APP.lcs_report.active == 1 ) {
-        LCS_REPORT_free( &APP.lcs_report );
-    }
+    LCS_REPORT_free( &APP.lcs_report );
 
     if( APP.version != NULL ) { free( APP.version ); APP.version = NULL; }
     if( APP.name != NULL ) { free( APP.name ); APP.name = NULL; }
@@ -72,6 +75,7 @@ int DCPAM_load_configuration( const char* filename ) {
 
     cJSON* cfg_lcs = NULL;
     cJSON* cfg_lcs_address = NULL;
+    cJSON* cfg_lcs_port = NULL;
     cJSON* cfg_app = NULL;
     cJSON* cfg_app_version = NULL;
     cJSON* cfg_app_name = NULL;
@@ -402,12 +406,22 @@ int DCPAM_load_configuration( const char* filename ) {
                         cJSON_Delete( config_json );
                         free( config_string ); config_string = NULL;
                         return FALSE;
+                    } else {
+                        LOG_print( &dcpam_etl_log, "[%s] Initialized LCS report module.\n", TIME_get_gmt() );
                     }
                 } else {
                     LOG_print( &dcpam_etl_log, "ERROR: \"LCS.address\" key not found.\n " );
                     cJSON_Delete( config_json );
                     free( config_string ); config_string = NULL;
                     return FALSE;
+                }
+
+                cfg_lcs_port = cJSON_GetObjectItem( cfg_lcs, "port" );
+
+                if( cfg_lcs_port ) {
+                    APP.lcs_report.port = cfg_lcs_port->valueint;
+                } else {
+                    APP.lcs_report.port = 7777;
                 }
 
             } else {
@@ -1423,6 +1437,7 @@ int DCPAM_load_configuration( const char* filename ) {
 
                         tmp_queries_count++;
 
+                        //if( tmp_cdc->stage ) free( tmp_cdc->stage ); tmp_cdc->stage = NULL;
                         free( tmp_cdc ); tmp_cdc = NULL;
                     }
 
@@ -1578,9 +1593,47 @@ int DCPAM_load_configuration( const char* filename ) {
     return result;
 }
 
+void DCPAM_ETL_LCS_listener( COMMUNICATION_SESSION* communication_session, CONNECTED_CLIENT* client, LOG_OBJECT* log ) {
+    if( communication_session ) {
+        if( communication_session->data_length > 0 ) {
+
+            cJSON *req = cJSON_Parse( communication_session->content );
+            if( req ) {
+                cJSON *msg = cJSON_GetObjectItem( req, "msg" );
+
+                if( msg ) {
+
+                    if( strcmp( msg->valuestring, "ping" ) == 0 ) {
+                        const char* pong_msg = "{\"msg\": \"pong\"}";
+                        SOCKET_send( communication_session, client, pong_msg, strlen( pong_msg ) );
+                        SOCKET_disconnect_client( communication_session );
+                        cJSON_Delete( req );
+                        return;
+                    }
+                }
+                cJSON_Delete( req );
+            }
+
+            SOCKET_send( communication_session, client, "-1", 2 );
+            SOCKET_disconnect_client( communication_session );
+
+        }
+    }
+}
+
+void* DCPAM_LCS_worker( void* LCS_worker_data ) {
+    LOG_init( &dcpam_etl_lcs_log, "dcpam-etl-lcs", 65535 );
+
+    spc exec_script = ( spc )&DCPAM_ETL_LCS_listener;
+    SOCKET_main( &exec_script, APP.lcs_report.port, NULL, 0, &dcpam_etl_lcs_log );
+    pthread_exit( NULL );
+}
+
 
 int main( int argc, char** argv ) {
     char        config_file[ MAX_PATH_LENGTH + 1 ];
+    int         lcs_worker_thread = 0;
+    pthread_t   lcs_worker_pid;
 
     signal( SIGINT, (__sighandler_t)&app_terminate );
 #ifndef _WIN32
@@ -1605,9 +1658,11 @@ int main( int argc, char** argv ) {
     }
 
     if( DCPAM_load_configuration( config_file ) == 1 ) {
+        lcs_worker_thread = pthread_create( &lcs_worker_pid, NULL, DCPAM_LCS_worker, NULL );
         if( DB_WORKER_init( &dcpam_etl_log ) == 1 ) {
             //while( 1 );
         }
+        pthread_join( lcs_worker_pid, NULL );
     }
 
     DCPAM_free_configuration();

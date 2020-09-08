@@ -7,6 +7,7 @@
 typedef struct {
     NET_CONN    *conn;
     char        *address;
+    int         port;
     LOG_OBJECT  *log;
     int         active;
 } LCS_REPORT;

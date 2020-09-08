@@ -99,26 +99,28 @@ int CDC_TransformGeneric( DB_SYSTEM_ETL_TRANSFORM_QUERY *transform_element, DATA
 
         transform_element->connection = SAFEMALLOC( sizeof( NET_CONN ), __FILE__, __LINE__ );
         transform_element->connection->log = log;
-        if( NET_CONN_connect( transform_element->connection, host, port ) == 1 ) {
+        if( NET_CONN_init( transform_element->connection, host, port ) == 1 ) {
+            if( NET_CONN_connect( transform_element->connection, host, port ) == 1 ) {
 
-            if( NET_CONN_send( transform_element->connection, command, strlen( command ) ) == 1 ) {
-                LOG_print( log, "[%s] Received response: %s\n", TIME_get_gmt(), transform_element->connection->response );
-                if( strstr( transform_element->connection->response, "0") ) {
-                    LOG_print( log, "[%s] Transform process exited with failure.\n" );
+                if( NET_CONN_send( transform_element->connection, command, strlen( command ) ) == 1 ) {
+                    LOG_print( log, "[%s] Received response: %s\n", TIME_get_gmt(), transform_element->connection->response );
+                    if( strstr( transform_element->connection->response, "0" ) ) {
+                        LOG_print( log, "[%s] Transform process exited with failure.\n" );
+                        free( transform_element->connection ); transform_element->connection = NULL;
+                        return 0;
+                    }
+                } else {
+                    NET_CONN_disconnect( transform_element->connection );
+                    transform_element->connection->log = NULL;
                     free( transform_element->connection ); transform_element->connection = NULL;
                     return 0;
                 }
-            } else {
                 NET_CONN_disconnect( transform_element->connection );
+            } else {
                 transform_element->connection->log = NULL;
                 free( transform_element->connection ); transform_element->connection = NULL;
                 return 0;
             }
-            NET_CONN_disconnect( transform_element->connection );
-        } else {
-            transform_element->connection->log = NULL;
-            free( transform_element->connection ); transform_element->connection = NULL;
-            return 0;
         }
         transform_element->connection->log = NULL;
         free( transform_element->connection ); transform_element->connection = NULL;

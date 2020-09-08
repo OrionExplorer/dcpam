@@ -44,8 +44,11 @@ typedef struct NET_CONN {
     char                *response;
     size_t              response_len;
     LOG_OBJECT          *log;
+    int                 initialized;
+    int                 connected;
 } NET_CONN;
 
+int NET_CONN_init( NET_CONN *connection, const char *host, const int port );
 int NET_CONN_connect( NET_CONN *connection, const char *host, const int port );
 int NET_CONN_disconnect( NET_CONN *connection );
 int NET_CONN_send( NET_CONN *connection, const char *data, size_t data_len );

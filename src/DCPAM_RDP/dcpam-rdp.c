@@ -12,6 +12,7 @@ char                    app_path[ MAX_PATH_LENGTH + 1 ];
 char                    LOG_filename[ MAX_PATH_LENGTH ];
 LOG_OBJECT              dcpam_rdp_log;
 R_DCPAM_APP             R_APP;
+extern int              app_terminated = 0;
 
 void app_terminate( void ) {
     LOG_print( &dcpam_rdp_log, "\rService is being closed..." );

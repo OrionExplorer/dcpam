@@ -10,6 +10,8 @@
 #include <fcntl.h>
 #include <pthread.h>
 
+extern int               app_terminated;
+
 
 #ifdef _WIN32
     WSADATA             wsk;
@@ -106,7 +108,7 @@ void SOCKET_prepare( LOG_OBJECT *log ) {
         LOG_print( log, "setsockopt( TCP_NODELAY ) error: %d.\n", wsa_result );
     }
 
-    if( fcntl( socket_server, F_SETFL, &b ) == SOCKET_ERROR ) {
+    if( fcntl( socket_server, F_SETFL, fcntl(socket_server, F_GETFL, 0) | O_NONBLOCK ) == SOCKET_ERROR ) {
         wsa_result = WSAGetLastError();
         LOG_print( log, "ioctlsocket error: %d.\n", wsa_result );
         SOCKET_stop();
@@ -149,7 +151,7 @@ void SOCKET_run( spc *socket_process_callback, const char **allowed_hosts, const
 
     fdmax = socket_server;
 
-    for( ;"elvis presley lives"; ) {
+    while( app_terminated == 0 ) {
         read_fds = master;
         if( select( fdmax+1, &read_fds, NULL, NULL, &tv ) == -1 ) {
             SOCKET_stop();

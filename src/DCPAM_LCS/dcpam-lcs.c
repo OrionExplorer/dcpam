@@ -12,8 +12,10 @@
 #include "../include/core/db/system.h"
 #include "../include/core/cache.h"
 #include "../include/core/network/socket_io.h"
+#include "../include/core/component.h"
 
 #define WDS_RESPONSE_ERROR( communication_session, client ) { SOCKET_send( communication_session, client, "{\"success\":false,\"data\":[],\"length\":0}", 38 ); SOCKET_disconnect_client( communication_session ); }
+void DCPAM_LCS_free_components( LOG_OBJECT* log );
 
 #pragma warning( disable : 6031 )
 
@@ -25,7 +27,7 @@ extern DATABASE_SYSTEM  DATABASE_SYSTEMS[ MAX_DATA_SYSTEMS ];
 extern int              DATABASE_SYSTEMS_COUNT;
 extern L_DCPAM_APP      L_APP;
 
-void DCPAM_LCS_free_configuration( void );
+void DCPAM_LCS_free_configuration( LOG_OBJECT *log );
 
 
 void app_terminate( void ) {
@@ -33,20 +35,17 @@ void app_terminate( void ) {
     if( app_terminated == 0 ) {
         app_terminated = 1;
         printf( "\r" );
-        DCPAM_LCS_free_configuration();
+        SOCKET_stop();
+        DCPAM_LCS_free_configuration( &dcpam_lcs_log );
         LOG_print( &dcpam_lcs_log, "[%s] DCPAM LCS graceful shutdown finished.\n", TIME_get_gmt() );
     }
 
     return;
 }
 
-void DCPAM_LCS_free_configuration( void ) {
+void DCPAM_LCS_free_configuration( LOG_OBJECT *log ) {
 
-    for( int i = 0; i < L_APP.ALLOWED_HOSTS_len; i++ ) {
-        free( L_APP.ALLOWED_HOSTS_[ i ]->ip ); L_APP.ALLOWED_HOSTS_[ i ]->ip = NULL;
-        free( L_APP.ALLOWED_HOSTS_[ i ]->api_key ); L_APP.ALLOWED_HOSTS_[ i ]->api_key = NULL;
-    }
-    free( L_APP.ALLOWED_HOSTS_ ); L_APP.ALLOWED_HOSTS_ = NULL;
+    DCPAM_LCS_free_components( log );
 
     if( L_APP.version != NULL ) { free( L_APP.version ); L_APP.version = NULL; }
     if( L_APP.name != NULL ) { free( L_APP.name ); L_APP.name = NULL; }
@@ -60,10 +59,10 @@ int DCPAM_LCS_load_configuration( const char* filename ) {
     cJSON* cfg_app_name = NULL;
     cJSON* cfg_app_network = NULL;
     cJSON* cfg_app_network_port = NULL;
-    cJSON* cfg_app_network_allowed_hosts = NULL;
-    cJSON* cfg_app_network_allowed_host_item = NULL;
-    cJSON* cfg_app_network_allowed_host_item_ip = NULL;
-    cJSON* cfg_app_network_allowed_host_item_key = NULL;
+    cJSON* cfg_app_required_components = NULL;
+    cJSON* cfg_app_required_components_item = NULL;
+    cJSON* cfg_app_required_components_item_ip = NULL;
+    cJSON* cfg_app_required_components_item_key = NULL;
 
     int                         result = 0;
     char*                       config_string = NULL;
@@ -116,35 +115,74 @@ int DCPAM_LCS_load_configuration( const char* filename ) {
                     }
                     LOG_print( &dcpam_lcs_log, "Network port is set to %d.\n", L_APP.network_port );
 
-                    cfg_app_network_allowed_hosts = cJSON_GetObjectItem( cfg_app_network, "allowed_hosts" );
-                    if( cfg_app_network_allowed_hosts ) {
-                        L_APP.ALLOWED_HOSTS_len = cJSON_GetArraySize( cfg_app_network_allowed_hosts );
-                        L_APP.ALLOWED_HOSTS_ = SAFEMALLOC( L_APP.ALLOWED_HOSTS_len * sizeof * L_APP.ALLOWED_HOSTS_, __FILE__, __LINE__ );
+                    cfg_app_required_components = cJSON_GetObjectItem( cfg_app_network, "required_components" );
+                    if( cfg_app_required_components ) {
 
-                        for( int i = 0; i < L_APP.ALLOWED_HOSTS_len; i++ ) {
-                            cfg_app_network_allowed_host_item = cJSON_GetArrayItem( cfg_app_network_allowed_hosts, i );
-                            if( cfg_app_network_allowed_host_item ) {
-                                L_APP.ALLOWED_HOSTS_[ i ] = SAFEMALLOC( sizeof( DCPAM_ALLOWED_HOST ), __FILE__, __LINE__ );
+                        L_APP.COMPONENTS_len = cJSON_GetArraySize( cfg_app_required_components );
+                        L_APP.COMPONENTS = SAFEMALLOC( L_APP.COMPONENTS_len * sizeof * L_APP.COMPONENTS, __FILE__, __LINE__ );
 
-                                cfg_app_network_allowed_host_item_ip = cJSON_GetObjectItem( cfg_app_network_allowed_host_item, "ip" );
-                                if( cfg_app_network_allowed_host_item_ip ) {
-                                    size_t str_len = strlen( cfg_app_network_allowed_host_item_ip->valuestring );
-                                    L_APP.ALLOWED_HOSTS_[ i ]->ip = SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
-                                    snprintf( L_APP.ALLOWED_HOSTS_[ i ]->ip, str_len + 1, cfg_app_network_allowed_host_item_ip->valuestring );
-                                }
+                        for( int i = 0; i < L_APP.COMPONENTS_len; i++ ) {
+                            L_APP.COMPONENTS[ i ] = SAFEMALLOC( sizeof( DCPAM_COMPONENT ), __FILE__, __LINE__ );
+                        }
 
-                                cfg_app_network_allowed_host_item_key = cJSON_GetObjectItem( cfg_app_network_allowed_host_item, "key" );
-                                if( cfg_app_network_allowed_host_item_key ) {
-                                    size_t str_len = strlen( cfg_app_network_allowed_host_item_key->valuestring );
-                                    L_APP.ALLOWED_HOSTS_[ i ]->api_key = SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
-                                    snprintf( L_APP.ALLOWED_HOSTS_[ i ]->api_key, str_len + 1, cfg_app_network_allowed_host_item_key->valuestring );
+                        int registered_components_count = 0; /* Counter in case of failure */
+                        int reg_result = 0;
+
+                        for( int i = 0; i < L_APP.COMPONENTS_len; i++ ) {
+                            cfg_app_required_components_item = cJSON_GetArrayItem( cfg_app_required_components, i );
+                            if( cfg_app_required_components_item ) {
+
+                                registered_components_count++;
+
+                                cJSON *name = cJSON_GetObjectItem( cfg_app_required_components_item, "name" );
+                                cJSON *version = cJSON_GetObjectItem( cfg_app_required_components_item, "version" );
+                                cJSON *ip = cJSON_GetObjectItem( cfg_app_required_components_item, "ip" );
+                                cJSON *port = cJSON_GetObjectItem( cfg_app_required_components_item, "port" );
+
+                                LOG_print( &dcpam_lcs_log, "[%s] [%d/%d] Registering DCPAM Component: \"%s\"...\n", TIME_get_gmt(), i + 1, L_APP.COMPONENTS_len, name->valuestring );
+                                reg_result = COMPONENT_register(
+                                    L_APP.COMPONENTS[ i ],
+                                    name->valuestring,
+                                    version->valuestring,
+                                    ip->valuestring,
+                                    port->valueint,
+                                    &dcpam_lcs_log
+                                );
+
+                                if( reg_result == 1 ) {
+                                    
+                                    LOG_print( &dcpam_lcs_log, "[%s] [%d/%d] DCPAM Component \"%s\" is online.\n", TIME_get_gmt(), i + 1, L_APP.COMPONENTS_len, name->valuestring );
+                                } else {
+                                    LOG_print( &dcpam_lcs_log, "[%s] [%d/%d] DCPAM Component \"%s\" registration failed.\n", TIME_get_gmt(), i + 1, L_APP.COMPONENTS_len, name->valuestring );
+                                    break;
                                 }
                             }
                         }
+
+                        if( reg_result == 0 ) {
+                            for( int i = 0; i < registered_components_count; i++ ) {
+                                COMPONENT_free( L_APP.COMPONENTS[ i ] );
+                            }
+                            for( int i = 0; i < L_APP.COMPONENTS_len; i++ ) {
+                                free( L_APP.COMPONENTS[ i ] ); L_APP.COMPONENTS[ i ] = NULL;
+                            }
+                            free( L_APP.COMPONENTS ); L_APP.COMPONENTS = NULL;
+
+                            L_APP.COMPONENTS_len = 0;
+
+                            DCPAM_LCS_free_configuration( &dcpam_lcs_log );
+
+                            cJSON_Delete( config_json );
+                            free( config_string ); config_string = NULL;
+                            return FALSE;
+                        }
                     } else {
-                        LOG_print( &dcpam_lcs_log, "WARNING: \"app.network.allowed_hosts\" key not found.\n" );
-                        L_APP.ALLOWED_HOSTS_len = 0;
-                        L_APP.ALLOWED_HOSTS_ = NULL;
+                        L_APP.COMPONENTS_len = 0;
+                        L_APP.COMPONENTS = NULL;
+                        LOG_print( &dcpam_lcs_log, "ERROR: \"app.network.required_components\" key not found.\n" );
+                        cJSON_Delete( config_json );
+                        free( config_string ); config_string = NULL;
+                        return FALSE;
                     }
                 } else {
                     LOG_print( &dcpam_lcs_log, "ERROR: \"app.network\" key not found.\n" );
@@ -173,7 +211,22 @@ int DCPAM_LCS_load_configuration( const char* filename ) {
     return result;
 }
 
-void DCPAM_LCS_query( COMMUNICATION_SESSION *communication_session, CONNECTED_CLIENT *client  ) {
+DCPAM_COMPONENT* COMPONENT_get( const char* name, const char* version, const char* ip ) {
+    for( int i = 0; i < L_APP.COMPONENTS_len; i++ ) {
+        if( strcmp( name, L_APP.COMPONENTS[ i ]->name ) ) {
+            if( strcmp( version, L_APP.COMPONENTS[ i ]->version ) ) {
+                if( strcmp( ip, L_APP.COMPONENTS[ i ]->ip ) ) {
+                    return L_APP.COMPONENTS[ i ];
+                }
+            }
+        }
+    }
+
+    return NULL;
+}
+
+
+void DCPAM_LCS_listener( COMMUNICATION_SESSION *communication_session, CONNECTED_CLIENT *client, LOG_OBJECT *log  ) {
 
     if( communication_session->data_length > 0 ) {
 
@@ -188,68 +241,41 @@ void DCPAM_LCS_query( COMMUNICATION_SESSION *communication_session, CONNECTED_CL
         json_request = cJSON_Parse( request );
         if( json_request ) {
             char* ip = inet_ntoa( communication_session->address.sin_addr );
-            cJSON *sql = NULL;
-            cJSON *db = NULL;
-            cJSON *key = NULL;
 
             LOG_print( &dcpam_lcs_log, "[%s] Request is valid JSON.\n", TIME_get_gmt() );
+            LOG_print( &dcpam_lcs_log, "[%s] Client connected: %s.\n", TIME_get_gmt(), ip );
 
-            key = cJSON_GetObjectItem( json_request, "key" );
-            if( key == NULL ) {
-                LOG_print( &dcpam_lcs_log, "[%s] Error: no KEY in request is found.\n", TIME_get_gmt() );
-                WDS_RESPONSE_ERROR( communication_session, client );
-                cJSON_Delete( json_request );
-                return;
-            } else {
+            /* Check Component action */
+            cJSON *name = cJSON_GetObjectItem( json_request, "app" );
+            cJSON *version = cJSON_GetObjectItem( json_request, "ver" );
+            cJSON *action = cJSON_GetObjectItem( json_request, "action" );
+            cJSON *action_type = cJSON_GetObjectItem( json_request, "type" );
+            if( name && version && action && action_type ) {
 
-                for( int i = 0; i < L_APP.ALLOWED_HOSTS_len; i++ ) {
-                    if( strcmp( ip, L_APP.ALLOWED_HOSTS_[ i ]->ip ) == 0 ) {
-                        if( strcmp( key->valuestring, L_APP.ALLOWED_HOSTS_[ i ]->api_key ) != 0 ) {
-                            LOG_print( &dcpam_lcs_log, "[%s] Error: KEY in request is invalid.\n", TIME_get_gmt() );
-                            WDS_RESPONSE_ERROR( communication_session, client );
-                            cJSON_Delete( json_request );
-                            return;
-                        }
+                size_t action_len = strlen( action->valuestring );
+                DCPAM_COMPONENT* component = COMPONENT_get( name->valuestring, version->valuestring, ip );
+
+                if( component ) {
+                    COMPONENT_ACTION_TYPE tmp_action_type = DCT_START;
+                    if( strcmp( action_type->valuestring, "stop" ) ) {
+                        tmp_action_type = DCT_STOP;
                     }
+
+                    int reg_res = COMPONENT_ACTION_register( component, action->valuestring, tmp_action_type, log );
+                    if( reg_res == 1 ) {
+                        SOCKET_send( communication_session, client, "1", 1 );
+                    } else {
+                        SOCKET_send( communication_session, client, "-1", 2 );
+                    }
+                    SOCKET_disconnect_client( communication_session );
                 }
-
-            }
-
-            LOG_print( &dcpam_lcs_log, "[%s] Access granted for client %s with key %s.\n", TIME_get_gmt(), ip, key->valuestring );
-            SOCKET_send( communication_session, client, "TEST OK", strlen( "TEST OK" ) );
-
-            /*sql = cJSON_GetObjectItem( json_request, "sql" );
-            if( sql == NULL) {
-                LOG_print( &dcpam_lcs_log, "[%s] Error: no SQL in request is found.\n", TIME_get_gmt() );
-                WDS_RESPONSE_ERROR( communication_session, client );
-                cJSON_Delete( json_request );
-                return;
-            }
-
-            db = cJSON_GetObjectItem( json_request, "db" );
-            if( db  == NULL ) {
-                LOG_print( &dcpam_lcs_log, "[%s] Error: no DB name in request is found.\n", TIME_get_gmt() );
-                WDS_RESPONSE_ERROR( communication_session, client );
-                cJSON_Delete( json_request );
-                return;
-            }
-
-            DB_QUERY_TYPE dqt = DB_QUERY_get_type( sql->valuestring );
-            if(
-                dqt != DQT_SELECT
-                ) {
-                WDS_RESPONSE_ERROR( communication_session, client );
             } else {
-                char* json_response = NULL;
+                LOG_print( &dcpam_lcs_log, "[%s] Error: request is invalid.\n", TIME_get_gmt() );
+                WDS_RESPONSE_ERROR( communication_session, client );
+                cJSON_Delete( json_request );
+                return;
+            }
 
-                DCPAM_LCS_get_data( sql->valuestring, db->valuestring, &json_response );
-
-                if( json_response ) {
-                    SOCKET_send( communication_session, client, json_response, strlen( json_response ) );
-                } else {
-                    WDS_RESPONSE_ERROR( communication_session, client );
-                }
-            }*/
         } else {
             LOG_print( &dcpam_lcs_log, "[%s] Error: request is not valid JSON.\n", TIME_get_gmt() );
             WDS_RESPONSE_ERROR( communication_session, client );
@@ -257,6 +283,18 @@ void DCPAM_LCS_query( COMMUNICATION_SESSION *communication_session, CONNECTED_CL
         }
     }
 
+}
+
+void DCPAM_LCS_free_components( LOG_OBJECT *log ) {
+    LOG_print( log, "[%s] DCPAM_LCS_free_components...\n", TIME_get_gmt() );
+    for( int i = 0; i < L_APP.COMPONENTS_len; i++ ) {
+        if( COMPONENT_free( L_APP.COMPONENTS[ i ] ) == 0 ) {
+            LOG_print( log, "[%s] Error: unable to free component!\n", TIME_get_gmt() );
+        } else {
+            free( L_APP.COMPONENTS[ i ] ); L_APP.COMPONENTS[ i ] = NULL;
+        }
+    }
+    free( L_APP.COMPONENTS ); L_APP.COMPONENTS = NULL;
 }
 
 int main( int argc, char** argv ) {
@@ -286,18 +324,10 @@ int main( int argc, char** argv ) {
     if( DCPAM_LCS_load_configuration( config_file ) == 1 ) {
         LOG_print( &dcpam_lcs_log, "[%s] DCPAM Live Component State configuration loaded.\n", TIME_get_gmt() );
 
-        spc exec_script = ( spc )&DCPAM_LCS_query;
-        char** allowed_hosts_ip = SAFEMALLOC( L_APP.ALLOWED_HOSTS_len * sizeof * L_APP.ALLOWED_HOSTS_, __FILE__, __LINE__ );
+        spc exec_script = ( spc )&DCPAM_LCS_listener;
+        SOCKET_main( &exec_script, L_APP.network_port, NULL, 0, &dcpam_lcs_log );
 
-        for( int i = 0; i < L_APP.ALLOWED_HOSTS_len; i++ ) {
-            size_t str_len = strlen( L_APP.ALLOWED_HOSTS_[ i ]->ip );
-            allowed_hosts_ip[ i ] = SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
-            snprintf( allowed_hosts_ip[ i ], str_len + 1, L_APP.ALLOWED_HOSTS_[ i ]->ip );
-        }
-
-        SOCKET_main( &exec_script, L_APP.network_port, (const char **)&(*allowed_hosts_ip), L_APP.ALLOWED_HOSTS_len, &dcpam_lcs_log );
-
-        DCPAM_LCS_free_configuration();
+        DCPAM_LCS_free_configuration( &dcpam_lcs_log );
     }
 
     LOG_print( &dcpam_lcs_log, "[%s] DCPAM Live Component State finished.\n", TIME_get_gmt() );

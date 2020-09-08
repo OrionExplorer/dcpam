@@ -13,6 +13,39 @@ typedef struct DCPAM_ALLOWED_HOST {
     char                    *api_key;
 } DCPAM_ALLOWED_HOST;
 
+
+typedef enum COMPONENT_ACTION_RESULT {
+    DCR_SUCCESS = 1,
+    DCR_FAILURE
+} COMPONENT_ACTION_RESULT;
+
+typedef enum COMPONENT_ACTION_TYPE {
+    DCT_START = 1,
+    DCT_STOP
+} COMPONENT_ACTION_TYPE;
+
+
+typedef struct COMPONENT_ACTION {
+    char                    *description;               /* Action description */
+    char                    start_timestamp[ 20 ];      /* Action started */
+    char                    stop_timestamp[ 20 ];       /* Action finished */
+    COMPONENT_ACTION_TYPE   type;                       /* Action type */
+    COMPONENT_ACTION_RESULT success;                    /* Action result */
+} COMPONENT_ACTION;
+
+
+typedef struct DCPAM_COMPONENT {
+    char                    *ip;                        /* Component IP address*/
+    int                     port;                       /* Component socket port */
+    char                    *name;                      /* Component name */
+    char                    *version;                   /* Component version */
+    int                     active;                     /* Is component active? */
+    char                    timestamp[ 20 ];            /* Last verification (YYYY-MM-DD HH:mm:SS)*/
+    COMPONENT_ACTION        **actions;                  /* Component actions list */
+    int                     actions_len;                /* Component actions count */
+
+} DCPAM_COMPONENT;
+
 /*
     config.json => app.DATA[ i ]
 */
@@ -93,9 +126,8 @@ typedef struct L_DCPAM_APP {
     char                    *version;
     char                    *name;
     int                     network_port;
-    char                    **ALLOWED_HOSTS;
-    DCPAM_ALLOWED_HOST      **ALLOWED_HOSTS_;
-    int                     ALLOWED_HOSTS_len;
+    DCPAM_COMPONENT         **COMPONENTS;
+    int                     COMPONENTS_len;
 } L_DCPAM_APP;
 
 #endif

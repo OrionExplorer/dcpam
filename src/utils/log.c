@@ -128,7 +128,7 @@ void LOG_save( LOG_OBJECT *log, const char *app_path ) {
     }
 
     memset( log->buffer, 0, LARGE_BUFF_SIZE );
-    if( chdir( app_path ) != 0 ) {
+    /*if( chdir( app_path ) != 0 ) {
         LOG_print( log, "Error: unable to perform chdir( %s ).\n", app_path );
-    }
+    }*/
 }

@@ -18,22 +18,18 @@ int LCS_REPORT_init( LCS_REPORT *connection, const char *address, const char *co
     connection->conn = SAFEMALLOC( sizeof( NET_CONN ), __FILE__, __LINE__ );
     connection->conn->log = log;
 
-    connection->active = 0;
+    connection->active = 1;
 
-    snprintf( init_msg_tmp, 512, "{\"app\": \"%s\", \"ver\": \"%s\"}", component_name, component_version );
+    snprintf( init_msg_tmp, 512, "{\"app\": \"%s\", \"ver\": \"%s\", \"action\": \"register\", \"type\": \"start\"}", component_name, component_version );
     init_msg_len = strlen( init_msg_tmp );
 
     if( sscanf( address, "dcpam://%99[^:]:%99d", host, &port ) == 2 ) {
-        if( NET_CONN_connect( connection->conn, host, port ) == 1 ) {
-            if( NET_CONN_send( connection->conn, init_msg_tmp, init_msg_len ) == 1 ) {
-                LOG_print( log, "[%s] LCS_REPORT_init result: %s\n", TIME_get_gmt(), connection->conn->response );
-                connection->active = 1;
-                return 1;
-            } else {
-                LOG_print( log, "[%s] LCS_REPORT_init failed.\n", TIME_get_gmt() );
-                return 0;
-            }
+        if( NET_CONN_init( connection->conn, host, port ) == 1 ) {
+            LOG_print( log, "[%s] LCS_REPORT_init finished.\n", TIME_get_gmt() );
+            return 1;
         } else {
+            connection->conn->log = NULL;
+            free( connection->conn ); connection->conn = NULL;
             return 0;
         }
     } else {
@@ -41,20 +37,26 @@ int LCS_REPORT_init( LCS_REPORT *connection, const char *address, const char *co
         return 0;
     }
 
-    return 0;
+    return 1;
 }
 
 int LCS_REPORT_free( LCS_REPORT* connection ) {
 
-    if( connection && connection->active == 1 ) {
+    if( connection ) {
         LOG_print( connection->log, "[%s] LCS_REPORT_free( %s )...\n", TIME_get_gmt(), connection->address );
+
         free( connection->address ); connection->address = NULL;
 
-        NET_CONN_disconnect( connection->conn );
-        connection->conn->log = NULL;
-        free( connection->conn ); connection->conn = NULL;
+        if( connection->active == 1 ) {
+            
+            free( connection->address ); connection->address = NULL;
 
-        connection->active = 0;
+            NET_CONN_disconnect( connection->conn );
+            connection->conn->log = NULL;
+            free( connection->conn ); connection->conn = NULL;
+
+            connection->active = 0;
+        }
     }
 }
 
