@@ -13,11 +13,6 @@ int                         worker_save_counter = 0;
 extern int                  app_terminated;
 extern L_DCPAM_APP          L_APP;                                    /* Main application object | config.json => "app" */
 
-typedef struct WORKER_DATA {
-    int                 thread_id;
-    LOG_OBJECT          *log;
-} WORKER_DATA;
-
 void* LCS_WORKER_watcher( void* p );
 
 int LCS_WORKER_shutdown( LOG_OBJECT* log ) {

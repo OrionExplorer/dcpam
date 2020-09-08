@@ -121,7 +121,7 @@ int NET_CONN_send( NET_CONN *connection, const char *data, size_t data_len ) {
         unsigned long cur_size = LEN;
         int status = 0;
 
-        buffer = ( char* )malloc( sizeof( char ) * LEN );
+        buffer = ( char* )SAFECALLOC( LEN, sizeof( char ), __FILE__, __LINE__ );
         do {
             if( status >= LEN ) {
                 cur_size += status;
