@@ -113,7 +113,7 @@ int NET_CONN_send( NET_CONN *connection, const char *data, size_t data_len ) {
             LOG_print( connection->log, "error sending data to %s.\n", TIME_get_gmt(), connection->host );
             return 0;
         } else {
-            LOG_print( connection->log, "ok. Awaiting response...\n" );
+            LOG_print( connection->log, "ok. Awaiting response..." );
         }
 
         char* buffer = NULL;
@@ -150,6 +150,8 @@ int NET_CONN_send( NET_CONN *connection, const char *data, size_t data_len ) {
         }
 
         free( buffer ); buffer = NULL;
+
+        LOG_print( connection->log, "ok.\n" );
 
         return 1;
     } else {

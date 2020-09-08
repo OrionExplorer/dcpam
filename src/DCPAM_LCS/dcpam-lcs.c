@@ -13,20 +13,24 @@
 #include "../include/core/cache.h"
 #include "../include/core/network/socket_io.h"
 #include "../include/core/component.h"
+#include "../include/DCPAM_LCS/lcs_worker.h"
 
-#define WDS_RESPONSE_ERROR( communication_session, client ) { SOCKET_send( communication_session, client, "{\"success\":false,\"data\":[],\"length\":0}", 38 ); SOCKET_disconnect_client( communication_session ); }
-void DCPAM_LCS_free_components( LOG_OBJECT* log );
+#define WDS_RESPONSE_ERROR( communication_session, client ) { \
+                SOCKET_send( communication_session, client, "{\"success\":false,\"data\":[],\"length\":0}", 38 ); \
+                SOCKET_disconnect_client( communication_session ); \
+}
 
 #pragma warning( disable : 6031 )
 
 char                    app_path[ MAX_PATH_LENGTH + 1 ];
 LOG_OBJECT              dcpam_lcs_log;
-extern int              app_terminated = 0;
+int                     app_terminated = 0;
 
 extern DATABASE_SYSTEM  DATABASE_SYSTEMS[ MAX_DATA_SYSTEMS ];
 extern int              DATABASE_SYSTEMS_COUNT;
 extern L_DCPAM_APP      L_APP;
 
+void DCPAM_LCS_free_components( LOG_OBJECT* log );
 void DCPAM_LCS_free_configuration( LOG_OBJECT *log );
 
 
@@ -35,6 +39,7 @@ void app_terminate( void ) {
     if( app_terminated == 0 ) {
         app_terminated = 1;
         printf( "\r" );
+        LCS_WORKER_shutdown( &dcpam_lcs_log );
         SOCKET_stop();
         DCPAM_LCS_free_configuration( &dcpam_lcs_log );
         LOG_print( &dcpam_lcs_log, "[%s] DCPAM LCS graceful shutdown finished.\n", TIME_get_gmt() );
@@ -115,6 +120,7 @@ int DCPAM_LCS_load_configuration( const char* filename ) {
                     }
                     LOG_print( &dcpam_lcs_log, "Network port is set to %d.\n", L_APP.network_port );
 
+                    /* Load information about DCPAM Components required DCPAM to work */
                     cfg_app_required_components = cJSON_GetObjectItem( cfg_app_network, "required_components" );
                     if( cfg_app_required_components ) {
 
@@ -139,6 +145,7 @@ int DCPAM_LCS_load_configuration( const char* filename ) {
                                 cJSON *ip = cJSON_GetObjectItem( cfg_app_required_components_item, "ip" );
                                 cJSON *port = cJSON_GetObjectItem( cfg_app_required_components_item, "port" );
 
+                                /* Try to register DCPAM Component. Perform network connection with internal ping message. */
                                 LOG_print( &dcpam_lcs_log, "[%s] [%d/%d] Registering DCPAM Component: \"%s\"...\n", TIME_get_gmt(), i + 1, L_APP.COMPONENTS_len, name->valuestring );
                                 reg_result = COMPONENT_register(
                                     L_APP.COMPONENTS[ i ],
@@ -150,19 +157,22 @@ int DCPAM_LCS_load_configuration( const char* filename ) {
                                 );
 
                                 if( reg_result == 1 ) {
-                                    
                                     LOG_print( &dcpam_lcs_log, "[%s] [%d/%d] DCPAM Component \"%s\" is online.\n", TIME_get_gmt(), i + 1, L_APP.COMPONENTS_len, name->valuestring );
                                 } else {
+                                    /* DCPAM Component registration failed. DCPAM LCS could not start due to entire DCPAM misconfiguration. */
                                     LOG_print( &dcpam_lcs_log, "[%s] [%d/%d] DCPAM Component \"%s\" registration failed.\n", TIME_get_gmt(), i + 1, L_APP.COMPONENTS_len, name->valuestring );
                                     break;
                                 }
                             }
                         }
 
+                        /* DCPAM Component registration failed - release allocated memory. */
                         if( reg_result == 0 ) {
+                            /* Free partly-registered Component. */
                             for( int i = 0; i < registered_components_count; i++ ) {
                                 COMPONENT_free( L_APP.COMPONENTS[ i ] );
                             }
+                            /* Free unused, but allocated array. */
                             for( int i = 0; i < L_APP.COMPONENTS_len; i++ ) {
                                 free( L_APP.COMPONENTS[ i ] ); L_APP.COMPONENTS[ i ] = NULL;
                             }
@@ -170,6 +180,7 @@ int DCPAM_LCS_load_configuration( const char* filename ) {
 
                             L_APP.COMPONENTS_len = 0;
 
+                            /* Free DCPAM LCS configuration. */
                             DCPAM_LCS_free_configuration( &dcpam_lcs_log );
 
                             cJSON_Delete( config_json );
@@ -225,7 +236,6 @@ DCPAM_COMPONENT* COMPONENT_get( const char* name, const char* version, const cha
     return NULL;
 }
 
-
 void DCPAM_LCS_listener( COMMUNICATION_SESSION *communication_session, CONNECTED_CLIENT *client, LOG_OBJECT *log  ) {
 
     if( communication_session->data_length > 0 ) {
@@ -246,14 +256,14 @@ void DCPAM_LCS_listener( COMMUNICATION_SESSION *communication_session, CONNECTED
             LOG_print( &dcpam_lcs_log, "[%s] Client connected: %s.\n", TIME_get_gmt(), ip );
 
             /* Check Component action */
-            cJSON *name = cJSON_GetObjectItem( json_request, "app" );
+            cJSON *app = cJSON_GetObjectItem( json_request, "app" );
             cJSON *version = cJSON_GetObjectItem( json_request, "ver" );
             cJSON *action = cJSON_GetObjectItem( json_request, "action" );
             cJSON *action_type = cJSON_GetObjectItem( json_request, "type" );
-            if( name && version && action && action_type ) {
+            if( app && version && action && action_type ) {
 
                 size_t action_len = strlen( action->valuestring );
-                DCPAM_COMPONENT* component = COMPONENT_get( name->valuestring, version->valuestring, ip );
+                DCPAM_COMPONENT* component = COMPONENT_get( app->valuestring, version->valuestring, ip );
 
                 if( component ) {
                     COMPONENT_ACTION_TYPE tmp_action_type = DCT_START;
@@ -324,10 +334,13 @@ int main( int argc, char** argv ) {
     if( DCPAM_LCS_load_configuration( config_file ) == 1 ) {
         LOG_print( &dcpam_lcs_log, "[%s] DCPAM Live Component State configuration loaded.\n", TIME_get_gmt() );
 
+        if( LCS_WORKER_init( &dcpam_lcs_log ) == 1 ) {
+            //while( 1 );
+        }
+
         spc exec_script = ( spc )&DCPAM_LCS_listener;
         SOCKET_main( &exec_script, L_APP.network_port, NULL, 0, &dcpam_lcs_log );
 
-        DCPAM_LCS_free_configuration( &dcpam_lcs_log );
     }
 
     LOG_print( &dcpam_lcs_log, "[%s] DCPAM Live Component State finished.\n", TIME_get_gmt() );

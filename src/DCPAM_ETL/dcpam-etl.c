@@ -1658,10 +1658,13 @@ int main( int argc, char** argv ) {
     }
 
     if( DCPAM_load_configuration( config_file ) == 1 ) {
+
         lcs_worker_thread = pthread_create( &lcs_worker_pid, NULL, DCPAM_LCS_worker, NULL );
+
         if( DB_WORKER_init( &dcpam_etl_log ) == 1 ) {
             //while( 1 );
         }
+
         pthread_join( lcs_worker_pid, NULL );
     }
 

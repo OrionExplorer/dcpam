@@ -42,7 +42,7 @@ int LCS_REPORT_init( LCS_REPORT *connection, const char *address, const char *co
 
 int LCS_REPORT_free( LCS_REPORT* connection ) {
 
-    if( connection ) {
+    if( connection && connection->active == 1 ) {
         LOG_print( connection->log, "[%s] LCS_REPORT_free( %s )...\n", TIME_get_gmt(), connection->address );
 
         free( connection->address ); connection->address = NULL;

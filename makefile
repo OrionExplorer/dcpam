@@ -48,6 +48,9 @@ dcpam-rdp.o: src/DCPAM_RDP/dcpam-rdp.c
 dcpam-lcs.o: src/DCPAM_LCS/dcpam-lcs.c
 	$(CC) -c src/DCPAM_LCS/dcpam-lcs.c $(CFLAGS) $(ORACLE_DEP)
 
+lcs_worker.o: src/DCPAM_LCS/lcs_worker.c
+	$(CC) -c src/DCPAM_LCS/lcs_worker.c $(CFLAGS) $(ORACLE_DEP)
+
 log.o: src/utils/log.c
 	$(CC) -c src/utils/log.c $(CFLAGS)
 
@@ -126,5 +129,5 @@ dcpam-etl: dcpam-etl.o mysql.o mariadb.o odbc.o postgresql.o log.o time.o filesy
 dcpam-wds: dcpam-wds.o socket_io.o cache.o mysql.o mariadb.o odbc.o postgresql.o log.o time.o http.o filesystem.o cJSON.o sqlite3.o memory.o db.o system.o strings.o oracle.o sqlite.o client.o lcs_report.o
 	$(CC) cache.o mysql.o socket_io.o mariadb.o odbc.o postgresql.o dcpam-wds.o log.o time.o http.o filesystem.o cJSON.o sqlite3.o memory.o db.o system.o strings.o oracle.o sqlite.o client.o lcs_report.o -o dcpam-wds $(LIBS)
 
-dcpam-lcs: dcpam-lcs.o socket_io.o log.o time.o memory.o filesystem.o http.o client.o strings.o cJSON.o component.o
-	$(CC) dcpam-lcs.o socket_io.o log.o time.o memory.o filesystem.o http.o client.o strings.o cJSON.o component.o -o dcpam-lcs $(LIBS)
+dcpam-lcs: dcpam-lcs.o socket_io.o log.o time.o memory.o filesystem.o http.o client.o strings.o cJSON.o component.o lcs_worker.o
+	$(CC) dcpam-lcs.o socket_io.o log.o time.o memory.o filesystem.o http.o client.o strings.o cJSON.o component.o lcs_worker.o -o dcpam-lcs $(LIBS)
