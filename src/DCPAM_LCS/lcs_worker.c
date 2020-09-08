@@ -18,19 +18,15 @@ typedef struct WORKER_DATA {
     LOG_OBJECT          *log;
 } WORKER_DATA;
 
-void* LCS_WORKER_watcher( void* src_WORKER_DATA );
+void* LCS_WORKER_watcher( void* p );
 
 int LCS_WORKER_shutdown( LOG_OBJECT* log ) {
-    int         i = 0;
-
     LOG_print( log, "[%s] LCS_WORKER_shutdown (app_terminated=%d).\n", TIME_get_gmt(), app_terminated );
-
     return TRUE;
 }
 
-void* LCS_WORKER_watcher( void* src_WORKER_DATA ) {
+void* LCS_WORKER_watcher( void* p ) {
     LOG_OBJECT      log;
-    WORKER_DATA     *t_worker_data = ( WORKER_DATA* )src_WORKER_DATA;
 
     LOG_init( &log, "lcs_worker", 65535 );
 
@@ -43,10 +39,10 @@ void* LCS_WORKER_watcher( void* src_WORKER_DATA ) {
                 int res = COMPONENT_check( L_APP.COMPONENTS[ i ], &log );
                 strncpy( L_APP.COMPONENTS[ i ]->timestamp, TIME_get_gmt(), 20 );
                 if( res == 0 ) {
-                    LOG_print( &log, "[%s] Component check failure: \"%s %s (%s:%d)\" is not responding!\n", TIME_get_gmt(), L_APP.COMPONENTS[ i ]->name, L_APP.COMPONENTS[ i ]->version, L_APP.COMPONENTS[ i ]->ip, L_APP.COMPONENTS[ i ]->port );
+                    LOG_print( &log, "[%s] FAILURE Component check: \"%s %s (%s:%d)\" is not responding!\n", TIME_get_gmt(), L_APP.COMPONENTS[ i ]->name, L_APP.COMPONENTS[ i ]->version, L_APP.COMPONENTS[ i ]->ip, L_APP.COMPONENTS[ i ]->port );
                     L_APP.COMPONENTS[ i ]->active = 0;
                 } else {
-                    LOG_print( &log, "[%s] Component check succes for \"%s %s (%s:%d)\".\n", TIME_get_gmt(), L_APP.COMPONENTS[ i ]->name, L_APP.COMPONENTS[ i ]->version, L_APP.COMPONENTS[ i ]->ip, L_APP.COMPONENTS[ i ]->port );
+                    LOG_print( &log, "[%s] SUCCESS Component check for \"%s %s (%s:%d)\".\n", TIME_get_gmt(), L_APP.COMPONENTS[ i ]->name, L_APP.COMPONENTS[ i ]->version, L_APP.COMPONENTS[ i ]->ip, L_APP.COMPONENTS[ i ]->port );
                     L_APP.COMPONENTS[ i ]->active = 1;
                 }
 
@@ -61,16 +57,15 @@ void* LCS_WORKER_watcher( void* src_WORKER_DATA ) {
 }
 
 int LCS_WORKER_init( LOG_OBJECT *log ) {
-    int         lcs_worker_thread = 0;
     pthread_t   lcs_worker_pid;
-    WORKER_DATA t_worker_data;
-
 
     LOG_print( log, "[%s] LCS_WORKER_init...", TIME_get_gmt() );
 
-    lcs_worker_thread = pthread_create( &lcs_worker_pid, NULL, LCS_WORKER_watcher, ( void* )&t_worker_data );
-
-    pthread_join( lcs_worker_pid, NULL );
+    if( pthread_create( &lcs_worker_pid, NULL, LCS_WORKER_watcher, NULL ) == 0 ) {
+        pthread_join( lcs_worker_pid, NULL );
+    } else {
+        return 0;
+    }
 
     return 1;
 }

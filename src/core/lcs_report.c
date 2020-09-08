@@ -8,8 +8,6 @@
 int LCS_REPORT_init( LCS_REPORT *connection, const char *address, const char *component_name, const char *component_version, LOG_OBJECT *log ) {
     char    host[ 100 ];
     int     port = 7777;
-    char    init_msg_tmp[ 512 ];
-    size_t  init_msg_len = 0;
 
     connection->log = log;
 
@@ -19,9 +17,6 @@ int LCS_REPORT_init( LCS_REPORT *connection, const char *address, const char *co
     connection->conn->log = log;
 
     connection->active = 1;
-
-    snprintf( init_msg_tmp, 512, "{\"app\": \"%s\", \"ver\": \"%s\", \"action\": \"register\", \"type\": \"start\"}", component_name, component_version );
-    init_msg_len = strlen( init_msg_tmp );
 
     if( sscanf( address, "dcpam://%99[^:]:%99d", host, &port ) == 2 ) {
         if( NET_CONN_init( connection->conn, host, port ) == 1 ) {

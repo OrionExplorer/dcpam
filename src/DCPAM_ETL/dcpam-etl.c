@@ -1632,7 +1632,6 @@ void* DCPAM_LCS_worker( void* LCS_worker_data ) {
 
 int main( int argc, char** argv ) {
     char        config_file[ MAX_PATH_LENGTH + 1 ];
-    int         lcs_worker_thread = 0;
     pthread_t   lcs_worker_pid;
 
     signal( SIGINT, (__sighandler_t)&app_terminate );
@@ -1659,13 +1658,14 @@ int main( int argc, char** argv ) {
 
     if( DCPAM_load_configuration( config_file ) == 1 ) {
 
-        lcs_worker_thread = pthread_create( &lcs_worker_pid, NULL, DCPAM_LCS_worker, NULL );
-
-        if( DB_WORKER_init( &dcpam_etl_log ) == 1 ) {
-            //while( 1 );
+        if( pthread_create( &lcs_worker_pid, NULL, DCPAM_LCS_worker, NULL ) == 0 ) {
+            if( DB_WORKER_init( &dcpam_etl_log ) == 1 ) {
+                //while( 1 );
+            }
+            pthread_join( lcs_worker_pid, NULL );
+        } else {
+            LOG_print( &dcpam_etl_log, "[%s] Fatal error: unable to start thread for DCPAM LCS reporting.\n", TIME_get_gmt() );
         }
-
-        pthread_join( lcs_worker_pid, NULL );
     }
 
     DCPAM_free_configuration();
