@@ -154,7 +154,7 @@ DCPAM Data Warehouse Solution consists of a number of integrated components. Eac
 [DCPAM WDS](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_WDS/README.md) is dedicated endpoint for querying predefined business data with custom caching system. DCPAM WDS encapsulates every node of DCPAM Database into single data access point.
 
 #### DCPAM RDP - Remote Data Processor
-[DCPAM RDP](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_RDP) is used by DCPAM ETL to execute transform scripts/applications that must be run on separate machines when performance impact is significant. DCPAM ETL communicates with these remote scripts/applications through DCPAM RDP.
+[DCPAM RDP](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_RDP/README.md) is used by DCPAM ETL to execute transform scripts/applications that must be run on separate machines when performance impact is significant. DCPAM ETL communicates with these remote scripts/applications through DCPAM RDP.
 
 ![DCPAM Architecture overview](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/architecture.png)
 *<p align=center>DCPAM workflow overview</p>*
@@ -176,7 +176,7 @@ Following diagrams represents different configurations to deploy both Data Wareh
 *<p align=center>Data Marts with DCPAM Data Warehouse</p>*
 
 #### DCPAM LCS - Live Component State
-DCPAM LCS is going to be the central repository of information about all the DCPAM Components current state.
+[DCPAM LCS](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_LCS/README.md) is the central repository of informations about all the DCPAM Components current state. It is the most important DCPAM Component from an administrative point of view.
 
 #### DCPAM Construct
 DCPAM Construct is going to be the main system administration web application.

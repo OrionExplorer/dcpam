@@ -40,18 +40,17 @@ void     SOCKET_process( int socket_fd, spc *socket_process_callback, LOG_OBJECT
 void     SOCKET_stop( void );
 
 void SOCKET_initialization( const int port, LOG_OBJECT *log ) {
-    LOG_print( log, "[%s] Initializing network...", TIME_get_gmt() );
 
     #ifdef _WIN32
         if ( WSAStartup( MAKEWORD( 2, 2 ), &wsk ) != 0 ) {
-            LOG_print( log, "error creating Winsock.\n" );
+            LOG_print( log, "\nError creating Winsock.\n" );
             exit( EXIT_FAILURE );
         }
     #endif
 
     socket_server = socket( AF_INET, SOCK_STREAM, IPPROTO_TCP );
     if ( socket_server == SOCKET_ERROR ) {
-        LOG_print( log, "error creating socket.\n" );
+        LOG_print( log, "\nError creating socket.\n" );
         SOCKET_stop();
         exit( EXIT_FAILURE );
     }
@@ -121,8 +120,6 @@ void SOCKET_prepare( LOG_OBJECT *log ) {
         SOCKET_stop();
         exit( EXIT_FAILURE );
     }
-
-    LOG_print( log, "ok.\n" );
 }
 
 int SOCKET_client_host_allowed( const char *ip, const char **allowed_hosts, int hosts_len ) {
@@ -172,9 +169,9 @@ void SOCKET_run( spc *socket_process_callback, const char **allowed_hosts, const
                         SOCKET_close( newfd );
                         LOG_print( log, "[%s] WARNING: host %s is not allowed.\n", TIME_get_gmt(), inet_ntoa( communication_session_.address.sin_addr ) );
                         continue;
-                    } else {
+                    } /*else {
                         LOG_print( log, "[%s] Client IP: %s.\n", TIME_get_gmt(), inet_ntoa( communication_session_.address.sin_addr ) );
-                    }
+                    }*/
                     communication_session_.socket_descriptor = newfd;
 
                     if( newfd == -1 ) {
@@ -300,7 +297,7 @@ void SOCKET_register_client( int socket_descriptor, LOG_OBJECT *log ) {
         if( connected_clients[ i ].socket_descriptor == 0 ) {
             connected_clients[ i ].socket_descriptor = socket_descriptor;
             connected_clients[ i ].connected = 1;
-            LOG_print( log, "[%s] Client connected with descriptor %d.\n", TIME_get_gmt(), socket_descriptor );
+            //LOG_print( log, "[%s] Client connected with descriptor %d.\n", TIME_get_gmt(), socket_descriptor );
             return;
         }
     }

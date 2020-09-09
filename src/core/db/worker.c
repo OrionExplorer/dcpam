@@ -13,6 +13,7 @@
 #include "../../include/core/db/etl/stage.h"
 #include "../../include/core/db/etl/transform.h"
 #include "../../include/core/db/etl/load.h"
+#include "../../include/core/lcs_report.h"
 
 pthread_t                   w_watcher_thread[ MAX_DATA_SYSTEMS ];
 static pthread_mutex_t      watcher_mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -212,6 +213,9 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
     worker_save_counter += WORKER_WATCHER_SLEEP;
 
     if( curr_etl_step == ETL_EXTRACT ) {
+
+        LCS_REPORT_send( &APP.lcs_report, "PreETL", DCT_START );
+
         /* Run PreETL actions. */
         LOG_print( log, "[%s] Started run of PreETL Actions.\n", TIME_get_gmt() );
         for( i = 0; i < DATA_SYSTEM->queries_len; i++ ) {

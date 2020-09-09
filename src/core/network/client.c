@@ -85,6 +85,7 @@ int NET_CONN_disconnect( NET_CONN *connection ) {
 
         LOG_print( connection->log, "ok.\n" );
 
+        
         return closesocket( connection->socket );
     } else {
         printf( "error. Connection pointer is not valid.\n" );

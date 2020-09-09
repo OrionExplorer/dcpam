@@ -13,6 +13,7 @@
 #include "../include/utils/filesystem.h"
 #include "../include/core/network/socket_io.h"
 #include "../include/core/db/system.h"
+#include "../include/core/lcs_report.h"
 
 #pragma warning( disable : 6031 )
 
@@ -565,7 +566,7 @@ int DCPAM_load_configuration( const char* filename ) {
                         */
                         cfg_system_query_item_etl_pre_actions = cJSON_GetObjectItem( cfg_system_query_item_etl, "pre_actions" );
                         if( cfg_system_query_item_etl_pre_actions == NULL ) {
-                            LOG_print( &dcpam_etl_log, "NOTICE: No PreCDC actions defined.\n" );
+                            LOG_print( &dcpam_etl_log, "NOTICE: No PreETL actions defined.\n" );
                             tmp_cdc->pre_actions = NULL;
                             tmp_cdc->pre_actions_count = 0;
                         } else {
@@ -594,7 +595,7 @@ int DCPAM_load_configuration( const char* filename ) {
                         */
                         cfg_system_query_item_etl_post_actions = cJSON_GetObjectItem( cfg_system_query_item_etl, "post_actions" );
                         if( cfg_system_query_item_etl_post_actions == NULL ) {
-                            LOG_print( &dcpam_etl_log, "NOTICE: No PostCDC actions defined.\n" );
+                            LOG_print( &dcpam_etl_log, "NOTICE: No PostETL actions defined.\n" );
                             tmp_cdc->post_actions = NULL;
                             tmp_cdc->post_actions_count = 0;
                         } else {

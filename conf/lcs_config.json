@@ -5,7 +5,7 @@
 		"network" : {
 			"port" : 7771,
 			"required_components" : [
-				{"name" : "DCPAM ETL Node #1", "version" : "v0.1", "ip" : "127.0.0.1", "port" : 8888}
+				{"name" : "DCPAM ETL Node #1", "version" : "0.1", "ip" : "127.0.0.1", "port" : 8888}
 			]
 		}
 	}

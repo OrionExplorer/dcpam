@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <signal.h>
 #include <string.h>
+#include <pthread.h>
 #include "../include/utils/log.h"
 #include "../include/core/schema.h"
 #include "../include/third-party/cJSON.h"
@@ -147,7 +148,7 @@ int DCPAM_LCS_load_configuration( const char* filename ) {
 
                                 /* Try to register DCPAM Component. Perform network connection with internal ping message. */
                                 LOG_print( &dcpam_lcs_log, "[%s] [%d/%d] Registering DCPAM Component: \"%s\"...\n", TIME_get_gmt(), i + 1, L_APP.COMPONENTS_len, name->valuestring );
-                                reg_result = COMPONENT_register(
+                                reg_result = LCS_COMPONENT_register(
                                     L_APP.COMPONENTS[ i ],
                                     name->valuestring,
                                     version->valuestring,
@@ -161,32 +162,32 @@ int DCPAM_LCS_load_configuration( const char* filename ) {
                                 } else {
                                     /* DCPAM Component registration failed. DCPAM LCS could not start due to entire DCPAM misconfiguration. */
                                     LOG_print( &dcpam_lcs_log, "[%s] [%d/%d] DCPAM Component \"%s\" registration failed.\n", TIME_get_gmt(), i + 1, L_APP.COMPONENTS_len, name->valuestring );
-                                    break;
+                                    //break;
                                 }
                             }
                         }
 
                         /* DCPAM Component registration failed - release allocated memory. */
-                        if( reg_result == 0 ) {
-                            /* Free partly-registered Component. */
-                            for( int i = 0; i < registered_components_count; i++ ) {
-                                COMPONENT_free( L_APP.COMPONENTS[ i ] );
-                            }
-                            /* Free unused, but allocated array. */
-                            for( int i = 0; i < L_APP.COMPONENTS_len; i++ ) {
-                                free( L_APP.COMPONENTS[ i ] ); L_APP.COMPONENTS[ i ] = NULL;
-                            }
-                            free( L_APP.COMPONENTS ); L_APP.COMPONENTS = NULL;
+                        //if( reg_result == 0 ) {
+                        //    /* Free partly-registered Component. */
+                        //    for( int i = 0; i < registered_components_count; i++ ) {
+                        //        LCS_COMPONENT_free( L_APP.COMPONENTS[ i ] );
+                        //    }
+                        //    /* Free unused, but allocated array. */
+                        //    for( int i = 0; i < L_APP.COMPONENTS_len; i++ ) {
+                        //        free( L_APP.COMPONENTS[ i ] ); L_APP.COMPONENTS[ i ] = NULL;
+                        //    }
+                        //    free( L_APP.COMPONENTS ); L_APP.COMPONENTS = NULL;
 
-                            L_APP.COMPONENTS_len = 0;
+                        //    L_APP.COMPONENTS_len = 0;
 
-                            /* Free DCPAM LCS configuration. */
-                            DCPAM_LCS_free_configuration( &dcpam_lcs_log );
+                        //    /* Free DCPAM LCS configuration. */
+                        //    DCPAM_LCS_free_configuration( &dcpam_lcs_log );
 
-                            cJSON_Delete( config_json );
-                            free( config_string ); config_string = NULL;
-                            return FALSE;
-                        }
+                        //    cJSON_Delete( config_json );
+                        //    free( config_string ); config_string = NULL;
+                        //    return FALSE;
+                        //}
                     } else {
                         L_APP.COMPONENTS_len = 0;
                         L_APP.COMPONENTS = NULL;
@@ -224,9 +225,9 @@ int DCPAM_LCS_load_configuration( const char* filename ) {
 
 DCPAM_COMPONENT* COMPONENT_get( const char* name, const char* version, const char* ip ) {
     for( int i = 0; i < L_APP.COMPONENTS_len; i++ ) {
-        if( strcmp( name, L_APP.COMPONENTS[ i ]->name ) ) {
-            if( strcmp( version, L_APP.COMPONENTS[ i ]->version ) ) {
-                if( strcmp( ip, L_APP.COMPONENTS[ i ]->ip ) ) {
+        if( strcmp( name, L_APP.COMPONENTS[ i ]->name ) == 0 ) {
+            if( strcmp( version, L_APP.COMPONENTS[ i ]->version ) == 0 ) {
+                if( strcmp( ip, L_APP.COMPONENTS[ i ]->ip ) == 0 ) {
                     return L_APP.COMPONENTS[ i ];
                 }
             }
@@ -252,9 +253,6 @@ void DCPAM_LCS_listener( COMMUNICATION_SESSION *communication_session, CONNECTED
         if( json_request ) {
             char* ip = inet_ntoa( communication_session->address.sin_addr );
 
-            LOG_print( &dcpam_lcs_log, "[%s] Request is valid JSON.\n", TIME_get_gmt() );
-            LOG_print( &dcpam_lcs_log, "[%s] Client connected: %s.\n", TIME_get_gmt(), ip );
-
             /* Check Component action */
             cJSON *app = cJSON_GetObjectItem( json_request, "app" );
             cJSON *version = cJSON_GetObjectItem( json_request, "ver" );
@@ -266,17 +264,24 @@ void DCPAM_LCS_listener( COMMUNICATION_SESSION *communication_session, CONNECTED
                 DCPAM_COMPONENT* component = COMPONENT_get( app->valuestring, version->valuestring, ip );
 
                 if( component ) {
+
                     COMPONENT_ACTION_TYPE tmp_action_type = DCT_START;
                     if( strcmp( action_type->valuestring, "stop" ) ) {
                         tmp_action_type = DCT_STOP;
                     }
 
-                    int reg_res = COMPONENT_ACTION_register( component, action->valuestring, tmp_action_type, log );
+                    int reg_res = LCS_COMPONENT_ACTION_register( component, action->valuestring, tmp_action_type, log );
                     if( reg_res == 1 ) {
                         SOCKET_send( communication_session, client, "1", 1 );
+                        SOCKET_disconnect_client( communication_session );
                     } else {
                         SOCKET_send( communication_session, client, "-1", 2 );
+                        SOCKET_disconnect_client( communication_session );
                     }
+                    SOCKET_disconnect_client( communication_session );
+                } else {
+                    LOG_print( &dcpam_lcs_log, "[%s] Error: DCPAM Component( %s v%s, %s ) not found!\n", TIME_get_gmt(), app->valuestring, version->valuestring, ip );
+                    SOCKET_send( communication_session, client, "-1", 2 );
                     SOCKET_disconnect_client( communication_session );
                 }
             } else {
@@ -286,11 +291,15 @@ void DCPAM_LCS_listener( COMMUNICATION_SESSION *communication_session, CONNECTED
                 return;
             }
 
+            cJSON_Delete( json_request );
+
         } else {
             LOG_print( &dcpam_lcs_log, "[%s] Error: request is not valid JSON.\n", TIME_get_gmt() );
             WDS_RESPONSE_ERROR( communication_session, client );
             return;
         }
+
+        free( request ); request = NULL;
     }
 
 }
@@ -298,7 +307,7 @@ void DCPAM_LCS_listener( COMMUNICATION_SESSION *communication_session, CONNECTED
 void DCPAM_LCS_free_components( LOG_OBJECT *log ) {
     LOG_print( log, "[%s] DCPAM_LCS_free_components...\n", TIME_get_gmt() );
     for( int i = 0; i < L_APP.COMPONENTS_len; i++ ) {
-        if( COMPONENT_free( L_APP.COMPONENTS[ i ] ) == 0 ) {
+        if( LCS_COMPONENT_free( L_APP.COMPONENTS[ i ] ) == 0 ) {
             LOG_print( log, "[%s] Error: unable to free component!\n", TIME_get_gmt() );
         } else {
             free( L_APP.COMPONENTS[ i ] ); L_APP.COMPONENTS[ i ] = NULL;
@@ -334,12 +343,17 @@ int main( int argc, char** argv ) {
     if( DCPAM_LCS_load_configuration( config_file ) == 1 ) {
         LOG_print( &dcpam_lcs_log, "[%s] DCPAM Live Component State configuration loaded.\n", TIME_get_gmt() );
 
-        if( LCS_WORKER_init( &dcpam_lcs_log ) == 1 ) {
-            //while( 1 );
-        }
+        pthread_t   lcs_worker_pid;
 
-        spc exec_script = ( spc )&DCPAM_LCS_listener;
-        SOCKET_main( &exec_script, L_APP.network_port, NULL, 0, &dcpam_lcs_log );
+        LOG_print( &dcpam_lcs_log, "[%s] LCS_WORKER_init...", TIME_get_gmt() );
+
+        if( pthread_create( &lcs_worker_pid, NULL, LCS_WORKER_watcher, NULL ) == 0 ) {
+            spc exec_script = ( spc )&DCPAM_LCS_listener;
+            SOCKET_main( &exec_script, L_APP.network_port, NULL, 0, &dcpam_lcs_log );
+            pthread_join( lcs_worker_pid, NULL );
+        } else {
+            return 0;
+        }
 
     }
 

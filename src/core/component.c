@@ -7,13 +7,12 @@
 #include "../include/utils/time.h"
 #include "../include/third-party/cJSON.h"
 
-int COMPONENT_ACTION_register( DCPAM_COMPONENT* dst, const char* description, COMPONENT_ACTION_TYPE action_type, LOG_OBJECT *log ) {
+int LCS_COMPONENT_ACTION_register( DCPAM_COMPONENT* dst, const char* description, COMPONENT_ACTION_TYPE action_type, LOG_OBJECT *log ) {
 
     if( dst && description ) {
-        LOG_print( log, "[%s] COMPONENT_ACTION_register( %s, %s, %s, %s )...\n", TIME_get_gmt(), dst->name, dst->version, dst->ip, description );
+        LOG_print( log, "[%s] LCS_COMPONENT_ACTION_register( %s, %s, %s, %s )...\n", TIME_get_gmt(), dst->name, dst->version, dst->ip, description );
 
-        dst->actions_len++;
-        COMPONENT_ACTION **tmp = realloc( dst->actions, dst->actions_len * sizeof dst->actions );
+        COMPONENT_ACTION **tmp = realloc( dst->actions, ( dst->actions_len + 1 )* sizeof dst->actions );
 
         if( tmp ) {
             dst->actions = tmp;
@@ -31,7 +30,9 @@ int COMPONENT_ACTION_register( DCPAM_COMPONENT* dst, const char* description, CO
                 strncpy( dst->actions[ dst->actions_len ]->stop_timestamp, TIME_get_gmt(), 20 );
             }
 
-            LOG_print( log, "[%s] COMPONENT_ACTION_register completed.\n", TIME_get_gmt() );
+            dst->actions_len++;
+
+            LOG_print( log, "[%s] LCS_COMPONENT_ACTION_register completed (total actions: %d).\n", TIME_get_gmt(), dst->actions_len );
 
             return 1;
         } else {
@@ -46,11 +47,11 @@ int COMPONENT_ACTION_register( DCPAM_COMPONENT* dst, const char* description, CO
     return 0;
 }
 
-int COMPONENT_register( DCPAM_COMPONENT* dst, const char* name, const char* version, const char* ip, const int port, LOG_OBJECT* log ) {
+int LCS_COMPONENT_register( DCPAM_COMPONENT* dst, const char* name, const char* version, const char* ip, const int port, LOG_OBJECT* log ) {
 
     const char* component_registration_message = "Component registration.\0";
 
-    LOG_print( log, "[%s] COMPONENT_register( %s, %s, %s, %d, \"%s\" )...\n", TIME_get_gmt(), name, version, ip, port, component_registration_message );
+    LOG_print( log, "[%s] LCS_COMPONENT_register( %s, %s, %s, %d, \"%s\" )...\n", TIME_get_gmt(), name, version, ip, port, component_registration_message );
 
     if( dst && name && version && ip ) {
         size_t name_len = strlen( name );
@@ -83,23 +84,23 @@ int COMPONENT_register( DCPAM_COMPONENT* dst, const char* name, const char* vers
 
         dst->actions[ 0 ]->success = DCR_SUCCESS;
 
-        if( COMPONENT_check( dst, log ) == 1 ) {
-            LOG_print( log, "[%s] COMPONENT_register finished successfully.\n", TIME_get_gmt() );
+        if( LCS_COMPONENT_check( dst, log ) == 1 ) {
+            LOG_print( log, "[%s] LCS_COMPONENT_register finished successfully.\n", TIME_get_gmt() );
             return 1;
         } else {
-            LOG_print( log, "[%s] COMPONENT_register fatal error: DCPAM Component \"%s\" is offline!\n", TIME_get_gmt(), dst->name );
+            LOG_print( log, "[%s] LCS_COMPONENT_register fatal error: DCPAM Component \"%s\" is offline!\n", TIME_get_gmt(), dst->name );
             return 0;
         }
 
     } else {
-        LOG_print( log, "[%s] COMPONENT_register fatal error: parameters are invalid.\n", TIME_get_gmt() );
+        LOG_print( log, "[%s] LCS_COMPONENT_register fatal error: parameters are invalid.\n", TIME_get_gmt() );
         return 0;
     }
 
     return 0;
 }
 
-int COMPONENT_check( DCPAM_COMPONENT* dst, LOG_OBJECT *log ) {
+int LCS_COMPONENT_check( DCPAM_COMPONENT* dst, LOG_OBJECT *log ) {
     if( dst ) {
         NET_CONN *conn = SAFEMALLOC( sizeof( NET_CONN ), __FILE__, __LINE__ );
 
@@ -137,7 +138,7 @@ int COMPONENT_check( DCPAM_COMPONENT* dst, LOG_OBJECT *log ) {
     return 0;
 }
 
-int COMPONENT_free( DCPAM_COMPONENT* src ) {
+int LCS_COMPONENT_free( DCPAM_COMPONENT* src ) {
 
     if( src ) {
         for( int i = 0; i < src->actions_len; i++ ) {

@@ -3,7 +3,6 @@
 
 #include "../utils/log.h"
 
-int LCS_WORKER_init( LOG_OBJECT *log );
 int LCS_WORKER_shutdown( LOG_OBJECT* log );
-
+void *LCS_WORKER_watcher( void *p );
 #endif

@@ -3,7 +3,6 @@
 
 #include "db/system_schema.h"
 #include "../core/cache.h"
-#include "../core/lcs_report.h"
 
 #define MAX_DCPAM_DATA_ITEMS                5
 #define MAX_DCPAM_DATA_ACTIONS              8
@@ -13,6 +12,17 @@ typedef struct DCPAM_ALLOWED_HOST {
     char                    *api_key;
 } DCPAM_ALLOWED_HOST;
 
+typedef struct LCS_REPORT {
+    NET_CONN                *conn;
+    char                    *address;
+    int                     port;
+    char                    *lcs_host;
+    int                     lcs_port;
+    LOG_OBJECT              *log;
+    int                     active;
+    char                    *component;
+    char                    *version;
+} LCS_REPORT;
 
 typedef enum COMPONENT_ACTION_RESULT {
     DCR_SUCCESS = 1,
