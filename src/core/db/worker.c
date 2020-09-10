@@ -223,7 +223,7 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
         size_t ex_query_name_len = strlen( DATA_SYSTEM->queries[ i ].name );
         size_t ex_dst_buf_len = system_name_len + ex_query_name_len + ex_len;
         action_description = SAFECALLOC( ex_dst_buf_len + 1, sizeof( char ), __FILE__, __LINE__ );
-        snprintf( action_description, ex_dst_buf_len + 1, ex_descr, DATA_SYSTEM->name, DATA_SYSTEM->queries[ i ].name );
+        snprintf( action_description, ex_dst_buf_len + 1, ex_descr, DATA_SYSTEM->name );
         LCS_REPORT_send( &APP.lcs_report, action_description, DCT_START );
         free( action_description ); action_description = NULL;
 
@@ -281,7 +281,7 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
             size_t ff_filename_len = strlen( DATA_SYSTEM->flat_file->name );
             size_t ff_dst_buf_len = system_name_len + ff_filename_len + ff_len;
             action_description = SAFECALLOC( ff_dst_buf_len + 1, sizeof( char ), __FILE__, __LINE__ );
-            snprintf( action_description, ff_dst_buf_len + 1, flat_file_descr, DATA_SYSTEM->flat_file->name );
+            snprintf( action_description, ff_dst_buf_len + 1, flat_file_descr, DATA_SYSTEM->name, DATA_SYSTEM->flat_file->name );
             LCS_REPORT_send( &APP.lcs_report, action_description, DCT_START );
             free( action_description ); action_description = NULL;
 
@@ -404,7 +404,7 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
         }
 
         action_description = SAFECALLOC( ex_dst_buf_len + 1, sizeof( char ), __FILE__, __LINE__ );
-        snprintf( action_description, ex_dst_buf_len + 1, ex_descr, DATA_SYSTEM->name, DATA_SYSTEM->queries[ i ].name );
+        snprintf( action_description, ex_dst_buf_len + 1, ex_descr, DATA_SYSTEM->name );
         LCS_REPORT_send( &APP.lcs_report, action_description, DCT_STOP );
         free( action_description ); action_description = NULL;
     }
@@ -420,7 +420,7 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
                 size_t tr_query_name_len = strlen( DATA_SYSTEM->queries[ i ].name );
                 size_t tr_dst_buf_len = system_name_len + tr_query_name_len + tr_len;
                 action_description = SAFECALLOC( tr_dst_buf_len + 1, sizeof( char ), __FILE__, __LINE__ );
-                snprintf( action_description, tr_dst_buf_len + 1, tr_descr, DATA_SYSTEM->name, DATA_SYSTEM->queries[ i ].name );
+                snprintf( action_description, tr_dst_buf_len + 1, tr_descr, DATA_SYSTEM->name );
                 LCS_REPORT_send( &APP.lcs_report, action_description, DCT_START );
                 free( action_description ); action_description = NULL;
 
@@ -513,7 +513,7 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
                 }
 
                 action_description = SAFECALLOC( tr_dst_buf_len + 1, sizeof( char ), __FILE__, __LINE__ );
-                snprintf( action_description, tr_dst_buf_len + 1, tr_descr, DATA_SYSTEM->name, DATA_SYSTEM->queries[ i ].name );
+                snprintf( action_description, tr_dst_buf_len + 1, tr_descr, DATA_SYSTEM->name );
                 LCS_REPORT_send( &APP.lcs_report, action_description, DCT_STOP );
                 free( action_description ); action_description = NULL;
 
@@ -527,7 +527,7 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
                 size_t lo_query_name_len = strlen( DATA_SYSTEM->queries[ i ].name );
                 size_t lo_dst_buf_len = system_name_len + lo_query_name_len + lo_len;
                 action_description = SAFECALLOC( lo_dst_buf_len + 1, sizeof( char ), __FILE__, __LINE__ );
-                snprintf( action_description, lo_dst_buf_len + 1, lo_descr, DATA_SYSTEM->name, DATA_SYSTEM->queries[ i ].name );
+                snprintf( action_description, lo_dst_buf_len + 1, lo_descr, DATA_SYSTEM->name );
                 LCS_REPORT_send( &APP.lcs_report, action_description, DCT_START );
                 free( action_description ); action_description = NULL;
 
@@ -615,7 +615,7 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
                 }
 
                 action_description = SAFECALLOC( lo_dst_buf_len + 1, sizeof( char ), __FILE__, __LINE__ );
-                snprintf( action_description, lo_dst_buf_len + 1, lo_descr, DATA_SYSTEM->name, DATA_SYSTEM->queries[ i ].name );
+                snprintf( action_description, lo_dst_buf_len + 1, lo_descr, DATA_SYSTEM->name );
                 LCS_REPORT_send( &APP.lcs_report, action_description, DCT_STOP );
                 free( action_description ); action_description = NULL;
 
