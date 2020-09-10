@@ -10,7 +10,7 @@
 int LCS_COMPONENT_ACTION_register( DCPAM_COMPONENT* dst, const char* description, COMPONENT_ACTION_TYPE action_type, LOG_OBJECT *log ) {
 
     if( dst && description ) {
-        LOG_print( log, "[%s] LCS_COMPONENT_ACTION_register( %s, %s, %s, %s )...\n", TIME_get_gmt(), dst->name, dst->version, dst->ip, description );
+        LOG_print( log, "[%s] LCS_COMPONENT_ACTION_register( %s, %s, %s, %s, %s )...\n", TIME_get_gmt(), dst->name, dst->version, dst->ip, description, action_type == DCT_START ? "START" : "STOP" );
 
         COMPONENT_ACTION **tmp = realloc( dst->actions, ( dst->actions_len + 1 )* sizeof dst->actions );
 

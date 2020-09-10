@@ -212,15 +212,45 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
 
     worker_save_counter += WORKER_WATCHER_SLEEP;
 
+    char *action_description = NULL;
+    ACTION_TYPE action_type = DCT_START;
+    size_t system_name_len = strlen( DATA_SYSTEM->name );
+
     if( curr_etl_step == ETL_EXTRACT ) {
 
-        LCS_REPORT_send( &APP.lcs_report, "PreETL", DCT_START );
+        char* ex_descr = "[%s]: Extract";
+        size_t ex_len = strlen( ex_descr );
+        size_t ex_query_name_len = strlen( DATA_SYSTEM->queries[ i ].name );
+        size_t ex_dst_buf_len = system_name_len + ex_query_name_len + ex_len;
+        action_description = SAFECALLOC( ex_dst_buf_len + 1, sizeof( char ), __FILE__, __LINE__ );
+        snprintf( action_description, ex_dst_buf_len + 1, ex_descr, DATA_SYSTEM->name, DATA_SYSTEM->queries[ i ].name );
+        LCS_REPORT_send( &APP.lcs_report, action_description, DCT_START );
+        free( action_description ); action_description = NULL;
 
         /* Run PreETL actions. */
+
+        char* pre_etl_descr = "[%s]: PreETL Actions";
+        size_t pre_len = strlen( pre_etl_descr );
+        size_t pre_dst_buf_len = system_name_len + pre_len;
+        action_description = SAFECALLOC( pre_dst_buf_len + 1, sizeof( char ), __FILE__, __LINE__ );
+        snprintf( action_description, pre_dst_buf_len + 1, pre_etl_descr, DATA_SYSTEM->name );
+        LCS_REPORT_send( &APP.lcs_report, action_description, DCT_START );
+        free( action_description ); action_description = NULL;
+
         LOG_print( log, "[%s] Started run of PreETL Actions.\n", TIME_get_gmt() );
         for( i = 0; i < DATA_SYSTEM->queries_len; i++ ) {
             if( DATA_SYSTEM->queries[ i ].etl_config.pre_actions ) {
                 for( int k = 0; k < DATA_SYSTEM->queries[ i ].etl_config.pre_actions_count; k++ ) {
+
+                    char* pre_etl_descr_item = "[%s]: PreETL Action: %s";
+                    size_t len = strlen( pre_etl_descr_item );
+                    size_t sql_len = strlen( DATA_SYSTEM->queries[ i ].etl_config.pre_actions[ k ]->sql );
+                    size_t dst_buf_len = system_name_len + sql_len + len;
+                    action_description = SAFECALLOC( dst_buf_len + 1, sizeof( char ), __FILE__, __LINE__ );
+                    snprintf( action_description, dst_buf_len + 1, pre_etl_descr_item, DATA_SYSTEM->name, DATA_SYSTEM->queries[ i ].etl_config.pre_actions[ k ]->sql );
+                    LCS_REPORT_send( &APP.lcs_report, action_description, DCT_START );
+                    free( action_description ); action_description = NULL;
+
                     DB_exec(
                         &DATA_SYSTEM->dcpam_db,
                         DATA_SYSTEM->queries[ i ].etl_config.pre_actions[ k ]->sql,
@@ -228,13 +258,33 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
                         NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL,
                         log
                     );
+
+                    action_description = SAFECALLOC( dst_buf_len + 1, sizeof( char ), __FILE__, __LINE__ );
+                    snprintf( action_description, dst_buf_len + 1, pre_etl_descr_item, DATA_SYSTEM->name, DATA_SYSTEM->queries[ i ].etl_config.pre_actions[ k ]->sql );
+                    LCS_REPORT_send( &APP.lcs_report, action_description, DCT_STOP );
+                    free( action_description ); action_description = NULL;
                 }
             }
         }
         LOG_print( log, "[%s] Finished run of PreETL Actions.\n", TIME_get_gmt() );
 
+        action_description = SAFECALLOC( pre_dst_buf_len + 1, sizeof( char ), __FILE__, __LINE__ );
+        snprintf( action_description, pre_dst_buf_len + 1, pre_etl_descr, DATA_SYSTEM->name );
+        LCS_REPORT_send( &APP.lcs_report, action_description, DCT_STOP );
+        free( action_description ); action_description = NULL;
+
         /* If configured, preload flat file to the DB table. */
         if( DATA_SYSTEM->flat_file ) {
+
+            char* flat_file_descr = "[%s]: Flat file load: %s";
+            size_t ff_len = strlen( flat_file_descr );
+            size_t ff_filename_len = strlen( DATA_SYSTEM->flat_file->name );
+            size_t ff_dst_buf_len = system_name_len + ff_filename_len + ff_len;
+            action_description = SAFECALLOC( ff_dst_buf_len + 1, sizeof( char ), __FILE__, __LINE__ );
+            snprintf( action_description, ff_dst_buf_len + 1, flat_file_descr, DATA_SYSTEM->flat_file->name );
+            LCS_REPORT_send( &APP.lcs_report, action_description, DCT_START );
+            free( action_description ); action_description = NULL;
+
             LOG_print( log, "[%s] Loading data from file %s...\n", TIME_get_gmt(), DATA_SYSTEM->flat_file->name );
             DATA_SYSTEM->failure = FILE_ETL_preload( DATA_SYSTEM, DATA_SYSTEM->flat_file->name, log ) == 0 ? 1 : 0;
             if( DATA_SYSTEM->failure == 0 ) {
@@ -242,6 +292,11 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
             } else {
                 LOG_print( log, "[%s] Fatal error: file %s could not be loaded.\n", TIME_get_gmt(), DATA_SYSTEM->flat_file->name );
             }
+
+            action_description = SAFECALLOC( ff_dst_buf_len + 1, sizeof( char ), __FILE__, __LINE__ );
+            snprintf( action_description, ff_dst_buf_len + 1, flat_file_descr, DATA_SYSTEM->flat_file->name );
+            LCS_REPORT_send( &APP.lcs_report, action_description, DCT_STOP );
+            free( action_description ); action_description = NULL;
         }
 
         if( DATA_SYSTEM->failure == 0 ) {
@@ -256,6 +311,15 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
 
                 LOG_print( log, "\t· [EXTRACT] Query #%d: %s\n", i + 1, DATA_SYSTEM->queries[ i ].name );
 
+                char* ei_descr = "[%s]: Extract Inserted: %s";
+                size_t ei_len = strlen( ei_descr );
+                size_t ei_query_name_len = strlen( DATA_SYSTEM->queries[ i ].name );
+                size_t ei_dst_buf_len = system_name_len + ei_query_name_len + ei_len;
+                action_description = SAFECALLOC( ei_dst_buf_len + 1, sizeof( char ), __FILE__, __LINE__ );
+                snprintf( action_description, ei_dst_buf_len + 1, ei_descr, DATA_SYSTEM->name, DATA_SYSTEM->queries[ i ].name );
+                LCS_REPORT_send( &APP.lcs_report, action_description, DCT_START );
+                free( action_description ); action_description = NULL;
+
                 int ei_res = DB_CDC_ExtractInserted(
                     &DATA_SYSTEM->queries[ i ].etl_config.extract,
                     &DATA_SYSTEM->system_db,
@@ -265,11 +329,26 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
                     DATA_SYSTEM->staging_db ? ( void* )DATA_SYSTEM->staging_db : ( void* )&DATA_SYSTEM->dcpam_db,
                     log
                 );
+
+                action_description = SAFECALLOC( ei_dst_buf_len + 1, sizeof( char ), __FILE__, __LINE__ );
+                snprintf( action_description, ei_dst_buf_len + 1, ei_descr, DATA_SYSTEM->name, DATA_SYSTEM->queries[ i ].name );
+                LCS_REPORT_send( &APP.lcs_report, action_description, DCT_STOP );
+
+                free( action_description ); action_description = NULL;
                 if( ei_res == 0 ) {
                     LOG_print( log, "[%s] Fatal error: process exited with failure. %s processing is put on hold.\n", TIME_get_gmt(), DATA_SYSTEM->name );
                     DATA_SYSTEM->failure = 1;
                     continue;
                 }
+
+                char* ed_descr = "[%s]: Extract Deleted: %s";
+                size_t ed_len = strlen( ed_descr );
+                size_t ed_query_name_len = strlen( DATA_SYSTEM->queries[ i ].name );
+                size_t ed_dst_buf_len = system_name_len + ed_query_name_len + ed_len;
+                action_description = SAFECALLOC( ed_dst_buf_len + 1, sizeof( char ), __FILE__, __LINE__ );
+                snprintf( action_description, ed_dst_buf_len + 1, ed_descr, DATA_SYSTEM->name, DATA_SYSTEM->queries[ i ].name );
+                LCS_REPORT_send( &APP.lcs_report, action_description, DCT_START );
+                free( action_description ); action_description = NULL;
 
                 int ed_res = DB_CDC_ExtractDeleted(
                     &DATA_SYSTEM->queries[ i ].etl_config.extract,
@@ -280,11 +359,26 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
                     DATA_SYSTEM->staging_db ? ( void* )DATA_SYSTEM->staging_db : ( void* )&DATA_SYSTEM->dcpam_db,
                     log
                 );
+
+                action_description = SAFECALLOC( ed_dst_buf_len + 1, sizeof( char ), __FILE__, __LINE__ );
+                snprintf( action_description, ed_dst_buf_len + 1, ed_descr, DATA_SYSTEM->name, DATA_SYSTEM->queries[ i ].name );
+                LCS_REPORT_send( &APP.lcs_report, action_description, DCT_STOP );
+                free( action_description ); action_description = NULL;
+
                 if( ed_res == 0 ) {
                     LOG_print( log, "[%s] Fatal error: process exited with failure. %s processing is put on hold.\n", TIME_get_gmt(), DATA_SYSTEM->name );
                     DATA_SYSTEM->failure = 1;
                     continue;
                 }
+
+                char* em_descr = "[%s]: Extract Modified: %s";
+                size_t em_len = strlen( em_descr );
+                size_t em_query_name_len = strlen( DATA_SYSTEM->queries[ i ].name );
+                size_t em_dst_buf_len = system_name_len + em_query_name_len + ed_len;
+                action_description = SAFECALLOC( em_dst_buf_len + 1, sizeof( char ), __FILE__, __LINE__ );
+                snprintf( action_description, em_dst_buf_len + 1, em_descr, DATA_SYSTEM->name, DATA_SYSTEM->queries[ i ].name );
+                LCS_REPORT_send( &APP.lcs_report, action_description, DCT_START );
+                free( action_description ); action_description = NULL;
 
                 int em_res = DB_CDC_ExtractModified(
                     &DATA_SYSTEM->queries[ i ].etl_config.extract,
@@ -295,6 +389,12 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
                     DATA_SYSTEM->staging_db ? ( void* )DATA_SYSTEM->staging_db : ( void* )&DATA_SYSTEM->dcpam_db,
                     log
                 );
+
+                action_description = SAFECALLOC( em_dst_buf_len + 1, sizeof( char ), __FILE__, __LINE__ );
+                snprintf( action_description, em_dst_buf_len + 1, em_descr, DATA_SYSTEM->name, DATA_SYSTEM->queries[ i ].name );
+                LCS_REPORT_send( &APP.lcs_report, action_description, DCT_STOP );
+                free( action_description ); action_description = NULL;
+
                 if( em_res == 0 ) {
                     LOG_print( log, "[%s] Fatal error: process exited with failure. %s processing is put on hold.\n", TIME_get_gmt(), DATA_SYSTEM->name );
                     DATA_SYSTEM->failure = 1;
@@ -302,6 +402,11 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
                 }
             }
         }
+
+        action_description = SAFECALLOC( ex_dst_buf_len + 1, sizeof( char ), __FILE__, __LINE__ );
+        snprintf( action_description, ex_dst_buf_len + 1, ex_descr, DATA_SYSTEM->name, DATA_SYSTEM->queries[ i ].name );
+        LCS_REPORT_send( &APP.lcs_report, action_description, DCT_STOP );
+        free( action_description ); action_description = NULL;
     }
 
     else {
@@ -310,8 +415,26 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
                 ( DATA_SYSTEM->queries[ i ].mode == M_ETL && curr_etl_step == ETL_TRANSFORM ) ||
                 ( DATA_SYSTEM->queries[ i ].mode == M_ELT && curr_etl_step == ETL_LOAD )
             ) {
+                char* tr_descr = "[%s]: Transform";
+                size_t tr_len = strlen( tr_descr );
+                size_t tr_query_name_len = strlen( DATA_SYSTEM->queries[ i ].name );
+                size_t tr_dst_buf_len = system_name_len + tr_query_name_len + tr_len;
+                action_description = SAFECALLOC( tr_dst_buf_len + 1, sizeof( char ), __FILE__, __LINE__ );
+                snprintf( action_description, tr_dst_buf_len + 1, tr_descr, DATA_SYSTEM->name, DATA_SYSTEM->queries[ i ].name );
+                LCS_REPORT_send( &APP.lcs_report, action_description, DCT_START );
+                free( action_description ); action_description = NULL;
+
                 if( DATA_SYSTEM->queries[ i ].etl_config.transform ) {
                     LOG_print( log, "\t· [TRANSFORM] Query #%d: %s\n", i + 1, DATA_SYSTEM->queries[ i ].name );
+
+                    char* ti_descr = "[%s]: Transform Inserted: %s";
+                    size_t ti_len = strlen( ti_descr );
+                    size_t ti_query_name_len = strlen( DATA_SYSTEM->queries[ i ].name );
+                    size_t ti_dst_buf_len = system_name_len + ti_query_name_len + ti_len;
+                    action_description = SAFECALLOC( ti_dst_buf_len + 1, sizeof( char ), __FILE__, __LINE__ );
+                    snprintf( action_description, ti_dst_buf_len + 1, ti_descr, DATA_SYSTEM->name, DATA_SYSTEM->queries[ i ].name );
+                    LCS_REPORT_send( &APP.lcs_report, action_description, DCT_START );
+                    free( action_description ); action_description = NULL;
 
                     int ti_res = DB_CDC_TransformInserted(
                         DATA_SYSTEM->queries[ i ].etl_config.transform->inserted,
@@ -320,11 +443,26 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
                         &DATA_SYSTEM->system_db,
                         log
                     );
+
+                    action_description = SAFECALLOC( ti_dst_buf_len + 1, sizeof( char ), __FILE__, __LINE__ );
+                    snprintf( action_description, ti_dst_buf_len + 1, ti_descr, DATA_SYSTEM->name, DATA_SYSTEM->queries[ i ].name );
+                    LCS_REPORT_send( &APP.lcs_report, action_description, DCT_STOP );
+                    free( action_description ); action_description = NULL;
+
                     if( ti_res == 0 ) {
                         LOG_print( log, "[%s] Fatal error: process exited with failure. %s processing is put on hold.\n", TIME_get_gmt(), DATA_SYSTEM->name );
                         DATA_SYSTEM->failure = 1;
                         continue;
                     }
+
+                    char* td_descr = "[%s]: Transform Deleted: %s";
+                    size_t td_len = strlen( td_descr );
+                    size_t td_query_name_len = strlen( DATA_SYSTEM->queries[ i ].name );
+                    size_t td_dst_buf_len = system_name_len + td_query_name_len + td_len;
+                    action_description = SAFECALLOC( td_dst_buf_len + 1, sizeof( char ), __FILE__, __LINE__ );
+                    snprintf( action_description, td_dst_buf_len + 1, td_descr, DATA_SYSTEM->name, DATA_SYSTEM->queries[ i ].name );
+                    LCS_REPORT_send( &APP.lcs_report, action_description, DCT_START );
+                    free( action_description ); action_description = NULL;
 
                     int td_res = DB_CDC_TransformDeleted(
                         DATA_SYSTEM->queries[ i ].etl_config.transform->deleted,
@@ -333,11 +471,26 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
                         &DATA_SYSTEM->system_db,
                         log
                     );
+
+                    action_description = SAFECALLOC( td_dst_buf_len + 1, sizeof( char ), __FILE__, __LINE__ );
+                    snprintf( action_description, td_dst_buf_len + 1, td_descr, DATA_SYSTEM->name, DATA_SYSTEM->queries[ i ].name );
+                    LCS_REPORT_send( &APP.lcs_report, action_description, DCT_STOP );
+                    free( action_description ); action_description = NULL;
+
                     if( td_res == 0 ) {
                         LOG_print( log, "[%s] Fatal error: process exited with failure. %s processing is put on hold.\n", TIME_get_gmt(), DATA_SYSTEM->name );
                         DATA_SYSTEM->failure = 1;
                         continue;
                     }
+
+                    char* tm_descr = "[%s]: Transform Modified: %s";
+                    size_t tm_len = strlen( tm_descr );
+                    size_t tm_query_name_len = strlen( DATA_SYSTEM->queries[ i ].name );
+                    size_t tm_dst_buf_len = system_name_len + tm_query_name_len + tm_len;
+                    action_description = SAFECALLOC( tm_dst_buf_len + 1, sizeof( char ), __FILE__, __LINE__ );
+                    snprintf( action_description, tm_dst_buf_len + 1, tm_descr, DATA_SYSTEM->name, DATA_SYSTEM->queries[ i ].name );
+                    LCS_REPORT_send( &APP.lcs_report, action_description, DCT_START );
+                    free( action_description ); action_description = NULL;
 
                     int tm_res = DB_CDC_TransformModified(
                         DATA_SYSTEM->queries[ i ].etl_config.transform->modified,
@@ -346,17 +499,48 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
                         &DATA_SYSTEM->system_db,
                         log
                     );
+
+                    action_description = SAFECALLOC( tm_dst_buf_len + 1, sizeof( char ), __FILE__, __LINE__ );
+                    snprintf( action_description, tm_dst_buf_len + 1, tm_descr, DATA_SYSTEM->name, DATA_SYSTEM->queries[ i ].name );
+                    LCS_REPORT_send( &APP.lcs_report, action_description, DCT_STOP );
+                    free( action_description ); action_description = NULL;
+
                     if( tm_res == 0 ) {
                         LOG_print( log, "[%s] Fatal error: process exited with failure. %s processing is put on hold.\n", TIME_get_gmt(), DATA_SYSTEM->name );
                         DATA_SYSTEM->failure = 1;
                         continue;
                     }
                 }
+
+                action_description = SAFECALLOC( tr_dst_buf_len + 1, sizeof( char ), __FILE__, __LINE__ );
+                snprintf( action_description, tr_dst_buf_len + 1, tr_descr, DATA_SYSTEM->name, DATA_SYSTEM->queries[ i ].name );
+                LCS_REPORT_send( &APP.lcs_report, action_description, DCT_STOP );
+                free( action_description ); action_description = NULL;
+
             } else if( 
                 ( DATA_SYSTEM->queries[ i ].mode == M_ETL && curr_etl_step == ETL_LOAD ) ||
                 ( DATA_SYSTEM->queries[ i ].mode == M_ELT && curr_etl_step == ETL_TRANSFORM )
             ) {
+
+                char* lo_descr = "[%s]: Load";
+                size_t lo_len = strlen( lo_descr );
+                size_t lo_query_name_len = strlen( DATA_SYSTEM->queries[ i ].name );
+                size_t lo_dst_buf_len = system_name_len + lo_query_name_len + lo_len;
+                action_description = SAFECALLOC( lo_dst_buf_len + 1, sizeof( char ), __FILE__, __LINE__ );
+                snprintf( action_description, lo_dst_buf_len + 1, lo_descr, DATA_SYSTEM->name, DATA_SYSTEM->queries[ i ].name );
+                LCS_REPORT_send( &APP.lcs_report, action_description, DCT_START );
+                free( action_description ); action_description = NULL;
+
                 LOG_print( log, "\t· [LOAD] Query #%d: %s\n", i + 1, DATA_SYSTEM->queries[ i ].name );
+
+                char* li_descr = "[%s]: Load Inserted: %s";
+                size_t li_len = strlen( li_descr );
+                size_t li_query_name_len = strlen( DATA_SYSTEM->queries[ i ].name );
+                size_t li_dst_buf_len = system_name_len + li_query_name_len + li_len;
+                action_description = SAFECALLOC( li_dst_buf_len + 1, sizeof( char ), __FILE__, __LINE__ );
+                snprintf( action_description, li_dst_buf_len + 1, li_descr, DATA_SYSTEM->name, DATA_SYSTEM->queries[ i ].name );
+                LCS_REPORT_send( &APP.lcs_report, action_description, DCT_START );
+                free( action_description ); action_description = NULL;
 
                 int li_res = DB_CDC_LoadInserted(
                     &DATA_SYSTEM->queries[ i ].etl_config.load,
@@ -364,11 +548,26 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
                     &DATA_SYSTEM->dcpam_db,
                     log
                 );
+
+                action_description = SAFECALLOC( li_dst_buf_len + 1, sizeof( char ), __FILE__, __LINE__ );
+                snprintf( action_description, li_dst_buf_len + 1, li_descr, DATA_SYSTEM->name, DATA_SYSTEM->queries[ i ].name );
+                LCS_REPORT_send( &APP.lcs_report, action_description, DCT_STOP );
+                free( action_description ); action_description = NULL;
+
                 if( li_res == 0 ) {
                     LOG_print( log, "[%s] Fatal error: process exited with failure. %s processing is put on hold.\n", TIME_get_gmt(), DATA_SYSTEM->name );
                     DATA_SYSTEM->failure = 1;
                     continue;
                 }
+
+                char* ld_descr = "[%s]: Load Deleted: %s";
+                size_t ld_len = strlen( ld_descr );
+                size_t ld_query_name_len = strlen( DATA_SYSTEM->queries[ i ].name );
+                size_t ld_dst_buf_len = system_name_len + ld_query_name_len + ld_len;
+                action_description = SAFECALLOC( ld_dst_buf_len + 1, sizeof( char ), __FILE__, __LINE__ );
+                snprintf( action_description, ld_dst_buf_len + 1, ld_descr, DATA_SYSTEM->name, DATA_SYSTEM->queries[ i ].name );
+                LCS_REPORT_send( &APP.lcs_report, action_description, DCT_START );
+                free( action_description ); action_description = NULL;
 
                 int ld_res = DB_CDC_LoadDeleted(
                     &DATA_SYSTEM->queries[ i ].etl_config.load,
@@ -376,11 +575,26 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
                     &DATA_SYSTEM->dcpam_db,
                     log
                 );
+
+                action_description = SAFECALLOC( ld_dst_buf_len + 1, sizeof( char ), __FILE__, __LINE__ );
+                snprintf( action_description, ld_dst_buf_len + 1, ld_descr, DATA_SYSTEM->name, DATA_SYSTEM->queries[ i ].name );
+                LCS_REPORT_send( &APP.lcs_report, action_description, DCT_STOP );
+                free( action_description ); action_description = NULL;
+
                 if( ld_res == 0 ) {
                     LOG_print( log, "[%s] Fatal error: process exited with failure. %s processing is put on hold.\n", TIME_get_gmt(), DATA_SYSTEM->name );
                     DATA_SYSTEM->failure = 1;
                     continue;
                 }
+
+                char* lm_descr = "[%s]: Load Modified: %s";
+                size_t lm_len = strlen( lm_descr );
+                size_t lm_query_name_len = strlen( DATA_SYSTEM->queries[ i ].name );
+                size_t lm_dst_buf_len = system_name_len + lm_query_name_len + lm_len;
+                action_description = SAFECALLOC( lm_dst_buf_len + 1, sizeof( char ), __FILE__, __LINE__ );
+                snprintf( action_description, lm_dst_buf_len + 1, lm_descr, DATA_SYSTEM->name, DATA_SYSTEM->queries[ i ].name );
+                LCS_REPORT_send( &APP.lcs_report, action_description, DCT_START );
+                free( action_description ); action_description = NULL;
 
                 int lm_res = DB_CDC_LoadModified(
                     &DATA_SYSTEM->queries[ i ].etl_config.load,
@@ -388,17 +602,47 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
                     &DATA_SYSTEM->dcpam_db,
                     log
                 );
+
+                action_description = SAFECALLOC( lm_dst_buf_len + 1, sizeof( char ), __FILE__, __LINE__ );
+                snprintf( action_description, lm_dst_buf_len + 1, lm_descr, DATA_SYSTEM->name, DATA_SYSTEM->queries[ i ].name );
+                LCS_REPORT_send( &APP.lcs_report, action_description, DCT_STOP );
+                free( action_description ); action_description = NULL;
+
                 if( lm_res == 0 ) {
                     LOG_print( log, "[%s] Fatal error: process exited with failure. %s processing is put on hold.\n", TIME_get_gmt(), DATA_SYSTEM->name );
                     DATA_SYSTEM->failure = 1;
                     continue;
                 }
 
+                action_description = SAFECALLOC( lo_dst_buf_len + 1, sizeof( char ), __FILE__, __LINE__ );
+                snprintf( action_description, lo_dst_buf_len + 1, lo_descr, DATA_SYSTEM->name, DATA_SYSTEM->queries[ i ].name );
+                LCS_REPORT_send( &APP.lcs_report, action_description, DCT_STOP );
+                free( action_description ); action_description = NULL;
+
                 /* Run PostETL actions. */
+
+                char* post_etl_descr = "[%s]: PostETL Actions";
+                size_t post_len = strlen( post_etl_descr );
+                size_t post_dst_buf_len = system_name_len + post_len;
+                action_description = SAFECALLOC( post_dst_buf_len + 1, sizeof( char ), __FILE__, __LINE__ );
+                snprintf( action_description, post_dst_buf_len + 1, post_etl_descr, DATA_SYSTEM->name );
+                LCS_REPORT_send( &APP.lcs_report, action_description, DCT_START );
+                free( action_description ); action_description = NULL;
+
                 LOG_print( log, "[%s] Started run of PostETL Actions.\n", TIME_get_gmt() );
                 for( int j = 0; j < DATA_SYSTEM->queries_len; j++ ) {
                     if( DATA_SYSTEM->queries[ j ].etl_config.post_actions ) {
                         for( int k = 0; k < DATA_SYSTEM->queries[ j ].etl_config.post_actions_count; k++ ) {
+
+                            char* post_etl_descr_item = "[%s]: PostETL Action: %s";
+                            size_t len = strlen( post_etl_descr_item );
+                            size_t sql_len = strlen( DATA_SYSTEM->queries[ i ].etl_config.post_actions[ k ]->sql );
+                            size_t dst_buf_len = system_name_len + sql_len + len;
+                            action_description = SAFECALLOC( dst_buf_len + 1, sizeof( char ), __FILE__, __LINE__ );
+                            snprintf( action_description, dst_buf_len + 1, post_etl_descr_item, DATA_SYSTEM->name, DATA_SYSTEM->queries[ i ].etl_config.post_actions[ k ]->sql );
+                            LCS_REPORT_send( &APP.lcs_report, action_description, DCT_START );
+                            free( action_description ); action_description = NULL;
+
                             DB_exec(
                                 &DATA_SYSTEM->dcpam_db,
                                 DATA_SYSTEM->queries[ j ].etl_config.post_actions[ k ]->sql,
@@ -406,10 +650,20 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
                                 NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL,
                                 log
                             );
+
+                            action_description = SAFECALLOC( dst_buf_len + 1, sizeof( char ), __FILE__, __LINE__ );
+                            snprintf( action_description, dst_buf_len + 1, post_etl_descr_item, DATA_SYSTEM->name, DATA_SYSTEM->queries[ i ].etl_config.pre_actions[ k ]->sql );
+                            LCS_REPORT_send( &APP.lcs_report, action_description, DCT_STOP );
+                            free( action_description ); action_description = NULL;
                         }
                     }
                 }
                 LOG_print( log, "[%s] Finished run of PostETL Actions.\n", TIME_get_gmt() );
+
+                action_description = SAFECALLOC( post_dst_buf_len + 1, sizeof( char ), __FILE__, __LINE__ );
+                snprintf( action_description, post_dst_buf_len + 1, post_etl_descr, DATA_SYSTEM->name );
+                LCS_REPORT_send( &APP.lcs_report, action_description, DCT_STOP );
+                free( action_description ); action_description = NULL;
             }
         }
     }

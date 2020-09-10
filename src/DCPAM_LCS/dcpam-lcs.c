@@ -266,7 +266,7 @@ void DCPAM_LCS_listener( COMMUNICATION_SESSION *communication_session, CONNECTED
                 if( component ) {
 
                     COMPONENT_ACTION_TYPE tmp_action_type = DCT_START;
-                    if( strcmp( action_type->valuestring, "stop" ) ) {
+                    if( strcmp( action_type->valuestring, "stop" ) == 0 ) {
                         tmp_action_type = DCT_STOP;
                     }
 
