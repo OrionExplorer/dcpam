@@ -55,7 +55,7 @@ DCPAM is responsible for copying data from one or more sources into a destinatio
 Data in the Warehouse can be accessed directly at the database level with any system for analytics, such as Power BI, Tableau, Redash and others.
 For complex architectures with more than one DCPAM Database node, DCPAM Warehouse Data Server is dedicated data access point. For more details, please refer to [DCPAM WDS documentation](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_WDS/README.md).
 
-All of the DCPAM Data Warehouse operations are monitored by DCPAM Live Component State. See the [documentation](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_WDS/README.md) to read more on this subject.
+All of the DCPAM Data Warehouse operations are monitored by DCPAM Live Component State. See the [documentation](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_LCS/README.md) to read more on this subject.
 
 ## Data Warehouse with DCPAM
 As DCPAM is extremely modular and highly scalabe, it can serve both as Data Warehouse and number of dedicated Data Marts.
