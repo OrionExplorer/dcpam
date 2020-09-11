@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <signal.h>
 #include <string.h>
+#include <pthread.h>
 #include "../include/utils/log.h"
 #include "../include/core/schema.h"
 #include "../include/third-party/cJSON.h"
@@ -12,6 +13,7 @@
 #include "../include/core/db/system.h"
 #include "../include/core/cache.h"
 #include "../include/core/network/socket_io.h"
+#include "../include/core/lcs_report.h"
 
 #define WDS_RESPONSE_ERROR( communication_session, client ) SOCKET_send( communication_session, client, "{\"success\":false,\"data\":[],\"length\":0}", 38 );
 
@@ -19,6 +21,7 @@
 
 char                    app_path[ MAX_PATH_LENGTH + 1 ];
 LOG_OBJECT              dcpam_wds_log;
+LOG_OBJECT              dcpam_wds_lcs_log;
 extern int              app_terminated = 0;
 
 extern DATABASE_SYSTEM  DATABASE_SYSTEMS[ MAX_DATA_SYSTEMS ];
@@ -35,6 +38,7 @@ void app_terminate( void ) {
         printf( "\r" );
         DCPAM_WDS_free_configuration();
         LOG_print( &dcpam_wds_log, "[%s] DCPAM WDS graceful shutdown finished.\n", TIME_get_gmt() );
+        LOG_free( &dcpam_wds_lcs_log );
     }
 
     return;
@@ -42,18 +46,23 @@ void app_terminate( void ) {
 
 void DCPAM_WDS_free_configuration( void ) {
 
+    LCS_REPORT_free( &P_APP.lcs_report );
+
     for( int i = 0; i < P_APP.CACHE_len; i++ ) {
         LOG_print( &dcpam_wds_log, "[%s] Removing cache %d of %d...\n", TIME_get_gmt(), i + 1, P_APP.CACHE_len );
         DB_CACHE_free( P_APP.CACHE[ i ], &dcpam_wds_log );
         free( P_APP.CACHE[ i ] ); P_APP.CACHE[ i ] = NULL;
     }
     free( P_APP.CACHE ); P_APP.CACHE = NULL;
+    P_APP.CACHE_len = 0;
 
     for( int i = 0; i < P_APP.ALLOWED_HOSTS_len; i++ ) {
         free( P_APP.ALLOWED_HOSTS_[ i ]->ip ); P_APP.ALLOWED_HOSTS_[ i ]->ip = NULL;
         free( P_APP.ALLOWED_HOSTS_[ i ]->api_key ); P_APP.ALLOWED_HOSTS_[ i ]->api_key = NULL;
+        free( P_APP.ALLOWED_HOSTS_[ i ] ); P_APP.ALLOWED_HOSTS_[ i ] = NULL;
     }
     free( P_APP.ALLOWED_HOSTS_ ); P_APP.ALLOWED_HOSTS_ = NULL;
+    P_APP.ALLOWED_HOSTS_len = 0;
 
     for( int i = 0; i < P_APP.DB_len; i++ ) {
         DATABASE_SYSTEM_DB_free( P_APP.DB[ i ], &dcpam_wds_log );
@@ -86,6 +95,9 @@ int DCPAM_WDS_load_configuration( const char* filename ) {
     cJSON* cfg_app = NULL;
     cJSON* cfg_app_version = NULL;
     cJSON* cfg_app_name = NULL;
+    cJSON* cfg_lcs = NULL;
+    cJSON* cfg_lcs_address = NULL;
+    cJSON* cfg_lcs_port = NULL;
     cJSON* cfg_app_max_memory = NULL;
     cJSON* cfg_app_network = NULL;
     cJSON* cfg_app_network_port = NULL;
@@ -471,6 +483,41 @@ int DCPAM_WDS_load_configuration( const char* filename ) {
                 return FALSE;
             }
 
+            cfg_lcs = cJSON_GetObjectItem( config_json, "LCS" );
+            if( cfg_lcs ) {
+
+                //P_APP.lcs_report.port = P_APP.network_port;
+
+                cfg_lcs_address = cJSON_GetObjectItem( cfg_lcs, "address" );
+
+                if( cfg_lcs_address ) {
+                    size_t address_len = strlen( cfg_lcs_address->valuestring );
+                    P_APP.lcs_report.address = SAFECALLOC( address_len + 1, sizeof( char ), __FILE__, __LINE__ );
+                    snprintf( P_APP.lcs_report.address, address_len + 1, cfg_lcs_address->valuestring );
+                    if( LCS_REPORT_init( &P_APP.lcs_report, P_APP.lcs_report.address, P_APP.name, P_APP.version, &dcpam_wds_log ) == 0 ) {
+                        LOG_print( &dcpam_wds_log, "ERROR: unable to connect to Live Component State host at %s.\n", P_APP.lcs_report.address );
+                        free( P_APP.lcs_report.address ); P_APP.lcs_report.address = NULL;
+                        free( P_APP.lcs_report.conn ); P_APP.lcs_report.conn = NULL;
+                        cJSON_Delete( config_json );
+                        free( config_string ); config_string = NULL;
+                        return FALSE;
+                    } else {
+                        LOG_print( &dcpam_wds_log, "[%s] Initialized LCS report module.\n", TIME_get_gmt() );
+                    }
+                } else {
+                    LOG_print( &dcpam_wds_log, "ERROR: \"LCS.address\" key not found.\n " );
+                    cJSON_Delete( config_json );
+                    free( config_string ); config_string = NULL;
+                    return FALSE;
+                }
+
+            } else {
+                LOG_print( &dcpam_wds_log, "ERROR: \"LCS\" key not found.\n " );
+                cJSON_Delete( config_json );
+                free( config_string ); config_string = NULL;
+                return FALSE;
+            }
+
             cJSON_Delete( config_json );
         }
         free( config_string );
@@ -552,7 +599,19 @@ void DCPAM_WDS_get_data( const char *sql, const char *db, char **dst_json ) {
     DB_QUERY *cached_result = NULL;
 
     if( sql && db ) {
-        LOG_print( &dcpam_wds_log, "[%s] DCPAM_WDS_get_data( %s, %s )...", TIME_get_gmt(), sql, db );
+        LOG_print( &dcpam_wds_log, "[%s] DCPAM_WDS_get_data( %s, %s )...\n", TIME_get_gmt(), sql, db );
+
+        char *action_description = NULL;
+        char* gd_descr = "[DCPAM_WDS] Get data from %s database: %s";
+        size_t gd_len = strlen( gd_descr );
+        size_t gd_db_len = strlen( db );
+        size_t gd_sql_len = strlen( sql );
+        size_t gd_dst_buf_len = gd_len + gd_sql_len + gd_db_len;
+        action_description = SAFECALLOC( gd_dst_buf_len + 1, sizeof( char ), __FILE__, __LINE__ );
+        snprintf( action_description, gd_dst_buf_len + 1, gd_descr, db, sql );
+        LCS_REPORT_send( &P_APP.lcs_report, action_description, DCT_START );
+        free( action_description ); action_description = NULL;
+
         DB_CACHE_get( sql, &cached_result );
 
         if( cached_result ) {
@@ -560,7 +619,7 @@ void DCPAM_WDS_get_data( const char *sql, const char *db, char **dst_json ) {
             cJSON* all_data = cJSON_CreateArray();
             cJSON* response = cJSON_CreateObject();
 
-            LOG_print( &dcpam_wds_log, "ok. Found records: %d.\n", cached_result->row_count );
+            LOG_print( &dcpam_wds_log, "[%s] DCPAM_WDS_get_data( %s, %s ): Found records: %d.\n", TIME_get_gmt(), sql, db, cached_result->row_count );
             for( int i = 0; i < cached_result->row_count; i++ ) {
                 record = cJSON_CreateObject();
                 for( int j = 0; j < cached_result->field_count; j++ ) {
@@ -575,9 +634,10 @@ void DCPAM_WDS_get_data( const char *sql, const char *db, char **dst_json ) {
             cJSON_AddNumberToObject( response, "length", cached_result->row_count );
 
             char* _res = cJSON_Print( response );
-            *dst_json = SAFECALLOC( strlen( _res + 1 ), sizeof( char ), __FILE__, __LINE__ );
+            *dst_json = SAFECALLOC( strlen( _res ) + 1, sizeof( char ), __FILE__, __LINE__ );
             strncpy( *dst_json, _res, strlen( _res ) );
             cJSON_Delete( response );
+            free( _res );
         } else {
             LOG_print( &dcpam_wds_log, "requested data is not cached.\n" );
 
@@ -608,6 +668,7 @@ void DCPAM_WDS_get_data( const char *sql, const char *db, char **dst_json ) {
                             DCPAM_WDS_get_data( sql, db, &( *dst_json ) );
                             P_APP.CACHE_len--;
                             DB_CACHE_free( P_APP.CACHE[ P_APP.CACHE_len ], &dcpam_wds_log );
+                            free( P_APP.CACHE[ P_APP.CACHE_len ] );
                         }
                     }
                 }
@@ -616,6 +677,11 @@ void DCPAM_WDS_get_data( const char *sql, const char *db, char **dst_json ) {
                 LOG_print( &dcpam_wds_log, "[%s] Error: database \"%s\" not found!\n", TIME_get_gmt(), db );
             }
         }
+
+        action_description = SAFECALLOC( gd_dst_buf_len + 1, sizeof( char ), __FILE__, __LINE__ );
+        snprintf( action_description, gd_dst_buf_len + 1, gd_descr, db, sql );
+        LCS_REPORT_send( &P_APP.lcs_report, action_description, DCT_STOP );
+        free( action_description ); action_description = NULL;
     } else {
         LOG_print( &dcpam_wds_log, "[%s] DCPAM_WDS_get_data error: not all parameters are valid!\n", TIME_get_gmt() );
     }
@@ -631,22 +697,33 @@ void DCPAM_WDS_query( COMMUNICATION_SESSION *communication_session, CONNECTED_CL
         request = SAFECALLOC( communication_session->data_length + 1, sizeof( char ), __FILE__, __LINE__ );
         strncpy( request, communication_session->content, communication_session->data_length );
 
-        LOG_print( &dcpam_wds_log, "[%s] Received request (%ld): %s\n", TIME_get_gmt(), communication_session->data_length, request );
-
         json_request = cJSON_Parse( request );
         if( json_request ) {
             char* ip = inet_ntoa( communication_session->address.sin_addr );
             cJSON *sql = NULL;
             cJSON *db = NULL;
             cJSON *key = NULL;
+            cJSON *msg = NULL;
 
-            LOG_print( &dcpam_wds_log, "[%s] Request is valid JSON.\n", TIME_get_gmt() );
+            msg = cJSON_GetObjectItem( json_request, "msg" );
+            if( msg ) {
+
+                if( strcmp( msg->valuestring, "ping" ) == 0 ) {
+                    const char* pong_msg = "{\"msg\": \"pong\"}";
+                    SOCKET_send( communication_session, client, pong_msg, strlen( pong_msg ) );
+                    SOCKET_disconnect_client( communication_session );
+                    cJSON_Delete( json_request );
+                    free( request ); request = NULL;
+                    return;
+                }
+            }
 
             key = cJSON_GetObjectItem( json_request, "key" );
             if( key == NULL ) {
                 LOG_print( &dcpam_wds_log, "[%s] Error: no KEY in request is found.\n", TIME_get_gmt() );
                 WDS_RESPONSE_ERROR( communication_session, client );
                 cJSON_Delete( json_request );
+                free( request ); request = NULL;
                 return;
             } else {
 
@@ -656,6 +733,7 @@ void DCPAM_WDS_query( COMMUNICATION_SESSION *communication_session, CONNECTED_CL
                             LOG_print( &dcpam_wds_log, "[%s] Error: KEY in request is invalid.\n", TIME_get_gmt() );
                             WDS_RESPONSE_ERROR( communication_session, client );
                             cJSON_Delete( json_request );
+                            free( request ); request = NULL;
                             return;
                         }
                     }
@@ -670,6 +748,7 @@ void DCPAM_WDS_query( COMMUNICATION_SESSION *communication_session, CONNECTED_CL
                 LOG_print( &dcpam_wds_log, "[%s] Error: no SQL in request is found.\n", TIME_get_gmt() );
                 WDS_RESPONSE_ERROR( communication_session, client );
                 cJSON_Delete( json_request );
+                free( request ); request = NULL;
                 return;
             }
 
@@ -678,6 +757,7 @@ void DCPAM_WDS_query( COMMUNICATION_SESSION *communication_session, CONNECTED_CL
                 LOG_print( &dcpam_wds_log, "[%s] Error: no DB name in request is found.\n", TIME_get_gmt() );
                 WDS_RESPONSE_ERROR( communication_session, client );
                 cJSON_Delete( json_request );
+                free( request ); request = NULL;
                 return;
             }
 
@@ -693,17 +773,50 @@ void DCPAM_WDS_query( COMMUNICATION_SESSION *communication_session, CONNECTED_CL
 
                 if( json_response ) {
                     SOCKET_send( communication_session, client, json_response, strlen( json_response ) );
+                    SOCKET_disconnect_client( communication_session );
+                    free( json_response ); json_response = NULL;
                 } else {
                     WDS_RESPONSE_ERROR( communication_session, client );
                 }
             }
+            cJSON_Delete( json_request );
+            free( request ); request = NULL;
         } else {
             LOG_print( &dcpam_wds_log, "[%s] Error: request is not valid JSON.\n", TIME_get_gmt() );
             WDS_RESPONSE_ERROR( communication_session, client );
+            free( request ); request = NULL;
             return;
         }
     }
 
+}
+
+void* DCPAM_WDS_worker( void* LCS_worker_data ) {
+    LOG_init( &dcpam_wds_lcs_log, "dcpam-wds-lcs", 65535 );
+
+    int total_hosts = P_APP.ALLOWED_HOSTS_len + 1;
+
+    char** allowed_hosts = SAFEMALLOC( ( total_hosts ) * sizeof * allowed_hosts, __FILE__, __LINE__ );
+
+    for( int i = 0; i < P_APP.ALLOWED_HOSTS_len; i++ ) {
+        size_t host_len = strlen( P_APP.ALLOWED_HOSTS_[ i ]->ip );
+        allowed_hosts[ i ] = SAFECALLOC( host_len + 1, sizeof( char ), __FILE__, __LINE__ );
+        strncpy( allowed_hosts[ i ], P_APP.ALLOWED_HOSTS_[ i ]->ip, host_len );
+    }
+
+    size_t lcs_host_len = strlen( P_APP.lcs_report.lcs_host );
+    allowed_hosts[ P_APP.ALLOWED_HOSTS_len ] = SAFECALLOC( lcs_host_len + 1, sizeof( char ), __FILE__, __LINE__ );
+    strncpy( allowed_hosts[ P_APP.ALLOWED_HOSTS_len ], P_APP.lcs_report.lcs_host, lcs_host_len );
+    
+    spc exec_script = ( spc )&DCPAM_WDS_query;
+    SOCKET_main( &exec_script, P_APP.network_port, ( const char** )&( *allowed_hosts ), total_hosts, &dcpam_wds_lcs_log );
+
+    for( int i = 0; i < total_hosts; i++ ) {
+        free( allowed_hosts[ i ] ); allowed_hosts[ i ] = NULL;
+    }
+    free( allowed_hosts ); allowed_hosts = NULL;
+
+    pthread_exit( NULL );
 }
 
 int main( int argc, char** argv ) {
@@ -734,18 +847,14 @@ int main( int argc, char** argv ) {
         LOG_print( &dcpam_wds_log, "[%s] DCPAM Warehouse Data Server configuration loaded.\n", TIME_get_gmt() );
 
         if( DCPAM_WDS_init_cache() == 1 ) {
+            pthread_t   lcs_worker_pid;
             LOG_print( &dcpam_wds_log, "[%s] Cache initialization finished.\n", TIME_get_gmt() );
 
-            spc exec_script = ( spc )&DCPAM_WDS_query;
-            char** allowed_hosts_ip = SAFEMALLOC( P_APP.ALLOWED_HOSTS_len * sizeof * P_APP.ALLOWED_HOSTS_, __FILE__, __LINE__ );
-
-            for( int i = 0; i < P_APP.ALLOWED_HOSTS_len; i++ ) {
-                size_t str_len = strlen( P_APP.ALLOWED_HOSTS_[ i ]->ip );
-                allowed_hosts_ip[ i ] = SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
-                snprintf( allowed_hosts_ip[ i ], str_len + 1, P_APP.ALLOWED_HOSTS_[ i ]->ip );
+            if( pthread_create( &lcs_worker_pid, NULL, DCPAM_WDS_worker, NULL ) == 0 ) {
+                pthread_join( lcs_worker_pid, NULL );
+            } else {
+                LOG_print( &dcpam_wds_log, "[%s] Fatal error: unable to start thread for DCPAM LCS reporting.\n", TIME_get_gmt() );
             }
-
-            SOCKET_main( &exec_script, P_APP.network_port, (const char **)&(*allowed_hosts_ip), P_APP.ALLOWED_HOSTS_len, &dcpam_wds_log );
 
         } else {
             LOG_print( &dcpam_wds_log, "[%s] Warning: cache initialization failed.\n", TIME_get_gmt() );

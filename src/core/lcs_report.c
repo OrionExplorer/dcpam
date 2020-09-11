@@ -34,14 +34,6 @@ int LCS_REPORT_init( LCS_REPORT *connection, const char *address, const char *co
 
         connection->lcs_port = port;
         return 1;
-        /*if( NET_CONN_init( connection->conn, host, port ) == 1 ) {
-            LOG_print( log, "[%s] LCS_REPORT_init finished.\n", TIME_get_gmt() );
-            return 1;
-        } else {
-            connection->conn->log = NULL;
-            free( connection->conn ); connection->conn = NULL;
-            return 0;
-        }*/
     } else {
         LOG_print( log, "[%s] LCS_REPORT_init failed: address %s is invalid.\n", TIME_get_gmt(), address );
         return 0;
@@ -65,10 +57,11 @@ int LCS_REPORT_free( LCS_REPORT* connection ) {
         if( connection->active == 1 ) {
             
             free( connection->address ); connection->address = NULL;
-
-            NET_CONN_disconnect( connection->conn );
-            connection->conn->log = NULL;
-            free( connection->conn ); connection->conn = NULL;
+            if( connection->conn ) {
+                NET_CONN_disconnect( connection->conn );
+                connection->conn->log = NULL;
+                free( connection->conn ); connection->conn = NULL;
+            }
 
             connection->active = 0;
         }

@@ -114,6 +114,7 @@ typedef struct P_DCPAM_APP {
     char                    **ALLOWED_HOSTS;
     DCPAM_ALLOWED_HOST      **ALLOWED_HOSTS_;
     int                     ALLOWED_HOSTS_len;
+    LCS_REPORT              lcs_report;
 } P_DCPAM_APP;
 
 /*
@@ -138,6 +139,8 @@ typedef struct L_DCPAM_APP {
     int                     network_port;
     DCPAM_COMPONENT         **COMPONENTS;
     int                     COMPONENTS_len;
+    DCPAM_ALLOWED_HOST      **ALLOWED_HOSTS_;
+    int                     ALLOWED_HOSTS_len;
 } L_DCPAM_APP;
 
 #endif

@@ -5,7 +5,12 @@
 		"network" : {
 			"port" : 7771,
 			"required_components" : [
-				{"name" : "DCPAM ETL Node #1", "version" : "0.1", "ip" : "127.0.0.1", "port" : 8888}
+				{"name" : "DCPAM ETL Node #1", "version" : "0.1", "ip" : "127.0.0.1", "port" : 8888},
+				{"name" : "DCPAM Warehouse Data Server", "version" : "0.1", "ip" : "127.0.0.1", "port" : 8080}
+			],
+			"allowed_hosts" : [
+				{"ip" : "192.168.0.1", "key" : "asdqwe123"},
+				{"ip" : "127.0.0.1", "key" : "zxcasd321"}
 			]
 		}
 	}

@@ -90,5 +90,8 @@
 				"sql" : "SELECT customer, system_accounted_time, created, system FROM accounted_time WHERE customer = '%s' AND is_valid = 1"
 			}]
 		}]
+	},
+	"LCS" : {
+		"address" : "dcpam://127.0.0.1:7771"
 	}
 }

@@ -107,13 +107,22 @@ void SOCKET_prepare( LOG_OBJECT *log ) {
         LOG_print( log, "setsockopt( TCP_NODELAY ) error: %d.\n", wsa_result );
     }
 
+//#ifdef __LINUX__
     if( fcntl( socket_server, F_SETFL, fcntl(socket_server, F_GETFL, 0) | O_NONBLOCK ) == SOCKET_ERROR ) {
         wsa_result = WSAGetLastError();
         LOG_print( log, "ioctlsocket error: %d.\n", wsa_result );
         SOCKET_stop();
         exit( EXIT_FAILURE );
     }
-
+//#else
+//    unsigned long non_block = 1;
+//     if( fcntl( socket_server, FIONBIO, &non_block ) == SOCKET_ERROR ) {
+//        wsa_result = WSAGetLastError();
+//        LOG_print( log, "ioctlsocket error: %d.\n", wsa_result );
+//        SOCKET_stop();
+//        exit( EXIT_FAILURE );
+//    }
+//#endif
     if( listen( socket_server, MAX_CLIENTS ) == SOCKET_ERROR ) {
         wsa_result = WSAGetLastError();
         LOG_print( log, "listen error: %d.\n", wsa_result );
@@ -187,6 +196,7 @@ void SOCKET_run( spc *socket_process_callback, const char **allowed_hosts, const
                     SOCKET_process( i, socket_process_callback ? socket_process_callback : NULL, log );
                 }
             }
+            Sleep( 1 );
         }
     }
 }
