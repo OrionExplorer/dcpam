@@ -650,12 +650,27 @@ void DCPAM_WDS_get_data( const char *sql, const char *db, char **dst_json ) {
                     P_APP.CACHE[ P_APP.CACHE_len ] = SAFEMALLOC( sizeof( D_CACHE ), __FILE__, __LINE__ );
                     P_APP.CACHE[ P_APP.CACHE_len ]->query = NULL;
 
+                    char* cache_descr = "[DCPAM_WDS] Cache query \"%s\". Database: %s";
+                    size_t cache_len = strlen( cache_descr );
+                    size_t cache_db_len = strlen( db );
+                    size_t cache_sql_len = strlen( sql );
+                    size_t cache_dst_buf_len = cache_len + cache_sql_len + cache_db_len;
+                    action_description = SAFECALLOC( cache_dst_buf_len + 1, sizeof( char ), __FILE__, __LINE__ );
+                    snprintf( action_description, cache_dst_buf_len + 1, cache_descr, sql, db );
+                    LCS_REPORT_send( &P_APP.lcs_report, action_description, DCT_START );
+                    free( action_description ); action_description = NULL;
+
                     int cache_res = DB_CACHE_init(
                         P_APP.CACHE[ P_APP.CACHE_len ],
                         src_db,
                         sql,
                         &dcpam_wds_log
                     );
+
+                    action_description = SAFECALLOC( cache_dst_buf_len + 1, sizeof( char ), __FILE__, __LINE__ );
+                    snprintf( action_description, cache_dst_buf_len + 1, cache_descr, sql, db );
+                    LCS_REPORT_send( &P_APP.lcs_report, action_description, DCT_STOP );
+                    free( action_description ); action_description = NULL;
 
                     if( cache_res == 1 ) { /* OK */
                         P_APP.CACHE_len++;
