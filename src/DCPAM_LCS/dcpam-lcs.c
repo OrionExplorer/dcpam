@@ -167,27 +167,6 @@ int DCPAM_LCS_load_configuration( const char* filename ) {
                             }
                         }
 
-                        /* DCPAM Component registration failed - release allocated memory. */
-                        //if( reg_result == 0 ) {
-                        //    /* Free partly-registered Component. */
-                        //    for( int i = 0; i < registered_components_count; i++ ) {
-                        //        LCS_COMPONENT_free( L_APP.COMPONENTS[ i ] );
-                        //    }
-                        //    /* Free unused, but allocated array. */
-                        //    for( int i = 0; i < L_APP.COMPONENTS_len; i++ ) {
-                        //        free( L_APP.COMPONENTS[ i ] ); L_APP.COMPONENTS[ i ] = NULL;
-                        //    }
-                        //    free( L_APP.COMPONENTS ); L_APP.COMPONENTS = NULL;
-
-                        //    L_APP.COMPONENTS_len = 0;
-
-                        //    /* Free DCPAM LCS configuration. */
-                        //    DCPAM_LCS_free_configuration( &dcpam_lcs_log );
-
-                        //    cJSON_Delete( config_json );
-                        //    free( config_string ); config_string = NULL;
-                        //    return FALSE;
-                        //}
                     } else {
                         L_APP.COMPONENTS_len = 0;
                         L_APP.COMPONENTS = NULL;
@@ -348,8 +327,20 @@ int main( int argc, char** argv ) {
         LOG_print( &dcpam_lcs_log, "[%s] LCS_WORKER_init...", TIME_get_gmt() );
 
         if( pthread_create( &lcs_worker_pid, NULL, LCS_WORKER_watcher, NULL ) == 0 ) {
+            char    **allowed_hosts = SAFEMALLOC( L_APP.COMPONENTS_len * sizeof * allowed_hosts, __FILE__, __LINE__ );
+            for( int i = 0; i < L_APP.COMPONENTS_len; i++ ) {
+                size_t host_len = strlen( L_APP.COMPONENTS[ i ]->ip );
+                allowed_hosts[ i ] = SAFECALLOC( host_len + 1, sizeof( char ), __FILE__, __LINE__ );
+                snprintf( allowed_hosts[ i ], host_len + 1, L_APP.COMPONENTS[ i ]->ip );
+            }
             spc exec_script = ( spc )&DCPAM_LCS_listener;
-            SOCKET_main( &exec_script, L_APP.network_port, NULL, 0, &dcpam_lcs_log );
+            SOCKET_main( &exec_script, L_APP.network_port, ( const char** )&( *allowed_hosts ), L_APP.COMPONENTS_len, &dcpam_lcs_log );
+
+            for( int i = 0; i < L_APP.COMPONENTS_len; i++ ) {
+                free( allowed_hosts[ i ] ); allowed_hosts[ i ] = NULL;
+            }
+            free( allowed_hosts ); allowed_hosts = NULL;
+
             pthread_join( lcs_worker_pid, NULL );
         } else {
             return 0;

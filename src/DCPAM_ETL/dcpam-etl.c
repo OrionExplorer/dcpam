@@ -1625,8 +1625,16 @@ void DCPAM_ETL_LCS_listener( COMMUNICATION_SESSION* communication_session, CONNE
 void* DCPAM_LCS_worker( void* LCS_worker_data ) {
     LOG_init( &dcpam_etl_lcs_log, "dcpam-etl-lcs", 65535 );
 
+    char **allowed_hosts = SAFEMALLOC( sizeof * allowed_hosts, __FILE__, __LINE__);
+    size_t lcs_host_len = strlen( APP.lcs_report.lcs_host );
+    allowed_hosts[ 0 ] = SAFECALLOC( lcs_host_len + 1, sizeof( char ), __FILE__, __LINE__ );
+    snprintf( allowed_hosts[ 0 ], lcs_host_len + 1, APP.lcs_report.lcs_host );
+
     spc exec_script = ( spc )&DCPAM_ETL_LCS_listener;
-    SOCKET_main( &exec_script, APP.lcs_report.port, NULL, 0, &dcpam_etl_lcs_log );
+    SOCKET_main( &exec_script, APP.lcs_report.port, ( const char** )&( *allowed_hosts ), 1, &dcpam_etl_lcs_log );
+
+    free( allowed_hosts[ 0 ] ); allowed_hosts[ 0 ] = NULL;
+    free( allowed_hosts ); allowed_hosts = NULL;
     pthread_exit( NULL );
 }
 
