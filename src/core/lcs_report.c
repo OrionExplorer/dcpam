@@ -16,6 +16,7 @@ int LCS_REPORT_init( LCS_REPORT *connection, const char *address, const char *co
 
     connection->conn = SAFEMALLOC( sizeof( NET_CONN ), __FILE__, __LINE__ );
     connection->conn->log = log;
+    connection->conn->connected = 0;
 
     size_t component_name_len = strlen( component_name );
     connection->component = SAFECALLOC( component_name_len + 1, sizeof( char ), __FILE__, __LINE__ );
@@ -31,7 +32,6 @@ int LCS_REPORT_init( LCS_REPORT *connection, const char *address, const char *co
         size_t host_len = strlen( host );
         connection->lcs_host = SAFECALLOC( host_len + 1, sizeof( char ), __FILE__, __LINE__ );
         strncpy( connection->lcs_host, host, host_len );
-
         connection->lcs_port = port;
         return 1;
     } else {
@@ -44,7 +44,7 @@ int LCS_REPORT_init( LCS_REPORT *connection, const char *address, const char *co
 
 int LCS_REPORT_free( LCS_REPORT* connection ) {
 
-    if( connection && connection->active == 1 ) {
+    if( connection ) {
         LOG_print( connection->log, "[%s] LCS_REPORT_free( %s )...\n", TIME_get_gmt(), connection->address );
 
         free( connection->address ); connection->address = NULL;
@@ -54,16 +54,14 @@ int LCS_REPORT_free( LCS_REPORT* connection ) {
 
         connection->lcs_port = 0;
 
-        if( connection->active == 1 ) {
-            
-            free( connection->address ); connection->address = NULL;
-            if( connection->conn ) {
-                NET_CONN_disconnect( connection->conn );
-                connection->conn->log = NULL;
-                free( connection->conn ); connection->conn = NULL;
-            }
-
+        if( connection->active == 1 && connection->conn && connection->conn->connected == 1 ) {
+            NET_CONN_disconnect( connection->conn );
             connection->active = 0;
+        }
+
+        if( connection->conn != NULL ) {
+            connection->conn->log = NULL;
+            free( connection->conn ); connection->conn = NULL;
         }
     }
 }

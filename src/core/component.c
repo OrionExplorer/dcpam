@@ -130,6 +130,7 @@ int LCS_COMPONENT_check( DCPAM_COMPONENT* dst, LOG_OBJECT *log ) {
                     }
                 }
             }
+            free( conn->host ); conn->host = NULL;
             conn->log = NULL;
             free( conn ); conn = NULL;
         }

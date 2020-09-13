@@ -150,7 +150,7 @@
 	* [ ] Value is two-piece string: size and unit (eg. `"max_memory" : "100MB"` which stands for 100 MB of maximum cache size).
 	* [ ] Supported units are "KB", MB" and "GB".
 * [ ] DCPAM Components reports to DCPAM LCS:
-	* [ ] DCPAM ETL
+	* [x] DCPAM ETL
 		* [x] Implement LCS_REPORT
 		* [x] Report PreETL Actions
 		* [x] Report Flat File preload
@@ -167,10 +167,13 @@
 		* [ ] Get current memory usage (cached records)
 		* [ ] Get connected users
 		* [x] Internal ping response
-	* [ ] DCPAM RDP
-		* [ ] Implement LCS_REPORT
-		* [ ] Report script execution
-		* [ ] Internal ping response
+	* [x] DCPAM RDP
+		* [x] Implement LCS_REPORT
+		* [x] Report script execution
+		* [x] Internal ping response
+* [ ] DCPAM LCS reports:
+	* [ ] Get Components states
+	* [ ] Get Component actions
 * [ ] DCPAM ETL must not know about P_DCPAM_APP and DPCAM WDS about DCPAM_APP.
 * [ ] ETL process interval can vary between system[].queries[].
 * [ ] Move DCPAM ETL configuration to database:

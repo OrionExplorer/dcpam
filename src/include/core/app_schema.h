@@ -127,6 +127,7 @@ typedef struct R_DCPAM_APP {
     char                    **ALLOWED_HOSTS;
     DCPAM_ALLOWED_HOST      **ALLOWED_HOSTS_;
     int                     ALLOWED_HOSTS_len;
+    LCS_REPORT              lcs_report; 
 } R_DCPAM_APP;
 
 

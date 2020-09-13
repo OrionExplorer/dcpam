@@ -38,7 +38,6 @@ void app_terminate( void ) {
         printf( "\r" );
         DCPAM_WDS_free_configuration();
         LOG_print( &dcpam_wds_log, "[%s] DCPAM WDS graceful shutdown finished.\n", TIME_get_gmt() );
-        LOG_free( &dcpam_wds_lcs_log );
     }
 
     return;
@@ -875,12 +874,13 @@ int main( int argc, char** argv ) {
             LOG_print( &dcpam_wds_log, "[%s] Warning: cache initialization failed.\n", TIME_get_gmt() );
         }
 
-        DCPAM_WDS_free_configuration();
+        //DCPAM_WDS_free_configuration();
     }
 
     LOG_print( &dcpam_wds_log, "[%s] DCPAM Warehouse Data Server finished.\n", TIME_get_gmt() );
 
     LOG_free( &dcpam_wds_log );
+    LOG_free( &dcpam_wds_lcs_log );
 
     return 0;
 }
