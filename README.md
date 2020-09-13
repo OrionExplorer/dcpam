@@ -92,7 +92,9 @@ As DCPAM is extremely modular and highly scalabe, it can serve both as Data Ware
 * Data sources:
   * [Databases](#data-sources)
   * [Flat Files](#flat-files)
-* Data Warehouse monitoring
+* Data Warehouse monitoring:
+  * DCPAM ETL
+  * DCPAM RDP
 * Access DCPAM Database with any system for analytics (Power BI, Tableau, Redash etc.).
 
 ### Elements yet to be covered by DCPAM
@@ -116,11 +118,6 @@ As DCPAM is extremely modular and highly scalabe, it can serve both as Data Ware
   * Configure ETL processes.
   * Manage DCPAM BI users.
 * DCPAM LCS (Live Component State):
-  * Current running ETL processes:
-    * which one?
-    * what system?
-    * for how long?
-    * which node?
   * Current running WDS queries:
     * total size of cached data
     * which users run queries?
