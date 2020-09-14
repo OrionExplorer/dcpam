@@ -71,7 +71,7 @@ void DCPAM_script_exec( COMMUNICATION_SESSION *communication_session, CONNECTED_
         LOG_print( &dcpam_rdp_log, "[%s] Executing local script %s...\n", TIME_get_gmt(), command );
 
         char* action_description = NULL;
-        char* rdp_descr = "[%s %d] Executing command (client: %s, key: %s): %s";
+        char* rdp_descr = "[%s %s] Executing command (client: %s, key: %s): %s";
         size_t rdp_len = strlen( rdp_descr );
         size_t rdp_name_len = strlen( R_APP.name ) + 1 + strlen( R_APP.version );
         size_t client_len = strlen( ip );
