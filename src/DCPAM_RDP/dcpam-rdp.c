@@ -77,7 +77,7 @@ void DCPAM_script_exec( COMMUNICATION_SESSION *communication_session, CONNECTED_
         size_t client_len = strlen( ip );
         size_t key_len = strlen( key );
         size_t command_len = strlen( command );
-        size_t rdp_dst_buf_len = rdp_len + rdp_name_len + client_len + key_len;
+        size_t rdp_dst_buf_len = rdp_len + rdp_name_len + client_len + key_len + command_len;
         action_description = SAFECALLOC( rdp_dst_buf_len + 1, sizeof( char ), __FILE__, __LINE__ );
         snprintf( action_description, rdp_dst_buf_len + 1, rdp_descr, R_APP.name, R_APP.version, ip, key, command );
         LCS_REPORT_send( &R_APP.lcs_report, action_description, DCT_START );
