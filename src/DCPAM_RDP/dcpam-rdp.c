@@ -57,7 +57,7 @@ void DCPAM_script_exec( COMMUNICATION_SESSION *communication_session, CONNECTED_
         for( int i = 0; i < R_APP.ALLOWED_HOSTS_len; i++ ) {
             if( strcmp( ip, R_APP.ALLOWED_HOSTS_[ i ]->ip ) == 0 ) {
                 if( strcmp( key, R_APP.ALLOWED_HOSTS_[ i ]->api_key ) != 0 ) {
-                    LOG_print( &dcpam_rdp_log, "[%s] Error: KEY in request is invalid.\n", TIME_get_gmt() );
+                    LOG_print( &dcpam_rdp_log, "[%s] Error: \"key\" in request is invalid.\n", TIME_get_gmt() );
                     SOCKET_send( communication_session, client, "-1", 2 );
                     SOCKET_disconnect_client( communication_session );
                     return;

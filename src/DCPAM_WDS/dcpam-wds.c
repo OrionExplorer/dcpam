@@ -734,7 +734,7 @@ void DCPAM_WDS_query( COMMUNICATION_SESSION *communication_session, CONNECTED_CL
 
             key = cJSON_GetObjectItem( json_request, "key" );
             if( key == NULL ) {
-                LOG_print( &dcpam_wds_log, "[%s] Error: no KEY in request is found.\n", TIME_get_gmt() );
+                LOG_print( &dcpam_wds_log, "[%s] Error: no \"key\" in request is found.\n", TIME_get_gmt() );
                 WDS_RESPONSE_ERROR( communication_session, client );
                 cJSON_Delete( json_request );
                 free( request ); request = NULL;
@@ -744,7 +744,7 @@ void DCPAM_WDS_query( COMMUNICATION_SESSION *communication_session, CONNECTED_CL
                 for( int i = 0; i < P_APP.ALLOWED_HOSTS_len; i++ ) {
                     if( strcmp( ip, P_APP.ALLOWED_HOSTS_[ i ]->ip ) == 0 ) {
                         if( strcmp( key->valuestring, P_APP.ALLOWED_HOSTS_[ i ]->api_key ) != 0 ) {
-                            LOG_print( &dcpam_wds_log, "[%s] Error: KEY in request is invalid.\n", TIME_get_gmt() );
+                            LOG_print( &dcpam_wds_log, "[%s] Error: \"key\" in request is invalid.\n", TIME_get_gmt() );
                             WDS_RESPONSE_ERROR( communication_session, client );
                             cJSON_Delete( json_request );
                             free( request ); request = NULL;
