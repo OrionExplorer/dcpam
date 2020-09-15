@@ -25,8 +25,11 @@ Therefore **DCPAM Live Component State is the only module to assure Data Warehou
 ## Technology
 ### Architecture Overview
 * Server and client modules:
-	* Server: dedicated for DCPAM Components reports (DCPAM Component -> DCPAM LCS).
-	* Client: for sending internal ping requests to all of the DCPAM Components (DCPAM LCS -> DCPAM Component).
+	* Server:
+		* dedicated for reports sent by DCPAM Components (DCPAM Component -> DCPAM LCS).
+		* dedicated for backends of client applications (ie. DCPAM Monitoring) for data presentation
+	* Client:
+		* for sending internal ping requests to all of the DCPAM Components (DCPAM LCS -> DCPAM Component).
 
 ### Configuration
 For DCPAM LCS `lcs_config.json` is the main configuration file. It defines:

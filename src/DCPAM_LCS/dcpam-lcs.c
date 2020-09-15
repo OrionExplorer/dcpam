@@ -318,6 +318,7 @@ void DCPAM_LCS_listener( COMMUNICATION_SESSION *communication_session, CONNECTED
                                 LOG_print( &dcpam_lcs_log, "[%s] Error: \"key\" in request is invalid.\n", TIME_get_gmt() );
                                 SOCKET_send( communication_session, client, "-1", 2 );
                                 SOCKET_disconnect_client( communication_session );
+                                cJSON_Delete( json_request );
                                 free( request ); request = NULL;
                                 return;
                             }
@@ -398,6 +399,12 @@ void DCPAM_LCS_listener( COMMUNICATION_SESSION *communication_session, CONNECTED
                         cJSON_Delete( response );
                         free( request ); request = NULL;
                         free( _res );
+                        return;
+                    } else {
+                        LOG_print( &dcpam_lcs_log, "[%s] Error: request is invalid.\n", TIME_get_gmt() );
+                        WDS_RESPONSE_ERROR( communication_session, client );
+                        cJSON_Delete( json_request );
+                        free( request ); request = NULL;
                         return;
                     }
 

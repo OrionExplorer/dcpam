@@ -165,7 +165,7 @@
 		* [x] Report every request
 		* [x] Report data cache
 		* [x] Get current memory usage (cached records) `{"report": "memory", "key" : "zxcasd321"}`
-		* ~~[ ] Get connected users~~
+		* [ ] ~~Get connected users~~
 		* [x] Internal ping response
 	* [x] DCPAM RDP
 		* [x] Implement LCS_REPORT
