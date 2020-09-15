@@ -43,6 +43,86 @@ int LCS_COMPONENT_ACTION_register( DCPAM_COMPONENT* dst, const char* description
     return 0;
 }
 
+cJSON *LCS_COMPONENT_get_states( DCPAM_COMPONENT** components, int components_len ) {
+    cJSON* all_data = cJSON_CreateArray();
+    cJSON* record = NULL;
+    cJSON* response = cJSON_CreateObject();
+
+    for( int i = 0; i < components_len; i++ ) {
+        record = cJSON_CreateObject();
+        cJSON_AddStringToObject( record, "name", components[ i ]->name );
+        cJSON_AddStringToObject( record, "version", components[ i ]->version );
+        cJSON_AddStringToObject( record, "ip", components[ i ]->ip );
+        cJSON_AddNumberToObject( record, "port", components[ i ]->port );
+        if( components[ i ]->active == 1 ) {
+            cJSON_AddTrueToObject( record, "active" );
+        } else {
+            cJSON_AddFalseToObject( record, "active" );
+        }
+
+        cJSON_AddItemToArray( all_data, record );
+    }
+
+    cJSON_AddItemToObject( response, "data", all_data );
+    cJSON_AddBoolToObject( response, "success", 1 );
+    cJSON_AddNumberToObject( response, "length", components_len );
+
+    return response;
+}
+
+cJSON *LCS_COMPONENT_get_actions( DCPAM_COMPONENT** components, int components_len, const char* component_name ) {
+    cJSON* all_data = cJSON_CreateArray();
+    cJSON* record = NULL;
+    cJSON* response = cJSON_CreateObject();
+
+    for( int i = 0; i < components_len; i++ ) {
+        if( strcmp( components[ i ]->name, component_name ) == 0 ) {
+
+            for( int j = 0; j < components[ i ]->actions_len; j++ ) {
+                record = cJSON_CreateObject();
+                cJSON_AddStringToObject( record, "description", components[ i ]->actions[ j ]->description );
+                cJSON_AddStringToObject( record, "timestamp", components[ i ]->actions[ j ]->timestamp );
+
+                if( components[ i ]->actions[ j ]->type == DCT_START ) {
+                    cJSON_AddStringToObject( record, "type", "start" );
+                } else {
+                    cJSON_AddStringToObject( record, "type", "stop" );
+                }
+
+                cJSON_AddItemToArray( all_data, record );
+            }
+
+            cJSON_AddItemToObject( response, "data", all_data );
+            cJSON_AddBoolToObject( response, "success", 1 );
+            cJSON_AddNumberToObject( response, "length", components[ i ]->actions_len );
+
+            break;
+        }
+    }
+
+    return response;
+}
+
+cJSON *LCS_COMPONENT_process_report( cJSON* json_request, DCPAM_COMPONENT** components, int components_len, LOG_OBJECT *log ) {
+    cJSON* report = cJSON_GetObjectItem( json_request, "report" );
+    if( report ) {
+
+        if( strcmp( report->valuestring, "component_state" ) == 0 ) {
+            return LCS_COMPONENT_get_states( components, components_len );
+        } else if( strcmp( report->valuestring, "component_actions" ) == 0 ) {
+            cJSON* name = cJSON_GetObjectItem( json_request, "name" );
+            if( name ) {
+                return LCS_COMPONENT_get_actions( components, components_len, name->valuestring );
+            } else {
+                LOG_print( log, "[%s] Error: \"name\" is missing.\n", TIME_get_gmt() );
+                cJSON_Delete( json_request );
+                return NULL;
+            }
+        }
+    }
+}
+
+
 int LCS_COMPONENT_register( DCPAM_COMPONENT* dst, const char* name, const char* version, const char* ip, const int port, LOG_OBJECT* log ) {
 
     const char* component_registration_message = "Component registration.\0";

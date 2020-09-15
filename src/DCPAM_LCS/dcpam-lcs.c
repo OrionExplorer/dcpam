@@ -327,71 +327,8 @@ void DCPAM_LCS_listener( COMMUNICATION_SESSION *communication_session, CONNECTED
 
                     LOG_print( &dcpam_lcs_log, "[%s] Access granted for client %s with key %s.\n", TIME_get_gmt(), ip, key->valuestring );
 
-                    cJSON *report = cJSON_GetObjectItem( json_request, "report" );
-                    if( report ) {
-
-                        cJSON *all_data = cJSON_CreateArray();
-                        cJSON *record = NULL;
-                        cJSON *response = cJSON_CreateObject();
-
-                        if( strcmp( report->valuestring, "component_state" ) == 0 ) {
-
-                            for( int i = 0; i < L_APP.COMPONENTS_len; i++ ) {
-                                record = cJSON_CreateObject();
-                                cJSON_AddStringToObject( record, "name", L_APP.COMPONENTS[ i ]->name );
-                                cJSON_AddStringToObject( record, "version", L_APP.COMPONENTS[ i ]->version );
-                                cJSON_AddStringToObject( record, "ip", L_APP.COMPONENTS[ i ]->ip );
-                                cJSON_AddNumberToObject( record, "port", L_APP.COMPONENTS[ i ]->port );
-                                if( L_APP.COMPONENTS[ i ]->active == 1 ) {
-                                    cJSON_AddTrueToObject( record, "active" );
-                                } else {
-                                    cJSON_AddFalseToObject( record, "active" );
-                                }
-
-                                cJSON_AddItemToArray( all_data, record );
-                            }
-
-                            cJSON_AddItemToObject( response, "data", all_data );
-                            cJSON_AddBoolToObject( response, "success", 1 );
-                            cJSON_AddNumberToObject( response, "length", L_APP.COMPONENTS_len );
-
-                        } else if( strcmp( report->valuestring, "component_actions" ) == 0 ) {
-                            cJSON *name = cJSON_GetObjectItem( json_request, "name" );
-                            if( name ) {
-                                for( int i = 0; i < L_APP.COMPONENTS_len; i++ ) {
-                                    if( strcmp( L_APP.COMPONENTS[ i ]->name, name->valuestring ) == 0 ) {
-
-                                        for( int j = 0; j < L_APP.COMPONENTS[ i ]->actions_len; j++ ) {
-                                            record = cJSON_CreateObject();
-                                            cJSON_AddStringToObject( record, "description", L_APP.COMPONENTS[ i ]->actions[ j ]->description );
-                                            cJSON_AddStringToObject( record, "timestamp", L_APP.COMPONENTS[ i ]->actions[ j ]->timestamp );
-
-                                            if( L_APP.COMPONENTS[ i ]->actions[ j ]->type == DCT_START ) {
-                                                cJSON_AddStringToObject( record, "type", "start" );
-                                            } else {
-                                                cJSON_AddStringToObject( record, "type", "stop" );
-                                            }
-
-                                            cJSON_AddItemToArray( all_data, record );
-                                        }
-
-                                        cJSON_AddItemToObject( response, "data", all_data );
-                                        cJSON_AddBoolToObject( response, "success", 1 );
-                                        cJSON_AddNumberToObject( response, "length", L_APP.COMPONENTS[ i ]->actions_len );
-
-                                        break;
-                                    }
-
-                                }
-                            } else {
-                                LOG_print( &dcpam_lcs_log, "[%s] Error: \"name\" is missing.\n", TIME_get_gmt() );
-                                WDS_RESPONSE_ERROR( communication_session, client );
-                                cJSON_Delete( json_request );
-                                free( request ); request = NULL;
-                                return;
-                            }
-                        }
-
+                    cJSON *response = LCS_COMPONENT_process_report( json_request, L_APP.COMPONENTS, L_APP.COMPONENTS_len, &dcpam_lcs_log );//cJSON_GetObjectItem( json_request, "report" );
+                    if( response ) {
                         char* _res = cJSON_Print( response );
                         SOCKET_send( communication_session, client, _res, strlen( _res ) );
                         SOCKET_disconnect_client( communication_session );
