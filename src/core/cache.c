@@ -9,6 +9,12 @@
 
 extern P_DCPAM_APP      P_APP;
 
+char* DB_CACHE_get_usage_str( void ) {
+    char *dst = SAFECALLOC( 64, sizeof( char ), __FILE__, __LINE__ );
+    snprintf( dst, 64, "%ld/%ld KB", P_APP.CACHE_size / 1024, P_APP.CACHE_MAX_size );
+    return dst;
+}
+
 static inline void _DB_CACHE_show_usage( LOG_OBJECT *log ) {
     LOG_print( log, "[%s] Total cached data: %ld/%ld KB.\n", TIME_get_gmt(), P_APP.CACHE_size / 1024, P_APP.CACHE_MAX_size );
 }

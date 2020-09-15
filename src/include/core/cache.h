@@ -15,5 +15,6 @@ int DB_CACHE_init( D_CACHE *dst, DATABASE_SYSTEM_DB *db, const char *sql, LOG_OB
 void DB_CACHE_free( D_CACHE* dst, LOG_OBJECT *log );
 void DB_CACHE_get( const char* sql, DB_QUERY** dst );
 void DB_CACHE_print( D_CACHE *dst, LOG_OBJECT *log );
+char* DB_CACHE_get_usage_str( void );
 
 #endif

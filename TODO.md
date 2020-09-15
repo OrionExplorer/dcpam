@@ -160,12 +160,12 @@
 		* [x] Report Load process
 		* [x] Report PostETL Actions
 		* [x] Internal ping response
-	* [ ] DCPAM WDS
+	* [x] DCPAM WDS
 		* [x] Implement LCS_REPORT
 		* [x] Report every request
 		* [x] Report data cache
-		* [ ] Get current memory usage (cached records)
-		* [ ] Get connected users
+		* [x] Get current memory usage (cached records)
+		* ~~[ ] Get connected users~~
 		* [x] Internal ping response
 	* [x] DCPAM RDP
 		* [x] Implement LCS_REPORT

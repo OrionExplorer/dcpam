@@ -718,10 +718,10 @@ void DCPAM_WDS_query( COMMUNICATION_SESSION *communication_session, CONNECTED_CL
             cJSON *db = NULL;
             cJSON *key = NULL;
             cJSON *msg = NULL;
+            cJSON *report = NULL;
 
             msg = cJSON_GetObjectItem( json_request, "msg" );
             if( msg ) {
-
                 if( strcmp( msg->valuestring, "ping" ) == 0 ) {
                     const char* pong_msg = "{\"msg\": \"pong\"}";
                     SOCKET_send( communication_session, client, pong_msg, strlen( pong_msg ) );
@@ -736,6 +736,7 @@ void DCPAM_WDS_query( COMMUNICATION_SESSION *communication_session, CONNECTED_CL
             if( key == NULL ) {
                 LOG_print( &dcpam_wds_log, "[%s] Error: no \"key\" in request is found.\n", TIME_get_gmt() );
                 WDS_RESPONSE_ERROR( communication_session, client );
+                SOCKET_disconnect_client( communication_session );
                 cJSON_Delete( json_request );
                 free( request ); request = NULL;
                 return;
@@ -746,6 +747,7 @@ void DCPAM_WDS_query( COMMUNICATION_SESSION *communication_session, CONNECTED_CL
                         if( strcmp( key->valuestring, P_APP.ALLOWED_HOSTS_[ i ]->api_key ) != 0 ) {
                             LOG_print( &dcpam_wds_log, "[%s] Error: \"key\" in request is invalid.\n", TIME_get_gmt() );
                             WDS_RESPONSE_ERROR( communication_session, client );
+                            SOCKET_disconnect_client( communication_session );
                             cJSON_Delete( json_request );
                             free( request ); request = NULL;
                             return;
@@ -757,10 +759,31 @@ void DCPAM_WDS_query( COMMUNICATION_SESSION *communication_session, CONNECTED_CL
 
             LOG_print( &dcpam_wds_log, "[%s] Access granted for client %s with key %s.\n", TIME_get_gmt(), ip, key->valuestring );
 
+            report = cJSON_GetObjectItem( json_request, "request" );
+            if( report ) {
+                if( strcmp( report->valuestring, "memory" ) == 0 ) {
+                    char* mem_size = DB_CACHE_get_usage_str();
+                    size_t mem_size_len = strlen( mem_size );
+                    char* response_tmp = "{\"memory\": \"%s\"}";
+                    size_t response_tmp_len = strlen( response_tmp );
+                    size_t dst_buf_len = response_tmp_len + mem_size_len + 1;
+                    char* dst_buf = SAFECALLOC( dst_buf_len, sizeof( char ), __FILE__, __LINE__ );
+                    snprintf( dst_buf, dst_buf_len, response_tmp, mem_size );
+                    free( mem_size ); mem_size = NULL;
+                    SOCKET_send( communication_session, client, dst_buf, dst_buf_len );
+                    SOCKET_disconnect_client( communication_session );
+                    free( dst_buf ); dst_buf = NULL;
+                    cJSON_Delete( json_request );
+                    free( request ); request = NULL;
+                    return;
+                }
+            }
+
             sql = cJSON_GetObjectItem( json_request, "sql" );
             if( sql == NULL) {
                 LOG_print( &dcpam_wds_log, "[%s] Error: no SQL in request is found.\n", TIME_get_gmt() );
                 WDS_RESPONSE_ERROR( communication_session, client );
+                SOCKET_disconnect_client( communication_session );
                 cJSON_Delete( json_request );
                 free( request ); request = NULL;
                 return;
@@ -770,6 +793,7 @@ void DCPAM_WDS_query( COMMUNICATION_SESSION *communication_session, CONNECTED_CL
             if( db  == NULL ) {
                 LOG_print( &dcpam_wds_log, "[%s] Error: no DB name in request is found.\n", TIME_get_gmt() );
                 WDS_RESPONSE_ERROR( communication_session, client );
+                SOCKET_disconnect_client( communication_session );
                 cJSON_Delete( json_request );
                 free( request ); request = NULL;
                 return;
@@ -798,6 +822,7 @@ void DCPAM_WDS_query( COMMUNICATION_SESSION *communication_session, CONNECTED_CL
         } else {
             LOG_print( &dcpam_wds_log, "[%s] Error: request is not valid JSON.\n", TIME_get_gmt() );
             WDS_RESPONSE_ERROR( communication_session, client );
+            SOCKET_disconnect_client( communication_session );
             free( request ); request = NULL;
             return;
         }
