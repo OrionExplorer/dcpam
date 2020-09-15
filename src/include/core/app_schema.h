@@ -37,10 +37,8 @@ typedef enum COMPONENT_ACTION_TYPE {
 
 typedef struct COMPONENT_ACTION {
     char                    *description;               /* Action description */
-    char                    start_timestamp[ 20 ];      /* Action started */
-    char                    stop_timestamp[ 20 ];       /* Action finished */
+    char                    timestamp[ 20 ];            /* Action started */
     COMPONENT_ACTION_TYPE   type;                       /* Action type */
-    COMPONENT_ACTION_RESULT success;                    /* Action result */
 } COMPONENT_ACTION;
 
 

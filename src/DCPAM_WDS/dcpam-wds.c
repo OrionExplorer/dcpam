@@ -759,7 +759,7 @@ void DCPAM_WDS_query( COMMUNICATION_SESSION *communication_session, CONNECTED_CL
 
             LOG_print( &dcpam_wds_log, "[%s] Access granted for client %s with key %s.\n", TIME_get_gmt(), ip, key->valuestring );
 
-            report = cJSON_GetObjectItem( json_request, "request" );
+            report = cJSON_GetObjectItem( json_request, "report" );
             if( report ) {
                 if( strcmp( report->valuestring, "memory" ) == 0 ) {
                     char* mem_size = DB_CACHE_get_usage_str();

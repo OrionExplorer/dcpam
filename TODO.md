@@ -149,7 +149,7 @@
 * [ ] Parameter `max_memory` for DCPAM WDS must be slightly more user-friendly:
 	* [ ] Value is two-piece string: size and unit (eg. `"max_memory" : "100MB"` which stands for 100 MB of maximum cache size).
 	* [ ] Supported units are "KB", MB" and "GB".
-* [ ] DCPAM Components reports to DCPAM LCS:
+* [x] DCPAM Components reports to DCPAM LCS:
 	* [x] DCPAM ETL
 		* [x] Implement LCS_REPORT
 		* [x] Report PreETL Actions
@@ -164,16 +164,16 @@
 		* [x] Implement LCS_REPORT
 		* [x] Report every request
 		* [x] Report data cache
-		* [x] Get current memory usage (cached records)
+		* [x] Get current memory usage (cached records) `{"report": "memory", "key" : "zxcasd321"}`
 		* ~~[ ] Get connected users~~
 		* [x] Internal ping response
 	* [x] DCPAM RDP
 		* [x] Implement LCS_REPORT
 		* [x] Report script execution
 		* [x] Internal ping response
-* [ ] DCPAM LCS reports:
-	* [ ] Get Components states
-	* [ ] Get Component actions
+* [x] DCPAM LCS reports:
+	* [x] Get Components states `{"report": "component_state", "key" : "zxcasd321"}`
+	* [x] Get Component actions `{"report": "component_actions", "name" : "DCPAM Remote Data Processor", "key" : "zxcasd321"}`
 * [ ] DCPAM ETL must not know about P_DCPAM_APP and DPCAM WDS about DCPAM_APP.
 * [ ] ETL process interval can vary between system[].queries[].
 * [ ] Move DCPAM ETL configuration to database:

@@ -24,11 +24,7 @@ int LCS_COMPONENT_ACTION_register( DCPAM_COMPONENT* dst, const char* description
 
             dst->actions[ dst->actions_len ]->type = action_type;
 
-            if( action_type == DCT_START ) {
-                strncpy( dst->actions[ dst->actions_len ]->start_timestamp, TIME_get_gmt(), 20 );
-            } else {
-                strncpy( dst->actions[ dst->actions_len ]->stop_timestamp, TIME_get_gmt(), 20 );
-            }
+            strncpy( dst->actions[ dst->actions_len ]->timestamp, TIME_get_gmt(), 20 );
 
             dst->actions_len++;
 
@@ -79,10 +75,9 @@ int LCS_COMPONENT_register( DCPAM_COMPONENT* dst, const char* name, const char* 
         dst->actions[ 0 ]->description = SAFECALLOC( crm_len + 1, sizeof( char ), __FILE__, __LINE__ );
         strncpy( dst->actions[ 0 ]->description, component_registration_message, crm_len );
 
-        strncpy( dst->actions[ 0 ]->start_timestamp, TIME_get_gmt(), 20 );
-        strncpy( dst->actions[ 0 ]->stop_timestamp, TIME_get_gmt(), 20 );
+        strncpy( dst->actions[ 0 ]->timestamp, TIME_get_gmt(), 20 );
 
-        dst->actions[ 0 ]->success = DCR_SUCCESS;
+        dst->actions[ 0 ]->type = DCT_START;
 
         if( LCS_COMPONENT_check( dst, log ) == 1 ) {
             LOG_print( log, "[%s] LCS_COMPONENT_register finished successfully.\n", TIME_get_gmt() );
@@ -144,9 +139,7 @@ int LCS_COMPONENT_free( DCPAM_COMPONENT* src ) {
     if( src ) {
         for( int i = 0; i < src->actions_len; i++ ) {
             free( src->actions[ i ]->description ); src->actions[ i ]->description = NULL;
-            memset( src->actions[ i ]->start_timestamp, '\0', 20 );
-            memset( src->actions[ i ]->stop_timestamp, '\0', 20 );
-            src->actions[ i ]->success = DCR_FAILURE;
+            memset( src->actions[ i ]->timestamp, '\0', 20 );
             free( src->actions[ i ] );
         }
         free( src->actions ); src->actions = NULL;
