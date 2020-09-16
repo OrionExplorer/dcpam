@@ -173,6 +173,22 @@
 		"enabled" : 0,
 		"name" : "OTRS-History-Data-FILE-source",
 
+		"api_comment#00" : "##################################################################################################",
+		"api_comment#01" : "# API section is dedicated for definition of the remote data downloader.",
+		"api_comment#02" : "##################################################################################################",
+		"API" : {
+				"url" : "http://127.25.118.191:80/otrs/time_accounting_data/?result_type=json",
+				"headers" : [
+					{"AuthInfo" : "asdqwe123"}
+				],
+				"types" : [
+					{"application/json" : "JSON"},
+					{"text/csv" : "CSV", "delimiter" : ";"},
+					{"text/csv" : "TSV" },
+					{"text/psv" : "PSV" }
+				]
+		},
+
 		"file_comment#00" : "##################################################################################################",
 		"file_comment#01" : "# FILE section is dedicated for schema definition of the flat files loader.",
 		"file_comment#02" : "# The \"name\", \"columns\" and \"sql\" keys are required.",
@@ -183,7 +199,8 @@
 		"file_comment#07" : "# The same \"DB\" is later used as real source for DCPAM.",
 		"file_comment#08" : "# This is work in progress with support for local CSV files only.",
 		"file_comment#09" : "# Remote files are going to be supported with battery-http-server.",
-		"file_comment#10" : "##################################################################################################",
+		"file_comment#10" : "# FILE is not compatibile with API.",
+		"file_comment#11" : "##################################################################################################",
 		"FILE" : {
 			"csv_name" : "/tmp/otrs_time_accounting_data.csv",
 			"csv_remote_name" : "http://172.25.118.191:80/otrs_time_accounting_data.csv",

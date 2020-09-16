@@ -141,6 +141,10 @@
 * [x] Download remote flat files on the fly:
 	* [x] Minimal client-side HTTP implementation.
 	* [x] Function to download and return a FILE pointer.
+* [ ] Process data fetched from API:
+	* [ ] Possibility to configure additional HTTP headers (authentication)
+	* [ ] Check Content-Type and adjust parsing function (JSON or CSV/TSV/PSV)
+* [ ] HTTPS support
 * [x] Major DCPAM log rebuild for clean parallel execution and logging:
 	* [x] Each processed source has dedicated log file.
 	* [x] Init log files during `etl_config.json` load.
