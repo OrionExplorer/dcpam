@@ -141,10 +141,6 @@
 * [x] Download remote flat files on the fly:
 	* [x] Minimal client-side HTTP implementation.
 	* [x] Function to download and return a FILE pointer.
-* [ ] Process data fetched from API:
-	* [ ] Possibility to configure additional HTTP headers (authentication)
-	* [ ] Check Content-Type and adjust parsing function (JSON or CSV/TSV/PSV)
-* [ ] HTTPS support
 * [x] Major DCPAM log rebuild for clean parallel execution and logging:
 	* [x] Each processed source has dedicated log file.
 	* [x] Init log files during `etl_config.json` load.
@@ -178,6 +174,19 @@
 * [x] DCPAM LCS reports:
 	* [x] Get Components states `{"report": "component_state", "key" : "zxcasd321"}`
 	* [x] Get Component actions `{"report": "component_actions", "name" : "DCPAM Remote Data Processor", "key" : "zxcasd321"}`
+* [ ] Process data fetched from API:
+	* [ ] Possibility to configure additional HTTP headers (authentication)
+	* [ ] Check Content-Type and adjust parsing function (JSON or CSV/TSV/PSV)
+* [ ] HTTPS support
+* [ ] Docker images
+	* [ ] DCPAM ETL
+		* [ ] Dockerfile with mapping to `etl_config.json`
+	* [ ] DCPAM RDP
+		* [ ] Dockerfile with mapping to `rdp_config.json`
+	* [ ] DCPAM WDS
+		* [ ] Dockerfile with mapping to `wds_config.json`
+	* [ ] DCPAM LCS
+		* [ ] Dockerfile with mapping to `lcs_config.json`
 * [ ] DCPAM ETL must not know about P_DCPAM_APP and DPCAM WDS about DCPAM_APP.
 * [ ] ETL process interval can vary between system[].queries[].
 * [ ] Move DCPAM ETL configuration to database:
@@ -197,3 +206,4 @@
 	* [x] URL
 	* [x] JSON
 	* [ ] LDAP
+	* [ ] API
