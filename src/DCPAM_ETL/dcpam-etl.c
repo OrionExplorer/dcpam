@@ -1675,9 +1675,9 @@ int main( int argc, char** argv ) {
         } else {
             LOG_print( &dcpam_etl_log, "[%s] Fatal error: unable to start thread for DCPAM LCS reporting.\n", TIME_get_gmt() );
         }
-    }
 
-    DCPAM_free_configuration();
+        DCPAM_free_configuration();
+    }
 
     LOG_free( &dcpam_etl_log );
 
