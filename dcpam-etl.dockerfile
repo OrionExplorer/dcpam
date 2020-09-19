@@ -10,6 +10,7 @@ RUN apt-get update\
  "unixodbc-dev"\
  "alien"\
  "wget"\
+ && apt-get clean \
  && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /tmp
@@ -26,4 +27,4 @@ COPY src/ /dcpam/src/
 COPY makefile.etl /dcpam/
 WORKDIR /dcpam/
 RUN make -f makefile.etl
-RUN rm *.o
+RUN rm ./*.o
