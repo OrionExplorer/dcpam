@@ -11,7 +11,9 @@ CFLAGS=-std=c11 -D_XOPEN_SOURCE=600 -fexpensive-optimizations -Wshadow -Winit-se
 ORACLE_DEP= -I/usr/include/oracle/19.6/client64/ -L/usr/lib/oracle/19.6/client64/lib/
 LIBS=-lm -lpthread -lpq -lodbc -lmariadbclient $(ORACLE_DEP) -ldl -lclntsh
 
-all: dcpam-etl
+
+all: dcpam-wds
+
 
 db.o: src/db/db.c
 	$(CC) -c src/db/db.c $(CFLAGS)
@@ -34,29 +36,14 @@ oracle.o: src/db/oracle.c
 sqlite.o: src/db/sqlite.c
 	$(CC) -c src/db/sqlite.c $(CFLAGS)
 
-dcpam-etl.o: src/DCPAM_ETL/dcpam-etl.c
-	$(CC) -c src/DCPAM_ETL/dcpam-etl.c $(CFLAGS) $(ORACLE_DEP)
+dcpam-wds.o: src/DCPAM_WDS/dcpam-wds.c
+	$(CC) -c src/DCPAM_WDS/dcpam-wds.c $(CFLAGS) $(ORACLE_DEP)
 
 log.o: src/utils/log.c
 	$(CC) -c src/utils/log.c $(CFLAGS)
 
-worker.o: src/core/db/worker.c
-	$(CC) -c src/core/db/worker.c $(CFLAGS) $(ORACLE_DEP)
-
 system.o: src/core/db/system.c
 	$(CC) -c src/core/db/system.c $(CFLAGS) $(ORACLE_DEP)
-
-extract.o: src/core/db/etl/extract.c
-	$(CC) -c src/core/db/etl/extract.c $(CFLAGS) $(ORACLE_DEP)
-
-stage.o: src/core/db/etl/stage.c
-	$(CC) -c src/core/db/etl/stage.c $(CFLAGS) $(ORACLE_DEP)
-
-transform.o: src/core/db/etl/transform.c
-	$(CC) -c src/core/db/etl/transform.c $(CFLAGS) $(ORACLE_DEP)
-
-load.o: src/core/db/etl/load.c
-	$(CC) -c src/core/db/etl/load.c $(CFLAGS) $(ORACLE_DEP)
 
 client.o: src/core/network/client.c
 	$(CC) -c src/core/network/client.c $(CFLAGS)
@@ -67,14 +54,8 @@ socket_io.o: src/core/network/socket_io.c
 http.o: src/core/network/http.c
 	$(CC) -c src/core/network/http.c $(CFLAGS)
 
-csv.o: src/file/csv.c
-	$(CC) -c src/file/csv.c $(CFLAGS)
-
-json.o: src/file/json.c
-	$(CC) -c src/file/json.c $(CFLAGS)
-
-preload.o: src/core/file/preload.c
-	$(CC) -c src/core/file/preload.c
+cache.o: src/core/cache.c
+	$(CC) -c src/core/cache.c $(CFLAGS)
 
 lcs_report.o: src/core/lcs_report.c
 	$(CC) -c src/core/lcs_report.c $(CFLAGS)
@@ -97,5 +78,5 @@ memory.o: src/utils/memory.c
 strings.o: src/utils/strings.c
 	$(CC) -c src/utils/strings.c $(CFLAGS)
 
-dcpam-etl: dcpam-etl.o mysql.o mariadb.o odbc.o postgresql.o log.o time.o filesystem.o cJSON.o sqlite3.o memory.o http.o preload.o csv.o json.o db.o worker.o system.o extract.o stage.o transform.o load.o strings.o oracle.o sqlite.o client.o lcs_report.o socket_io.o
-	$(CC) mysql.o mariadb.o odbc.o postgresql.o dcpam-etl.o log.o time.o filesystem.o cJSON.o sqlite3.o memory.o http.o preload.o csv.o json.o db.o worker.o system.o extract.o stage.o transform.o load.o strings.o oracle.o sqlite.o client.o lcs_report.o socket_io.o -o dcpam-etl $(LIBS)
+dcpam-wds: dcpam-wds.o socket_io.o cache.o mysql.o mariadb.o odbc.o postgresql.o log.o time.o http.o filesystem.o cJSON.o sqlite3.o memory.o db.o system.o strings.o oracle.o sqlite.o client.o lcs_report.o
+	$(CC) cache.o mysql.o socket_io.o mariadb.o odbc.o postgresql.o dcpam-wds.o log.o time.o http.o filesystem.o cJSON.o sqlite3.o memory.o db.o system.o strings.o oracle.o sqlite.o client.o lcs_report.o -o dcpam-wds $(LIBS)

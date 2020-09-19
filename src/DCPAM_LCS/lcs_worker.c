@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include <pthread.h>
 #include "../include/utils/memory.h"
+#include "../include/DCPAM_LCS/dcpam-lcs.h"
 #include "../include/DCPAM_LCS/lcs_worker.h"
-#include "../include/core/schema.h"
 #include "../include/core/component.h"
 #include "../include/utils/time.h"
 

@@ -3,15 +3,14 @@
 #include <signal.h>
 #include <string.h>
 #include <pthread.h>
-#include "../include/core/schema.h"
 #include "../include/third-party/cJSON.h"
 #include "../include/utils/log.h"
 #include "../include/utils/memory.h"
 #include "../include/utils/time.h"
 #include "../include/utils/strings.h"
 #include "../include/utils/filesystem.h"
-#include "../include/core/db/system.h"
-#include "../include/core/cache.h"
+#include "../include/DCPAM_LCS/dcpam-lcs.h"
+#include "../include/shared.h"
 #include "../include/core/network/socket_io.h"
 #include "../include/core/component.h"
 #include "../include/DCPAM_LCS/lcs_worker.h"
@@ -26,9 +25,6 @@
 char                    app_path[ MAX_PATH_LENGTH + 1 ];
 LOG_OBJECT              dcpam_lcs_log;
 int                     app_terminated = 0;
-
-extern DATABASE_SYSTEM  DATABASE_SYSTEMS[ MAX_DATA_SYSTEMS ];
-extern int              DATABASE_SYSTEMS_COUNT;
 extern L_DCPAM_APP      L_APP;
 
 void DCPAM_LCS_free_components( LOG_OBJECT* log );

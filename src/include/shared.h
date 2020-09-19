@@ -50,7 +50,16 @@
 #define TRUE                                1
 #define FALSE                               0
 
+#define MAX_DCPAM_DATA_ITEMS                5
+#define MAX_DCPAM_DATA_ACTIONS              8
 
+#define MAX_DATA_SYSTEMS                    4
+
+
+typedef struct DCPAM_ALLOWED_HOST {
+    char* ip;
+    char* api_key;
+} DCPAM_ALLOWED_HOST;
 
 typedef enum ACTION_TYPE {
     AT_READ = 1,

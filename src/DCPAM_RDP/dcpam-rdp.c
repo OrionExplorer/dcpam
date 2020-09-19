@@ -7,8 +7,20 @@
 #include "../include/utils/memory.h"
 #include "../include/utils/filesystem.h"
 #include "../include/third-party/cJSON.h"
-#include "../include/core/app_schema.h"
 #include "../include/core/lcs_report.h"
+
+/*
+    rdp_config.json => app
+*/
+typedef struct R_DCPAM_APP {
+    char* version;
+    char* name;
+    int                     network_port;
+    char** ALLOWED_HOSTS;
+    DCPAM_ALLOWED_HOST** ALLOWED_HOSTS_;
+    int                     ALLOWED_HOSTS_len;
+    LCS_REPORT              lcs_report;
+} R_DCPAM_APP;
 
 char                    app_path[ MAX_PATH_LENGTH + 1 ];
 char                    LOG_filename[ MAX_PATH_LENGTH ];

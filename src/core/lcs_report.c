@@ -4,7 +4,7 @@
 #include "../include/utils/time.h"
 #include "../include/core/lcs_report.h"
 #include "../include/utils/log.h"
-#include "../include/core/app_schema.h"
+//#include "../include/core/app_schema.h"
 
 int LCS_REPORT_init( LCS_REPORT *connection, const char *address, const char *component_name, const char *component_version, LOG_OBJECT *log ) {
     char    host[ 100 ];

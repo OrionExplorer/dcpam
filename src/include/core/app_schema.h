@@ -3,56 +3,8 @@
 
 #include "db/system_schema.h"
 #include "../core/cache.h"
-
-#define MAX_DCPAM_DATA_ITEMS                5
-#define MAX_DCPAM_DATA_ACTIONS              8
-
-typedef struct DCPAM_ALLOWED_HOST {
-    char                    *ip;
-    char                    *api_key;
-} DCPAM_ALLOWED_HOST;
-
-typedef struct LCS_REPORT {
-    NET_CONN                *conn;
-    char                    *address;
-    int                     port;
-    char                    *lcs_host;
-    int                     lcs_port;
-    LOG_OBJECT              *log;
-    int                     active;
-    char                    *component;
-    char                    *version;
-} LCS_REPORT;
-
-typedef enum COMPONENT_ACTION_RESULT {
-    DCR_SUCCESS = 1,
-    DCR_FAILURE
-} COMPONENT_ACTION_RESULT;
-
-typedef enum COMPONENT_ACTION_TYPE {
-    DCT_START = 1,
-    DCT_STOP
-} COMPONENT_ACTION_TYPE;
-
-
-typedef struct COMPONENT_ACTION {
-    char                    *description;               /* Action description */
-    char                    timestamp[ 20 ];            /* Action started */
-    COMPONENT_ACTION_TYPE   type;                       /* Action type */
-} COMPONENT_ACTION;
-
-
-typedef struct DCPAM_COMPONENT {
-    char                    *ip;                        /* Component IP address*/
-    int                     port;                       /* Component socket port */
-    char                    *name;                      /* Component name */
-    char                    *version;                   /* Component version */
-    int                     active;                     /* Is component active? */
-    char                    timestamp[ 20 ];            /* Last verification (YYYY-MM-DD HH:mm:SS)*/
-    COMPONENT_ACTION        **actions;                  /* Component actions list */
-    int                     actions_len;                /* Component actions count */
-
-} DCPAM_COMPONENT;
+#include "../core/lcs_report.h"
+#include "../core/component.h"
 
 /*
     config.json => app.DATA[ i ]
@@ -114,32 +66,5 @@ typedef struct P_DCPAM_APP {
     int                     ALLOWED_HOSTS_len;
     LCS_REPORT              lcs_report;
 } P_DCPAM_APP;
-
-/*
-    rdp_config.json => app
-*/
-typedef struct R_DCPAM_APP {
-    char                    *version;
-    char                    *name;
-    int                     network_port;
-    char                    **ALLOWED_HOSTS;
-    DCPAM_ALLOWED_HOST      **ALLOWED_HOSTS_;
-    int                     ALLOWED_HOSTS_len;
-    LCS_REPORT              lcs_report; 
-} R_DCPAM_APP;
-
-
-/*
-    lcs_config.json => app
-*/
-typedef struct L_DCPAM_APP {
-    char                    *version;
-    char                    *name;
-    int                     network_port;
-    DCPAM_COMPONENT         **COMPONENTS;
-    int                     COMPONENTS_len;
-    DCPAM_ALLOWED_HOST      **ALLOWED_HOSTS_;
-    int                     ALLOWED_HOSTS_len;
-} L_DCPAM_APP;
 
 #endif

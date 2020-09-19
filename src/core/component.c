@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "../include/core/component.h"
+#include "../include/core/network/client.h"
 #include "../include/utils/memory.h"
 #include "../include/utils/log.h"
 #include "../include/utils/time.h"

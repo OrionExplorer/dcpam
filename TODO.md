@@ -180,11 +180,11 @@
 * [ ] HTTPS support
 * [ ] Docker images
 	* [ ] DCPAM ETL
-		* [ ] Dockerfile with mapping to `etl_config.json`
+		* [x] Dockerfile ~~with mapping to `etl_config.json`~~
 	* [ ] DCPAM RDP
-		* [ ] Dockerfile with mapping to `rdp_config.json`
+		* [ ] Dockerfile ~~with mapping to `rdp_config.json`~~
 	* [ ] DCPAM WDS
-		* [ ] Dockerfile with mapping to `wds_config.json`
+		* [ ] Dockerfile ~~with mapping to `wds_config.json`~~
 	* [ ] DCPAM LCS
 		* [ ] Dockerfile with mapping to `lcs_config.json`
 * [ ] DCPAM ETL must not know about P_DCPAM_APP and DPCAM WDS about DCPAM_APP.
