@@ -11,6 +11,7 @@
 * [Technology](#technology)
     * [Architecture Overview](#architecture-overview)
     * [Configuration](#configuration)
+    * [Docker image](#docker-image)
     * [Compilation (Linux)](#compilation-linux)
 
 ## Purpose of DCPAM LCS
@@ -35,6 +36,12 @@ Therefore **DCPAM Live Component State is the only module to assure Data Warehou
 For DCPAM LCS `lcs_config.json` is the main configuration file. It defines:
 * Network configuration.
 * DCPAM Component list required for DCPAM Data Warehouse to work.
+
+#### Docker image
+> Build DCPAM LCS image `dcpam-lcs`:
+```
+> docker build -t dcpam-lcs:latest . --file dcpam-lcs.dockerfile
+```
 
 #### Compilation (Linux)
 > Before attempt to compile, please adjust `ORACLE_DEP` paths in `makefile`.

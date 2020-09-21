@@ -10,6 +10,7 @@
 * [Purpose of DCPAM RDP](#purpose-of-dcpam-rdp)
 * [Technology](#technology)
     * [Architecture Overview](#architecture-overview)
+    * [Docker image](#docker-image)
     * [Compilation (Linux)](#compilation-linux)
     * [Linux Dependencies](#linux-dependencies)
     * [Windows Dependencies](#windows-dependencies)
@@ -30,6 +31,12 @@ Example of DCPAM Transform process scalability:
 * Each DCPAM ETL instance can use dedicated Staging Area node (local or remote).
 * Many DCPAM Database nodes can be encapsulated into single data access point by DCPAM WDS.
 * DCPAM ETL, Staging Area, DCPAM Database and DCPAM WDS can run on single server as well!
+
+#### Docker image
+> Build DCPAM RDP image `dcpam-rdp`:
+```
+> docker build -t dcpam-rdp:latest . --file dcpam-rdp.dockerfile
+```
 
 #### Compilation (Linux)
 > Before attempt to compile, please adjust `ORACLE_DEP` paths in `makefile`.

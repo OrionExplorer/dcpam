@@ -19,6 +19,7 @@
       * [Flat Files](#flat-files)
     * [DCPAM Database](#dcpam-database)
     * [Configuration](#configuration)
+    * [Docker image](#docker-image)
     * [Compilation (Linux)](#compilation-linux)
     * [Linux Dependencies](#linux-dependencies)
     * [Windows Dependencies](#windows-dependencies)
@@ -177,6 +178,11 @@ For DCPAM ETL `etl_config.json` is the main configuration file. It defines:
 
 More than one `json` configuration file can be configured to achieve more flexibile and parallel execution of configured processes. Each `json` file is executed by new instance of DCPAM ETL module.
 
+#### Docker image
+> Build DCPAM ETL image `dcpam-etl`:
+```
+> docker build -t dcpam-etl:latest . --file dcpam-etl.dockerfile
+```
 
 #### Compilation (Linux)
 > Before attempt to compile, please adjust `ORACLE_DEP` paths in `makefile`.

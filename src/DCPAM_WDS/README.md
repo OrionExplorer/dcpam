@@ -15,6 +15,7 @@
         * [Flat Files](#flat-files)
     * [DCPAM Database](#dcpam-database)
     * [Configuration](#configuration)
+    * [Docker image](#docker-image)
     * [Compilation (Linux)](#compilation-linux)
     * [Linux Dependencies](#linux-dependencies)
     * [Windows Dependencies](#windows-dependencies)
@@ -70,6 +71,12 @@ Therefore every database listed above as available data source can also be used 
 For DCPAM WDS `wds_config.json` is the main configuration file. It defines:
 * DCPAM database.
 * Tables and views (see _app.DATA_), where integrated data is stored.
+
+#### Docker image
+> Build DCPAM WDS image `dcpam-wds`:
+```
+> docker build -t dcpam-wds:latest . --file dcpam-wds.dockerfile
+```
 
 #### Compilation (Linux)
 > Before attempt to compile, please adjust `ORACLE_DEP` paths in `makefile`.

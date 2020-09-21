@@ -33,6 +33,7 @@
       * [Databases](#databases)
       * [Flat Files](#flat-files)
     * [DCPAM Database](#dcpam-database)
+    * [Docker images](#docker-images)
 * [Roadmap](#roadmap)
 
 ## Business Value
@@ -220,6 +221,13 @@ Files are loaded to temporary tables in DCPAM or external database to make SQL o
 ### DCPAM Database
 DCPAM is designed to be as most customizable as it needs to be.
 Therefore every database listed above as available data source can also be used as DCPAM target database.
+
+### Docker images
+Each DCPAM Component is provided with `Dockerfile` to build Docker image:
+* DCPAM ETL: `dcpam-etl.dockerfile`
+* DCPAM RDP: `dcpam-rdp.dockerfile`
+* DCPAM WDS: `dcpam-wds.dockerfile`
+* DCPAM LCS: `dcpam-lcs.dockerfile`
 
 ##### Currently under active development
 * [ ] To be announced.
