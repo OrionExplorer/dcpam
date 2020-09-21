@@ -17,3 +17,4 @@ RUN rm ./*.o && rm makefile.lcs && rm ./src -rf
 FROM ubuntu:18.04
 COPY --from=build-env /dcpam /dcpam
 WORKDIR /dcpam/
+EXPOSE 7771/tcp

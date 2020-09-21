@@ -17,3 +17,4 @@ RUN rm ./*.o && rm makefile.rdp && rm ./src -rf
 FROM ubuntu:18.04
 COPY --from=build-env /dcpam /dcpam
 WORKDIR /dcpam/
+EXPOSE 9091/tcp
