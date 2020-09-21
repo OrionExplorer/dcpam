@@ -222,7 +222,7 @@ DCPAM is designed to be as most customizable as it needs to be.
 Therefore every database listed above as available data source can also be used as DCPAM target database.
 
 ##### Currently under active development
-* [x] Docker images for all the DCPAM Components.
+* [ ] To be announced.
 
 ## Roadmap
 | Year | Feature                                      | Status            |
@@ -234,7 +234,7 @@ Therefore every database listed above as available data source can also be used 
 | 2020 | :white_check_mark: Remote files              | Done (2020-09-01) |
 | 2020 | :white_check_mark: Data source: JSON         | Done (2020-09-03) |
 | 2020 | :white_check_mark: DCPAM LCS                 | Done (2020-09-15) |
-| 2020 | :construction: Docker images for all the DCPAM Components   | In progress   |
+| 2020 | :white_check_mark: Docker images for all the DCPAM Components   | In progress   |
 | 2020 | Data source: APIs                            | Not implemented   |
 | 2020 | HTTPS support                                | Not implemented   |
 | 2021 | DCPAM Monitoring                             | Not implemented   |
