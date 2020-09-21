@@ -1,16 +1,18 @@
 # DCPAM - Data Warehouse Solution
 [![Build Status](https://travis-ci.org/OrionExplorer/dcpam.svg?branch=master)](https://travis-ci.org/OrionExplorer/dcpam) [![Build status](https://ci.appveyor.com/api/projects/status/43le8rn6721j8jtj/branch/master?svg=true)](https://ci.appveyor.com/project/OrionExplorer/dcpam/branch/master) [![Codacy Badge](https://app.codacy.com/project/badge/Grade/f5c3afcc56ab4e14910d7f68038d732a)](https://www.codacy.com/manual/OrionExplorer/dcpam?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=OrionExplorer/dcpam&amp;utm_campaign=Badge_Grade) [![License: MIT](https://img.shields.io/badge/License-MIT-brightgreen.svg)](https://opensource.org/licenses/MIT)
-##### Copyright © 2020 Marcin Kelar  
-![PostgreSQL](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/postgresql102x100.png) ![MySQL](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/mysql159x100.png) ![MariaDB](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/mariadb100x100.png) ![Microsoft SQL Server](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/sqlserver134x100.png) ![Oracle Database](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/oracle100x100.png) ![ODBC](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/odbc199x100.png) ![SQLite3](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/sqlite171x100.png) ![IBM Db2](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/ibmdb2100x100.png) ![CSV](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/csv100x100.png) ![TSV](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/tsv100x100.png) ![PSV](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/psv100x100.png) ![JSON](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/json100x100.png) ![API](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/api100x100.png) ![Linux](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/linux100x100.png) ![Windows 10](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/windows87x100.png) ![Cloud](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/cloud100x100.png) ![Docker](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/docker176x100.png)
-
+##### Copyright © 2020 Marcin Kelar
+### Data Construct-Populate-Access-Manage
 * DCPAM stands for Data Construct-Populate-Access-Manage.
-* DCPAM helps to create central repositories of integrated data from one or disparate sources [[1]].
 * DCPAM goal is to deliver full range of Data Warehouse possibilities without need to include or hire more engineers for this task.
 * DCPAM architecture is [highly flexible](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL#architecture-overview) and [provides unlimited scaling possibilities](#dcpam-rdp---remote-data-processor).
-* DCPAM allows to perform advanced data copy between technically different datasets.
-* DCPAM is multiplatform (Linux/Windows/Cloud).
+* DCPAM is multiplatform solution: on-premise (Linux/Windows) and cloud (Microsoft Azure, Amazon AWS, Google Cloud Platform) delpoyment
 
-![Main Overview](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/dwh.png)
+#### Supported databases
+![PostgreSQL](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/postgresql102x100.png) ![MySQL](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/mysql159x100.png) ![MariaDB](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/mariadb100x100.png) ![Microsoft SQL Server](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/sqlserver134x100.png) ![Oracle Database](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/oracle100x100.png) ![ODBC](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/odbc199x100.png) ![SQLite3](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/sqlite171x100.png) ![IBM Db2](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/ibmdb2100x100.png)
+### Other supported sources
+![CSV](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/csv100x100.png) ![TSV](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/tsv100x100.png) ![PSV](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/psv100x100.png) ![JSON](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/json100x100.png) ![API](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/api100x100.png)
+### Deployment
+![Linux](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/linux100x100.png) ![Windows 10](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/windows87x100.png) ![Cloud](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/cloud100x100.png) ![Docker](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/docker176x100.png) ![Microsoft Azure](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/azure256x100.png) ![Google Cloud Platform](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/google162x100.png) ![Amazon AWS](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/amazon236x100.png)
 
 ### Table of contents
 * [Business Value](#business-value)
@@ -48,6 +50,8 @@
 * [x] **Process gigabytes of data within minutes** - benefit of parallel execution.
 
 * [x] **Flexible deployment** - use your own infrastructure or get the benefits from cloud platforms (Microsoft Azure, Amazon AWS, Google Cloud Platform).
+
+![Main Overview](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/dwh.png)
 
 ### Company data in DCPAM
 DCPAM is responsible for copying data from one or more sources into a destination system. That process consists of three steps: Extraction, Transformation and Load, with Transform and Load in various configurations: Extract-Transform-Load (ETL) or Extract-Load-Transform (ELT).
@@ -130,10 +134,10 @@ As DCPAM is extremely modular and highly scalabe, it can serve both as Data Ware
 ### Other
 * Choose Data Warehouse DBMS, sufficient hardware and disk space.
 * Consider Data Warehouse tables schema:
-  * Snowflake schema [[5]]
-  * Star schema [[6]]
+  * Snowflake schema [[1]]
+  * Star schema [[2]]
   * Galaxy schema
-  * Fact constellation [[8]]
+  * Fact constellation [[3]]
 * Project data structures:
   * Staging Area
   * Target tables
@@ -245,7 +249,6 @@ This software uses:
 * [cJSON](https://github.com/DaveGamble/cJSON "cJSON") for parsing JSON data.
 * [SQLite3](https://www.sqlite.org/ "SQLite")
 
-[1]: https://en.wikipedia.org/wiki/Data_warehouse
-[5]: https://en.wikipedia.org/wiki/Snowflake_schema
-[6]: https://en.wikipedia.org/wiki/Star_schema
-[8]: https://en.wikipedia.org/wiki/Fact_constellation
+[1]: https://en.wikipedia.org/wiki/Snowflake_schema
+[2]: https://en.wikipedia.org/wiki/Star_schema
+[3]: https://en.wikipedia.org/wiki/Fact_constellation
