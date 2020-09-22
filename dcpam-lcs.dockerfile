@@ -4,6 +4,7 @@ RUN apt-get update\
  && apt-get install -y --no-install-recommends\
  "make"\
  "clang"\
+ "libssl-dev"\
  && apt-get clean\
  && rm -rf /var/lib/apt/lists/*
 
@@ -15,6 +16,12 @@ RUN make -f makefile.lcs
 RUN rm ./*.o && rm makefile.lcs && rm ./src -rf
 
 FROM ubuntu:18.04
+RUN apt-get update\
+ && apt-get install -y --no-install-recommends\
+ "libssl-dev"\
+ && apt-get clean\
+ && rm -rf /var/lib/apt/lists/*
+
 COPY --from=build-env /dcpam /dcpam
 WORKDIR /dcpam/
 EXPOSE 7771/tcp

@@ -3,6 +3,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <openssl/bio.h>
+#include <openssl/ssl.h>
+#include <openssl/err.h>
 #include "../../utils/log.h"
 
 #ifdef _WIN32
@@ -46,10 +49,12 @@ typedef struct NET_CONN {
     LOG_OBJECT          *log;
     int                 initialized;
     int                 connected;
+    SSL_CTX             *sslctx;
+    SSL                 *cSSL;
 } NET_CONN;
 
-int NET_CONN_init( NET_CONN *connection, const char *host, const int port );
-int NET_CONN_connect( NET_CONN *connection, const char *host, const int port );
+int NET_CONN_init( NET_CONN *connection, const char *host, const int port, const int secure );
+int NET_CONN_connect( NET_CONN *connection, const char *host, const int port, const int secure );
 int NET_CONN_disconnect( NET_CONN *connection );
 int NET_CONN_send( NET_CONN *connection, const char *data, size_t data_len );
 

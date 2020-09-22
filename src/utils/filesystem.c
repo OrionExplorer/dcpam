@@ -15,16 +15,22 @@ int FILE_download( const char* src, const char* dst, const char* w_mode, LOG_OBJ
     char    host[ 100 ];
     int     port = 80;
     char    path[ 1024 ];
+    int     secure = 0;
 
-    if( sscanf( src, "http://%99[^:]:%99d/%1023[^\n]", host, &port, path ) != 3 ) {
+    //if( sscanf( src, "%*[^:]//%99[^:]:%99d/%1023[^\n]", host, &port, path ) != 3 ) {
+    if( sscanf( src, "%*[^:]%*[:/]%[^:]:%d%s", host, &port, path ) != 3 ) {
         LOG_print( log, "[%s] FILE_download error: URL must contain host, port number and path.\n", TIME_get_gmt() );
         return 0;
+    }
+
+    if( strstr( src, "https://" ) ) {
+        secure = 1;
     }
 
     /* Download file */
     HTTP_CLIENT* http_c = SAFEMALLOC( sizeof( HTTP_CLIENT ), __FILE__, __LINE__ );
     size_t f_content_len = 0;
-    char* f_content = HTTP_CLIENT_get_content( http_c, host, path, port, &f_content_len, log );
+    char* f_content = HTTP_CLIENT_get_content( http_c, host, path, port, secure, &f_content_len, log );
 
     if( f_content ) {
         FILE* tmp_f = fopen( dst, w_mode );
@@ -67,7 +73,7 @@ FILE* FILE_open( const char *filename, const char *r_mode, const char *w_mode, L
     }
 
     /* HTTP protocol */
-    if( strstr( filename, "http://" ) ) {
+    if( strstr( filename, "http://" ) || strstr( filename, "https://" ) ) {
         char* tmp_file_name = mkrndstr( 16 );
         LOG_print( log, "[%s] Temporary file name: %s.\n", TIME_get_gmt(), tmp_file_name );
 

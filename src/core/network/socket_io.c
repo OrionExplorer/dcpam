@@ -2,6 +2,9 @@
 #include "../../include/utils/log.h"
 #include "../../include/shared.h"
 #include "../../include/utils/time.h"
+#include <openssl/bio.h>
+#include <openssl/ssl.h>
+#include <openssl/err.h>
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>

@@ -16,15 +16,15 @@ size_t _HTTP_CLIENT_get_ContentLength( HTTP_CLIENT* client ) {
     return 0;
 }
 
-char* HTTP_CLIENT_get_content( HTTP_CLIENT *client, const char *host, const char *path, const int port, size_t *content_len, LOG_OBJECT *log ) {
+char* HTTP_CLIENT_get_content( HTTP_CLIENT *client, const char *host, const char *path, const int port, const int secure, size_t *content_len, LOG_OBJECT *log ) {
     char *raw_content = NULL;
     char *content = NULL;
 
     if( client ) {
         client->connection = SAFEMALLOC( sizeof( NET_CONN ), __FILE__, __LINE__ );
         client->connection->log = log;
-        if( NET_CONN_init( client->connection, host, port ) == 1 ) {
-            if( NET_CONN_connect( client->connection, host, port ) == 0 ) {
+        if( NET_CONN_init( client->connection, host, port, secure ) == 1 ) {
+            if( NET_CONN_connect( client->connection, host, port, secure ) == 0 ) {
                 free( client->connection ); client->connection = NULL;
                 return NULL;
             }

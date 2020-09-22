@@ -9,7 +9,7 @@ CC=clang
 #CFLAGS=-std=c11 -fexpensive-optimizations -Wshadow -Winit-self -Wredundant-decls -Wcast-align -Wundef -Wfloat-equal -Winline -Wunreachable-code -Wmissing-declarations -Wmissing-include-dirs -Wswitch-enum -Wswitch-default -Wmain -pedantic-errors -pedantic -w -Wfatal-errors -Wextra -Wall -Os -O3 -O2 -O1
 CFLAGS=-std=c11 -D_XOPEN_SOURCE=600 -fexpensive-optimizations -Wshadow -Winit-self -Wredundant-decls -Wcast-align -Wundef -Wfloat-equal -Winline -Wunreachable-code -Wmissing-declarations -Wmissing-include-dirs -Wswitch-enum -Wswitch-default -Wmain -pedantic-errors -pedantic -w -Wfatal-errors -Wextra -Wall -g3 -O0
 ORACLE_DEP= -I/usr/include/oracle/19.6/client64/ -L/usr/lib/oracle/19.6/client64/lib/
-LIBS=-lm -lpthread -lpq -lodbc -lmariadbclient $(ORACLE_DEP) -ldl -lclntsh
+LIBS=-lm -lpthread -lpq -lodbc -lmariadbclient $(ORACLE_DEP) -ldl -lclntsh -lssl -lcrypto
 
 
 all: dcpam-etl dcpam-wds dcpam-rdp dcpam-lcs
@@ -121,7 +121,7 @@ strings.o: src/utils/strings.c
 	$(CC) -c src/utils/strings.c $(CFLAGS)
 
 dcpam-rdp: dcpam-rdp.o socket_io.o log.o time.o strings.o client.o http.o filesystem.o memory.o cJSON.o lcs_report.o
-	$(CC) socket_io.o dcpam-rdp.o log.o time.o strings.o client.o http.o filesystem.o memory.o cJSON.o lcs_report.o -o dcpam-rdp -lpthread
+	$(CC) socket_io.o dcpam-rdp.o log.o time.o strings.o client.o http.o filesystem.o memory.o cJSON.o lcs_report.o -o dcpam-rdp -lpthread -lssl -lcrypto
 
 dcpam-etl: dcpam-etl.o mysql.o mariadb.o odbc.o postgresql.o log.o time.o filesystem.o cJSON.o sqlite3.o memory.o http.o preload.o csv.o json.o db.o worker.o system.o extract.o stage.o transform.o load.o strings.o oracle.o sqlite.o client.o lcs_report.o socket_io.o
 	$(CC) mysql.o mariadb.o odbc.o postgresql.o dcpam-etl.o log.o time.o filesystem.o cJSON.o sqlite3.o memory.o http.o preload.o csv.o json.o db.o worker.o system.o extract.o stage.o transform.o load.o strings.o oracle.o sqlite.o client.o lcs_report.o socket_io.o -o dcpam-etl $(LIBS)

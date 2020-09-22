@@ -182,8 +182,8 @@ int LCS_COMPONENT_check( DCPAM_COMPONENT* dst, LOG_OBJECT *log ) {
 
         if( conn ) {
             conn->log = log;
-            if( NET_CONN_init( conn, dst->ip, dst->port ) == 1 ) {
-                if( NET_CONN_connect( conn, dst->ip, dst->port ) == 1 ) {
+            if( NET_CONN_init( conn, dst->ip, dst->port, 0 ) == 1 ) {
+                if( NET_CONN_connect( conn, dst->ip, dst->port, 0 ) == 1 ) {
                     const char* ping_msg = "{\"msg\": \"ping\"}";
                     if( NET_CONN_send( conn, ping_msg, strlen( ping_msg ) ) == 1 ) {
                         if( conn->response && conn->response_len > 0 ) {

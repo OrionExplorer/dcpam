@@ -243,8 +243,8 @@ Each DCPAM Component is provided with `Dockerfile` to build Docker image:
 | 2020 | :white_check_mark: Data source: JSON         | Done (2020-09-03) |
 | 2020 | :white_check_mark: DCPAM LCS                 | Done (2020-09-15) |
 | 2020 | :white_check_mark: Docker images for all the DCPAM Components   | Done (2020-09-20)   |
+| 2020 | :white_check_mark: HTTPS support             | Done (2020-09-22) |
 | 2020 | Data source: APIs                            | Not implemented   |
-| 2020 | HTTPS support                                | Not implemented   |
 | 2021 | DCPAM Monitoring                             | Not implemented   |
 | 2021 | DCPAM Access (BI web application)            | Not implemented   |
 | 2021 | Data source: XML                             | Not implemented   |

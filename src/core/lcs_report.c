@@ -86,8 +86,8 @@ int LCS_REPORT_send( LCS_REPORT* connection, const char* action, COMPONENT_ACTIO
                     action,
                     action_type == DCT_START ? "start" : "stop"
         );
-        if( NET_CONN_init( connection->conn, connection->lcs_host, connection->lcs_port ) == 1 ) {
-            if( NET_CONN_connect( connection->conn, connection->lcs_host, connection->lcs_port ) == 1 ) {
+        if( NET_CONN_init( connection->conn, connection->lcs_host, connection->lcs_port, 0 ) == 1 ) {
+            if( NET_CONN_connect( connection->conn, connection->lcs_host, connection->lcs_port, 0 ) == 1 ) {
                 if( NET_CONN_send( connection->conn, dst_buf, buf_len ) == 1 ) {
                     free( dst_buf ); dst_buf = NULL;
                     NET_CONN_disconnect( connection->conn );

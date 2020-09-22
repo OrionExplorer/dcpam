@@ -1,0 +1,15 @@
+.git
+.gitignore
+.vs
+Debug
+docs
+log
+Release
+x64
+dcpam-*.dockerfile
+*.vcxpro*
+*.log
+*.csv
+*.tsv
+*.psv
+*.txt

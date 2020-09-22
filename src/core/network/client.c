@@ -4,11 +4,21 @@
 #include "../../include/utils/log.h"
 
 
-int NET_CONN_init( NET_CONN* connection, const char* host, const int port ) {
-    LOG_print( connection->log, "[%s] NET_CONN_init( %s, %d )...", TIME_get_gmt(), host, port );
+int NET_CONN_init( NET_CONN* connection, const char* host, const int port, const int secure ) {
+    LOG_print( connection->log, "[%s] NET_CONN_init( %s, %d, %s )...", TIME_get_gmt(), host, port, secure == 1 ? "SSL" : "PLAIN" );
 
     connection->initialized = 0;
     connection->connected = 0;
+    connection->cSSL = NULL;
+    connection->sslctx = NULL;
+
+    if( secure ) {
+        connection->sslctx = SSL_CTX_new( SSLv23_client_method() );
+        if( connection->sslctx == NULL ) {
+            ERR_print_errors_fp( stderr );
+            return 0;
+        }
+    }
 
     connection->socket = socket( AF_INET, SOCK_STREAM, 0 );
     if( connection->socket == -1 ) {
@@ -33,13 +43,20 @@ int NET_CONN_init( NET_CONN* connection, const char* host, const int port ) {
     return 1;
 }
 
-int NET_CONN_connect( NET_CONN *connection, const char *host, const int port ) {
+int NET_CONN_connect( NET_CONN *connection, const char *host, const int port, const int secure ) {
 
     LOG_print( connection->log, "[%s] NET_CONN_connect( %s, %d )...", TIME_get_gmt(), host, port );
 
     connection->connected = 0;
 
     if( connection->initialized == 0 ) {
+        if( secure ) {
+            connection->sslctx = SSL_CTX_new( SSLv23_client_method() );
+            if( connection->sslctx == NULL ) {
+                ERR_print_errors_fp( stderr );
+                return 0;
+            }
+        }
         connection->socket = socket( AF_INET, SOCK_STREAM, 0 );
         if( connection->socket == -1 ) {
             LOG_print( connection->log, "error. Could not create socket.\n" );
@@ -55,14 +72,29 @@ int NET_CONN_connect( NET_CONN *connection, const char *host, const int port ) {
         snprintf( connection->host, 255, host );
         connection->port = port;
     }
-    
 
-    LOG_print( connection->log, "ok. Connecting...", TIME_get_gmt() );
+    LOG_print( connection->log, "ok. TCP connection...", TIME_get_gmt() );
     int conn_res = connect( connection->socket, ( struct sockaddr* )&connection->server, sizeof( connection->server ) );
-    if ( conn_res < 0 ) {
+    if( conn_res < 0 ) {
         LOG_print( connection->log, "error (%d): %s.\n", conn_res, strerror( errno ) );
         free( connection->host ); connection->host = NULL;
         return 0;
+    }
+
+    LOG_print( connection->log, "ok." );
+
+    if( connection->sslctx ) {
+        connection->cSSL = SSL_new( connection->sslctx );
+        SSL_set_fd( connection->cSSL, connection->socket );
+        LOG_print( connection->log, " SSL connection...", TIME_get_gmt() );
+        int conn_res = SSL_connect( connection->cSSL );
+        if( conn_res < 0 ) {
+            LOG_print( connection->log, "error (%d): %s.\n", conn_res, strerror( errno ) );
+            free( connection->host ); connection->host = NULL;
+            return 0;
+        }
+    } else {
+        LOG_print( connection->log, "\n" );
     }
 
     connection->connected = 1;
@@ -82,6 +114,13 @@ int NET_CONN_disconnect( NET_CONN *connection ) {
 
         connection->initialized = 0;
         connection->connected = 0;
+
+        if( connection->cSSL ) {
+            SSL_shutdown( connection->cSSL );
+            SSL_free( connection->cSSL );
+            connection->cSSL = NULL;
+            connection->sslctx = NULL;
+        }
 
         LOG_print( connection->log, "ok.\n" );
 
@@ -104,17 +143,24 @@ int NET_CONN_send( NET_CONN *connection, const char *data, size_t data_len ) {
         }
 
         if( connection->connected == 0 ) {
-            if( NET_CONN_connect( connection, connection->host, connection->port ) == 0 ) {
-                LOG_print( connection->log, "[%s] NET_CONN_send error: unable to initialize connection object.\n", TIME_get_gmt() );
-                return 0;
-            }
+            LOG_print( connection->log, "[%s] NET_CONN_send error: unable to initialize connection object.\n", TIME_get_gmt() );
+            return 0;
         }
 
-        if( send( connection->socket, data, data_len, 0 ) < 0 ) {
-            LOG_print( connection->log, "error sending data to %s.\n", TIME_get_gmt(), connection->host );
-            return 0;
+        if( connection->cSSL ) {
+            if( SSL_write( connection->cSSL, data, data_len ) < 0 ) {
+                LOG_print( connection->log, "error sending data to %s.\n", TIME_get_gmt(), connection->host );
+                return 0;
+            } else {
+                LOG_print( connection->log, "ok. Awaiting response..." );
+            }
         } else {
-            LOG_print( connection->log, "ok. Awaiting response..." );
+            if( send( connection->socket, data, data_len, 0 ) < 0 ) {
+                LOG_print( connection->log, "error sending data to %s.\n", TIME_get_gmt(), connection->host );
+                return 0;
+            } else {
+                LOG_print( connection->log, "ok. Awaiting response..." );
+            }
         }
 
         char* buffer = NULL;
@@ -134,7 +180,12 @@ int NET_CONN_send( NET_CONN *connection, const char *data, size_t data_len ) {
                 }
             }
 
-            status = recv( connection->socket, buffer + cur_size - LEN, LEN, 0 );
+            if( connection->cSSL ) {
+                status = SSL_read( connection->cSSL, buffer + cur_size - LEN, LEN );
+            } else {
+                status = recv( connection->socket, buffer + cur_size - LEN, LEN, 0 );
+            }
+            
             if( status <= 0 ) {
                 break;
             }

@@ -2,7 +2,9 @@ FROM ubuntu:18.04 as build-env
 
 RUN apt-get update\
  && apt-get install -y --no-install-recommends\
+ "make"\
  "clang"\
+ "libssl-dev"\
  "libaio-dev"\
  "libpq-dev"\
  "libmariadbclient-dev"\
@@ -32,12 +34,12 @@ RUN rm ./*.o && rm makefile.wds && rm ./src -rf
 FROM ubuntu:18.04
 RUN apt-get update\
  && apt-get install -y --no-install-recommends\
+ "libssl-dev"\
  "libaio-dev"\
  "libpq-dev"\
  "libmariadbclient-dev"\
  "unixodbc-dev"\
  "alien"\
- "wget"\
  && apt-get clean\
  && rm -rf /var/lib/apt/lists/*
 

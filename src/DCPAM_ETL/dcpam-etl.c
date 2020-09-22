@@ -1653,6 +1653,10 @@ int main( int argc, char** argv ) {
     srand( time( NULL ) );
     LOG_init( &dcpam_etl_log, "dcpam-etl", 65535 );
 
+    SSL_load_error_strings();
+    SSL_library_init();
+    OpenSSL_add_all_algorithms();
+
     memset( config_file, '\0', MAX_PATH_LENGTH );
     if( argc <= 1 ) {
         snprintf( config_file, MAX_PATH_LENGTH, "./conf/etl_config.json" );
@@ -1680,6 +1684,9 @@ int main( int argc, char** argv ) {
     }
 
     LOG_free( &dcpam_etl_log );
+
+    ERR_free_strings();
+    EVP_cleanup();
 
     return 0;
 }
