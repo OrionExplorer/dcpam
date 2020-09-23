@@ -36,7 +36,6 @@ void app_terminate( void ) {
     if( app_terminated == 0 ) {
         app_terminated = 1;
         printf( "\r" );
-        //SOCKET_stop();
         DCPAM_RDP_free_configuration();
     }
     return;

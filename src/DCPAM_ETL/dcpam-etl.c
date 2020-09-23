@@ -117,6 +117,7 @@ int DCPAM_load_configuration( const char* filename ) {
     cJSON* cfg_system_query_item_name = NULL;
     cJSON* cfg_system_query_item_mode = NULL;
     cJSON* cfg_system_flat_file = NULL;
+    cJSON* cfg_system_flat_file_preprocessor = NULL;
     cJSON* cfg_system_flat_file_name = NULL;
     cJSON* cfg_system_flat_file_columns_array = NULL;
     cJSON* cfg_system_flat_file_columns_item = NULL;
@@ -1458,12 +1459,21 @@ int DCPAM_load_configuration( const char* filename ) {
                         tmp_flat_file = SAFEMALLOC( sizeof( DATABASE_SYSTEM_FLAT_FILE ), __FILE__, __LINE__ );
                         tmp_flat_file->csv_file = NULL;
                         tmp_flat_file->json_file = NULL;
+                        tmp_flat_file->preprocessor = NULL;
 
                         LOG_print( &dcpam_etl_log, "[%s] Source file name is \"%s\".\n", TIME_get_gmt(), cfg_system_flat_file_name->valuestring );
 
                         size_t str_len = strlen( cfg_system_flat_file_name->valuestring );
                         tmp_flat_file->name = SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
                         snprintf( tmp_flat_file->name, str_len + 1, cfg_system_flat_file_name->valuestring );
+
+                        cfg_system_flat_file_preprocessor = cJSON_GetObjectItem( cfg_system_flat_file, "preprocessor" );
+                        if( cfg_system_flat_file_preprocessor ) {
+                            size_t preprocessor_len = strlen( cfg_system_flat_file_preprocessor->valuestring );
+                            tmp_flat_file->preprocessor = SAFECALLOC( preprocessor_len + 1, sizeof( char ), __FILE__, __LINE__ );
+                            snprintf( tmp_flat_file->preprocessor, preprocessor_len + 1, cfg_system_flat_file_preprocessor->valuestring );
+                            LOG_print( &dcpam_etl_log, "[%s] File is going to be processed: %s\n", TIME_get_gmt(), tmp_flat_file->preprocessor );
+                        }
 
                         cfg_system_flat_file_columns_array = cJSON_GetObjectItem( cfg_system_flat_file, "columns" );
                         if( cfg_system_flat_file_columns_array == NULL ) {

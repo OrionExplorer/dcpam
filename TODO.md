@@ -177,7 +177,9 @@
 * [ ] Process data fetched from API:
 	* [ ] Possibility to configure additional HTTP headers (authentication)
 	* [ ] Check Content-Type and adjust parsing function (JSON or CSV/TSV/PSV)
-* [ ] Preprocess not supported natively file formats before DCPAM ETL process starts.
+* [ ] Preprocess not supported natively file formats before DCPAM ETL process starts:
+	* [x] Load configuration.
+	* [ ] Execute processor script/application.
 * [ ] Perform connectivity tests before DCPAM ETL starts:
 	* [ ] `app.DB`
 	* [ ] `app.STAGING`

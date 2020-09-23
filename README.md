@@ -230,7 +230,7 @@ Each DCPAM Component is provided with `Dockerfile` to build Docker image:
 * DCPAM LCS: `dcpam-lcs.dockerfile`
 
 ##### Currently under active development
-* [ ] To be announced.
+* [x] Data source: externally preprocessed files without native support.
 
 ## Roadmap
 | Year | Quarter | Feature                                      | Status            |
@@ -244,7 +244,7 @@ Each DCPAM Component is provided with `Dockerfile` to build Docker image:
 | 2020 | Q3      | :white_check_mark: DCPAM LCS                 | Done (2020-09-15) |
 | 2020 | Q3      | :white_check_mark: Docker images for all the DCPAM Components   | Done (2020-09-20)   |
 | 2020 | Q3      | :white_check_mark: HTTPS support             | Done (2020-09-22) |
-| 2020 | Q4      | Data source: externally preprocessed         | Not implemented   |
+| 2020 | Q4      | :construction: Data source: externally preprocessed         | Not implemented   |
 | 2020 | Q4      | DCPAM ETL DB connectivity tests              | Not implemented   |
 | 2020 | Q4      | Data source: APIs                            | Not implemented   |
 | 2021 | Q1      | DCPAM Monitoring                             | Not implemented   |

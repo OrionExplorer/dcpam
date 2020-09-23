@@ -294,7 +294,7 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
             }
 
             action_description = SAFECALLOC( ff_dst_buf_len + 1, sizeof( char ), __FILE__, __LINE__ );
-            snprintf( action_description, ff_dst_buf_len + 1, flat_file_descr, DATA_SYSTEM->flat_file->name );
+            snprintf( action_description, ff_dst_buf_len + 1, flat_file_descr, DATA_SYSTEM->name, DATA_SYSTEM->flat_file->name );
             LCS_REPORT_send( &APP.lcs_report, action_description, DCT_STOP );
             free( action_description ); action_description = NULL;
         }

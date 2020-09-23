@@ -58,6 +58,7 @@ typedef struct DATABASE_SYSTEM_QUERY {
 } DATABASE_SYSTEM_QUERY;
 
 typedef struct DATABASE_SYSTEM_FLAT_FILE {
+    char                        *preprocessor;
     char                        *name;
     char                        **columns;
     int                         columns_len;
