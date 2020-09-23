@@ -18,7 +18,7 @@ int FILE_download( const char* src, const char* dst, const char* w_mode, LOG_OBJ
     int     secure = 0;
 
     //if( sscanf( src, "%*[^:]//%99[^:]:%99d/%1023[^\n]", host, &port, path ) != 3 ) {
-    if( sscanf( src, "%*[^:]%*[:/]%[^:]:%d%s", host, &port, path ) != 3 ) {
+    if( sscanf( src, "%*[^:]%*[:/]%99[^:]:%99d%1023s", host, &port, path ) != 3 ) {
         LOG_print( log, "[%s] FILE_download error: URL must contain host, port number and path.\n", TIME_get_gmt() );
         return 0;
     }
