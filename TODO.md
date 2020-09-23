@@ -180,6 +180,7 @@
 * [ ] Preprocess not supported natively file formats before DCPAM ETL process starts:
 	* [x] Load configuration.
 	* [ ] Execute processor script/application.
+	* [ ] Provide Python script to convert XLSX to CSV (using `pandas`).
 * [ ] Perform connectivity tests before DCPAM ETL starts:
 	* [ ] `app.DB`
 	* [ ] `app.STAGING`
