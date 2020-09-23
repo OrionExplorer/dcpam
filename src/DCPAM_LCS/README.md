@@ -42,6 +42,10 @@ For DCPAM LCS `lcs_config.json` is the main configuration file. It defines:
 ```
 > docker build -t dcpam-lcs:latest . --file dcpam-lcs.dockerfile
 ```
+> Run DCPAM LCS with mapped `lcs_config.json`:
+```
+> docker run -ti -v /home/dcpam/conf/lcs_config.json:/opt/dcpam/conf/lcs_config.json --rm dcpam-lcs:latest
+```
 
 #### Compilation (Linux)
 > Before attempt to compile, please adjust `ORACLE_DEP` paths in `makefile`.

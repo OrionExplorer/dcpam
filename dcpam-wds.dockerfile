@@ -23,10 +23,9 @@ ENV LD_LIBRARY_PATH=/usr/lib/oracle/19.6/client64/lib/${LD_LIBRARY_PATH:+:$LD_LI
 ENV PATH=$PATH:$ORACLE_HOME/bin
 RUN ln -s /usr/include/oracle/19.6/client64/ $ORACLE_HOME/include
 
-COPY conf/wds_config.json /dcpam/conf/
-COPY src/ /dcpam/src/
-COPY makefile.wds /dcpam/
-WORKDIR /dcpam/
+COPY src/ /opt/dcpam/src/
+COPY makefile.wds /opt/dcpam/
+WORKDIR /opt/dcpam/
 RUN make -f makefile.wds
 RUN rm ./*.o && rm makefile.wds && rm ./src -rf
 
@@ -53,6 +52,6 @@ ENV LD_LIBRARY_PATH=/usr/lib/oracle/19.6/client64/lib/${LD_LIBRARY_PATH:+:$LD_LI
 ENV PATH=$PATH:$ORACLE_HOME/bin
 RUN ln -s /usr/include/oracle/19.6/client64/ $ORACLE_HOME/include
 
-COPY --from=build-env /dcpam /dcpam
-WORKDIR /dcpam
+COPY --from=build-env /opt/dcpam /opt/dcpam
+WORKDIR /opt/dcpam
 EXPOSE 8080/tcp

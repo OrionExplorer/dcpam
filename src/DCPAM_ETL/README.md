@@ -183,6 +183,10 @@ More than one `json` configuration file can be configured to achieve more flexib
 ```
 > docker build -t dcpam-etl:latest . --file dcpam-etl.dockerfile
 ```
+> Run DCPAM ETL with mapped `etl_config.json`:
+```
+> docker run -ti -v /home/dcpam/conf/etl_config.json:/opt/dcpam/conf/etl_config.json --rm dcpam-etl:latest
+```
 
 #### Compilation (Linux)
 > Before attempt to compile, please adjust `ORACLE_DEP` paths in `makefile`.

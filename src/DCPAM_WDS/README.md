@@ -77,6 +77,10 @@ For DCPAM WDS `wds_config.json` is the main configuration file. It defines:
 ```
 > docker build -t dcpam-wds:latest . --file dcpam-wds.dockerfile
 ```
+> Run DCPAM WDS with mapped `wds_config.json`:
+```
+> docker run -ti -v /home/dcpam/conf/wds_config.json:/opt/dcpam/conf/wds_config.json --rm dcpam-wds:latest
+```
 
 #### Compilation (Linux)
 > Before attempt to compile, please adjust `ORACLE_DEP` paths in `makefile`.

@@ -37,6 +37,10 @@ Example of DCPAM Transform process scalability:
 ```
 > docker build -t dcpam-rdp:latest . --file dcpam-rdp.dockerfile
 ```
+> Run DCPAM RDP with mapped `rdp_config.json`:
+```
+> docker run -ti -v /home/dcpam/conf/rdp_config.json:/opt/dcpam/conf/rdp_config.json --rm dcpam-rdp:latest
+```
 
 #### Compilation (Linux)
 > Before attempt to compile, please adjust `ORACLE_DEP` paths in `makefile`.

@@ -8,10 +8,9 @@ RUN apt-get update\
  && apt-get clean\
  && rm -rf /var/lib/apt/lists/*
 
-COPY conf/lcs_config.json /dcpam/conf/
-COPY src/ /dcpam/src/
-COPY makefile.lcs /dcpam/
-WORKDIR /dcpam/
+COPY src/ /opt/dcpam/src/
+COPY makefile.lcs /opt/dcpam/
+WORKDIR /opt/dcpam/
 RUN make -f makefile.lcs
 RUN rm ./*.o && rm makefile.lcs && rm ./src -rf
 
@@ -22,6 +21,6 @@ RUN apt-get update\
  && apt-get clean\
  && rm -rf /var/lib/apt/lists/*
 
-COPY --from=build-env /dcpam /dcpam
-WORKDIR /dcpam/
+COPY --from=build-env /opt/dcpam /opt/dcpam
+WORKDIR /opt/dcpam/
 EXPOSE 7771/tcp
