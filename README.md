@@ -214,7 +214,7 @@ DCPAM development is still in progress with following data sources available:
 | TSV                                | native           |
 | PSV                                | native           |
 | JSON                               | native           |
-| XLS                                | [script](https://github.com/OrionExplorer/dcpam/src/DCPAM_ETL/data-processor/excel2csv.py)
+| XLS                                | [script](https://github.com/OrionExplorer/dcpam/blob/master/src/DCPAM_ETL/data-processor/excel2csv.py)
 | XLSX                               | script           |
 | XLSM                               | script           |
 | XLSB                               | script           |
