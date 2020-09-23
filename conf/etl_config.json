@@ -181,6 +181,8 @@
 				"headers" : [
 					{"AuthInfo" : "asdqwe123"}
 				],
+				"content" : "{\"AuthInfo\" : \"asdqwe123\"}",
+				"method" : "POST",
 				"types" : [
 					{"application/json" : "JSON"},
 					{"text/csv" : "CSV", "delimiter" : ";"},
@@ -191,7 +193,7 @@
 
 		"file_comment#00" : "##################################################################################################",
 		"file_comment#01" : "# FILE section is dedicated for schema definition of the flat files loader.",
-		"file_comment#02" : "# The \"name\", \"columns\" and \"sql\" keys are required.",
+		"file_comment#02" : "# The \"name\", \"columns\" and \"load_sql\" keys are required.",
 		"file_comment#03" : "# For CSV files, \"delimeter\" is also required.",
 		"file_comment#04" : "# For TSV and PSV files, \"delimeter\" is ignored.",
 		"file_comment#05" : "# JSON file structure must be array of objects.",

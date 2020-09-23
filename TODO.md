@@ -177,16 +177,23 @@
 * [ ] Process data fetched from API:
 	* [ ] Possibility to configure additional HTTP headers (authentication)
 	* [ ] Check Content-Type and adjust parsing function (JSON or CSV/TSV/PSV)
-* [ ] HTTPS support
-* [ ] Docker images
-	* [ ] DCPAM ETL
-		* [x] Dockerfile ~~with mapping to `etl_config.json`~~
-	* [ ] DCPAM RDP
-		* [ ] Dockerfile ~~with mapping to `rdp_config.json`~~
-	* [ ] DCPAM WDS
-		* [ ] Dockerfile ~~with mapping to `wds_config.json`~~
-	* [ ] DCPAM LCS
-		* [ ] Dockerfile with mapping to `lcs_config.json`
+* [ ] Preprocess not supported natively file formats before DCPAM ETL process starts.
+* [ ] Perform connectivity tests before DCPAM ETL starts:
+	* [ ] `app.DB`
+	* [ ] `app.STAGING`
+	* [ ] `system[].DB`
+	* [ ] `system[].FILE`
+	* [ ] `system[].API`
+* [x] HTTPS support
+* [x] Docker images
+	* [x] DCPAM ETL
+		* [x] Dockerfile with mapping to `etl_config.json`
+	* [x] DCPAM RDP
+		* [x] Dockerfile with mapping to `rdp_config.json`
+	* [x] DCPAM WDS
+		* [x] Dockerfile with mapping to `wds_config.json`
+	* [x] DCPAM LCS
+		* [x] Dockerfile with mapping to `lcs_config.json`
 * [ ] DCPAM ETL must not know about P_DCPAM_APP and DPCAM WDS about DCPAM_APP.
 * [ ] ETL process interval can vary between system[].queries[].
 * [ ] Move DCPAM ETL configuration to database:

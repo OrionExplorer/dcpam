@@ -233,23 +233,25 @@ Each DCPAM Component is provided with `Dockerfile` to build Docker image:
 * [ ] To be announced.
 
 ## Roadmap
-| Year | Feature                                      | Status            |
-|:----:|:---------------------------------------------|:------------------|
-| 2020 | :white_check_mark: Transform process         | Done (2020-08-07) |
-| 2020 | :white_check_mark: DCPAM WDS                 | Done (2020-08-17) |
-| 2020 | :white_check_mark: DCPAM auth keys           | Done (2020-08-19) |
-| 2020 | :white_check_mark: Data source: CSV/TSV/PSV  | Done (2020-08-30) |
-| 2020 | :white_check_mark: Remote files              | Done (2020-09-01) |
-| 2020 | :white_check_mark: Data source: JSON         | Done (2020-09-03) |
-| 2020 | :white_check_mark: DCPAM LCS                 | Done (2020-09-15) |
-| 2020 | :white_check_mark: Docker images for all the DCPAM Components   | Done (2020-09-20)   |
-| 2020 | :white_check_mark: HTTPS support             | Done (2020-09-22) |
-| 2020 | Data source: APIs                            | Not implemented   |
-| 2021 | DCPAM Monitoring                             | Not implemented   |
-| 2021 | DCPAM Access (BI web application)            | Not implemented   |
-| 2021 | Data source: XML                             | Not implemented   |
-| 2021 | DCPAM Construct (admin web application)      | Not implemented   |
-| 2021 | DCPAM AI Platform                            | Not implemented   |
+| Year | Quarter | Feature                                      | Status            |
+|:----:|:-------:|:---------------------------------------------|:------------------|
+| 2020 | Q3      | :white_check_mark: Transform process         | Done (2020-08-07) |
+| 2020 | Q3      | :white_check_mark: DCPAM WDS                 | Done (2020-08-17) |
+| 2020 | Q3      | :white_check_mark: DCPAM auth keys           | Done (2020-08-19) |
+| 2020 | Q3      | :white_check_mark: Data source: CSV/TSV/PSV  | Done (2020-08-30) |
+| 2020 | Q3      | :white_check_mark: Remote files              | Done (2020-09-01) |
+| 2020 | Q3      | :white_check_mark: Data source: JSON         | Done (2020-09-03) |
+| 2020 | Q3      | :white_check_mark: DCPAM LCS                 | Done (2020-09-15) |
+| 2020 | Q3      | :white_check_mark: Docker images for all the DCPAM Components   | Done (2020-09-20)   |
+| 2020 | Q3      | :white_check_mark: HTTPS support             | Done (2020-09-22) |
+| 2020 | Q4      | Data source: externally preprocessed         | Not implemented   |
+| 2020 | Q4      | DCPAM ETL DB connectivity tests              | Not implemented   |
+| 2020 | Q4      | Data source: APIs                            | Not implemented   |
+| 2021 | Q1      | DCPAM Monitoring                             | Not implemented   |
+| 2021 | Q2      | DCPAM Access (BI web application)            | Not implemented   |
+| 2021 | Q2      | Data source: XML                             | Not implemented   |
+| 2021 | Q3      | DCPAM Construct (admin web application)      | Not implemented   |
+| 2021 | Q4      | DCPAM AI Platform                            | Not implemented   |
 
 ---
 This software uses:
