@@ -276,6 +276,28 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
         /* If configured, preload flat file to the DB table. */
         if( DATA_SYSTEM->flat_file ) {
 
+            if( DATA_SYSTEM->flat_file->preprocessor ) {
+                LOG_print( log, "[%s] Preprocessing: \"%s\".\n", TIME_get_gmt(), DATA_SYSTEM->flat_file->preprocessor );
+
+                FILE *script = popen( DATA_SYSTEM->flat_file->preprocessor, READ_BINARY );
+
+                if( script == NULL ) {
+                    LOG_print( log, "[%s] Fatal error: unable to process data file.\n", TIME_get_gmt() );
+                    DATA_SYSTEM->failure = 1;
+                } else {
+                    char res[ 4096 ];
+                    size_t res_len = fread( res, sizeof( char ), 1, script );
+                    if( res_len == 0 ) {
+                        LOG_print( log, "[%s] Error executing script \"%s\". No data returned.\n", TIME_get_gmt(), DATA_SYSTEM->flat_file->preprocessor );
+                        DATA_SYSTEM->failure = 1;
+                    } else {
+                        LOG_print( log, "[%s] Script \"%s\" finished with result: %s.\n", TIME_get_gmt(), DATA_SYSTEM->flat_file->preprocessor, res );
+                        DATA_SYSTEM->failure = strcmp( res, "1" ) == 0 ? 0 : 1;
+                    }
+                }
+                pclose( script );
+            }
+
             char* flat_file_descr = "[%s]: Flat file load: %s";
             size_t ff_len = strlen( flat_file_descr );
             size_t ff_filename_len = strlen( DATA_SYSTEM->flat_file->name );

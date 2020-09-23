@@ -1472,7 +1472,7 @@ int DCPAM_load_configuration( const char* filename ) {
                             size_t preprocessor_len = strlen( cfg_system_flat_file_preprocessor->valuestring );
                             tmp_flat_file->preprocessor = SAFECALLOC( preprocessor_len + 1, sizeof( char ), __FILE__, __LINE__ );
                             snprintf( tmp_flat_file->preprocessor, preprocessor_len + 1, cfg_system_flat_file_preprocessor->valuestring );
-                            LOG_print( &dcpam_etl_log, "[%s] File is going to be processed: %s\n", TIME_get_gmt(), tmp_flat_file->preprocessor );
+                            LOG_print( &dcpam_etl_log, "[%s] File is going to be processed: \"%s\".\n", TIME_get_gmt(), tmp_flat_file->preprocessor );
                         }
 
                         cfg_system_flat_file_columns_array = cJSON_GetObjectItem( cfg_system_flat_file, "columns" );

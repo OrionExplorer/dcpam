@@ -177,10 +177,10 @@
 * [ ] Process data fetched from API:
 	* [ ] Possibility to configure additional HTTP headers (authentication)
 	* [ ] Check Content-Type and adjust parsing function (JSON or CSV/TSV/PSV)
-* [ ] Preprocess not supported natively file formats before DCPAM ETL process starts:
+* [x] Preprocess file formats without native support before DCPAM ETL process starts:
 	* [x] Load configuration.
-	* [ ] Execute processor script/application.
-	* [ ] Provide Python script to convert XLSX to CSV (using `pandas`).
+	* [x] Execute processor script/application.
+	* [x] Provide Python script to convert XLSX to CSV (using `pandas`).
 * [ ] Perform connectivity tests before DCPAM ETL starts:
 	* [ ] `app.DB`
 	* [ ] `app.STAGING`
@@ -215,5 +215,6 @@
 	* [x] CSV/TSV/PSV
 	* [x] URL
 	* [x] JSON
+	* [x] XLSX
 	* [ ] LDAP
 	* [ ] API

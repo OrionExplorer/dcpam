@@ -9,7 +9,7 @@
 ### Supported databases
 ![PostgreSQL](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/postgresql102x100.png) ![MySQL](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/mysql159x100.png) ![MariaDB](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/mariadb100x100.png) ![Microsoft SQL Server](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/sqlserver134x100.png) ![Oracle Database](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/oracle100x100.png) ![SQLite3](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/sqlite171x100.png) ![IBM Db2](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/ibmdb2100x100.png) ![ODBC](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/odbc199x100.png)
 ### Other supported sources
-![CSV](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/csv100x100.png) ![TSV](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/tsv100x100.png) ![PSV](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/psv100x100.png) ![JSON](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/json100x100.png) ![API](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/api100x100.png)
+![XLSX](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/xlsx89x100.png) ![CSV](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/csv100x100.png) ![TSV](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/tsv100x100.png) ![PSV](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/psv100x100.png) ![JSON](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/json100x100.png) ![API](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/api100x100.png)
 ### Deployment
 ![Linux](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/linux100x100.png) ![Windows 10](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/windows87x100.png) ![Cloud](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/cloud100x100.png) ![Docker](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/docker176x100.png) ![Microsoft Azure](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/azure256x100.png) ![Google Cloud Platform](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/google162x100.png) ![Amazon AWS](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/amazon236x100.png)
 
@@ -214,8 +214,14 @@ DCPAM development is still in progress with following data sources available:
 | TSV                                | native           |
 | PSV                                | native           |
 | JSON                               | native           |
+| XLS                                | [script](https://github.com/OrionExplorer/dcpam/src/DCPAM_ETL/data-processor/excel2csv.py)
+| XLSX                               | script           |
+| XLSM                               | script           |
+| XLSB                               | script           |
+| ODF                                | script           |
+| ODS                                | script           |
 
-DCPAM can access files from local or remote locations. The latter are fetched via HTTP protocol and [Battery HTTP Server](https://github.com/OrionExplorer/battery-http-server) is recommended.
+DCPAM can access files from local or remote locations. The latter are fetched via HTTP/HTTPS protocol and [Battery HTTP Server](https://github.com/OrionExplorer/battery-http-server) is recommended.
 Files are loaded to temporary tables in DCPAM or external database to make SQL operations possible for this kind of data.
 
 ### DCPAM Database
@@ -230,7 +236,7 @@ Each DCPAM Component is provided with `Dockerfile` to build Docker image:
 * DCPAM LCS: `dcpam-lcs.dockerfile`
 
 ##### Currently under active development
-* [x] Data source: externally preprocessed files without native support.
+* [ ] To be announced.
 
 ## Roadmap
 | Year | Quarter | Feature                                      | Status            |
@@ -244,7 +250,7 @@ Each DCPAM Component is provided with `Dockerfile` to build Docker image:
 | 2020 | Q3      | :white_check_mark: DCPAM LCS                 | Done (2020-09-15) |
 | 2020 | Q3      | :white_check_mark: Docker images for all the DCPAM Components   | Done (2020-09-20)   |
 | 2020 | Q3      | :white_check_mark: HTTPS support             | Done (2020-09-22) |
-| 2020 | Q4      | :construction: Data source: externally preprocessed         | Not implemented   |
+| 2020 | Q3      | :white_check_mark: Data source: externally preprocessed         | Done (2020-09-24)   |
 | 2020 | Q4      | DCPAM ETL DB connectivity tests              | Not implemented   |
 | 2020 | Q4      | Data source: APIs                            | Not implemented   |
 | 2021 | Q1      | DCPAM Monitoring                             | Not implemented   |
@@ -257,6 +263,7 @@ Each DCPAM Component is provided with `Dockerfile` to build Docker image:
 This software uses:
 * [cJSON](https://github.com/DaveGamble/cJSON "cJSON") for parsing JSON data.
 * [SQLite3](https://www.sqlite.org/ "SQLite")
+* [pandas](https://pandas.pydata.org/ "pandas") for data processing
 
 [1]: https://en.wikipedia.org/wiki/Snowflake_schema
 [2]: https://en.wikipedia.org/wiki/Star_schema
