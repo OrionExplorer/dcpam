@@ -215,6 +215,8 @@
 	* [x] CSV/TSV/PSV
 	* [x] URL
 	* [x] JSON
-	* [x] XLSX
+	* [x] XLS/XLSX/XLSM/XLSB
+	* [x] ODS/ODT
+	* [x] XML
 	* [ ] LDAP
 	* [ ] API

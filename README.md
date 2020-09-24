@@ -128,7 +128,6 @@ As DCPAM is extremely modular and highly scalabe, it can serve both as Data Ware
 * DCPAM Monitoring (web application for DCPAM LCS).
 * DCPAM LCS Notifications
 * Data sources:
-  * XML
   * LDAP
 
 ### Other
@@ -251,11 +250,11 @@ Each DCPAM Component is provided with `Dockerfile` to build Docker image:
 | 2020 | Q3      | :white_check_mark: Docker images for all the DCPAM Components   | Done (2020-09-20)   |
 | 2020 | Q3      | :white_check_mark: HTTPS support             | Done (2020-09-22) |
 | 2020 | Q3      | :white_check_mark: Data source: externally preprocessed         | Done (2020-09-24)   |
+| 2020 | Q3      | :white_check_mark: Data source: XML          | Done (2020-09-24)   |
 | 2020 | Q4      | DCPAM ETL DB connectivity tests              | Not implemented   |
 | 2020 | Q4      | Data source: APIs                            | Not implemented   |
 | 2021 | Q1      | DCPAM Monitoring                             | Not implemented   |
 | 2021 | Q2      | DCPAM Access (BI web application)            | Not implemented   |
-| 2021 | Q2      | Data source: XML                             | Not implemented   |
 | 2021 | Q3      | DCPAM Construct (admin web application)      | Not implemented   |
 | 2021 | Q4      | DCPAM AI Platform                            | Not implemented   |
 
