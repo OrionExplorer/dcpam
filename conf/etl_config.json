@@ -204,7 +204,7 @@
 		"file_comment#10" : "# FILE is not compatibile with API.",
 		"file_comment#11" : "##################################################################################################",
 		"FILE" : {
-			"preprocessor" : "/opt/dcpam/data-processor/excel2csv.py /tmp/otrs_time_accounting_data.xlsx /tmp/otrs_time_accounting_data.csv",
+			"preprocessor" : "/opt/dcpam/data-processor/excel2csv.py /tmp/otrs_time_accounting_data.xlsx /tmp/otrs_time_accounting_data.csv ;",
 			"name" : "/tmp/otrs_time_accounting_data.csv",
 			"csv_remote_name" : "https://52.155.46.129:443/otrs_time_accounting_data.csv",
 			"delimiter" : ";",

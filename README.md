@@ -9,7 +9,7 @@
 ### Supported databases
 ![PostgreSQL](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/postgresql102x100.png) ![MySQL](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/mysql159x100.png) ![MariaDB](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/mariadb100x100.png) ![Microsoft SQL Server](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/sqlserver134x100.png) ![Oracle Database](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/oracle100x100.png) ![SQLite3](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/sqlite171x100.png) ![IBM Db2](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/ibmdb2100x100.png) ![ODBC](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/odbc199x100.png)
 ### Other supported sources
-![XLSX](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/xlsx100x100.png) ![ODS](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/ods100x100.png) ![CSV](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/csv100x100.png) ![TSV](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/tsv100x100.png) ![PSV](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/psv100x100.png) ![JSON](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/json100x100.png) ![API](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/api100x100.png)
+![XLSX](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/xlsx100x100.png) ![XML](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/xml100x100.png) ![ODS](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/ods100x100.png) ![CSV](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/csv100x100.png) ![TSV](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/tsv100x100.png) ![PSV](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/psv100x100.png) ![JSON](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/json100x100.png) ![API](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/api100x100.png)
 ### Deployment
 ![Linux](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/linux100x100.png) ![Windows 10](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/windows87x100.png) ![Cloud](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/cloud100x100.png) ![Docker](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/docker176x100.png) ![Microsoft Azure](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/azure256x100.png) ![Google Cloud Platform](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/google162x100.png) ![Amazon AWS](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/amazon236x100.png)
 
@@ -213,12 +213,13 @@ DCPAM development is still in progress with following data sources available:
 | TSV                                | native           |
 | PSV                                | native           |
 | JSON                               | native           |
-| XLS                                | [script](https://github.com/OrionExplorer/dcpam/blob/master/src/DCPAM_ETL/data-processor/excel2csv.py)
+| XLS                                | [script](https://github.com/OrionExplorer/dcpam/blob/master/src/DCPAM_ETL/data-processor/excel2csv.py) |
 | XLSX                               | script           |
 | XLSM                               | script           |
 | XLSB                               | script           |
 | ODF                                | script           |
 | ODS                                | script           |
+| XML                                | [script](https://github.com/OrionExplorer/dcpam/blob/master/src/DCPAM_ETL/data-processor/xml2csv.py) |
 
 DCPAM can access files from local or remote locations. The latter are fetched via HTTP/HTTPS protocol and [Battery HTTP Server](https://github.com/OrionExplorer/battery-http-server) is recommended.
 Files are loaded to temporary tables in DCPAM or external database to make SQL operations possible for this kind of data.
