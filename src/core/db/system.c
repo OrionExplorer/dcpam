@@ -200,7 +200,6 @@ void SYSTEM_QUERY_free( DATABASE_SYSTEM_QUERY *dst ) {
     if( dst->etl_config.load.modified.output_data_sql != NULL ) {
         free( dst->etl_config.load.modified.output_data_sql ); dst->etl_config.load.modified.output_data_sql = NULL;
     }
-
 }
 
 
@@ -632,7 +631,7 @@ void DATABASE_SYSTEM_close( DATABASE_SYSTEM *system, LOG_OBJECT *log ) {
             DATABASE_SYSTEM_DB_free( system->staging_db, log );
             free( system->staging_db ); system->staging_db;
         }
-        
+
         if( system->flat_file ) {
             free( system->flat_file->name ); system->flat_file->name = NULL;
             free( system->flat_file->preprocessor ); system->flat_file->preprocessor = NULL;

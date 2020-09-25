@@ -94,6 +94,7 @@ int CSV_FILE_load( CSV_FILE* dst, const char* filename, clc* csv_load_callback, 
                         strncpy( csv_record->fields[ i ].label, columns[ i ], MAX_COLUMN_NAME_LEN );
                         csv_record->fields[ i ].size = 0;
                         csv_record->fields[ i ].value = NULL;
+                        free( row_values[ i ] ); row_values[ i ] = NULL;
                     }
                 }
                 free( row_values ); row_values = NULL;
@@ -108,7 +109,7 @@ int CSV_FILE_load( CSV_FILE* dst, const char* filename, clc* csv_load_callback, 
     for( int i = 0; i < csv_columns->field_count; i++ ) {
         free( columns[ i ] ); columns[ i ] = NULL;
     }
-    columns = NULL;
+    free( columns ); columns = NULL;
     free( csv_columns ); csv_columns = NULL;
 
     fclose( csv_f );

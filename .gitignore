@@ -12,6 +12,7 @@ Debug/
 Release/
 log/
 x64/
+test/
 *.vcx*
 *.sln
 wtf.txt

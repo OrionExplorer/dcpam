@@ -332,7 +332,7 @@
 	"app" : {
 		"name" : "DCPAM ETL Node #1",
 		"version" : "0.1",
-		"run_once" : true,
+		"run_once" : false,
 		"run_once_comment#00" : "##################################################################################################",
 		"run_once_comment#01" : "# Set this param with \"true\" value to run DCPAM in \"On Schedule\" mode (ie. with CRON). ",
 		"run_once_comment#02" : "# Remove this param or set with \"false\" value to run DCPAM in \"Persistent\" mode (daemon-like).",

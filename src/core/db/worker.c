@@ -6,6 +6,7 @@
 #include "../../include/utils/time.h"
 #include "../../include/core/schema.h"
 #include "../../include/utils/memory.h"
+#include "../../include/utils/filesystem.h"
 #include "../../include/utils/log.h"
 #include "../../include/core/file/preload.h"
 #include "../../include/core/db/system.h"
@@ -35,6 +36,40 @@ typedef struct WORKER_DATA {
 
 void* DB_WORKER_watcher( void* src_WORKER_DATA );
 
+int DB_WORKER_check_all( LOG_OBJECT* log ) {
+    LOG_print( log, "[%s] Checking connection to DCPAM Database (%s)...\n", TIME_get_gmt(), APP.DB.name );
+    if( DATABASE_SYSTEM_DB_init( &APP.DB, log ) == FALSE ) {
+        return FALSE;
+    }
+    DATABASE_SYSTEM_DB_close( &APP.DB, log );
+
+    if( APP.STAGING ) {
+        LOG_print( log, "[%s] Checking connection to DCPAM Staging Area (%s)...\n", TIME_get_gmt(), APP.DB.name );
+        if( DATABASE_SYSTEM_DB_init( APP.STAGING, log ) == FALSE ) {
+            return FALSE;
+        }
+        DATABASE_SYSTEM_DB_close( APP.STAGING, log );
+    }
+
+    LOG_print( log, "[%s] Checking source system databases...\n", TIME_get_gmt() );
+    for( int i = 0; i < DATABASE_SYSTEMS_COUNT; i++ ) {
+        LOG_print( log, "\t - \"%s\"...\n", DATABASE_SYSTEMS[ i ].name );
+        if( DATABASE_SYSTEMS[ i ].flat_file ) {
+            FILE *tmp_f = FILE_open( DATABASE_SYSTEMS[ i ].flat_file->name, "r", "w", log );
+            if( tmp_f == NULL ) {
+                return FALSE;
+            }
+            fclose( tmp_f );
+        }
+        if( DATABASE_SYSTEM_DB_init( &DATABASE_SYSTEMS[ i ].system_db, log ) == FALSE ) {
+            return FALSE;
+        } else {
+            DATABASE_SYSTEM_DB_close( &DATABASE_SYSTEMS[ i ].system_db, log );
+        }
+    }
+    return TRUE;
+}
+
 
 int DB_WORKER_init( LOG_OBJECT *log ) {
     int                     thread_s[ MAX_DATA_SYSTEMS ];
@@ -43,6 +78,13 @@ int DB_WORKER_init( LOG_OBJECT *log ) {
     pthread_attr_t          attrs;
 
     mysql_library_init( 0, NULL, NULL );
+
+    LOG_print( log, "[%s] General verification started.\n", TIME_get_gmt() );
+    if( DB_WORKER_check_all( log ) == FALSE ) {
+        LOG_print( log, "[%s] General verification failed.\n", TIME_get_gmt() );
+        mysql_library_end();
+        return 0;
+    }
 
     pthread_attr_init( &attrs );
     pthread_attr_setdetachstate( &attrs, PTHREAD_CREATE_JOINABLE );
@@ -152,6 +194,10 @@ int DB_WORKER_init( LOG_OBJECT *log ) {
             }
         }
         LOG_print( log, "[%s] DB_WORKER_init: all LOAD/TRANSFORM threads are completed.\n", TIME_get_gmt() );
+
+        if( APP.run_once == 1 ) {
+            app_terminated = 1;
+        }
     }
 
     mysql_library_end();

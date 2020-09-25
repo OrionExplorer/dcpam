@@ -52,7 +52,9 @@ void DCPAM_free_configuration( void ) {
         free( APP.STAGING ); APP.STAGING = NULL;
     }
 
-    LCS_REPORT_free( &APP.lcs_report );
+    if( APP.lcs_report.conn ) {
+        LCS_REPORT_free( &APP.lcs_report );
+    }
 
     if( APP.version != NULL ) { free( APP.version ); APP.version = NULL; }
     if( APP.name != NULL ) { free( APP.name ); APP.name = NULL; }
@@ -68,6 +70,17 @@ void DCPAM_free_configuration( void ) {
             if( APP.DATA[ i ].actions[ j ].condition != NULL ) { free( APP.DATA[ i ].actions[ j ].condition ); APP.DATA[ i ].actions[ j ].condition = NULL; }
             if( APP.DATA[ i ].actions[ j ].sql != NULL ) { free( APP.DATA[ i ].actions[ j ].sql ); APP.DATA[ i ].actions[ j ].sql = NULL; }
         }
+    }
+
+    for( int i = 0; i < DATABASE_SYSTEMS_COUNT; i++ ) {
+        DATABASE_SYSTEM_DB_close( &DATABASE_SYSTEMS[ i ].dcpam_db, &dcpam_etl_log );
+        DATABASE_SYSTEM_DB_close( &DATABASE_SYSTEMS[ i ].system_db, &dcpam_etl_log );
+
+        if( DATABASE_SYSTEMS[ i ].staging_db ) {
+            DATABASE_SYSTEM_DB_close( DATABASE_SYSTEMS[ i ].staging_db, &dcpam_etl_log );
+        }
+
+        DATABASE_SYSTEM_close( &DATABASE_SYSTEMS[ i ], &dcpam_etl_log );
     }
 }
 
@@ -1574,6 +1587,9 @@ int DCPAM_load_configuration( const char* filename ) {
                             for( int i = 0; i < tmp_flat_file->columns_len; i++ ) {
                                 free( tmp_flat_file->columns[ i ] ); tmp_flat_file->columns[ i ] = NULL;
                             }
+                            free( tmp_flat_file->csv_file ); tmp_flat_file->csv_file = NULL;
+                            free( tmp_flat_file->json_file ); tmp_flat_file->json_file = NULL;
+                            free( tmp_flat_file->preprocessor ); tmp_flat_file->preprocessor = NULL;
                             free( tmp_flat_file->columns ); tmp_flat_file->columns = NULL;
                             memset( tmp_flat_file->delimiter, '\0', 1 );
                             free( tmp_flat_file ); tmp_flat_file = NULL;
@@ -1681,19 +1697,22 @@ int main( int argc, char** argv ) {
 
     if( DCPAM_load_configuration( config_file ) == 1 ) {
 
-        if( pthread_create( &lcs_worker_pid, NULL, DCPAM_LCS_worker, NULL ) == 0 ) {
-            if( DB_WORKER_init( &dcpam_etl_log ) == 1 ) {
-                //while( 1 );
+        if( DB_WORKER_init( &dcpam_etl_log ) == 1 ) {
+            if( pthread_create( &lcs_worker_pid, NULL, DCPAM_LCS_worker, NULL ) == 0 ) {
+                LOG_free( &dcpam_etl_lcs_log );
+                pthread_join( lcs_worker_pid, NULL );
+            } else {
+                LOG_print( &dcpam_etl_log, "[%s] Fatal error: unable to start thread for DCPAM LCS reporting.\n", TIME_get_gmt() );
             }
-            pthread_join( lcs_worker_pid, NULL );
         } else {
-            LOG_print( &dcpam_etl_log, "[%s] Fatal error: unable to start thread for DCPAM LCS reporting.\n", TIME_get_gmt() );
+            app_terminate();
         }
 
         DCPAM_free_configuration();
     }
 
     LOG_free( &dcpam_etl_log );
+    LOG_free( &dcpam_etl_lcs_log );
 
     ERR_free_strings();
     EVP_cleanup();

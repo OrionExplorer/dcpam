@@ -181,12 +181,11 @@
 	* [x] Load configuration.
 	* [x] Execute processor script/application.
 	* [x] Provide Python script to convert XLSX to CSV (using `pandas`).
-* [ ] Perform connectivity tests before DCPAM ETL starts:
-	* [ ] `app.DB`
-	* [ ] `app.STAGING`
-	* [ ] `system[].DB`
-	* [ ] `system[].FILE`
-	* [ ] `system[].API`
+* [x] Perform connectivity tests before DCPAM ETL starts:
+	* [x] `app.DB`
+	* [x] `app.STAGING`
+	* [x] `system[].DB`
+	* [x] `system[].FILE`
 * [x] HTTPS support
 * [x] Docker images
 	* [x] DCPAM ETL
