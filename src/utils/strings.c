@@ -38,3 +38,44 @@ int strpos( char *haystack, char *needle ) {
         return ( int )( p - haystack );
     return -1;
 }
+
+size_t strlcat( char* dst, const char* src, size_t size ) {
+    char        *dst_ptr = dst;
+    size_t      dst_len, to_copy = size;
+    const char  *src_ptr = src;
+
+    while( to_copy-- && *dst_ptr ) dst_ptr++;
+    dst_len = dst_ptr - dst;
+
+    if( !( to_copy = size - dst_len ) ) return dst_len + strlen( src );
+
+    while( *src_ptr ) {
+        if( to_copy != 1 ) {
+            *dst_ptr++ = *src_ptr;
+            to_copy--;
+        }
+        src_ptr++;
+    }
+    *dst_ptr = 0;
+
+    return ( dst_len + ( src_ptr - src ) );
+}
+
+size_t strlcpy( char* dst, const char* src, size_t size ) {
+    char        *dst_ptr = dst;
+    size_t      to_copy = size;
+    const char  *src_ptr = src;
+
+    if( to_copy && --to_copy ) {
+        do {
+            if( !( *dst_ptr++ = *src_ptr++ ) ) break;
+        } while( --to_copy);
+    }
+
+    if( !to_copy ) {
+        if( size ) *dst_ptr = 0;
+        while( *src_ptr++ );
+    }
+
+    return ( src_ptr - src - 1 );
+}
