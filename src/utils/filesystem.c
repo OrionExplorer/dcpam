@@ -97,7 +97,8 @@ char* get_app_path( void ) {
     static char		buf[ MAX_PATH_LENGTH ];
 
     if( getcwd( buf, MAX_PATH_LENGTH ) ) {
-        return strncat( buf, "", MAX_PATH_LENGTH - strlen( buf ) );
+        strlcat( buf, "", MAX_PATH_LENGTH - strlen( buf ) );
+        return buf;
     } else {
         return "";
     }

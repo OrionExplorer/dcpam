@@ -84,7 +84,7 @@ int ODBC_connect(
         db_connection->id = SAFECALLOC( 1025, sizeof( char ), __FILE__, __LINE__ );
         if( db_connection->id ) {
             snprintf( db_connection->id, 1024, "%s (%s)", connection_string, name );
-            /*strncpy(
+            /*strlcpy(
                 db_connection->id,
                 connection_string,
                 strlen( connection_string )
@@ -254,7 +254,7 @@ int ODBC_exec(
 
                         for( int k = 0; k < num_columns; k++ ) {
                             if( column_data_len[ k ] != SQL_NULL_DATA ) {
-                                strncpy( record->fields[ k ].label, ( const char* )column_name[ k ], MAX_COLUMN_NAME_LEN );
+                                strlcpy( record->fields[ k ].label, ( const char* )column_name[ k ], MAX_COLUMN_NAME_LEN );
                                 record->fields[ k ].value = SAFECALLOC( ( size_t )column_data_len[ k ] + 1, sizeof( char ), __FILE__, __LINE__ );
                                 memcpy( record->fields[ k ].value, ( char* )column_data[ k ], ( size_t )column_data_len[ k ] + 1);
                                 record->fields[ k ].size = ( unsigned long )column_data_len[ k ];
@@ -264,7 +264,7 @@ int ODBC_exec(
                                     record->fields[ k ].size = ( unsigned long )column_data_len[ k ] - 1;
                                 }
                             } else {
-                                strncpy( record->fields[ k ].label, ( const char* )column_name[ k ], MAX_COLUMN_NAME_LEN );
+                                strlcpy( record->fields[ k ].label, ( const char* )column_name[ k ], MAX_COLUMN_NAME_LEN );
                                 record->fields[ k ].size = 0;
                                 record->fields[ k ].value = NULL;
                             }
@@ -285,7 +285,7 @@ int ODBC_exec(
                             for( int k = 0; k < num_columns; k++ ) {
 
                                 if( column_data_len[ k ] != SQL_NULL_DATA ) {
-                                    strncpy( dst_result->records[ row_count ].fields[ k ].label, ( const char* )column_name[ k ], MAX_COLUMN_NAME_LEN );
+                                    strlcpy( dst_result->records[ row_count ].fields[ k ].label, ( const char* )column_name[ k ], MAX_COLUMN_NAME_LEN );
                                     dst_result->records[ row_count ].fields[ k ].value = SAFECALLOC( ( size_t )(column_data_len[ k ] + 1),  sizeof( char ), __FILE__, __LINE__ );
                                     memcpy( dst_result->records[ row_count ].fields[ k ].value, ( char* )column_data[ k ], ( size_t )column_data_len[ k ] + 1);
                                     dst_result->records[ row_count ].fields[ k ].size = ( unsigned long )column_data_len[ k ];
@@ -296,7 +296,7 @@ int ODBC_exec(
                                     }
                                     
                                 } else {
-                                    strncpy( dst_result->records[ row_count ].fields[ k ].label, ( const char* )column_name[ k ], MAX_COLUMN_NAME_LEN );
+                                    strlcpy( dst_result->records[ row_count ].fields[ k ].label, ( const char* )column_name[ k ], MAX_COLUMN_NAME_LEN );
                                     dst_result->records[ row_count ].fields[ k ].size = 0;
                                     dst_result->records[ row_count ].fields[ k ].value = NULL;
                                 }

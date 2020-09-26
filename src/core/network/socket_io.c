@@ -279,7 +279,7 @@ void SOCKET_send( COMMUNICATION_SESSION *communication_session, CONNECTED_CLIENT
         _data_size = strlen( data );
     }
 
-    strncpy( data_to_send, data, MAX_BUFFER );
+    strlcpy( data_to_send, data, MAX_BUFFER );
 
     if( ( communication_session->data_length = send( client->socket_descriptor, data_to_send, _data_size, 0 ) ) <= 0 ) {
         SOCKET_disconnect_client( communication_session );

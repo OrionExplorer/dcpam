@@ -29,7 +29,7 @@ char** _CSV_parse_line( const char* line, const char* delimiter, int *dst_count,
                 size_t col_name_len = strlen( token );
                 if( col_name_len > 0 ) {
                     tmp[ val_count - 1 ] = SAFECALLOC( col_name_len + 1, sizeof( char ), __FILE__, __LINE__ );
-                    strncpy( tmp[ val_count - 1 ], token, col_name_len );
+                    strlcpy( tmp[ val_count - 1 ], token, col_name_len );
                 } else {
                     tmp[ val_count - 1 ] = NULL;
                 }
@@ -85,13 +85,13 @@ int CSV_FILE_load( CSV_FILE* dst, const char* filename, clc* csv_load_callback, 
 
                 for( int i = 0; i < csv_columns->field_count; i++ ) {
                     if( row_values[ i ] ) {
-                        strncpy( csv_record->fields[ i ].label, columns[ i ], MAX_COLUMN_NAME_LEN );
+                        strlcpy( csv_record->fields[ i ].label, columns[ i ], MAX_COLUMN_NAME_LEN );
                         csv_record->fields[ i ].size = strlen( row_values[ i ] );
                         csv_record->fields[ i ].value = SAFECALLOC( ( csv_record->fields[ i ].size + 1 ), sizeof( char ), __FILE__, __LINE__ );
-                        strncpy( csv_record->fields[ i ].value, row_values[ i ], csv_record->fields[ i ].size );
+                        strlcpy( csv_record->fields[ i ].value, row_values[ i ], csv_record->fields[ i ].size );
                         free( row_values[ i ] ); row_values[ i ] = NULL;
                     } else {
-                        strncpy( csv_record->fields[ i ].label, columns[ i ], MAX_COLUMN_NAME_LEN );
+                        strlcpy( csv_record->fields[ i ].label, columns[ i ], MAX_COLUMN_NAME_LEN );
                         csv_record->fields[ i ].size = 0;
                         csv_record->fields[ i ].value = NULL;
                         free( row_values[ i ] ); row_values[ i ] = NULL;

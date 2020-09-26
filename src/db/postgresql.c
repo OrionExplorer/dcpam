@@ -143,7 +143,7 @@ int PG_exec(
                 record->fields = ( DB_FIELD* )SAFEMALLOC( field_count * sizeof( DB_FIELD ), __FILE__, __LINE__ );
 
                 for( int j = 0; j < field_count; j++ ) {
-                    strncpy( record->fields[ j ].label, PQfname( pg_result, j ), MAX_COLUMN_NAME_LEN );
+                    strlcpy( record->fields[ j ].label, PQfname( pg_result, j ), MAX_COLUMN_NAME_LEN );
 
                     int val_length = PQgetlength( pg_result, i, j );
 
@@ -178,7 +178,7 @@ int PG_exec(
                 dst_result->records[ i ].field_count = field_count;
 
                 for( int j = 0; j < field_count; j++ ) {
-                    strncpy( dst_result->records[ i ].fields[ j ].label, PQfname( pg_result, j ), MAX_COLUMN_NAME_LEN );
+                    strlcpy( dst_result->records[ i ].fields[ j ].label, PQfname( pg_result, j ), MAX_COLUMN_NAME_LEN );
                     int val_length = PQgetlength( pg_result, i, j );
                     if( val_length > 0 ) {
                         dst_result->records[ i ].fields[ j ].value = SAFECALLOC( ( val_length + 1 ), sizeof( char ), __FILE__, __LINE__ );

@@ -75,7 +75,7 @@ void LOG_print( LOG_OBJECT *log, char *fmt, ... ) {
     vsnprintf( output_text, FORMATTED_TEXT_LEN, fmt, args );
     va_end( args );
 
-    strncat( log->buffer, output_text, BUFFER_SIZE );
+    strlcat( log->buffer, output_text, BUFFER_SIZE );
     printf( "%s", output_text );
 
     free( output_text );
@@ -89,8 +89,8 @@ void LOG_print( LOG_OBJECT *log, char *fmt, ... ) {
             len = buf_len - BUFFER_SIZE;
             char *tmp_buf = SAFEMALLOC( len, __FILE__, __LINE__ );
 
-            strncpy( tmp_buf, log->buffer+BUFFER_SIZE, len );
-            strncat( log->buffer, tmp_buf, len );
+            strlcpy( tmp_buf, log->buffer+BUFFER_SIZE, len );
+            strlcat( log->buffer, tmp_buf, len );
             free( tmp_buf );
             tmp_buf = NULL;
         }

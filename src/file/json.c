@@ -58,7 +58,7 @@ int JSON_FILE_load( JSON_FILE* dst, const char* filename, jlc* json_load_callbac
 
                 for( int i = 0; i < json_columns->field_count; i++ ) {
                     cJSON *json_field_name = cJSON_GetArrayItem( record_data, i );
-                    strncpy( json_columns->fields[ i ].label, json_field_name->string, MAX_COLUMN_NAME_LEN );
+                    strlcpy( json_columns->fields[ i ].label, json_field_name->string, MAX_COLUMN_NAME_LEN );
                 }
             }
 
@@ -70,13 +70,13 @@ int JSON_FILE_load( JSON_FILE* dst, const char* filename, jlc* json_load_callbac
 
             for( int i = 0; i < json_columns->field_count; i++ ) {
                 cJSON* record_field = cJSON_GetArrayItem( record_data, i );
-                strncpy( json_record->fields[ i ].label, json_columns->fields[ i ].label, MAX_COLUMN_NAME_LEN );
+                strlcpy( json_record->fields[ i ].label, json_columns->fields[ i ].label, MAX_COLUMN_NAME_LEN );
 
                 if( cJSON_IsString( record_field ) ) {
 
                     json_record->fields[ i ].size = strlen( record_field->valuestring );
                     json_record->fields[ i ].value = SAFECALLOC( json_record->fields[ i ].size + 1, sizeof( char ), __FILE__, __LINE__ );
-                    strncpy( json_record->fields[ i ].value, record_field->valuestring, json_record->fields[ i ].size );
+                    strlcpy( json_record->fields[ i ].value, record_field->valuestring, json_record->fields[ i ].size );
 
                 } else if( cJSON_IsNumber( record_field ) ) {
                     char        tmp_s_val[ 64 ];
@@ -87,18 +87,18 @@ int JSON_FILE_load( JSON_FILE* dst, const char* filename, jlc* json_load_callbac
 
                     json_record->fields[ i ].size = strlen( tmp_s_val );
                     json_record->fields[ i ].value = SAFECALLOC( json_record->fields[ i ].size + 1, sizeof( char ), __FILE__, __LINE__ );
-                    strncpy( json_record->fields[ i ].value, tmp_s_val, json_record->fields[ i ].size );
+                    strlcpy( json_record->fields[ i ].value, tmp_s_val, json_record->fields[ i ].size );
 
                 } else if( cJSON_IsBool( record_field ) ) {
 
                     if( record_field->valueint == 1 ) {
                         json_record->fields[ i ].size = strlen( "true" );
                         json_record->fields[ i ].value = SAFECALLOC( json_record->fields[ i ].size + 1, sizeof( char ), __FILE__, __LINE__ );
-                        strncpy( json_record->fields[ i ].value, "true", json_record->fields[ i ].size );
+                        strlcpy( json_record->fields[ i ].value, "true", json_record->fields[ i ].size );
                     } else {
                         json_record->fields[ i ].size = strlen( "false" );
                         json_record->fields[ i ].value = SAFECALLOC( json_record->fields[ i ].size + 1, sizeof( char ), __FILE__, __LINE__ );
-                        strncpy( json_record->fields[ i ].value, "false", json_record->fields[ i ].size );
+                        strlcpy( json_record->fields[ i ].value, "false", json_record->fields[ i ].size );
                     }
 
                 } else {

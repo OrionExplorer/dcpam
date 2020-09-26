@@ -143,7 +143,7 @@ int _DB_QUERY_replace_params( char *src,  const char *search, const char* const 
 //    int occurrences = 0;
 //
 //    while( ( p = strstr( p, search ) ) ) {
-//        strncpy( buffer, src, p - src );
+//        strlcpy( buffer, src, p - src );
 //        buffer[ p - src ] = '\0';
 //        strcat( buffer, replaces[ replace_index ] );
 //        strcat( buffer, p + strlen( search ) );
@@ -164,7 +164,7 @@ int _DB_QUERY_internal_replace_str_( char* src, const char* search, const char*r
     int occurrences = 0;
 
     while( ( p = strstr( p, search ) ) ) {
-        strncpy( buffer, src, p - src );
+        strlcpy( buffer, src, p - src );
         buffer[ p - src ] = '\0';
         strcat( buffer, replace );
         strcat( buffer, p + strlen( search ) );
@@ -248,7 +248,7 @@ int DB_QUERY_format( const char* src, char **dst, size_t *dst_length, const char
     /* Init dst buffer */
     *dst = SAFECALLOC( dst_len + 1, sizeof( char ), __FILE__, __LINE__ );
     /* Copy SQL template to dst buffer */
-    strncpy( *dst, src, dst_len );
+    strlcpy( *dst, src, dst_len );
     /* Replace all "?" occurrences with values */
     ptr_dst = *dst;
     _DB_QUERY_replace_params( ptr_dst, "?", param_values, param_lengths, params_count, &dst_len );

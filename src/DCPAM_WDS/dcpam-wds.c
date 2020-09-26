@@ -459,7 +459,7 @@ int DCPAM_WDS_load_configuration( const char* filename ) {
                                 }
                                 size_t str_len4 = strlen( cfg_app_data_actions_item_sql->valuestring );
                                 P_APP.DATA[ i ].actions[ j ].sql = SAFECALLOC( str_len4 + 1, sizeof( char ), __FILE__, __LINE__ );
-                                strncpy( P_APP.DATA[ i ].actions[ j ].sql, cfg_app_data_actions_item_sql->valuestring, str_len4+1 );
+                                strlcpy( P_APP.DATA[ i ].actions[ j ].sql, cfg_app_data_actions_item_sql->valuestring, str_len4+1 );
                                 LOG_print( &dcpam_wds_log, "\t\t· sql=\"%s\"\n", P_APP.DATA[ i ].actions[ j ].sql );
                             }
                         } else {
@@ -634,7 +634,7 @@ void DCPAM_WDS_get_data( const char *sql, const char *db, char **dst_json ) {
 
             char* _res = cJSON_Print( response );
             *dst_json = SAFECALLOC( strlen( _res ) + 1, sizeof( char ), __FILE__, __LINE__ );
-            strncpy( *dst_json, _res, strlen( _res ) );
+            strlcpy( *dst_json, _res, strlen( _res ) );
             cJSON_Delete( response );
             free( _res );
         } else {
@@ -709,7 +709,7 @@ void DCPAM_WDS_query( COMMUNICATION_SESSION *communication_session, CONNECTED_CL
         cJSON *json_request = NULL;
 
         request = SAFECALLOC( communication_session->data_length + 1, sizeof( char ), __FILE__, __LINE__ );
-        strncpy( request, communication_session->content, communication_session->data_length );
+        strlcpy( request, communication_session->content, communication_session->data_length );
 
         json_request = cJSON_Parse( request );
         if( json_request ) {
@@ -840,12 +840,12 @@ void* DCPAM_WDS_worker( void* LCS_worker_data ) {
     for( int i = 0; i < P_APP.ALLOWED_HOSTS_len; i++ ) {
         size_t host_len = strlen( P_APP.ALLOWED_HOSTS_[ i ]->ip );
         allowed_hosts[ i ] = SAFECALLOC( host_len + 1, sizeof( char ), __FILE__, __LINE__ );
-        strncpy( allowed_hosts[ i ], P_APP.ALLOWED_HOSTS_[ i ]->ip, host_len );
+        strlcpy( allowed_hosts[ i ], P_APP.ALLOWED_HOSTS_[ i ]->ip, host_len );
     }
 
     size_t lcs_host_len = strlen( P_APP.lcs_report.lcs_host );
     allowed_hosts[ P_APP.ALLOWED_HOSTS_len ] = SAFECALLOC( lcs_host_len + 1, sizeof( char ), __FILE__, __LINE__ );
-    strncpy( allowed_hosts[ P_APP.ALLOWED_HOSTS_len ], P_APP.lcs_report.lcs_host, lcs_host_len );
+    strlcpy( allowed_hosts[ P_APP.ALLOWED_HOSTS_len ], P_APP.lcs_report.lcs_host, lcs_host_len );
     
     spc exec_script = ( spc )&DCPAM_WDS_query;
     SOCKET_main( &exec_script, P_APP.network_port, ( const char** )&( *allowed_hosts ), total_hosts, &dcpam_wds_lcs_log );

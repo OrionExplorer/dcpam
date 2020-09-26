@@ -20,18 +20,18 @@ int LCS_REPORT_init( LCS_REPORT *connection, const char *address, const char *co
 
     size_t component_name_len = strlen( component_name );
     connection->component = SAFECALLOC( component_name_len + 1, sizeof( char ), __FILE__, __LINE__ );
-    strncpy( connection->component, component_name, component_name_len );
+    strlcpy( connection->component, component_name, component_name_len );
 
     size_t component_version_len = strlen( component_version );
     connection->version = SAFECALLOC( component_version_len + 1, sizeof( char ), __FILE__, __LINE__ );
-    strncpy( connection->version, component_version, component_version_len );
+    strlcpy( connection->version, component_version, component_version_len );
 
     connection->active = 1;
 
     if( sscanf( address, "dcpam://%99[^:]:%99d", host, &port ) == 2 ) {
         size_t host_len = strlen( host );
         connection->lcs_host = SAFECALLOC( host_len + 1, sizeof( char ), __FILE__, __LINE__ );
-        strncpy( connection->lcs_host, host, host_len );
+        strlcpy( connection->lcs_host, host, host_len );
         connection->lcs_port = port;
         return 1;
     } else {

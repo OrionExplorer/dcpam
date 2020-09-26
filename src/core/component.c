@@ -21,11 +21,11 @@ int LCS_COMPONENT_ACTION_register( DCPAM_COMPONENT* dst, const char* description
 
             size_t description_len = strlen( description );
             dst->actions[ dst->actions_len ]->description = SAFECALLOC( description_len + 1, sizeof( char ), __FILE__, __LINE__ );
-            strncpy( dst->actions[ dst->actions_len ]->description, description, description_len );
+            strlcpy( dst->actions[ dst->actions_len ]->description, description, description_len );
 
             dst->actions[ dst->actions_len ]->type = action_type;
 
-            strncpy( dst->actions[ dst->actions_len ]->timestamp, TIME_get_gmt(), 20 );
+            strlcpy( dst->actions[ dst->actions_len ]->timestamp, TIME_get_gmt(), 20 );
 
             dst->actions_len++;
 
@@ -138,13 +138,13 @@ int LCS_COMPONENT_register( DCPAM_COMPONENT* dst, const char* name, const char* 
         dst->port = port;
 
         dst->name = SAFECALLOC( name_len + 1, sizeof( char ), __FILE__, __LINE__ );
-        strncpy( dst->name, name, name_len );
+        strlcpy( dst->name, name, name_len );
 
         dst->version = SAFECALLOC( version_len + 1, sizeof( char ), __FILE__, __LINE__ );
-        strncpy( dst->version, version, version_len );
+        strlcpy( dst->version, version, version_len );
 
         dst->ip = SAFECALLOC( ip_len + 1, sizeof( char ), __FILE__, __LINE__ );
-        strncpy( dst->ip, ip, ip_len );
+        strlcpy( dst->ip, ip, ip_len );
 
         dst->active = 1;
 
@@ -154,9 +154,9 @@ int LCS_COMPONENT_register( DCPAM_COMPONENT* dst, const char* name, const char* 
         size_t crm_len = strlen( component_registration_message );
         dst->actions[ 0 ] = SAFEMALLOC( sizeof( COMPONENT_ACTION ), __FILE__, __LINE__ );
         dst->actions[ 0 ]->description = SAFECALLOC( crm_len + 1, sizeof( char ), __FILE__, __LINE__ );
-        strncpy( dst->actions[ 0 ]->description, component_registration_message, crm_len );
+        strlcpy( dst->actions[ 0 ]->description, component_registration_message, crm_len );
 
-        strncpy( dst->actions[ 0 ]->timestamp, TIME_get_gmt(), 20 );
+        strlcpy( dst->actions[ 0 ]->timestamp, TIME_get_gmt(), 20 );
 
         dst->actions[ 0 ]->type = DCT_START;
 

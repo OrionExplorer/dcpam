@@ -32,7 +32,7 @@ void* LCS_WORKER_watcher( void* p ) {
                 LOG_print( &log, "[%s] Component check (%d/%d): \"%s %s (%s:%d)\"...\n", TIME_get_gmt(), i+1, L_APP.COMPONENTS_len, L_APP.COMPONENTS[ i ]->name, L_APP.COMPONENTS[ i ]->version, L_APP.COMPONENTS[ i ]->ip, L_APP.COMPONENTS[ i ]->port );
 
                 int res = LCS_COMPONENT_check( L_APP.COMPONENTS[ i ], &log );
-                strncpy( L_APP.COMPONENTS[ i ]->timestamp, TIME_get_gmt(), 20 );
+                strlcpy( L_APP.COMPONENTS[ i ]->timestamp, TIME_get_gmt(), 20 );
                 if( res == 0 ) {
                     LOG_print( &log, "[%s] FAILURE Component check (%d/%d): \"%s %s (%s:%d)\" is not responding!\n", TIME_get_gmt(), i + 1, L_APP.COMPONENTS_len, L_APP.COMPONENTS[ i ]->name, L_APP.COMPONENTS[ i ]->version, L_APP.COMPONENTS[ i ]->ip, L_APP.COMPONENTS[ i ]->port );
                     L_APP.COMPONENTS[ i ]->active = 0;

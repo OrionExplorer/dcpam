@@ -218,7 +218,7 @@ void DATABASE_SYSTEM_QUERY_add(
     dst->name = ( char * )SAFECALLOC( str_len+1, sizeof( char ), __FILE__, __LINE__ );
     if( dst->name ) {
         if( verbose > 0 ) LOG_print( log, "\t· name=\"%s\"\n", name );
-        strncpy(
+        strlcpy(
             dst->name,
             name,
             str_len
@@ -353,7 +353,7 @@ void DATABASE_SYSTEM_DB_add(
     str_len = strlen( name );
     dst->name = SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
     if( dst->name ) {
-        strncpy(
+        strlcpy(
             dst->name,
             name,
             str_len
@@ -362,7 +362,7 @@ void DATABASE_SYSTEM_DB_add(
 
     dst->ip = SAFECALLOC( TINY_BUFF_SIZE, sizeof( char ), __FILE__, __LINE__ );
     if( dst->ip ) {
-        strncpy(
+        strlcpy(
             dst->ip,
             ip,
             TINY_BUFF_SIZE
@@ -412,7 +412,7 @@ void DATABASE_SYSTEM_DB_add(
     str_len = strlen(user);
     dst->user = SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
     if( dst->user ) {
-        strncpy(
+        strlcpy(
             dst->user,
             user,
             str_len
@@ -423,7 +423,7 @@ void DATABASE_SYSTEM_DB_add(
     str_len = strlen(password);
     dst->password = SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
     if( dst->password ) {
-        strncpy(
+        strlcpy(
             dst->password,
             password,
             str_len
@@ -434,7 +434,7 @@ void DATABASE_SYSTEM_DB_add(
     str_len = strlen(db);
     dst->db = SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
     if( dst->db ) {
-        strncpy(
+        strlcpy(
             dst->db,
             db,
             str_len
@@ -446,7 +446,7 @@ void DATABASE_SYSTEM_DB_add(
         str_len = strlen( connection_string );
         dst->connection_string = SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
         if( dst->connection_string ) {
-            strncpy(
+            strlcpy(
                 dst->connection_string,
                 connection_string,
                 str_len
@@ -675,7 +675,7 @@ void DATABASE_SYSTEM_add(
         size_t name_len = strlen(name);
         DATABASE_SYSTEMS[ DATABASE_SYSTEMS_COUNT ].name = SAFECALLOC( name_len + 1, sizeof( char ), __FILE__, __LINE__ );
         if( DATABASE_SYSTEMS[ DATABASE_SYSTEMS_COUNT ].name ) {
-            strncpy(
+            strlcpy(
                 DATABASE_SYSTEMS[ DATABASE_SYSTEMS_COUNT ].name,
                 name,
                 name_len

@@ -111,7 +111,7 @@ int SQLITE_exec(
 
                         for( int j = 0; j < field_count; j++ ) {
                             int data_size = sqlite3_column_bytes( stmt, i );
-                            strncpy( record->fields[ i ].label, sqlite3_column_name( stmt, i ), MAX_COLUMN_NAME_LEN );
+                            strlcpy( record->fields[ i ].label, sqlite3_column_name( stmt, i ), MAX_COLUMN_NAME_LEN );
                             record->fields[ i ].size = ( unsigned long )data_size;
                             record->fields[ i ].value = SAFECALLOC( ( data_size + 1 ), sizeof( char ), __FILE__, __LINE__ );
                             memcpy( record->fields[ i ].value, sqlite3_column_blob( stmt, i ), data_size );
@@ -128,7 +128,7 @@ int SQLITE_exec(
 
                         for( i = 0; i < field_count; i++ ) {
                             int data_size = sqlite3_column_bytes( stmt, i );
-                            strncpy( dst_result->records[ row_count ].fields[ i ].label, sqlite3_column_name( stmt, i ), MAX_COLUMN_NAME_LEN );
+                            strlcpy( dst_result->records[ row_count ].fields[ i ].label, sqlite3_column_name( stmt, i ), MAX_COLUMN_NAME_LEN );
                             dst_result->records[ row_count ].fields[ i ].size = ( unsigned long )data_size;
                             dst_result->records[ row_count ].fields[ i ].value = SAFECALLOC( ( data_size + 1 ), sizeof( char ), __FILE__, __LINE__ );
                             memcpy( dst_result->records[ row_count ].fields[ i ].value, sqlite3_column_blob( stmt, i ), data_size );

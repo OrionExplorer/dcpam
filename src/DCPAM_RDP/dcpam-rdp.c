@@ -318,7 +318,7 @@ void* DCPAM_RDP_worker( void* LCS_worker_data ) {
     }
     size_t lcs_host_len = strlen( R_APP.lcs_report.lcs_host );
     allowed_hosts_ip[ R_APP.ALLOWED_HOSTS_len ] = SAFECALLOC( lcs_host_len + 1, sizeof( char ), __FILE__, __LINE__ );
-    strncpy( allowed_hosts_ip[ R_APP.ALLOWED_HOSTS_len ], R_APP.lcs_report.lcs_host, lcs_host_len );
+    strlcpy( allowed_hosts_ip[ R_APP.ALLOWED_HOSTS_len ], R_APP.lcs_report.lcs_host, lcs_host_len );
 
     SOCKET_main( &exec_script, R_APP.network_port, ( const char** )&(*allowed_hosts_ip), R_APP.ALLOWED_HOSTS_len, &dcpam_rdp_log );
 

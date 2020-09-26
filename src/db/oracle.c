@@ -364,7 +364,7 @@ int ORACLE_exec(
 
                     for( int i = 0; i < field_count; i++ ) {
                         _real_col_width[ i ] = ( sb4 )strlen( ( const char* )_col_data[ i ] );
-                        strncpy( record->fields[ i ].label, column_name[ i ], MAX_COLUMN_NAME_LEN );
+                        strlcpy( record->fields[ i ].label, column_name[ i ], MAX_COLUMN_NAME_LEN );
 
                         record->fields[ i ].size = _real_col_width[ i ];
                         if( _real_col_width[ i ] > 0 ) {
@@ -390,7 +390,7 @@ int ORACLE_exec(
 
                         for( int i = 0; i < field_count; i++ ) {
                             _real_col_width[ i ] = ( sb4 )strlen( ( const char* )_col_data[ i ] );
-                            strncpy( dst_result->records[ row_count ].fields[ i ].label, column_name[ i ], MAX_COLUMN_NAME_LEN );
+                            strlcpy( dst_result->records[ row_count ].fields[ i ].label, column_name[ i ], MAX_COLUMN_NAME_LEN );
 
                             dst_result->records[ row_count ].fields[ i ].size = _real_col_width[ i ];
                             if( _real_col_width[ i ] > 0 ) {

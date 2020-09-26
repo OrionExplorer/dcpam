@@ -138,7 +138,7 @@ int MYSQL_exec(
                     for( int i = 0; i < field_count; i++ ) {
                         table_fields[ i ] = SAFECALLOC( MAX_COLUMN_NAME_LEN + 1, sizeof( char ), __FILE__, __LINE__ );
                         mysql_field = mysql_fetch_field( mysql_result );
-                        strncpy( table_fields[ i ], mysql_field->name, MAX_COLUMN_NAME_LEN );
+                        strlcpy( table_fields[ i ], mysql_field->name, MAX_COLUMN_NAME_LEN );
                     }
 
                     for( int i = 0; i < row_count; i++ ) {
@@ -163,7 +163,7 @@ int MYSQL_exec(
                                 record->fields[ j ].size = 0;
                             }
 
-                            strncpy( record->fields[ j ].label, table_fields[ j ], MAX_COLUMN_NAME_LEN );
+                            strlcpy( record->fields[ j ].label, table_fields[ j ], MAX_COLUMN_NAME_LEN );
                         }
 
                         pthread_mutex_unlock( &db_exec_mutex );
@@ -203,7 +203,7 @@ int MYSQL_exec(
                     for( int i = 0; i < field_count; i++ ) {
                         mysql_field = mysql_fetch_field( mysql_result );
                         for( int j = 0; j < row_count; j++ ) {
-                            strncpy( dst_result->records[ j ].fields[ i ].label, mysql_field->name, MAX_COLUMN_NAME_LEN );
+                            strlcpy( dst_result->records[ j ].fields[ i ].label, mysql_field->name, MAX_COLUMN_NAME_LEN );
                         }
                     }
                 }

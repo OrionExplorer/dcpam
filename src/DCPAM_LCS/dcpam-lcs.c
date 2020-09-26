@@ -266,7 +266,7 @@ void DCPAM_LCS_listener( COMMUNICATION_SESSION *communication_session, CONNECTED
         cJSON *json_request = NULL;
 
         request = SAFECALLOC( communication_session->data_length + 1, sizeof( char ), __FILE__, __LINE__ );
-        strncpy( request, communication_session->content, communication_session->data_length );
+        strlcpy( request, communication_session->content, communication_session->data_length );
 
         LOG_print( &dcpam_lcs_log, "[%s] Received request (%ld): %s\n", TIME_get_gmt(), communication_session->data_length, request );
 
