@@ -39,16 +39,22 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA );
 int DB_WORKER_check_all( LOG_OBJECT* log ) {
     LOG_print( log, "[%s] Checking connection to DCPAM Database (%s)...\n", TIME_get_gmt(), APP.DB.name );
     if( DATABASE_SYSTEM_DB_init( &APP.DB, log ) == FALSE ) {
+        DATABASE_SYSTEM_DB_close( &APP.DB, log );
+        DATABASE_SYSTEM_DB_free( &APP.DB, log );
         return FALSE;
     }
     DATABASE_SYSTEM_DB_close( &APP.DB, log );
+    DATABASE_SYSTEM_DB_free( &APP.DB, log );
 
     if( APP.STAGING ) {
         LOG_print( log, "[%s] Checking connection to DCPAM Staging Area (%s)...\n", TIME_get_gmt(), APP.DB.name );
         if( DATABASE_SYSTEM_DB_init( APP.STAGING, log ) == FALSE ) {
+            DATABASE_SYSTEM_DB_close( APP.STAGING, log );
+            DATABASE_SYSTEM_DB_free( APP.STAGING, log );
             return FALSE;
         }
         DATABASE_SYSTEM_DB_close( APP.STAGING, log );
+        DATABASE_SYSTEM_DB_free( APP.STAGING, log );
     }
 
     LOG_print( log, "[%s] Checking source system databases...\n", TIME_get_gmt() );
@@ -62,9 +68,12 @@ int DB_WORKER_check_all( LOG_OBJECT* log ) {
             fclose( tmp_f );
         }
         if( DATABASE_SYSTEM_DB_init( &DATABASE_SYSTEMS[ i ].system_db, log ) == FALSE ) {
+            DATABASE_SYSTEM_DB_close( &DATABASE_SYSTEMS[ i ].system_db, log );
+            DATABASE_SYSTEM_DB_free( &DATABASE_SYSTEMS[ i ].system_db, log );
             return FALSE;
         } else {
             DATABASE_SYSTEM_DB_close( &DATABASE_SYSTEMS[ i ].system_db, log );
+            DATABASE_SYSTEM_DB_free( &DATABASE_SYSTEMS[ i ].system_db, log );
         }
     }
     return TRUE;
@@ -78,6 +87,8 @@ int DB_WORKER_init( LOG_OBJECT *log ) {
     pthread_attr_t          attrs;
 
     mysql_library_init( 0, NULL, NULL );
+
+    app_terminated = 0;
 
     LOG_print( log, "[%s] General verification started.\n", TIME_get_gmt() );
     if( DB_WORKER_check_all( log ) == FALSE ) {
@@ -100,8 +111,11 @@ int DB_WORKER_init( LOG_OBJECT *log ) {
         LOG_init( log_object[ i ], DATABASE_SYSTEMS[ i ].name, 65535 );
     }
 
-    while( app_terminated == 0 ) {
+    while( 1 ) {
 
+        if( app_terminated == 1 ) {
+            break;
+        }
         /*
             Spawn all Extract processes.
         */
@@ -197,6 +211,9 @@ int DB_WORKER_init( LOG_OBJECT *log ) {
 
         if( APP.run_once == 1 ) {
             app_terminated = 1;
+        }
+        if( app_terminated == 1 ) {
+            break;
         }
     }
 
@@ -732,6 +749,9 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
                 snprintf( action_description, post_dst_buf_len + 1, post_etl_descr, DATA_SYSTEM->name );
                 LCS_REPORT_send( &APP.lcs_report, action_description, DCT_STOP );
                 free( action_description ); action_description = NULL;
+
+                LOG_print( log, "[%s] Workflow finished.\n", TIME_get_gmt() );
+                Sleep( WORKER_WATCHER_SLEEP );
             }
         }
     }
@@ -742,14 +762,6 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
     );
 
     pthread_mutex_unlock( &watcher_mutex );
-    if( curr_etl_step == ETL_LOAD ) {
-        if( APP.run_once == 1 ) {
-            app_terminated = 1;
-        } else {
-            LOG_print( log, "[%s] Workflow finished.\n", TIME_get_gmt() );
-            Sleep( WORKER_WATCHER_SLEEP );
-        }
-    }
 
     if( app_terminated == 1 ) {
         LOG_print( log, "[%s]\t- Thread exit handler executed for \"%s\".\n", TIME_get_gmt(), DATA_SYSTEM->name );

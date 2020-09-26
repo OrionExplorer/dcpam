@@ -1452,7 +1452,6 @@ int DCPAM_load_configuration( const char* filename ) {
 
                         tmp_queries_count++;
 
-                        //if( tmp_cdc->stage ) free( tmp_cdc->stage ); tmp_cdc->stage = NULL;
                         free( tmp_cdc ); tmp_cdc = NULL;
                     }
 
@@ -1679,6 +1678,8 @@ int main( int argc, char** argv ) {
     srand( time( NULL ) );
     LOG_init( &dcpam_etl_log, "dcpam-etl", 65535 );
 
+    app_terminated = 0;
+
     SSL_load_error_strings();
     SSL_library_init();
     OpenSSL_add_all_algorithms();
@@ -1704,8 +1705,6 @@ int main( int argc, char** argv ) {
             } else {
                 LOG_print( &dcpam_etl_log, "[%s] Fatal error: unable to start thread for DCPAM LCS reporting.\n", TIME_get_gmt() );
             }
-        } else {
-            app_terminate();
         }
 
         DCPAM_free_configuration();

@@ -285,7 +285,7 @@
 					"inserted" : [{
 						"module" : "./src/DCPAM_RDP/whitespaces/trailing-spaces.py",
 						"staged_data" : "SELECT * FROM stage_accounted_time",
-						"api_key" : "",
+						"api_key" : "aa",
 						"source_system_update" : "UPDATE time_accounting SET %s WHERE %s"
 					}],
 					"deleted" : [{
@@ -297,7 +297,7 @@
 					"modified" : [{
 						"module" : "./src/DCPAM_RDP/whitespaces/trailing-spaces.py",
 						"staged_data" : "SELECT * FROM stage_accounted_time",
-						"api_key" : "",
+						"api_key" : "aa",
 						"source_system_update" : "UPDATE time_accounting SET %s WHERE %s"
 					}]
 				},
