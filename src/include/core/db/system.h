@@ -63,6 +63,16 @@ void DATABASE_SYSTEM_QUERY_add(
             LOG_OBJECT              *log
 );
 
+void SYSTEM_QUERY_free(
+      DATABASE_SYSTEM_QUERY         *dst
+);
+
+
+void SYSTEM_ETL_CONFIG_free(
+      DB_SYSTEM_ETL                 *dst
+);
+
+
 int DB_exec(
             DATABASE_SYSTEM_DB      *db,
             const char              *sql_template,

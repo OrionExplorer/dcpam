@@ -764,12 +764,6 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
 
     pthread_mutex_unlock( &watcher_mutex );
 
-    if( app_terminated == 1 ) {
-        LOG_print( log, "[%s]\t- Thread exit handler executed for \"%s\".\n", TIME_get_gmt(), DATA_SYSTEM->name );
-        DATABASE_SYSTEM_close( DATA_SYSTEM, log );
-        pthread_exit( NULL );
-    }
-
     if( DATA_SYSTEM->name != NULL ) {
         DATABASE_SYSTEM_DB_close( &DATA_SYSTEM->dcpam_db, log );
         DATABASE_SYSTEM_DB_close( &DATA_SYSTEM->system_db, log );
@@ -778,6 +772,12 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
             DATABASE_SYSTEM_DB_close( DATA_SYSTEM->staging_db, log );
         }
     }
+
+    if( app_terminated == 1 ) {
+        LOG_print( log, "[%s]\t- Thread exit handler executed for \"%s\".\n", TIME_get_gmt(), DATA_SYSTEM->name );
+        pthread_exit( NULL );
+    }
+
     pthread_exit( NULL );
     return FALSE;
 }
@@ -790,6 +790,7 @@ int DB_WORKER_shutdown( LOG_OBJECT *log ) {
     for( i = 0; i < DATABASE_SYSTEMS_COUNT; i++ ) {
         LOG_print( log, "\t- \"%s\"\n", DATABASE_SYSTEMS[ i ].name );
         LOG_print( log, "[%s] DB_WORKER_watcher for \"%s\" set to termination.\n", TIME_get_gmt(), DATABASE_SYSTEMS[ i ].name );
+        DATABASE_SYSTEM_close( &DATABASE_SYSTEMS[ i ], log );
         pthread_cancel( w_watcher_thread[ i ] );
     }
 

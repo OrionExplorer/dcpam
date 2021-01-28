@@ -72,6 +72,129 @@ int DB_exec(
 }
 
 
+void SYSTEM_ETL_CONFIG_free( DB_SYSTEM_ETL *dst ) {
+    if( dst->pre_actions != NULL ) {
+        for( int i = 0; i < dst->pre_actions_count; i++ ) {
+            free( dst->pre_actions[ i ]->sql ); dst->pre_actions[ i ]->sql = NULL;
+            free( dst->pre_actions[ i ] ); dst->pre_actions[ i ] = NULL;
+        }
+        free( dst->pre_actions ); dst->pre_actions = NULL;
+    }
+
+    if( dst->post_actions != NULL ) {
+        for( int i = 0; i < dst->post_actions_count; i++ ) {
+            free( dst->post_actions[ i ]->sql ); dst->post_actions[ i ]->sql = NULL;
+            free( dst->post_actions[ i ] ); dst->post_actions[ i ] = NULL;
+        }
+        free( dst->post_actions ); dst->post_actions = NULL;
+    }
+
+    if( dst->extract.inserted.primary_db_sql != NULL ) {
+        free( dst->extract.inserted.primary_db_sql ); dst->extract.inserted.primary_db_sql = NULL;
+    }
+    if( dst->extract.inserted.secondary_db_sql != NULL ) {
+        free( dst->extract.inserted.secondary_db_sql ); dst->extract.inserted.secondary_db_sql = NULL;
+    }
+    if( dst->extract.inserted.primary_db != NULL ) {
+        free( dst->extract.inserted.primary_db ); dst->extract.inserted.primary_db = NULL;
+    }
+    if( dst->extract.inserted.secondary_db != NULL ) {
+        free( dst->extract.inserted.secondary_db ); dst->extract.inserted.secondary_db = NULL;
+    }
+
+    if( dst->extract.deleted.primary_db_sql != NULL ) {
+        free( dst->extract.deleted.primary_db_sql ); dst->extract.deleted.primary_db_sql = NULL;
+    }
+    if( dst->extract.deleted.secondary_db_sql != NULL ) {
+        free( dst->extract.deleted.secondary_db_sql ); dst->extract.deleted.secondary_db_sql = NULL;
+    }
+    if( dst->extract.deleted.primary_db != NULL ) {
+        free( dst->extract.deleted.primary_db ); dst->extract.deleted.primary_db = NULL;
+    }
+    if( dst->extract.deleted.secondary_db != NULL ) {
+        free( dst->extract.deleted.secondary_db ); dst->extract.deleted.secondary_db = NULL;
+    }
+
+    if( dst->extract.modified.primary_db_sql != NULL ) {
+        free( dst->extract.modified.primary_db_sql ); dst->extract.modified.primary_db_sql = NULL;
+    }
+    if( dst->extract.modified.secondary_db_sql != NULL ) {
+        free( dst->extract.modified.secondary_db_sql ); dst->extract.modified.secondary_db_sql = NULL;
+    }
+    if( dst->extract.modified.primary_db != NULL ) {
+        free( dst->extract.modified.primary_db ); dst->extract.modified.primary_db = NULL;
+    }
+    if( dst->extract.modified.secondary_db != NULL ) {
+        free( dst->extract.modified.secondary_db ); dst->extract.modified.secondary_db = NULL;
+    }
+
+    if( dst->transform ) {
+
+        for( int i = 0; i < dst->transform->inserted_count; i++ ) {
+            free( dst->transform->inserted[ i ]->module ); dst->transform->inserted[ i ]->module = NULL;
+            free( dst->transform->inserted[ i ]->staged_data ); dst->transform->inserted[ i ]->staged_data = NULL;
+            free( dst->transform->inserted[ i ]->source_system_update ); dst->transform->inserted[ i ]->source_system_update = NULL;
+            free( dst->transform->inserted[ i ]->api_key ); dst->transform->inserted[ i ]->api_key = NULL;
+            free( dst->transform->inserted[ i ] ); dst->transform->inserted[ i ] = NULL;
+        }
+        free( dst->transform->inserted ); dst->transform->inserted = NULL;
+
+        for( int i = 0; i < dst->transform->deleted_count; i++ ) {
+            free( dst->transform->deleted[ i ]->module ); dst->transform->deleted[ i ]->module = NULL;
+            free( dst->transform->deleted[ i ]->staged_data ); dst->transform->deleted[ i ]->staged_data = NULL;
+            free( dst->transform->deleted[ i ]->source_system_update ); dst->transform->deleted[ i ]->source_system_update = NULL;
+            free( dst->transform->deleted[ i ]->api_key ); dst->transform->deleted[ i ]->api_key = NULL;
+            free( dst->transform->deleted[ i ] ); dst->transform->deleted[ i ] = NULL;
+        }
+        free( dst->transform->deleted ); dst->transform->deleted = NULL;
+
+        for( int i = 0; i < dst->transform->modified_count; i++ ) {
+            free( dst->transform->modified[ i ]->module ); dst->transform->modified[ i ]->module = NULL;
+            free( dst->transform->modified[ i ]->staged_data ); dst->transform->modified[ i ]->staged_data = NULL;
+            free( dst->transform->modified[ i ]->source_system_update ); dst->transform->modified[ i ]->source_system_update = NULL;
+            free( dst->transform->modified[ i ]->api_key ); dst->transform->modified[ i ]->api_key = NULL;
+            free( dst->transform->modified[ i ] ); dst->transform->modified[ i ] = NULL;
+        }
+        free( dst->transform->modified ); dst->transform->modified = NULL;
+
+        free( dst->transform ); dst->transform = NULL;
+    }
+
+    if( dst->stage ) {
+        if( dst->stage->inserted.sql != NULL ) {
+            free( dst->stage->inserted.sql ); dst->stage->inserted.sql = NULL;
+        }
+        if( dst->stage->deleted.sql != NULL ) {
+            free( dst->stage->deleted.sql ); dst->stage->deleted.sql = NULL;
+        }
+        if( dst->stage->modified.sql != NULL ) {
+            free( dst->stage->modified.sql ); dst->stage->modified.sql = NULL;
+        }
+
+        free( dst->stage ); dst->stage = NULL;
+    }
+
+    if( dst->load.inserted.input_data_sql != NULL ) {
+        free( dst->load.inserted.input_data_sql ); dst->load.inserted.input_data_sql = NULL;
+    }
+    if( dst->load.inserted.output_data_sql != NULL ) {
+        free( dst->load.inserted.output_data_sql ); dst->load.inserted.output_data_sql = NULL;
+    }
+    if( dst->load.deleted.input_data_sql!= NULL ) {
+        free( dst->load.deleted.input_data_sql ); dst->load.deleted.input_data_sql = NULL;
+    }
+    if( dst->load.deleted.output_data_sql != NULL ) {
+        free( dst->load.deleted.output_data_sql ); dst->load.deleted.output_data_sql = NULL;
+    }
+    if( dst->load.modified.input_data_sql!= NULL ) {
+        free( dst->load.modified.input_data_sql ); dst->load.modified.input_data_sql= NULL;
+    }
+    if( dst->load.modified.output_data_sql != NULL ) {
+        free( dst->load.modified.output_data_sql ); dst->load.modified.output_data_sql = NULL;
+    }   
+}
+
+
 void SYSTEM_QUERY_free( DATABASE_SYSTEM_QUERY *dst ) {
 
     if( dst->name != NULL ) {
@@ -80,7 +203,9 @@ void SYSTEM_QUERY_free( DATABASE_SYSTEM_QUERY *dst ) {
 
     dst->mode = M_ETL;
 
-    if( dst->etl_config.pre_actions != NULL ) {
+    SYSTEM_ETL_CONFIG_free( &dst->etl_config );
+
+    /*if( dst->etl_config.pre_actions != NULL ) {
         for( int i = 0; i < dst->etl_config.pre_actions_count; i++ ) {
             free( dst->etl_config.pre_actions[ i ]->sql ); dst->etl_config.pre_actions[ i ]->sql = NULL;
             free( dst->etl_config.pre_actions[ i ] ); dst->etl_config.pre_actions[ i ] = NULL;
@@ -198,7 +323,7 @@ void SYSTEM_QUERY_free( DATABASE_SYSTEM_QUERY *dst ) {
     }
     if( dst->etl_config.load.modified.output_data_sql != NULL ) {
         free( dst->etl_config.load.modified.output_data_sql ); dst->etl_config.load.modified.output_data_sql = NULL;
-    }
+    }*/
 }
 
 

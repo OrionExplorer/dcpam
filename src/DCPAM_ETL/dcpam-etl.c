@@ -72,16 +72,16 @@ void DCPAM_free_configuration( void ) {
         }
     }
 
-    /*for( int i = 0; i < DATABASE_SYSTEMS_COUNT; i++ ) {
+    for( int i = 0; i < DATABASE_SYSTEMS_COUNT; i++ ) {
         DATABASE_SYSTEM_DB_close( &DATABASE_SYSTEMS[ i ].dcpam_db, &dcpam_etl_log );
         DATABASE_SYSTEM_DB_close( &DATABASE_SYSTEMS[ i ].system_db, &dcpam_etl_log );
 
-        if( DATABASE_SYSTEMS[ i ].staging_db ) {
+        /*if( DATABASE_SYSTEMS[ i ].staging_db ) {
             DATABASE_SYSTEM_DB_close( DATABASE_SYSTEMS[ i ].staging_db, &dcpam_etl_log );
-        }
+        }*/
 
-        DATABASE_SYSTEM_close( &DATABASE_SYSTEMS[ i ], &dcpam_etl_log );
-    }*/
+        //DATABASE_SYSTEM_close( &DATABASE_SYSTEMS[ i ], &dcpam_etl_log );
+    }
 
     if( APP.lcs_report.conn ) {
         LCS_REPORT_free( &APP.lcs_report );
