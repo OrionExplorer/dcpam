@@ -111,7 +111,6 @@ int DB_WORKER_init( LOG_OBJECT *log ) {
     }
 
     while( 1 ) {
-
         if( app_terminated == 1 ) {
             break;
         }
@@ -208,6 +207,9 @@ int DB_WORKER_init( LOG_OBJECT *log ) {
         }
         LOG_print( log, "[%s] DB_WORKER_init: all LOAD/TRANSFORM threads are completed.\n", TIME_get_gmt() );
 
+        LOG_print( log, "[%s] Workflow finished.\n", TIME_get_gmt() );
+        Sleep( WORKER_WATCHER_SLEEP );
+
         if( APP.run_once == 1 ) {
             app_terminated = 1;
         }
@@ -224,7 +226,7 @@ int DB_WORKER_init( LOG_OBJECT *log ) {
     }
     free( log_object ); log_object = NULL;
 
-    LOG_print( log, "All threads are terminated.\n" );
+    LOG_print( log, "[%s] All threads are terminated.\n", TIME_get_gmt() );
 
     return TRUE;
 }
@@ -749,8 +751,8 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
                 LCS_REPORT_send( &APP.lcs_report, action_description, DCT_STOP );
                 free( action_description ); action_description = NULL;
 
-                LOG_print( log, "[%s] Workflow finished.\n", TIME_get_gmt() );
-                Sleep( WORKER_WATCHER_SLEEP );
+                /*LOG_print( log, "[%s] Workflow finished.\n", TIME_get_gmt() );
+                Sleep( WORKER_WATCHER_SLEEP );*/
             }
         }
     }

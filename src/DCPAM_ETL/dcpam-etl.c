@@ -35,9 +35,11 @@ void app_terminate( void ) {
     if( app_terminated == 0 ) {
         app_terminated = 1;
         printf( "\r" );
+        pthread_join( lcs_worker_pid, NULL );
         pthread_cancel( lcs_worker_pid );
         DB_WORKER_shutdown( &dcpam_etl_log );
         DCPAM_free_configuration();
+        //printf( "[%s] DCPAM graceful shutdown finished. Waiting for all threads to terminate...\n", TIME_get_gmt() );
         LOG_print( &dcpam_etl_log, "[%s] DCPAM graceful shutdown finished. Waiting for all threads to terminate...\n", TIME_get_gmt() );
         LOG_free( &dcpam_etl_lcs_log );
     }
@@ -558,6 +560,7 @@ int DCPAM_load_configuration( const char* filename ) {
                         free( config_string ); config_string = NULL;
                         return FALSE;
                     }
+
                     for( int j = 0; j < cJSON_GetArraySize( cfg_system_queries_array ); j++ ) {
                         cfg_system_query_item = cJSON_GetArrayItem( cfg_system_queries_array, j );
 

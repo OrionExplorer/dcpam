@@ -28,6 +28,9 @@ char* HTTP_CLIENT_get_content( HTTP_CLIENT *client, const char *host, const char
                 free( client->connection ); client->connection = NULL;
                 return NULL;
             }
+        } else {
+            free( client->connection ); client->connection = NULL;
+            return NULL;
         }
 
         char send_data[ 1024 ];
@@ -71,6 +74,8 @@ char* HTTP_CLIENT_get_content( HTTP_CLIENT *client, const char *host, const char
                 free( raw_content ); raw_content = NULL;
 
                 NET_CONN_disconnect( client->connection );
+
+                free( client->connection ); client->connection = NULL;
 
                 return content;
             }

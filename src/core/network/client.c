@@ -118,6 +118,7 @@ int NET_CONN_disconnect( NET_CONN *connection ) {
         if( connection->cSSL ) {
             SSL_shutdown( connection->cSSL );
             SSL_free( connection->cSSL );
+            SSL_CTX_free( connection->sslctx );
             connection->cSSL = NULL;
             connection->sslctx = NULL;
         }

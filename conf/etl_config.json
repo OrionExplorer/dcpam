@@ -1,6 +1,6 @@
 {
 	"system" : [{
-		"enabled" : 1,
+		"enabled" : 0,
 		"name" : "OTRS",
 		"DB" : {
 			"name" : "OTRS-source",
@@ -170,7 +170,7 @@
 			}
 		}]
 	}, {
-		"enabled" : 0,
+		"enabled" : 1,
 		"name" : "OTRS-History-Data-FILE-source",
 
 		"file_comment#00" : "##################################################################################################",
@@ -185,7 +185,7 @@
 		"file_comment#09" : "##################################################################################################",
 		"FILE" : {
 			"preprocessor" : "/opt/dcpam/data-processor/excel2csv.py /tmp/otrs_time_accounting_data.xlsx /tmp/otrs_time_accounting_data.csv ;",
-			"csv_name" : "/tmp/otrs_time_accounting_data.csv",
+			"local_name" : "/tmp/otrs_time_accounting_data.csv",
 			"name" : "https://51.255.36.229:443/otrs_time_accounting_data.csv",
 			"delimiter" : ";",
 			"http" : {

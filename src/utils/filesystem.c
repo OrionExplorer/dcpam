@@ -74,14 +74,21 @@ FILE* FILE_open( const char *filename, HTTP_DATA* http_data, const char *r_mode,
 
     /* HTTP protocol */
     if( strstr( filename, "http://" ) || strstr( filename, "https://" ) ) {
-        char* tmp_file_name = mkrndstr( 16 );
+        char* tmp_random_name = mkrndstr( 16 );
+        /* 16 + "." + "dcpam_temp" + \0 */
+        char* tmp_file_name = SAFECALLOC( 16 + 1 + 10 + 1, sizeof( char ), __FILE__, __LINE__ );
+        strncpy( tmp_file_name, tmp_random_name, 16 + 1 + 10 + 1 );
+        strlcat( tmp_file_name, ".dcpam_temp", 16 + 1 + 10 + 1 );
         LOG_print( log, "[%s] Temporary file name: %s.\n", TIME_get_gmt(), tmp_file_name );
 
         if( FILE_download( filename, tmp_file_name, http_data, w_mode, log ) == 1 ) {
             FILE *fp = fopen( tmp_file_name, r_mode );
             free( tmp_file_name ); tmp_file_name = NULL;
+            free( tmp_random_name ); tmp_random_name = NULL;
             return fp;
         } else {
+            free( tmp_file_name ); tmp_file_name = NULL;
+            free( tmp_random_name ); tmp_random_name = NULL;
             return NULL;
         }
     }
