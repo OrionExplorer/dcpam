@@ -25,7 +25,7 @@ int LCS_COMPONENT_ACTION_register( DCPAM_COMPONENT* dst, const char* description
 
             dst->actions[ dst->actions_len ]->type = action_type;
 
-            strlcpy( dst->actions[ dst->actions_len ]->timestamp, TIME_get_gmt(), 20 );
+            strlcpy( dst->actions[ dst->actions_len ]->timestamp, TIME_get_gmt(), 21 );
 
             dst->actions_len++;
 

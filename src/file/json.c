@@ -8,7 +8,7 @@
 #include "../include/utils/memory.h"
 #include "../include/third-party/cJSON.h"
 
-int JSON_FILE_load( JSON_FILE* dst, const char* filename, jlc* json_load_callback, void *data_ptr1, void *data_ptr2, LOG_OBJECT* log ) {
+int JSON_FILE_load( JSON_FILE* dst, const char* filename, HTTP_DATA* http_data, jlc* json_load_callback, void *data_ptr1, void *data_ptr2, LOG_OBJECT* log ) {
     cJSON   *json_file = NULL;
     char    *file_content = NULL;
 
@@ -19,7 +19,7 @@ int JSON_FILE_load( JSON_FILE* dst, const char* filename, jlc* json_load_callbac
         char* tmp_file_name = mkrndstr( 16 );
         LOG_print( log, "[%s] JSON_FILE_load temporary file name: %s\n", TIME_get_gmt(), tmp_file_name );
 
-        if( FILE_download( filename, tmp_file_name, "wb", log ) == 1 ) {
+        if( FILE_download( filename, tmp_file_name, http_data, "wb", log ) == 1 ) {
             file_content = file_get_content( tmp_file_name );
             free( tmp_file_name ); tmp_file_name = NULL;
             if( file_content ) {

@@ -1,6 +1,6 @@
 {
 	"system" : [{
-		"enabled" : 0,
+		"enabled" : 1,
 		"name" : "OTRS",
 		"DB" : {
 			"name" : "OTRS-source",
@@ -170,44 +170,32 @@
 			}
 		}]
 	}, {
-		"enabled" : 1,
+		"enabled" : 0,
 		"name" : "OTRS-History-Data-FILE-source",
-
-		"api_comment#00" : "##################################################################################################",
-		"api_comment#01" : "# API section is dedicated for definition of the remote data downloader.",
-		"api_comment#02" : "##################################################################################################",
-		"API" : {
-				"url" : "http://127.25.118.191:80/otrs/time_accounting_data/?result_type=json",
-				"headers" : [
-					{"AuthInfo" : "asdqwe123"}
-				],
-				"content" : "{\"AuthInfo\" : \"asdqwe123\"}",
-				"method" : "POST",
-				"types" : [
-					{"application/json" : "JSON"},
-					{"text/csv" : "CSV", "delimiter" : ";"},
-					{"text/csv" : "TSV" },
-					{"text/psv" : "PSV" }
-				]
-		},
 
 		"file_comment#00" : "##################################################################################################",
 		"file_comment#01" : "# FILE section is dedicated for schema definition of the flat files loader.",
 		"file_comment#02" : "# The \"name\", \"columns\" and \"load_sql\" keys are required.",
-		"file_comment#03" : "# For CSV files, \"delimeter\" is also required.",
-		"file_comment#04" : "# For TSV and PSV files, \"delimeter\" is ignored.",
-		"file_comment#05" : "# JSON file structure must be array of objects.",
+		"file_comment#03" : "# For CSV files, \"delimiter\" is also required.",
+		"file_comment#04" : "# For other file types, \"delimiter\" is ignored.",
+		"file_comment#05" : "# JSON file structure must be array of objects. Otherwise custom preprocessor script must be used.",
 		"file_comment#06" : "# DCPAM ETL loads the file to the database set in \"DB\" section.",
 		"file_comment#07" : "# The same \"DB\" is later used as real source for DCPAM.",
-		"file_comment#08" : "# This is work in progress with support for local CSV files only.",
-		"file_comment#09" : "# Remote files are going to be supported with battery-http-server.",
-		"file_comment#10" : "# FILE is not compatibile with API.",
-		"file_comment#11" : "##################################################################################################",
+		"file_comment#08" : "# Remote files are going to be supported with battery-http-server.",
+		"file_comment#09" : "##################################################################################################",
 		"FILE" : {
 			"preprocessor" : "/opt/dcpam/data-processor/excel2csv.py /tmp/otrs_time_accounting_data.xlsx /tmp/otrs_time_accounting_data.csv ;",
-			"name" : "/tmp/otrs_time_accounting_data.csv",
-			"csv_remote_name" : "https://52.155.46.129:443/otrs_time_accounting_data.csv",
+			"csv_name" : "/tmp/otrs_time_accounting_data.csv",
+			"name" : "https://51.255.36.229:443/otrs_time_accounting_data.csv",
 			"delimiter" : ";",
+			"http" : {
+				"headers" : [
+					{ "name" : "AuthInfo", "value" : "asdqwe123" },
+					{ "name" : "X-API-KEY", "value" : "zxcasdqwe123" }
+				],
+				"payload" : "{\"AuthInfo\" : \"asdqwe123\"}",
+				"method" : "POST"
+			},
 
 			"psv_name" : "/tmp/otrs_time_accounting_data.psv",
 			"psv_remote_name" : "http://172.25.118.191:80/otrs_time_accounting_data.psv",

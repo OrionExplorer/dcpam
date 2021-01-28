@@ -10,6 +10,6 @@ typedef struct {
     char        *path;
 } HTTP_CLIENT;
 
-char* HTTP_CLIENT_get_content( HTTP_CLIENT *client, const char *host, const char *path, const int port, const int secure, size_t *content_len, LOG_OBJECT *log );
+char* HTTP_CLIENT_get_content( HTTP_CLIENT *client, const char *host, const char *path, const int port, const int secure, HTTP_DATA *http_data, size_t *content_len, LOG_OBJECT *log );
 
 #endif

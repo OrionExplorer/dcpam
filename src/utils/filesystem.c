@@ -11,7 +11,7 @@
 #include <unistd.h>
 #endif
 
-int FILE_download( const char* src, const char* dst, const char* w_mode, LOG_OBJECT* log ) {
+int FILE_download( const char* src, const char* dst, HTTP_DATA* http_data, const char* w_mode, LOG_OBJECT* log ) {
     char    host[ 100 ];
     int     port = 80;
     char    path[ 1024 ];
@@ -30,7 +30,7 @@ int FILE_download( const char* src, const char* dst, const char* w_mode, LOG_OBJ
     /* Download file */
     HTTP_CLIENT* http_c = SAFEMALLOC( sizeof( HTTP_CLIENT ), __FILE__, __LINE__ );
     size_t f_content_len = 0;
-    char* f_content = HTTP_CLIENT_get_content( http_c, host, path, port, secure, &f_content_len, log );
+    char* f_content = HTTP_CLIENT_get_content( http_c, host, path, port, secure, http_data, &f_content_len, log );
 
     if( f_content ) {
         FILE* tmp_f = fopen( dst, w_mode );
@@ -65,7 +65,7 @@ int FILE_download( const char* src, const char* dst, const char* w_mode, LOG_OBJ
     return 0;
 }
 
-FILE* FILE_open( const char *filename, const char *r_mode, const char *w_mode, LOG_OBJECT *log ) {
+FILE* FILE_open( const char *filename, HTTP_DATA* http_data, const char *r_mode, const char *w_mode, LOG_OBJECT *log ) {
 
     if( filename == NULL ) {
         LOG_print( log, "[%s] FILE_open fatal error: filename argument is missing.\n", TIME_get_gmt() );
@@ -77,7 +77,7 @@ FILE* FILE_open( const char *filename, const char *r_mode, const char *w_mode, L
         char* tmp_file_name = mkrndstr( 16 );
         LOG_print( log, "[%s] Temporary file name: %s.\n", TIME_get_gmt(), tmp_file_name );
 
-        if( FILE_download( filename, tmp_file_name, w_mode, log ) == 1 ) {
+        if( FILE_download( filename, tmp_file_name, http_data, w_mode, log ) == 1 ) {
             FILE *fp = fopen( tmp_file_name, r_mode );
             free( tmp_file_name ); tmp_file_name = NULL;
             return fp;

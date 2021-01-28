@@ -205,5 +205,9 @@
 			"password" : "tantive-4",
 			"db" : "dcpam"
 		}
+	},
+	"LCS" : {
+		"address" : "dcpam://127.0.0.1:7771",
+		"port" : 8888
 	}
 }

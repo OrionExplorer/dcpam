@@ -10,6 +10,7 @@
 #include "../../file/csv.h"
 #include "../../file/json.h"
 #include "etl_schema.h"
+#include "../network/http.h"
 
 #define MAX_SYSTEM_QUERIES      32
 
@@ -21,6 +22,7 @@ typedef union {
     ORACLE_CONNECTION           oracle_conn;
     SQLITE_CONNECTION           sqlite_conn;
 } DB_CONN;
+
 
 typedef enum {
     D_POSTGRESQL = 1,
@@ -67,6 +69,7 @@ typedef struct DATABASE_SYSTEM_FLAT_FILE {
     CSV_FILE                    *csv_file;
     JSON_FILE                   *json_file;
     FLAT_FILE_TYPE              type;
+    HTTP_DATA                   http;
 } DATABASE_SYSTEM_FLAT_FILE;
 
 typedef struct DATABASE_SYSTEM {

@@ -146,10 +146,10 @@ As DCPAM is extremely modular and highly scalabe, it can serve both as Data Ware
 
 ## Technology
 ### DCPAM Components
-DCPAM Data Warehouse Solution consists of a number of integrated components. Each component has unique log file, and DCPAM ETL - due to parallel execution - can create many log files simultaneously.
+DCPAM Data Warehouse Solution consists of a number of integrated components. Each component has unique log file, and DCPAM ETL - due to parallel execution - can create many log files.
 
 #### DCPAM ETL - Extract-Transform-Load / Extract-Load-Transform
-[DCPAM ETL](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL/README.md) is the main ETL/ELT engine. Many instances of DCPAM ETL can work within single Data Warehouse.
+[DCPAM ETL](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL/README.md) is the main ETL/ELT engine. Each running instance can handle many ETL/ELT processes simultaneously. Moreover, many instances of DCPAM ETL can work within single Data Warehouse.
 
 #### DCPAM WDS - Warehouse Data Server
 [DCPAM WDS](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_WDS/README.md) is dedicated endpoint for querying predefined business data with custom caching system. DCPAM WDS encapsulates every node of DCPAM Database into single data access point.
@@ -236,7 +236,7 @@ Each DCPAM Component is provided with `Dockerfile` to build Docker image:
 * DCPAM LCS: `dcpam-lcs.dockerfile`
 
 ##### Currently under active development
-* [ ] To be announced.
+* [x] Data source: APIs.
 
 ## Roadmap
 | Year | Quarter | Feature                                      | Status            |
@@ -253,11 +253,11 @@ Each DCPAM Component is provided with `Dockerfile` to build Docker image:
 | 2020 | Q3      | :white_check_mark: Data source: externally preprocessed         | Done (2020-09-24) |
 | 2020 | Q3      | :white_check_mark: Data source: XML          | Done (2020-09-24) |
 | 2020 | Q3      | :white_check_mark: DCPAM ETL connectivity tests              | Done (2020-09-25) |
-| 2020 | Q4      | Data source: APIs                            | Not implemented   |
-| 2021 | Q1      | DCPAM Monitoring                             | Not implemented   |
-| 2021 | Q2      | DCPAM Access (BI web application)            | Not implemented   |
-| 2021 | Q3      | DCPAM Construct (admin web application)      | Not implemented   |
-| 2021 | Q4      | DCPAM AI Platform                            | Not implemented   |
+| 2021 | Q1      | Data source: APIs                            | In progress       |
+| 2021 | Q2      | DCPAM Monitoring                             | Not implemented   |
+| 2021 | Q3      | DCPAM Access (BI web application)            | Not implemented   |
+| 2021 | Q4      | DCPAM Construct (admin web application)      | Not implemented   |
+| 2022 | Q1      | DCPAM AI Platform                            | Not implemented   |
 
 ---
 This software uses:

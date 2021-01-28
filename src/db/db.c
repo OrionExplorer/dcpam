@@ -111,7 +111,7 @@ int _DB_QUERY_replace_params( char *src,  const char *search, const char* const 
             if( i < replace_count ) { /* repl_count is always greater by 1 than replace_count */
                 /* Secondly, append given value into temporary buffer */
                 memcpy( dst_buffer + current_buff_len, replaces[ i ], param_lengths[ i ] );
-                /* Sum and store already written data lengt */
+                /* Sum and store already written data length */
                 current_buff_len += param_lengths[ i ];
             }
         }

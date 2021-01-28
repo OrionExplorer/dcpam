@@ -2,6 +2,7 @@ FROM ubuntu:18.04 as build-env
 
 RUN apt-get update\
  && apt-get install -y --no-install-recommends\
+
  "make"\
  "clang"\
  "libssl-dev"\

@@ -38,6 +38,20 @@
     #define SOCKET int
 #endif
 
+typedef struct HTTP_HEADER {
+    char                        *name;
+    char                        *value;
+} HTTP_HEADER;
+
+typedef struct {
+    int                     active;
+    HTTP_HEADER             *headers;
+    int                     headers_len;
+    char                    *payload;
+    int                     payload_len;
+    char                    *method;
+} HTTP_DATA;
+
 
 typedef struct NET_CONN {
     char                *host;

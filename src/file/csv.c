@@ -56,10 +56,10 @@ char** _CSV_parse_line( const char* line, const char* delimiter, int *dst_count,
     return tmp;
 }
 
-int CSV_FILE_load( CSV_FILE* dst, const char* filename, clc* csv_load_callback, void *data_ptr1, void *data_ptr2, LOG_OBJECT* log ) {
+int CSV_FILE_load( CSV_FILE* dst, const char* filename, HTTP_DATA* http_data, clc* csv_load_callback, void *data_ptr1, void *data_ptr2, LOG_OBJECT* log ) {
 
     LOG_print( log, "[%s] CSV_FILE_load( %s )...\n", TIME_get_gmt(), filename );
-    FILE* csv_f = FILE_open( filename, "r", "w", log );
+    FILE* csv_f = FILE_open( filename, http_data, "r", "w", log );
 
     if( csv_f == NULL ) {
         LOG_print( log, "[%s] CSV_FILE_load failed.\n", TIME_get_gmt() );

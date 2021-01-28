@@ -73,7 +73,6 @@ int DB_exec(
 
 
 void SYSTEM_QUERY_free( DATABASE_SYSTEM_QUERY *dst ) {
-    /*int i = 0;*/
 
     if( dst->name != NULL ) {
         free( dst->name ); dst->name = NULL;
@@ -642,6 +641,16 @@ void DATABASE_SYSTEM_close( DATABASE_SYSTEM *system, LOG_OBJECT *log ) {
             free( system->flat_file->columns ); system->flat_file->columns = NULL;
             memset( system->flat_file->delimiter, '\0', 1 );
 
+            free( system->flat_file->http.method ); system->flat_file->http.method = NULL;
+            free( system->flat_file->http.payload ); system->flat_file->http.payload = NULL;
+            system->flat_file->http.payload_len = 0;
+
+            for( int i = 0; i < system->flat_file->http.headers_len; i++ ) {
+                free( system->flat_file->http.headers[ i ].name ); system->flat_file->http.headers[ i ].name = NULL;
+                free( system->flat_file->http.headers[ i ].value ); system->flat_file->http.headers[ i ].value = NULL;
+            }
+            free( system->flat_file->http.headers ); system->flat_file->http.headers = NULL;
+
             if( system->flat_file->type == FFT_CSV ) {
                 free( system->flat_file->csv_file ); system->flat_file->csv_file = NULL;
             } else if( system->flat_file->type == FFT_JSON ) {
@@ -678,7 +687,7 @@ void DATABASE_SYSTEM_add(
             strlcpy(
                 DATABASE_SYSTEMS[ DATABASE_SYSTEMS_COUNT ].name,
                 name,
-                name_len
+                name_len + 1
             );
         }
 
@@ -783,11 +792,41 @@ void DATABASE_SYSTEM_add(
             DATABASE_SYSTEMS[ DATABASE_SYSTEMS_COUNT ].flat_file->load_sql= SAFECALLOC( sql_len + 1, sizeof( char ), __FILE__, __LINE__ );
             snprintf( DATABASE_SYSTEMS[ DATABASE_SYSTEMS_COUNT ].flat_file->load_sql, sql_len + 1, flat_file->load_sql );
 
+            if( flat_file->http.method ) {
+                size_t method_len = strlen( flat_file->http.method );
+                DATABASE_SYSTEMS[ DATABASE_SYSTEMS_COUNT ].flat_file->http.method = SAFECALLOC( method_len + 1, sizeof( char ), __FILE__, __LINE__ );
+                snprintf( DATABASE_SYSTEMS[ DATABASE_SYSTEMS_COUNT ].flat_file->http.method, method_len + 1, flat_file->http.method );
+            }
+
+            if( flat_file->http.payload ) {
+                DATABASE_SYSTEMS[ DATABASE_SYSTEMS_COUNT ].flat_file->http.payload_len = flat_file->http.payload_len;
+                DATABASE_SYSTEMS[ DATABASE_SYSTEMS_COUNT ].flat_file->http.payload = SAFECALLOC( flat_file->http.payload_len + 1, sizeof( char ), __FILE__, __LINE__ );
+                snprintf( DATABASE_SYSTEMS[ DATABASE_SYSTEMS_COUNT ].flat_file->http.payload,  flat_file->http.payload_len + 1, flat_file->http.payload );
+            }
+
+            if( flat_file->http.headers ) {
+                DATABASE_SYSTEMS[ DATABASE_SYSTEMS_COUNT ].flat_file->http.headers_len = flat_file->http.headers_len;
+                DATABASE_SYSTEMS[ DATABASE_SYSTEMS_COUNT ].flat_file->http.headers = SAFEMALLOC( flat_file->http.headers_len * sizeof * flat_file->http.headers, __FILE__, __LINE__ );
+                for( int i = 0; i < flat_file->http.headers_len; i++ ) {
+                    size_t name_len = strlen( flat_file->http.headers[ i ].name );
+                    DATABASE_SYSTEMS[ DATABASE_SYSTEMS_COUNT ].flat_file->http.headers[ i ].name = SAFECALLOC( name_len + 1, sizeof( char ), __FILE__, __LINE__ );
+                    snprintf( DATABASE_SYSTEMS[ DATABASE_SYSTEMS_COUNT ].flat_file->http.headers[ i ].name, name_len + 1, flat_file->http.headers[ i ].name );
+
+                    size_t value_len = strlen( flat_file->http.headers[ i ].value );
+                    DATABASE_SYSTEMS[ DATABASE_SYSTEMS_COUNT ].flat_file->http.headers[ i ].value = SAFECALLOC( value_len + 1, sizeof( char ), __FILE__, __LINE__ );
+                    snprintf( DATABASE_SYSTEMS[ DATABASE_SYSTEMS_COUNT ].flat_file->http.headers[ i ].value, value_len + 1, flat_file->http.headers[ i ].value );
+                }
+            }
+
+            DATABASE_SYSTEMS[ DATABASE_SYSTEMS_COUNT ].flat_file->http.active = 0;
+
             if( flat_file->type == FFT_CSV || flat_file->type == FFT_TSV || flat_file->type == FFT_PSV ) {
                 snprintf( DATABASE_SYSTEMS[ DATABASE_SYSTEMS_COUNT ].flat_file->delimiter, 2, flat_file->delimiter );
                 snprintf( DATABASE_SYSTEMS[ DATABASE_SYSTEMS_COUNT ].flat_file->csv_file->delimiter, 2, flat_file->delimiter );
             }
         }
+
+        /* API configuration */
 
         free( source_db->ip ); source_db->ip = NULL;
         free( source_db->user ); source_db->user = NULL;

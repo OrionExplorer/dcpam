@@ -174,6 +174,7 @@ int FILE_ETL_preload( DATABASE_SYSTEM *system, const char* filename, LOG_OBJECT 
         return CSV_FILE_load(
             system->flat_file->csv_file,
             filename,
+            &system->flat_file->http,
             &csv_load_callback,
             ( void* )system->flat_file,
             ( void* )&system->system_db,
@@ -185,6 +186,7 @@ int FILE_ETL_preload( DATABASE_SYSTEM *system, const char* filename, LOG_OBJECT 
         return JSON_FILE_load(
             system->flat_file->json_file,
             filename,
+            &system->flat_file->http,
             &json_load_callback,
             ( void* )system->flat_file,
             ( void* )&system->system_db,

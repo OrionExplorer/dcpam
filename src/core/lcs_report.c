@@ -31,7 +31,8 @@ int LCS_REPORT_init( LCS_REPORT *connection, const char *address, const char *co
     if( sscanf( address, "dcpam://%99[^:]:%99d", host, &port ) == 2 ) {
         size_t host_len = strlen( host );
         connection->lcs_host = SAFECALLOC( host_len + 1, sizeof( char ), __FILE__, __LINE__ );
-        strlcpy( connection->lcs_host, host, host_len );
+        //strlcpy( connection->lcs_host, host, host_len );
+        snprintf( connection->lcs_host, host_len + 1, host );
         connection->lcs_port = port;
         return 1;
     } else {

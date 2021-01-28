@@ -63,7 +63,7 @@ size_t strlcat( char* dst, const char* src, size_t size ) {
 
 size_t strlcpy( char* dst, const char* src, size_t size ) {
     char        *dst_ptr = dst;
-    size_t      to_copy = size;
+    size_t      to_copy = size + 1;
     const char  *src_ptr = src;
 
     if( to_copy && --to_copy ) {

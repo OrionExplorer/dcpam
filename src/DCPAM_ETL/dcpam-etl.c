@@ -21,6 +21,7 @@ char                    app_path[ MAX_PATH_LENGTH + 1 ];
 LOG_OBJECT              dcpam_etl_log;
 LOG_OBJECT              dcpam_etl_lcs_log;
 extern int              app_terminated = 0;
+pthread_t               lcs_worker_pid;
 
 extern DATABASE_SYSTEM  DATABASE_SYSTEMS[ MAX_DATA_SYSTEMS ];
 extern int              DATABASE_SYSTEMS_COUNT;
@@ -34,6 +35,7 @@ void app_terminate( void ) {
     if( app_terminated == 0 ) {
         app_terminated = 1;
         printf( "\r" );
+        pthread_cancel( lcs_worker_pid );
         DB_WORKER_shutdown( &dcpam_etl_log );
         DCPAM_free_configuration();
         LOG_print( &dcpam_etl_log, "[%s] DCPAM graceful shutdown finished. Waiting for all threads to terminate...\n", TIME_get_gmt() );
@@ -52,10 +54,6 @@ void DCPAM_free_configuration( void ) {
         free( APP.STAGING ); APP.STAGING = NULL;
     }
 
-    if( APP.lcs_report.conn ) {
-        LCS_REPORT_free( &APP.lcs_report );
-    }
-
     if( APP.version != NULL ) { free( APP.version ); APP.version = NULL; }
     if( APP.name != NULL ) { free( APP.name ); APP.name = NULL; }
 
@@ -72,7 +70,7 @@ void DCPAM_free_configuration( void ) {
         }
     }
 
-    for( int i = 0; i < DATABASE_SYSTEMS_COUNT; i++ ) {
+    /*for( int i = 0; i < DATABASE_SYSTEMS_COUNT; i++ ) {
         DATABASE_SYSTEM_DB_close( &DATABASE_SYSTEMS[ i ].dcpam_db, &dcpam_etl_log );
         DATABASE_SYSTEM_DB_close( &DATABASE_SYSTEMS[ i ].system_db, &dcpam_etl_log );
 
@@ -81,6 +79,10 @@ void DCPAM_free_configuration( void ) {
         }
 
         DATABASE_SYSTEM_close( &DATABASE_SYSTEMS[ i ], &dcpam_etl_log );
+    }*/
+
+    if( APP.lcs_report.conn ) {
+        LCS_REPORT_free( &APP.lcs_report );
     }
 }
 
@@ -129,6 +131,7 @@ int DCPAM_load_configuration( const char* filename ) {
     cJSON* cfg_system_query_item = NULL;
     cJSON* cfg_system_query_item_name = NULL;
     cJSON* cfg_system_query_item_mode = NULL;
+
     cJSON* cfg_system_flat_file = NULL;
     cJSON* cfg_system_flat_file_preprocessor = NULL;
     cJSON* cfg_system_flat_file_name = NULL;
@@ -136,6 +139,11 @@ int DCPAM_load_configuration( const char* filename ) {
     cJSON* cfg_system_flat_file_columns_item = NULL;
     cJSON* cfg_system_flat_file_delimiter = NULL;
     cJSON* cfg_system_flat_file_load_sql = NULL;
+    cJSON* cfg_system_flat_file_http = NULL;
+    cJSON* cfg_system_flat_file_http_headers_array = NULL;
+    cJSON* cfg_system_flat_file_http_headers_item = NULL;
+    cJSON* cfg_system_flat_file_http_payload = NULL;
+    cJSON* cfg_system_flat_file_http_method = NULL;
 
     cJSON* cfg_system_query_item_etl = NULL;
     cJSON* cfg_system_query_item_etl_pre_actions = NULL;
@@ -1451,7 +1459,6 @@ int DCPAM_load_configuration( const char* filename ) {
                         );
 
                         tmp_queries_count++;
-
                         free( tmp_cdc ); tmp_cdc = NULL;
                     }
 
@@ -1472,6 +1479,11 @@ int DCPAM_load_configuration( const char* filename ) {
                         tmp_flat_file->csv_file = NULL;
                         tmp_flat_file->json_file = NULL;
                         tmp_flat_file->preprocessor = NULL;
+                        tmp_flat_file->http.active = 0;
+                        tmp_flat_file->http.headers = NULL;
+                        tmp_flat_file->http.headers_len = 0;
+                        tmp_flat_file->http.payload = NULL;
+                        tmp_flat_file->http.payload_len = 0;
 
                         LOG_print( &dcpam_etl_log, "[%s] Source file name is \"%s\".\n", TIME_get_gmt(), cfg_system_flat_file_name->valuestring );
 
@@ -1545,6 +1557,59 @@ int DCPAM_load_configuration( const char* filename ) {
                             tmp_flat_file->type = FFT_JSON;
                             tmp_flat_file->json_file = SAFEMALLOC( sizeof( JSON_FILE ), __FILE__, __LINE__ );
                         }
+
+                        cfg_system_flat_file_http = cJSON_GetObjectItem( cfg_system_flat_file, "http" );
+                        if( cfg_system_flat_file_http ) {
+                            LOG_print( &dcpam_etl_log, "[%s] Loading HTTP configuration:\n", TIME_get_gmt() );
+                            tmp_flat_file->http.active = 1;
+
+                            /* Method */
+                            cfg_system_flat_file_http_method = cJSON_GetObjectItem( cfg_system_flat_file_http, "method" );
+                            if( cfg_system_flat_file_http_method ) {
+                                size_t str_len_http_method = strlen( cfg_system_flat_file_http_method->valuestring );
+                                tmp_flat_file->http.method = SAFECALLOC( str_len_http_method + 1, sizeof( char ), __FILE__, __LINE__ );
+                                snprintf( tmp_flat_file->http.method, str_len_http_method + 1, cfg_system_flat_file_http_method->valuestring );
+                                LOG_print( &dcpam_etl_log, "\t- method: %s.\n", tmp_flat_file->http.method );
+                            }
+
+                            /* Headers */
+                            cfg_system_flat_file_http_headers_array = cJSON_GetObjectItem( cfg_system_flat_file_http, "headers" );
+                            tmp_flat_file->http.headers_len = cJSON_GetArraySize( cfg_system_flat_file_http_headers_array );
+                            tmp_flat_file->http.headers = SAFEMALLOC( tmp_flat_file->http.headers_len * sizeof * tmp_flat_file->http.headers, __FILE__, __LINE__ );
+                            for( int i = 0; i < tmp_flat_file->http.headers_len; i++ ) {
+                                cfg_system_flat_file_http_headers_item = cJSON_GetArrayItem( cfg_system_flat_file_http_headers_array, i );
+                                if( cfg_system_flat_file_http_headers_item ) {
+                                    cJSON* name = cJSON_GetObjectItem( cfg_system_flat_file_http_headers_item, "name" );
+                                    if( name ) {
+                                        size_t str_len_header_name = strlen( name->valuestring );
+                                        tmp_flat_file->http.headers[ i ].name = SAFECALLOC( str_len_header_name + 1, sizeof( char ), __FILE__, __LINE__ );
+                                        snprintf( tmp_flat_file->http.headers[ i ].name, str_len_header_name + 1, name->valuestring );
+                                    }
+
+                                    cJSON* value = cJSON_GetObjectItem( cfg_system_flat_file_http_headers_item, "value" );
+                                    if( value ) {
+                                        size_t str_len_header_value = strlen( value->valuestring );
+                                        tmp_flat_file->http.headers[ i ].value = SAFECALLOC( str_len_header_value + 1, sizeof( char ), __FILE__, __LINE__ );
+                                        snprintf( tmp_flat_file->http.headers[ i ].value, str_len_header_value + 1, value->valuestring );
+                                    }
+
+                                    if( name && value ) {
+                                        LOG_print( &dcpam_etl_log, "\t- header: %s = %s.\n", tmp_flat_file->http.headers[ i ].name, tmp_flat_file->http.headers[ i ].value );
+                                    } else {
+                                        LOG_print( &dcpam_etl_log, "\t- error reading header at index %d!\n", i );
+                                    }
+                                }
+                            }
+
+                            /* Payload */
+                            cfg_system_flat_file_http_payload = cJSON_GetObjectItem( cfg_system_flat_file_http, "payload" );
+                            if( cfg_system_flat_file_http_payload ) {
+                                tmp_flat_file->http.payload_len = strlen( cfg_system_flat_file_http_payload->valuestring );
+                                tmp_flat_file->http.payload = SAFECALLOC( tmp_flat_file->http.payload_len + 1, sizeof( char ), __FILE__, __LINE__ );
+                                snprintf( tmp_flat_file->http.payload, tmp_flat_file->http.payload_len + 1, cfg_system_flat_file_http_payload->valuestring );
+                                LOG_print( &dcpam_etl_log, "\t- payload: %s\n", tmp_flat_file->http.payload );
+                            }
+                        }
                     }
 
                     /* Create temporary DATABASE_SYSTEM_DB for future use in DATABASE_SYSTEM_add */
@@ -1590,6 +1655,20 @@ int DCPAM_load_configuration( const char* filename ) {
                             free( tmp_flat_file->json_file ); tmp_flat_file->json_file = NULL;
                             free( tmp_flat_file->preprocessor ); tmp_flat_file->preprocessor = NULL;
                             free( tmp_flat_file->columns ); tmp_flat_file->columns = NULL;
+
+                            for( int i = 0; i < tmp_flat_file->http.headers_len; i++ ) {
+                                free( tmp_flat_file->http.headers[ i ].name ); tmp_flat_file->http.headers[ i ].name = NULL;
+                                free( tmp_flat_file->http.headers[ i ].value ); tmp_flat_file->http.headers[ i ].value = NULL;
+                            }
+                            free( tmp_flat_file->http.headers ); tmp_flat_file->http.headers = NULL;
+                            tmp_flat_file->http.headers_len = 0;
+
+                            free( tmp_flat_file->http.method ); tmp_flat_file->http.method = NULL;
+                            free( tmp_flat_file->http.payload ); tmp_flat_file->http.payload = NULL;
+                            tmp_flat_file->http.payload_len = 0;
+
+                            tmp_flat_file->http.active = 0;
+
                             memset( tmp_flat_file->delimiter, '\0', 1 );
                             free( tmp_flat_file ); tmp_flat_file = NULL;
                         }
@@ -1652,6 +1731,7 @@ void* DCPAM_LCS_worker( void* LCS_worker_data ) {
 
     char **allowed_hosts = SAFEMALLOC( sizeof * allowed_hosts, __FILE__, __LINE__);
     size_t lcs_host_len = strlen( APP.lcs_report.lcs_host );
+
     allowed_hosts[ 0 ] = SAFECALLOC( lcs_host_len + 1, sizeof( char ), __FILE__, __LINE__ );
     snprintf( allowed_hosts[ 0 ], lcs_host_len + 1, APP.lcs_report.lcs_host );
 
@@ -1697,15 +1777,17 @@ int main( int argc, char** argv ) {
     }
 
     if( DCPAM_load_configuration( config_file ) == 1 ) {
-
-        if( DB_WORKER_init( &dcpam_etl_log ) == 1 ) {
-            if( pthread_create( &lcs_worker_pid, NULL, DCPAM_LCS_worker, NULL ) == 0 ) {
-                LOG_free( &dcpam_etl_lcs_log );
-                pthread_join( lcs_worker_pid, NULL );
-            } else {
-                LOG_print( &dcpam_etl_log, "[%s] Fatal error: unable to start thread for DCPAM LCS reporting.\n", TIME_get_gmt() );
-            }
+        pthread_attr_t attrs;
+        pthread_attr_init( &attrs );
+        pthread_attr_setdetachstate( &attrs, PTHREAD_CREATE_JOINABLE );
+        if( pthread_create( &lcs_worker_pid, &attrs, DCPAM_LCS_worker, NULL ) == 0 ) {
+            LOG_print( &dcpam_etl_log, "[%s] LCS worker initialized.\n", TIME_get_gmt() );
+        } else {
+            LOG_print( &dcpam_etl_log, "[%s] Fatal error: unable to start thread for DCPAM LCS reporting.\n", TIME_get_gmt() );
         }
+
+        DB_WORKER_init( &dcpam_etl_log );
+        pthread_join( lcs_worker_pid, NULL );
 
         DCPAM_free_configuration();
     }

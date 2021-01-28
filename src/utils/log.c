@@ -14,7 +14,7 @@ static pthread_mutex_t      printf_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 void LOG_prepare( LOG_OBJECT *log, const char *prefix, const char *app_path ) {
     snprintf( log->filename, MAX_PATH_LENGTH, "%s%s%s-log.txt", app_path, LOGS_PATH, prefix ? prefix : "dcpam" );
-    LOG_print( log, "\n[%s] Session start.\n", TIME_get_gmt() );
+    LOG_print( log, "\n[%s] Session start: %s.\n", TIME_get_gmt(), prefix );
 }
 
 static void LOG_validate_paths( LOG_OBJECT *log, const char *prefix, const char *app_path ) {

@@ -47,7 +47,7 @@ int DB_WORKER_check_all( LOG_OBJECT* log ) {
     DATABASE_SYSTEM_DB_free( &APP.DB, log );
 
     if( APP.STAGING ) {
-        LOG_print( log, "[%s] Checking connection to DCPAM Staging Area (%s)...\n", TIME_get_gmt(), APP.DB.name );
+        LOG_print( log, "[%s] Checking connection to DCPAM Staging Area (%s)...\n", TIME_get_gmt(), APP.STAGING->name );
         if( DATABASE_SYSTEM_DB_init( APP.STAGING, log ) == FALSE ) {
             DATABASE_SYSTEM_DB_close( APP.STAGING, log );
             DATABASE_SYSTEM_DB_free( APP.STAGING, log );
@@ -61,7 +61,7 @@ int DB_WORKER_check_all( LOG_OBJECT* log ) {
     for( int i = 0; i < DATABASE_SYSTEMS_COUNT; i++ ) {
         LOG_print( log, "\t - \"%s\"...\n", DATABASE_SYSTEMS[ i ].name );
         if( DATABASE_SYSTEMS[ i ].flat_file ) {
-            FILE *tmp_f = FILE_open( DATABASE_SYSTEMS[ i ].flat_file->name, "r", "w", log );
+            FILE *tmp_f = FILE_open( DATABASE_SYSTEMS[ i ].flat_file->name, &DATABASE_SYSTEMS[ i ].flat_file->http, "r", "w", log );
             if( tmp_f == NULL ) {
                 return FALSE;
             }
@@ -71,10 +71,9 @@ int DB_WORKER_check_all( LOG_OBJECT* log ) {
             DATABASE_SYSTEM_DB_close( &DATABASE_SYSTEMS[ i ].system_db, log );
             DATABASE_SYSTEM_DB_free( &DATABASE_SYSTEMS[ i ].system_db, log );
             return FALSE;
-        } else {
-            DATABASE_SYSTEM_DB_close( &DATABASE_SYSTEMS[ i ].system_db, log );
-            DATABASE_SYSTEM_DB_free( &DATABASE_SYSTEMS[ i ].system_db, log );
         }
+        DATABASE_SYSTEM_DB_close( &DATABASE_SYSTEMS[ i ].system_db, log );
+        //DATABASE_SYSTEM_DB_free( &DATABASE_SYSTEMS[ i ].system_db, log );
     }
     return TRUE;
 }
@@ -237,6 +236,8 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
     DB_SYSTEM_ETL_STEP      curr_etl_step = t_worker_data->step;
     LOG_OBJECT              *log = t_worker_data->log;
 
+    pthread_mutex_lock( &watcher_mutex );
+
     LOG_print( log, "\nDB_WORKER_watcher for \"%s\" (%s) started...\n",
         DATA_SYSTEM->name,
         curr_etl_step == ETL_EXTRACT ? "EXTRACT" : curr_etl_step == ETL_TRANSFORM ? "TRANSFORM/LOAD" : curr_etl_step == ETL_LOAD ? "LOAD/TRANSFORM" : "UNKNOWN"
@@ -255,12 +256,6 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
         return FALSE;
     }
 
-    LOG_print( log, "Init \"%s\" database connection...\n", DATA_SYSTEM->name );
-    if( DATABASE_SYSTEM_DB_init( &DATA_SYSTEM->system_db, log ) == FALSE ) {
-        pthread_cancel( w_watcher_thread[ t_worker_data->thread_id ] );
-        return FALSE;
-    }
-
     if( DATA_SYSTEM->staging_db ) {
         LOG_print( log, "Init Staging Area database connection for \"%s\":\n", DATA_SYSTEM->name );
         if( DATABASE_SYSTEM_DB_init( DATA_SYSTEM->staging_db, log ) == FALSE ) {
@@ -271,7 +266,11 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
         LOG_print( log, "Staging Area is local.\n" );
     }
 
-    pthread_mutex_lock( &watcher_mutex );
+    LOG_print( log, "Init \"%s\" database connection...\n", DATA_SYSTEM->name );
+    if( DATABASE_SYSTEM_DB_init( &DATA_SYSTEM->system_db, log ) == FALSE ) {
+        pthread_cancel( w_watcher_thread[ t_worker_data->thread_id ] );
+        return FALSE;
+    }
 
     worker_save_counter += WORKER_WATCHER_SLEEP;
 
@@ -789,6 +788,7 @@ int DB_WORKER_shutdown( LOG_OBJECT *log ) {
     for( i = 0; i < DATABASE_SYSTEMS_COUNT; i++ ) {
         LOG_print( log, "\t- \"%s\"\n", DATABASE_SYSTEMS[ i ].name );
         LOG_print( log, "[%s] DB_WORKER_watcher for \"%s\" set to termination.\n", TIME_get_gmt(), DATABASE_SYSTEMS[ i ].name );
+        pthread_cancel( w_watcher_thread[ i ] );
     }
 
     return TRUE;
