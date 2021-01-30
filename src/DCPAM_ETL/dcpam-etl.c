@@ -415,6 +415,7 @@ int DCPAM_load_configuration( const char* filename ) {
                 return FALSE;
             }
 
+            APP.lcs_report.conn = NULL;
             cfg_lcs = cJSON_GetObjectItem( config_json, "LCS" );
             if( cfg_lcs ) {
 
@@ -450,10 +451,10 @@ int DCPAM_load_configuration( const char* filename ) {
                 }
 
             } else {
-                LOG_print( &dcpam_etl_log, "ERROR: \"LCS\" key not found.\n " );
-                cJSON_Delete( config_json );
+                LOG_print( &dcpam_etl_log, "NOTICE: \"LCS\" key not found.\n " );
+                /*cJSON_Delete( config_json );
                 free( config_string ); config_string = NULL;
-                return FALSE;
+                return FALSE;*/
             }
 
             cfg_system_array = cJSON_GetObjectItem( config_json, "system" );
@@ -1714,7 +1715,9 @@ void DCPAM_ETL_LCS_listener( COMMUNICATION_SESSION* communication_session, CONNE
                     if( strcmp( msg->valuestring, "ping" ) == 0 ) {
                         const char* pong_msg = "{\"msg\": \"pong\"}";
                         SOCKET_send( communication_session, client, pong_msg, strlen( pong_msg ) );
-                        SOCKET_disconnect_client( communication_session );
+                        SOCKET_unregister_client( communication_session->socket_descriptor, log );
+                        SOCKET_close( communication_session->socket_descriptor );
+                        //SOCKET_disconnect_client( communication_session );
                         cJSON_Delete( req );
                         return;
                     }

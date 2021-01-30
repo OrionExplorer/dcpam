@@ -54,7 +54,7 @@ int CDC_TransformGeneric( DB_SYSTEM_ETL_TRANSFORM_QUERY *transform_element, DATA
         script = popen( command, READ_BINARY );
         if( script == NULL ) {
             LOG_print( log, "[%s] Error executing script %s.\n", TIME_get_gmt(), command );
-            pclose( script );
+            //pclose( script );
             return 0;
         }
         res_len = fread( res, sizeof( char ), 1, script );
@@ -122,6 +122,7 @@ int CDC_TransformGeneric( DB_SYSTEM_ETL_TRANSFORM_QUERY *transform_element, DATA
                 free( transform_element->connection ); transform_element->connection = NULL;
                 return 0;
             }
+            NET_CONN_disconnect( transform_element->connection );
         }
         transform_element->connection->log = NULL;
         free( transform_element->connection ); transform_element->connection = NULL;

@@ -37,7 +37,7 @@ int LCS_COMPONENT_ACTION_register( DCPAM_COMPONENT* dst, const char* description
         }
 
     } else {
-        LOG_print( log, "[%s] COMPONENT_add_action fatal error: parameters are invalid.\n", TIME_get_gmt() );
+        LOG_print( log, "[%s] LCS_COMPONENT_ACTION_register fatal error: parameters are invalid.\n", TIME_get_gmt() );
         return 0;
     }
 
@@ -203,9 +203,12 @@ int LCS_COMPONENT_check( DCPAM_COMPONENT* dst, LOG_OBJECT *log ) {
                                 cJSON_Delete( resp );
                             }
                         }
+                        NET_CONN_disconnect( conn );
                     }
                 }
+                NET_CONN_disconnect( conn );
             }
+            NET_CONN_disconnect( conn );
             free( conn->host ); conn->host = NULL;
             conn->log = NULL;
             free( conn ); conn = NULL;

@@ -2,6 +2,7 @@
 #include "../../include/utils/time.h"
 #include "../../include/utils/memory.h"
 #include "../../include/utils/log.h"
+#include "../../include/portable.h"
 
 
 int NET_CONN_init( NET_CONN* connection, const char* host, const int port, const int secure ) {
@@ -99,12 +100,12 @@ int NET_CONN_connect( NET_CONN *connection, const char *host, const int port, co
 
     connection->connected = 1;
 
-    LOG_print( connection->log, "ok.\n" );
     return 1;
 }
 
 int NET_CONN_disconnect( NET_CONN *connection ) {
     if( connection ) {
+        int ret_val = 0;
         LOG_print( connection->log, "[%s] NET_CONN_disconnect( %s, %d )...", TIME_get_gmt(), connection->host, connection->port );
 
         free( connection->host ); connection->host = NULL;
@@ -123,10 +124,15 @@ int NET_CONN_disconnect( NET_CONN *connection ) {
             connection->sslctx = NULL;
         }
 
-        LOG_print( connection->log, "ok.\n" );
+        SOCKET_unregister_client( connection->socket, connection->log );
+        SOCKET_close( connection->socket );
+        ret_val = 1;
+        //ret_val = shutdown( connection->socket, SHUT_RDWR ) == 0 && closesocket( connection->socket ) == 0;
+        //ret_val = closesocket( connection->socket );
 
+        LOG_print( connection->log, "ok.\n" );
         
-        return closesocket( connection->socket );
+        return ret_val;
     } else {
         printf( "error. Connection pointer is not valid.\n" );
         return 0;
@@ -134,8 +140,8 @@ int NET_CONN_disconnect( NET_CONN *connection ) {
 }
 
 int NET_CONN_send( NET_CONN *connection, const char *data, size_t data_len ) {
+    if( connection && connection->log ) {
 
-    if( connection ) {
         LOG_print( connection->log, "[%s] NET_CONN_send...", TIME_get_gmt() );
 
         if( connection->initialized == 0 ) {
@@ -150,14 +156,14 @@ int NET_CONN_send( NET_CONN *connection, const char *data, size_t data_len ) {
 
         if( connection->cSSL ) {
             if( SSL_write( connection->cSSL, data, data_len ) < 0 ) {
-                LOG_print( connection->log, "error sending data to %s.\n", TIME_get_gmt(), connection->host );
+                LOG_print( connection->log, "error sending data to %s.\n", connection->host );
                 return 0;
             } else {
                 LOG_print( connection->log, "ok. Awaiting response..." );
             }
         } else {
             if( send( connection->socket, data, data_len, 0 ) < 0 ) {
-                LOG_print( connection->log, "error sending data to %s.\n", TIME_get_gmt(), connection->host );
+                LOG_print( connection->log, "error sending data to %s.\n", connection->host );
                 return 0;
             } else {
                 LOG_print( connection->log, "ok. Awaiting response..." );

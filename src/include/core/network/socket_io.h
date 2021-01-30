@@ -3,6 +3,7 @@
 
 #include "../../shared.h"
 #include "../../utils/log.h"
+#include "../../portable.h"
 
 #define FD_SETSIZE  1024
 

@@ -25,6 +25,9 @@
     #define READ_BINARY     "re"
     #define sighandler      __sighandler_t
     #define Sleep(x)        dcpam_sleep(x)
+    #define closesocket     close
+    #define SOCKET          int
+
 #endif
 
 #ifndef _WIN32

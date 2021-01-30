@@ -110,22 +110,13 @@ void SOCKET_prepare( LOG_OBJECT *log ) {
         LOG_print( log, "setsockopt( TCP_NODELAY ) error: %d.\n", wsa_result );
     }
 
-//#ifdef __LINUX__
     if( fcntl( socket_server, F_SETFL, fcntl(socket_server, F_GETFL, 0) | O_NONBLOCK ) == SOCKET_ERROR ) {
         wsa_result = WSAGetLastError();
         LOG_print( log, "ioctlsocket error: %d.\n", wsa_result );
         SOCKET_stop();
         exit( EXIT_FAILURE );
     }
-//#else
-//    unsigned long non_block = 1;
-//     if( fcntl( socket_server, FIONBIO, &non_block ) == SOCKET_ERROR ) {
-//        wsa_result = WSAGetLastError();
-//        LOG_print( log, "ioctlsocket error: %d.\n", wsa_result );
-//        SOCKET_stop();
-//        exit( EXIT_FAILURE );
-//    }
-//#endif
+
     if( listen( socket_server, MAX_CLIENTS ) == SOCKET_ERROR ) {
         wsa_result = WSAGetLastError();
         LOG_print( log, "listen error: %d.\n", wsa_result );
@@ -163,6 +154,7 @@ void SOCKET_run( spc *socket_process_callback, const char **allowed_hosts, const
     while( app_terminated == 0 ) {
         read_fds = master;
         if( select( fdmax+1, &read_fds, NULL, NULL, &tv ) == -1 ) {
+            LOG_print( log, "[%s] SOCKET_run[fatal error]: select returned -1.\n", TIME_get_gmt() );
             SOCKET_stop();
             exit( EXIT_FAILURE );
         }
@@ -196,7 +188,7 @@ void SOCKET_run( spc *socket_process_callback, const char **allowed_hosts, const
                         }
                     }
                 } else {
-                    SOCKET_process( i, socket_process_callback ? socket_process_callback : NULL, log );
+                    SOCKET_process( newfd, socket_process_callback ? socket_process_callback : NULL, log );
                 }
             }
             Sleep( 1 );
@@ -221,9 +213,15 @@ void SOCKET_process( int socket_fd, spc *socket_process_callback, LOG_OBJECT *lo
         if ( communication_session_.data_length <= 0 ) {
             SOCKET_unregister_client( socket_fd, log );
             SOCKET_close( socket_fd );
+            SOCKET_disconnect_client( &communication_session_ );
         } else {
             if( socket_process_callback ) {
-                    ( *socket_process_callback )( &communication_session_, client, log );
+                ( *socket_process_callback )( &communication_session_, client, log );
+                //SOCKET_unregister_client( socket_fd, log );
+                //SOCKET_close( socket_fd );
+            } else {
+                SOCKET_unregister_client( socket_fd, log );
+                SOCKET_close( socket_fd );
             }
         }
     }
@@ -242,7 +240,7 @@ void SOCKET_modify_clients_count( int mod ) {
 void SOCKET_close( int socket_descriptor ) {
     FD_CLR( socket_descriptor, &master );
     shutdown( socket_descriptor, SHUT_RDWR );
-    close( socket_descriptor );
+    closesocket( socket_descriptor );
     SOCKET_modify_clients_count( -1 );
 }
 
@@ -264,8 +262,9 @@ void SOCKET_release( COMMUNICATION_SESSION *communication_session ) {
 }
 
 void SOCKET_disconnect_client( COMMUNICATION_SESSION *communication_session ) {
+    SOCKET_close( communication_session->socket_descriptor );
     if( communication_session->socket_descriptor != SOCKET_ERROR ) {
-        SOCKET_close( communication_session->socket_descriptor );
+        //SOCKET_close( communication_session->socket_descriptor );
     } else {
         SOCKET_release( communication_session );
     }
@@ -281,8 +280,12 @@ void SOCKET_send( COMMUNICATION_SESSION *communication_session, CONNECTED_CLIENT
 
     strlcpy( data_to_send, data, MAX_BUFFER );
 
-    if( ( communication_session->data_length = send( client->socket_descriptor, data_to_send, _data_size, 0 ) ) <= 0 ) {
-        SOCKET_disconnect_client( communication_session );
+    if( communication_session && communication_session->socket_descriptor ) {
+        if( ( communication_session->data_length = send( client->socket_descriptor, data_to_send, _data_size, 0 ) ) <= 0 ) {
+            SOCKET_disconnect_client( communication_session );
+        }
+    } else {
+        printf( "[%s] Error: invalid communication_session.\n", TIME_get_gmt() );
     }
 
     free( data_to_send );

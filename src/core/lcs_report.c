@@ -34,6 +34,7 @@ int LCS_REPORT_init( LCS_REPORT *connection, const char *address, const char *co
         //strlcpy( connection->lcs_host, host, host_len );
         snprintf( connection->lcs_host, host_len + 1, host );
         connection->lcs_port = port;
+
         return 1;
     } else {
         LOG_print( log, "[%s] LCS_REPORT_init failed: address %s is invalid.\n", TIME_get_gmt(), address );
@@ -81,12 +82,13 @@ int LCS_REPORT_send( LCS_REPORT* connection, const char* action, COMPONENT_ACTIO
         LOG_print( connection->log, "[%s] LCS_REPORT_send( %s, %s, %s )...\n", TIME_get_gmt(), connection->address, action, action_type == DCT_START ? "START" : "STOP" );
 
         char* dst_buf = SAFECALLOC( buf_len + 1, sizeof( char ), __FILE__, __LINE__ );
-        snprintf( dst_buf, buf_len, action_template,
+        snprintf( dst_buf, buf_len + 1, action_template,
                     connection->component,
                     connection->version,
                     action,
                     action_type == DCT_START ? "start" : "stop"
         );
+
         if( NET_CONN_init( connection->conn, connection->lcs_host, connection->lcs_port, 0 ) == 1 ) {
             if( NET_CONN_connect( connection->conn, connection->lcs_host, connection->lcs_port, 0 ) == 1 ) {
                 if( NET_CONN_send( connection->conn, dst_buf, buf_len ) == 1 ) {
@@ -94,7 +96,9 @@ int LCS_REPORT_send( LCS_REPORT* connection, const char* action, COMPONENT_ACTIO
                     NET_CONN_disconnect( connection->conn );
                     return 1;
                 }
+                //NET_CONN_disconnect( connection->conn );
             }
+            //NET_CONN_disconnect( connection->conn );
         }
 
         free( dst_buf ); dst_buf = NULL;

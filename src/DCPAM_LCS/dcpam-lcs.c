@@ -18,6 +18,7 @@
 #define WDS_RESPONSE_ERROR( communication_session, client ) { \
                 SOCKET_send( communication_session, client, "{\"success\":false,\"data\":[],\"length\":0}", 38 ); \
                 SOCKET_disconnect_client( communication_session ); \
+                SOCKET_close( client->socket_descriptor ); \
 }
 
 #pragma warning( disable : 6031 )
@@ -294,16 +295,22 @@ void DCPAM_LCS_listener( COMMUNICATION_SESSION *communication_session, CONNECTED
                     int reg_res = LCS_COMPONENT_ACTION_register( component, action->valuestring, tmp_action_type, log );
                     if( reg_res == 1 ) {
                         SOCKET_send( communication_session, client, "1", 1 );
-                        SOCKET_disconnect_client( communication_session );
                     } else {
                         SOCKET_send( communication_session, client, "-1", 2 );
-                        SOCKET_disconnect_client( communication_session );
                     }
+                    /*SOCKET_unregister_client( client->socket_descriptor, log );
+                    SOCKET_close( client->socket_descriptor );*/
                     SOCKET_disconnect_client( communication_session );
+                    SOCKET_unregister_client( client->socket_descriptor, log );
+                    SOCKET_close( communication_session->socket_descriptor );
                 } else {
                     LOG_print( &dcpam_lcs_log, "[%s] Error: DCPAM Component( %s v%s, %s ) not found!\n", TIME_get_gmt(), app->valuestring, version->valuestring, ip );
                     SOCKET_send( communication_session, client, "-1", 2 );
+                    /*SOCKET_unregister_client( client->socket_descriptor, log );
+                    SOCKET_close( client->socket_descriptor );*/
                     SOCKET_disconnect_client( communication_session );
+                    SOCKET_unregister_client( client->socket_descriptor, log );
+                    SOCKET_close( communication_session->socket_descriptor );
                 }
             } else {
                 cJSON *key = cJSON_GetObjectItem( json_request, "key" );
@@ -313,7 +320,11 @@ void DCPAM_LCS_listener( COMMUNICATION_SESSION *communication_session, CONNECTED
                             if( strcmp( key->valuestring, L_APP.ALLOWED_HOSTS_[ i ]->api_key ) != 0 ) {
                                 LOG_print( &dcpam_lcs_log, "[%s] Error: \"key\" in request is invalid.\n", TIME_get_gmt() );
                                 SOCKET_send( communication_session, client, "-1", 2 );
+                                /*SOCKET_unregister_client( client->socket_descriptor, log );
+                                SOCKET_close( client->socket_descriptor );*/
                                 SOCKET_disconnect_client( communication_session );
+                                SOCKET_unregister_client( client->socket_descriptor, log );
+                                SOCKET_close( communication_session->socket_descriptor );
                                 cJSON_Delete( json_request );
                                 free( request ); request = NULL;
                                 return;
@@ -327,7 +338,11 @@ void DCPAM_LCS_listener( COMMUNICATION_SESSION *communication_session, CONNECTED
                     if( response ) {
                         char* _res = cJSON_Print( response );
                         SOCKET_send( communication_session, client, _res, strlen( _res ) );
+                        /*SOCKET_unregister_client( client->socket_descriptor, log );
+                        SOCKET_close( client->socket_descriptor );*/
                         SOCKET_disconnect_client( communication_session );
+                        SOCKET_unregister_client( client->socket_descriptor, log );
+                        SOCKET_close( communication_session->socket_descriptor );
                         cJSON_Delete( json_request );
                         cJSON_Delete( response );
                         free( request ); request = NULL;
@@ -349,7 +364,11 @@ void DCPAM_LCS_listener( COMMUNICATION_SESSION *communication_session, CONNECTED
                     return;
                 }
             }
-
+            /*SOCKET_unregister_client( client->socket_descriptor, log );
+            SOCKET_close( client->socket_descriptor );*/
+            SOCKET_disconnect_client( communication_session );
+            SOCKET_unregister_client( client->socket_descriptor, log );
+            SOCKET_close( communication_session->socket_descriptor );
             cJSON_Delete( json_request );
 
         } else {
@@ -359,6 +378,11 @@ void DCPAM_LCS_listener( COMMUNICATION_SESSION *communication_session, CONNECTED
             return;
         }
 
+        /*SOCKET_unregister_client( client->socket_descriptor, log );
+        SOCKET_close( client->socket_descriptor );*/
+        SOCKET_disconnect_client( communication_session );
+        SOCKET_unregister_client( client->socket_descriptor, log );
+        SOCKET_close( communication_session->socket_descriptor );
         free( request ); request = NULL;
     }
 
@@ -424,6 +448,7 @@ int main( int argc, char** argv ) {
             }
 
             spc exec_script = ( spc )&DCPAM_LCS_listener;
+            //SOCKET_main( NULL, L_APP.network_port, ( const char** )&( *allowed_hosts ), ( total_hosts ), &dcpam_lcs_log );
             SOCKET_main( &exec_script, L_APP.network_port, ( const char** )&( *allowed_hosts ), ( total_hosts ), &dcpam_lcs_log );
 
             for( int i = 0; i < total_hosts; i++ ) {
