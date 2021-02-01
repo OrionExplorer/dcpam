@@ -32,6 +32,7 @@
     * [Data Sources](#data-sources)
       * [Databases](#databases)
       * [Flat Files](#flat-files)
+      * [API](#api)
     * [DCPAM Database](#dcpam-database)
     * [Docker images](#docker-images)
 * [Roadmap](#roadmap)
@@ -221,7 +222,9 @@ DCPAM development is still in progress with following data sources available:
 | ODS                                | script           |
 | XML                                | [script](https://github.com/OrionExplorer/dcpam/blob/master/src/DCPAM_ETL/data-processor/xml2csv.py) |
 
+#### API
 DCPAM can access files from local or remote locations. The latter are fetched via HTTP/HTTPS protocol and [Battery HTTP Server](https://github.com/OrionExplorer/battery-http-server) is recommended.
+Parameters such as URL, method, headers and additional payload are supported.
 Files are loaded to temporary tables in DCPAM or external database to make SQL operations possible for this kind of data.
 
 ### DCPAM Database
@@ -236,7 +239,7 @@ Each DCPAM Component is provided with `Dockerfile` to build Docker image:
 * DCPAM LCS: `dcpam-lcs.dockerfile`
 
 ##### Currently under active development
-* [x] Data source: APIs.
+* [ ] To be announced.
 
 ## Roadmap
 | Year | Quarter | Feature                                      | Status            |
@@ -253,7 +256,7 @@ Each DCPAM Component is provided with `Dockerfile` to build Docker image:
 | 2020 | Q3      | :white_check_mark: Data source: externally preprocessed         | Done (2020-09-24) |
 | 2020 | Q3      | :white_check_mark: Data source: XML          | Done (2020-09-24) |
 | 2020 | Q3      | :white_check_mark: DCPAM ETL connectivity tests              | Done (2020-09-25) |
-| 2021 | Q1      | Data source: APIs                            | In progress       |
+| 2021 | Q1      | :white_check_mark: Data source: APIs         | Done (2021-02-01) |
 | 2021 | Q2      | DCPAM Monitoring                             | Not implemented   |
 | 2021 | Q3      | DCPAM Access (BI web application)            | Not implemented   |
 | 2021 | Q4      | DCPAM Construct (admin web application)      | Not implemented   |

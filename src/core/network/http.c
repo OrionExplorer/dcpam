@@ -33,14 +33,56 @@ char* HTTP_CLIENT_get_content( HTTP_CLIENT *client, const char *host, const char
             return NULL;
         }
 
-        char send_data[ 1024 ];
+        /* Initial data length */
+        size_t send_data_len = 1024;
 
-        snprintf( send_data, sizeof( send_data ), "GET /%s HTTP/1.1\r\nHost: %s\r\nConnection: close\r\n\r\n", path, host );
+        if( http_data ) {
+            /* Additional payload length */
+            send_data_len += http_data->payload_len;
+
+            /* Additional headers length */
+            if( http_data->headers_len ) {
+                for( int i = 0; i < http_data->headers_len; i++ ) {
+                    char* name = http_data->headers[ i ].name;
+                    char* value = http_data->headers[ i ].value;
+                    size_t data_len = strlen( name ) + strlen( value ) + /* ": " */ 2 + /* \r\n */ 2;
+                    send_data_len += data_len;
+                }
+            }
+        }
+
+        /* Initial data */
+        char* send_data = SAFECALLOC( send_data_len + 1, sizeof( char ), __FILE__, __LINE__ );
+        snprintf( send_data, send_data_len + 1, "%s /%s HTTP/1.1\r\nHost: %s\r\nConnection: close\r\n", http_data->method, path, host );
+        
+        /* Additional headers from HTTP_DATA */
+        if( http_data && http_data->headers_len ) {
+            for( int i = 0; i < http_data->headers_len; i++ ) {
+                char* name = http_data->headers[ i ].name;
+                char* value = http_data->headers[ i ].value;
+                size_t data_len = strlen( name ) + strlen( value ) + /* ": " */ 2 + /* \r\n */ 2;
+                char* header_data = SAFECALLOC( data_len + 1, sizeof( char ), __FILE__, __LINE__ );
+                snprintf( header_data, data_len + 1, "%s: %s\r\n", name, value );
+                strncat( send_data, header_data, send_data_len );
+                free( header_data ); header_data = NULL;
+            }
+        }
+
+        /* Close HTTP headers data */
+        strncat( send_data, "\r\n", send_data_len );
+
+        /* Additional payload */
+        if( http_data && http_data->payload_len ) {
+            strncat( send_data, http_data->payload, send_data_len );
+        }
 
         if( NET_CONN_send( client->connection, send_data, strlen( send_data ) ) == 0 ) {
             free( client->connection ); client->connection = NULL;
+            free( send_data );
             return NULL;
         }
+
+        free( send_data );
 
         int http_res = -1;
         if( sscanf( client->connection->response, "HTTP/1.1 %999d", &http_res ) == 1 ) {
