@@ -44,6 +44,7 @@ extern int              DATABASE_SYSTEMS_COUNT;
 extern P_DCPAM_APP      P_APP;
 
 void DCPAM_WDS_free_configuration( void );
+void DCPAM_WDS_get_db_data( const char *sql, const char *db, char **dst_json );
 
 
 void app_terminate( void ) {
@@ -93,6 +94,7 @@ void DCPAM_WDS_free_configuration( void ) {
         if( P_APP.DATA[ i ].name != NULL ) { free( P_APP.DATA[ i ].name ); P_APP.DATA[ i ].name = NULL; }
         if( P_APP.DATA[ i ].db_name != NULL ) { free( P_APP.DATA[ i ].db_name ); P_APP.DATA[ i ].db_name = NULL; }
         if( P_APP.DATA[ i ].description != NULL ) { free( P_APP.DATA[ i ].description ); P_APP.DATA[ i ].description = NULL; }
+        memset( P_APP.DATA[ i ].db_table_name, '\0', MAX_TABLE_NAME_LEN );
 
         for( int j = 0; j < P_APP.DATA[ i ].actions_len; j++ ) {
             if( P_APP.DATA[ i ].actions[ j ].name != NULL ) { free( P_APP.DATA[ i ].actions[ j ].name ); P_APP.DATA[ i ].actions[ j ].name = NULL; }
@@ -363,6 +365,8 @@ int DCPAM_WDS_load_configuration( const char* filename ) {
                             free( config_string ); config_string = NULL;
                             return FALSE;
                         }
+                        snprintf( P_APP.DATA[ i ].db_table_name, MAX_TABLE_NAME_LEN, cfg_app_data_item_db_table_name->valuestring );
+                        LOG_print( &dcpam_wds_log, "\t· db_table_name=\"%s\"\n", P_APP.DATA[ i ].db_table_name );
 
                         cfg_app_data_item_db_name = cJSON_GetObjectItem( cfg_app_data_item, "db_name" );
                         if( cfg_app_data_item_db_name == NULL ) {
@@ -609,11 +613,50 @@ int DCPAM_WDS_init_cache( void ) {
     return 1;
 }
 
-void DCPAM_WDS_get_data( const char *sql, const char *db, char **dst_json ) {
+void DCPAM_WDS_get_data( const char *sql, char **dst_json ) {
+
+    if( sql ) {
+        char db_table_name[ 128 ];
+        /* Check which main table is selected for query:
+            - SELECT * FROM table_name
+            - SELECT * FROM table_name WHERE id = 1 ...
+            - SELECT * FROM table_name JOIN another_table ...
+            if( sscanf( address, "dcpam://%99[^:]:%99d", host, &port ) == 2 ) {
+         */
+
+        LOG_print( &dcpam_wds_log, "[%s] DCPAM_WDS_get_data SQL: %s\n", TIME_get_gmt(), sql );
+        char *pos = strstr( sql, " FROM " );
+
+        if( pos ) {
+            if( sscanf( pos, " FROM %s", db_table_name ) == 1 ) {
+                LOG_print( &dcpam_wds_log, "[%s] Main table for query: %s\n", TIME_get_gmt(), db_table_name );
+
+                /* Find which DB node hosts requested data */
+                for( int i = 0; i < P_APP.DATA_len; i++ ) {
+                    if( strncmp( P_APP.DATA[ i ].db_table_name, db_table_name, MAX_TABLE_NAME_LEN ) == 0 ) {
+                        LOG_print( &dcpam_wds_log, "\t- found %s in db %s\n", P_APP.DATA[ i ].db_table_name, P_APP.DATA[ i ].db_name );
+                        DCPAM_WDS_get_db_data( sql, P_APP.DATA[ i ].db_name, dst_json );
+                        return;
+                    }
+                }
+                LOG_print( &dcpam_wds_log, "\t- table %s does not exist on any node.\n", db_table_name );
+            } else {
+                LOG_print( &dcpam_wds_log, "\t- unable to recognize table for query.\n" );
+            }
+        } else {
+            LOG_print( &dcpam_wds_log, "\t- unable to recognize table for query. Is this SQL valid?\n" );
+        }
+    } else {
+        LOG_print( &dcpam_wds_log, "[%s] DCPAM_WDS_get_data data error: sql parameter is missing!\n", TIME_get_gmt() );
+    }
+    return;
+}
+
+void DCPAM_WDS_get_db_data( const char *sql, const char *db, char **dst_json ) {
     DB_QUERY *cached_result = NULL;
 
     if( sql && db ) {
-        LOG_print( &dcpam_wds_log, "[%s] DCPAM_WDS_get_data( %s, %s )...\n", TIME_get_gmt(), sql, db );
+        LOG_print( &dcpam_wds_log, "[%s] DCPAM_WDS_get_db_data( %s, %s )...\n", TIME_get_gmt(), sql, db );
 
         char *action_description = NULL;
         char* gd_descr = "[DCPAM_WDS] Get data from %s database: %s";
@@ -633,7 +676,7 @@ void DCPAM_WDS_get_data( const char *sql, const char *db, char **dst_json ) {
             cJSON* all_data = cJSON_CreateArray();
             cJSON* response = cJSON_CreateObject();
 
-            LOG_print( &dcpam_wds_log, "[%s] DCPAM_WDS_get_data( %s, %s ): Found records: %d.\n", TIME_get_gmt(), sql, db, cached_result->row_count );
+            LOG_print( &dcpam_wds_log, "[%s] DCPAM_WDS_get_db_data( %s, %s ): Found records: %d.\n", TIME_get_gmt(), sql, db, cached_result->row_count );
             for( int i = 0; i < cached_result->row_count; i++ ) {
                 record = cJSON_CreateObject();
                 for( int j = 0; j < cached_result->field_count; j++ ) {
@@ -689,12 +732,12 @@ void DCPAM_WDS_get_data( const char *sql, const char *db, char **dst_json ) {
                     if( cache_res == 1 ) { /* OK */
                         P_APP.CACHE_len++;
                         LOG_print( &dcpam_wds_log, "[%s] Data for request cached successfully.\n", TIME_get_gmt() );
-                        DCPAM_WDS_get_data( sql, db, &(*dst_json) );
+                        DCPAM_WDS_get_db_data( sql, db, &(*dst_json) );
                     } else {
                         LOG_print( &dcpam_wds_log, "[%s] Error: unable to cache data for request.\n", TIME_get_gmt() );
                         if( cache_res == 2 ) { /* Memory limit exceeded */
                             P_APP.CACHE_len++;
-                            DCPAM_WDS_get_data( sql, db, &( *dst_json ) );
+                            DCPAM_WDS_get_db_data( sql, db, &( *dst_json ) );
                             P_APP.CACHE_len--;
                             DB_CACHE_free( P_APP.CACHE[ P_APP.CACHE_len ], &dcpam_wds_log );
                             free( P_APP.CACHE[ P_APP.CACHE_len ] );
@@ -712,7 +755,7 @@ void DCPAM_WDS_get_data( const char *sql, const char *db, char **dst_json ) {
         LCS_REPORT_send( &P_APP.lcs_report, action_description, DCT_STOP );
         free( action_description ); action_description = NULL;
     } else {
-        LOG_print( &dcpam_wds_log, "[%s] DCPAM_WDS_get_data error: not all parameters are valid!\n", TIME_get_gmt() );
+        LOG_print( &dcpam_wds_log, "[%s] DCPAM_WDS_get_db_data error: not all parameters are valid!\n", TIME_get_gmt() );
     }
 }
 
@@ -774,6 +817,7 @@ void DCPAM_WDS_query( COMMUNICATION_SESSION *communication_session, CONNECTED_CL
 
             LOG_print( &dcpam_wds_log, "[%s] Access granted for client %s with key %s.\n", TIME_get_gmt(), ip, key->valuestring );
 
+            /* Report data */
             report = cJSON_GetObjectItem( json_request, "report" );
             if( report ) {
                 if( strcmp( report->valuestring, "memory" ) == 0 ) {
@@ -794,6 +838,8 @@ void DCPAM_WDS_query( COMMUNICATION_SESSION *communication_session, CONNECTED_CL
                 }
             }
 
+            /* Query data */
+            /* Get SQL */
             sql = cJSON_GetObjectItem( json_request, "sql" );
             if( sql == NULL) {
                 LOG_print( &dcpam_wds_log, "[%s] Error: no SQL in request is found.\n", TIME_get_gmt() );
@@ -804,15 +850,8 @@ void DCPAM_WDS_query( COMMUNICATION_SESSION *communication_session, CONNECTED_CL
                 return;
             }
 
+            /* Get DB name */
             db = cJSON_GetObjectItem( json_request, "db" );
-            if( db  == NULL ) {
-                LOG_print( &dcpam_wds_log, "[%s] Error: no DB name in request is found.\n", TIME_get_gmt() );
-                WDS_RESPONSE_ERROR( communication_session, client );
-                SOCKET_disconnect_client( communication_session );
-                cJSON_Delete( json_request );
-                free( request ); request = NULL;
-                return;
-            }
 
             DB_QUERY_TYPE dqt = DB_QUERY_get_type( sql->valuestring );
             if(
@@ -822,7 +861,13 @@ void DCPAM_WDS_query( COMMUNICATION_SESSION *communication_session, CONNECTED_CL
             } else {
                 char* json_response = NULL;
 
-                DCPAM_WDS_get_data( sql->valuestring, db->valuestring, &json_response );
+                if( db ) {
+                    /* Query data from specific DB */
+                    DCPAM_WDS_get_db_data( sql->valuestring, db->valuestring, &json_response );
+                } else {
+                    /* Query data from node that delivers requested data */
+                    DCPAM_WDS_get_data( sql->valuestring, &json_response );
+                }
 
                 if( json_response ) {
                     SOCKET_send( communication_session, client, json_response, strlen( json_response ) );

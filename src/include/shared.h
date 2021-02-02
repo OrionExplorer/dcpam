@@ -51,8 +51,9 @@
 #define MAX_PATH_LENGTH_CHAR                2048*sizeof( char )
 #define MAX_CLIENTS                         FD_SETSIZE
 #define DEFAULT_PORT                        9091
-#define MAX_COLUMNS							64
-#define MAX_COLUMN_NAME_LEN					256
+#define MAX_COLUMNS							            64
+#define MAX_COLUMN_NAME_LEN					        256
+#define MAX_TABLE_NAME_LEN                  128
 
 #define LOGS_PATH                           ""SLASH
 #define RFC1123FMT                          "%a, %d %b %Y %H:%M:%S GMT"

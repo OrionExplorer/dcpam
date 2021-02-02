@@ -22,12 +22,13 @@
     * [Windows Dependencies](#windows-dependencies)
 
 ## Purpose of DCPAM WDS
-DCPAM WDS is dedicated endpoint for querying predefined business data with custom caching system. DCPAM does not limit number of virtual and physical DCPAM Database nodes, therefore DCPAM WDS encapsulates every node of DCPAM Database into single data access point.
+[DCPAM WDS](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_WDS/README.md) is dedicated [Massively Parallel Processing](https://pl.wikipedia.org/wiki/MPP) service for querying predefined and custom business data with in-memory caching system. DCPAM WDS encapsulates every node of DCPAM Database into single data access point.
 
 ## Technology
 ### Architecture Overview
 * Server application dedicated for the backends of client applications.
-* Connections accepted from allowed hosts only with valid API key.
+* Massively Parallel Processing architecture.
+* Connections accepted from allowed hosts with valid API key only.
 * JSON-based communication with client applications.
 * Builds the in-memory cache for queries predefined in `wds_config.json` on startup:
     * For one or more DCPAM Database nodes.
