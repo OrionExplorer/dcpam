@@ -78,17 +78,17 @@ char* HTTP_CLIENT_get_content( HTTP_CLIENT *client, const char *host, const char
                 size_t data_len = strlen( name ) + strlen( value ) + /* ": " */ 2 + /* \r\n */ 2;
                 char* header_data = SAFECALLOC( data_len + 1, sizeof( char ), __FILE__, __LINE__ );
                 snprintf( header_data, data_len + 1, "%s: %s\r\n", name, value );
-                strncat( send_data, header_data, send_data_len );
+                strlcat( send_data, header_data, send_data_len );
                 free( header_data ); header_data = NULL;
             }
         }
 
         /* Close HTTP headers data */
-        strncat( send_data, "\r\n", send_data_len );
+        strlcat( send_data, "\r\n", send_data_len );
 
         /* Additional payload */
         if( http_data && http_data->payload_len ) {
-            strncat( send_data, http_data->payload, send_data_len );
+            strlcat( send_data, http_data->payload, send_data_len );
         }
 
         if( NET_CONN_send( client->connection, send_data, strlen( send_data ) ) == 0 ) {
