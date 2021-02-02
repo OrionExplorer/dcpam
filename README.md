@@ -99,6 +99,7 @@ As DCPAM is extremely modular and highly scalabe, it can serve both as Data Ware
 * Data sources:
   * [Databases](#data-sources)
   * [Flat Files](#flat-files)
+  * [API](#flat-files)
 * Data Warehouse monitoring:
   * DCPAM ETL
   * DCPAM RDP

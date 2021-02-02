@@ -174,9 +174,9 @@
 * [x] DCPAM LCS reports:
 	* [x] Get Components states `{"report": "component_state", "key" : "zxcasd321"}`
 	* [x] Get Component actions `{"report": "component_actions", "name" : "DCPAM Remote Data Processor", "key" : "zxcasd321"}`
-* [ ] Process data fetched from API:
-	* [ ] Possibility to configure additional HTTP headers (authentication)
-	* [ ] Check Content-Type and adjust parsing function (JSON or CSV/TSV/PSV)
+* [x] Process data fetched from API:
+	* [x] Possibility to configure additional HTTP headers (authentication)
+	* [ ] ~~Check Content-Type and adjust parsing function (JSON or CSV/TSV/PSV)~~
 * [x] Preprocess file formats without native support before DCPAM ETL process starts:
 	* [x] Load configuration.
 	* [x] Execute processor script/application.

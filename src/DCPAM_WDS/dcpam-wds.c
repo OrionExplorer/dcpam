@@ -616,19 +616,21 @@ int DCPAM_WDS_init_cache( void ) {
 void DCPAM_WDS_get_data( const char *sql, char **dst_json ) {
 
     if( sql ) {
-        char db_table_name[ 128 ];
-        /* Check which main table is selected for query:
-            - SELECT * FROM table_name
-            - SELECT * FROM table_name WHERE id = 1 ...
-            - SELECT * FROM table_name JOIN another_table ...
-            if( sscanf( address, "dcpam://%99[^:]:%99d", host, &port ) == 2 ) {
-         */
 
         LOG_print( &dcpam_wds_log, "[%s] DCPAM_WDS_get_data SQL: %s\n", TIME_get_gmt(), sql );
         char *pos = strstr( sql, " FROM " );
 
         if( pos ) {
-            if( sscanf( pos, " FROM %s", db_table_name ) == 1 ) {
+            char db_table_name[ 128 ];
+
+            /* Check which main table is selected for query:
+                - SELECT * FROM table_name
+                - SELECT * FROM table_name WHERE id = 1 ...
+                - SELECT * FROM table_name JOIN another_table ...
+                if( sscanf( address, "dcpam://%99[^:]:%99d", host, &port ) == 2 ) {
+             */
+
+            if( sscanf( pos, " FROM %128s", db_table_name ) == 1 ) {
                 LOG_print( &dcpam_wds_log, "[%s] Main table for query: %s\n", TIME_get_gmt(), db_table_name );
 
                 /* Find which DB node hosts requested data */
