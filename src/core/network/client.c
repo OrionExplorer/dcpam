@@ -19,6 +19,7 @@
 #include "../../include/utils/memory.h"
 #include "../../include/utils/log.h"
 #include "../../include/portable.h"
+#include <string.h>
 
 
 int NET_CONN_init( NET_CONN* connection, const char* host, const int port, const int secure ) {

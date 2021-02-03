@@ -1566,11 +1566,11 @@ int DCPAM_load_configuration( const char* filename ) {
                                     free( config_string ); config_string = NULL;
                                     return FALSE;
                                 }
-                                snprintf( tmp_flat_file->delimiter, 2, cfg_system_flat_file_delimiter->valuestring );
+                                snprintf( tmp_flat_file->delimiter, 1, cfg_system_flat_file_delimiter->valuestring );
                             } else if( tmp_flat_file->type == FFT_TSV ) {
-                                snprintf( tmp_flat_file->delimiter, 2, "%s", "\t" );
+                                snprintf( tmp_flat_file->delimiter, 1, "%s", "\t" );
                             } else if( tmp_flat_file->type == FFT_PSV ) {
-                                snprintf( tmp_flat_file->delimiter, 2, "%s", "|" );
+                                snprintf( tmp_flat_file->delimiter, 1, "%s", "|" );
                             }
                         } else if( strstr( tmp_flat_file->name, ".json" ) ) {
                             tmp_flat_file->type = FFT_JSON;

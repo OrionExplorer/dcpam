@@ -961,8 +961,8 @@ void DATABASE_SYSTEM_add(
             DATABASE_SYSTEMS[ DATABASE_SYSTEMS_COUNT ].flat_file->http.active = 0;
 
             if( flat_file->type == FFT_CSV || flat_file->type == FFT_TSV || flat_file->type == FFT_PSV ) {
-                snprintf( DATABASE_SYSTEMS[ DATABASE_SYSTEMS_COUNT ].flat_file->delimiter, 2, flat_file->delimiter );
-                snprintf( DATABASE_SYSTEMS[ DATABASE_SYSTEMS_COUNT ].flat_file->csv_file->delimiter, 2, flat_file->delimiter );
+                snprintf( DATABASE_SYSTEMS[ DATABASE_SYSTEMS_COUNT ].flat_file->delimiter, 1, flat_file->delimiter );
+                snprintf( DATABASE_SYSTEMS[ DATABASE_SYSTEMS_COUNT ].flat_file->csv_file->delimiter, 1, flat_file->delimiter );
             }
         }
 

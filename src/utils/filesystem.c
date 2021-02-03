@@ -17,6 +17,7 @@
 #include "../include/utils/filesystem.h"
 #include "../include/utils/memory.h"
 #include "../include/utils/strings.h"
+#include "../include/utils/time.h"
 #include "../include/core/network/http.h"
 #include <stdio.h>
 #include <stdlib.h>

@@ -129,7 +129,7 @@ int MARIADB_exec(
             if( query_result == 0 ) {
                 mysql_result = mysql_store_result( db_connection->connection );
             } else {
-                LOG_print( log, "[%s][ERROR]\tMARIADB_exec: #%d, %s (\"%s\", len=%d)\n", TIME_get_gmt(), query_result, mysql_error( db_connection->connection ), sql, sql_length );
+                LOG_print( log, "[%s][ERROR]\tMARIADB_exec: #%d, %s (\"%s\", len=%ld)\n", TIME_get_gmt(), query_result, mysql_error( db_connection->connection ), sql, sql_length );
                 pthread_mutex_unlock( &db_exec_mutex );
                 return 0;
             }
