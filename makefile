@@ -5,6 +5,7 @@ CFLAGS=-std=c11 -D_XOPEN_SOURCE=600 -fexpensive-optimizations -Wshadow -Winit-se
 ORACLE_DEP= -I/usr/include/oracle/19.6/client64/ -L/usr/lib/oracle/19.6/client64/lib/
 LIBS=-lm -lpthread -lpq -lodbc -lmariadbclient $(ORACLE_DEP) -ldl -lclntsh -lssl -lcrypto
 
+
 all: dcpam-etl dcpam-wds dcpam-rdp dcpam-lcs
 
 db.o: src/db/db.c
@@ -113,13 +114,18 @@ strings.o: src/utils/strings.c
 	$(CC) -c src/utils/strings.c $(CFLAGS)
 
 dcpam-rdp: dcpam-rdp.o socket_io.o log.o time.o strings.o client.o http.o filesystem.o memory.o cJSON.o lcs_report.o
-	$(CC) socket_io.o dcpam-rdp.o log.o time.o strings.o client.o http.o filesystem.o memory.o cJSON.o lcs_report.o -o dcpam-rdp -lpthread -lssl -lcrypto
+	@ mkdir bin -p
+	$(CC) socket_io.o dcpam-rdp.o log.o time.o strings.o client.o http.o filesystem.o memory.o cJSON.o lcs_report.o -o bin/dcpam-rdp -lpthread -lssl -lcrypto
 
 dcpam-etl: dcpam-etl.o mysql.o mariadb.o odbc.o postgresql.o log.o time.o filesystem.o cJSON.o sqlite3.o memory.o http.o preload.o csv.o json.o db.o worker.o system.o extract.o stage.o transform.o load.o strings.o oracle.o sqlite.o client.o lcs_report.o socket_io.o
-	$(CC) mysql.o mariadb.o odbc.o postgresql.o dcpam-etl.o log.o time.o filesystem.o cJSON.o sqlite3.o memory.o http.o preload.o csv.o json.o db.o worker.o system.o extract.o stage.o transform.o load.o strings.o oracle.o sqlite.o client.o lcs_report.o socket_io.o -o dcpam-etl $(LIBS)
+	@ mkdir bin -p
+	$(CC) mysql.o mariadb.o odbc.o postgresql.o dcpam-etl.o log.o time.o filesystem.o cJSON.o sqlite3.o memory.o http.o preload.o csv.o json.o db.o worker.o system.o extract.o stage.o transform.o load.o strings.o oracle.o sqlite.o client.o lcs_report.o socket_io.o -o bin/dcpam-etl $(LIBS)
 
 dcpam-wds: dcpam-wds.o socket_io.o cache.o mysql.o mariadb.o odbc.o postgresql.o log.o time.o http.o filesystem.o cJSON.o sqlite3.o memory.o db.o system.o strings.o oracle.o sqlite.o client.o lcs_report.o
-	$(CC) cache.o mysql.o socket_io.o mariadb.o odbc.o postgresql.o dcpam-wds.o log.o time.o http.o filesystem.o cJSON.o sqlite3.o memory.o db.o system.o strings.o oracle.o sqlite.o client.o lcs_report.o -o dcpam-wds $(LIBS)
+	@ mkdir bin -p
+	$(CC) cache.o mysql.o socket_io.o mariadb.o odbc.o postgresql.o dcpam-wds.o log.o time.o http.o filesystem.o cJSON.o sqlite3.o memory.o db.o system.o strings.o oracle.o sqlite.o client.o lcs_report.o -o bin/dcpam-wds $(LIBS)
 
 dcpam-lcs: dcpam-lcs.o socket_io.o log.o time.o memory.o filesystem.o http.o client.o strings.o cJSON.o component.o lcs_worker.o
-	$(CC) dcpam-lcs.o socket_io.o log.o time.o memory.o filesystem.o http.o client.o strings.o cJSON.o component.o lcs_worker.o -o dcpam-lcs $(LIBS)
+	@ mkdir bin -p
+	$(CC) dcpam-lcs.o socket_io.o log.o time.o memory.o filesystem.o http.o client.o strings.o cJSON.o component.o lcs_worker.o -o bin/dcpam-lcs $(LIBS)
+	@ cp -R ./conf ./bin/

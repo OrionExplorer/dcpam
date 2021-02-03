@@ -7,6 +7,7 @@ otrs_time_accounting_data.json
 *.log
 *log.txt
 .vs/
+bin/
 .odbc.ini
 Debug/
 Release/
