@@ -132,7 +132,7 @@ int CDC_ExtractGeneric( DB_SYSTEM_ETL_EXTRACT *extract, DB_SYSTEM_ETL_EXTRACT_QU
                         ret_values_len += primary_db_sql_res.row_count;
                         ret_values_str = SAFECALLOC( ret_values_len, sizeof( char ), __FILE__, __LINE__ );
                         if( ret_values_str == NULL ) {
-                            LOG_print( log, "Fatal error: unable to SAFEMALLOC( %d * sizeof( char ) ).\n", ret_values_len );
+                            LOG_print( log, "Fatal error: unable to SAFEMALLOC( %zu * sizeof( char ) ).\n", ret_values_len );
                             for( i = 0; i < primary_db_sql_res.row_count; i++ ) {
                                 free( ret_values[ i ] );
                             }

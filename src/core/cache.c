@@ -86,7 +86,7 @@ int DB_CACHE_init( D_CACHE *dst, DATABASE_SYSTEM_DB *db, const char *sql, LOG_OB
             _DB_CACHE_calc_size( dst );
             _DB_CACHE_add_size( dst );
             if( ( P_APP.CACHE_size / 1024 ) > P_APP.CACHE_MAX_size ) {
-                LOG_print( log, "\t- Fatal error: memory limit of %d exceeded (%d)!\n", P_APP.CACHE_MAX_size, P_APP.CACHE_size/1024 );
+                LOG_print( log, "\t- Fatal error: memory limit of %zu exceeded (%zu)!\n", P_APP.CACHE_MAX_size, P_APP.CACHE_size/1024 );
                 LOG_print( log, "\t- Data would be removed from heap after completing this request.\n" );
                 _DB_CACHE_show_usage( log );
                 return 2;
