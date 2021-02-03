@@ -49,7 +49,25 @@ jobs:
 
     # Autobuild attempts to build any compiled languages  (C/C++, C#, or Java).
     # If this step fails, then you should remove it and run the build manually (see below)
-    - name: Autobuild
+    - name: Update
+      run: sudo apt-get update
+    - name: Install PostgreSQL, MariaDB, UnixODBC
+      run: sudo apt-get -y install libpq-dev libmariadbclient-dev unixodbc-dev
+    - name: Install alien
+      run: sudo apt-get -y install alien
+    - name: Download Oracle Instant Client 19.6 Basic
+      run: wget https://download.oracle.com/otn_software/linux/instantclient/19600/oracle-instantclient19.6-basic-19.6.0.0.0-1.x86_64.rpm
+    - name: Download Oracle Instant Client 19.6 Devel
+      run: wget https://download.oracle.com/otn_software/linux/instantclient/19600/oracle-instantclient19.6-devel-19.6.0.0.0-1.x86_64.rpm
+    - name: Unpack Oracle Instant Client Basic
+      run: sudo alien -i oracle-instantclient19.6-basic-19.6.0.0.0-1.x86_64.rpm
+    - name: Unpack Oracle Instant Client Devel
+      run: sudo alien -i oracle-instantclient19.6-devel-19.6.0.0.0-1.x86_64.rpm
+    - name: Set paths
+      run: export LD_LIBRARY_PATH=/usr/lib/oracle/19.6/client64/lib/${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH} && export PATH=$PATH:$ORACLE_HOME/bin
+    - name: Link Oracle headers
+      run: sudo ln -s /usr/include/oracle/19.6/client64/ $ORACLE_HOME/include
+    - name: make
       run: make
 
     - name: Perform CodeQL Analysis
