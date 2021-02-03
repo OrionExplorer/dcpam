@@ -35,6 +35,7 @@
       * [API](#api)
     * [DCPAM Database](#dcpam-database)
     * [Docker images](#docker-images)
+* [Professional Services for DCPAM](#professional-services-for-dcpam)
 * [Roadmap](#roadmap)
 
 ## Business Value
@@ -244,6 +245,9 @@ Each DCPAM Component is provided with `Dockerfile` to build Docker image:
 
 ##### Currently under active development
 * [ ] To be announced.
+
+## Professional Services for DCPAM
+Under development.
 
 ## Roadmap
 | Year | Quarter | Feature                                      | Status            |
