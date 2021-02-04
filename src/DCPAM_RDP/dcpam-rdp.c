@@ -16,6 +16,7 @@
 #include <stdio.h>
 #include <signal.h>
 #include <pthread.h>
+#include <stdint.h>
 #include "../include/core/network/socket_io.h"
 #include "../include/utils/log.h"
 #include "../include/utils/time.h"
@@ -73,7 +74,7 @@ void DCPAM_script_exec( COMMUNICATION_SESSION *communication_session, CONNECTED_
         char    res[ 4096 ];
         char    *ip = inet_ntoa( communication_session->address.sin_addr );
 
-        LOG_print( &dcpam_rdp_log, "[%s] Received data (%zu): %s\n", TIME_get_gmt(), communication_session->data_length, communication_session->content );
+        LOG_print( &dcpam_rdp_log, "[%s] Received data (%jd): %s\n", TIME_get_gmt(), ( intmax_t )communication_session->data_length, communication_session->content );
 
         memset( res, '\0', 4096 );
         memset( key, '\0', 64 );

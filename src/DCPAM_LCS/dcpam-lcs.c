@@ -18,6 +18,7 @@
 #include <signal.h>
 #include <string.h>
 #include <pthread.h>
+#include <stdint.h>
 #include "../include/third-party/cJSON.h"
 #include "../include/utils/log.h"
 #include "../include/utils/memory.h"
@@ -284,7 +285,7 @@ void DCPAM_LCS_listener( COMMUNICATION_SESSION *communication_session, CONNECTED
         request = SAFECALLOC( communication_session->data_length + 1, sizeof( char ), __FILE__, __LINE__ );
         strlcpy( request, communication_session->content, communication_session->data_length );
 
-        LOG_print( &dcpam_lcs_log, "[%s] Received request (%zu): %s\n", TIME_get_gmt(), communication_session->data_length, request );
+        LOG_print( &dcpam_lcs_log, "[%s] Received request (%jd): %s\n", TIME_get_gmt(), ( intmax_t )communication_session->data_length, request );
 
         json_request = cJSON_Parse( request );
         if( json_request ) {
