@@ -56,8 +56,9 @@ char* TIME_get_gmt( void ) {
     time_t now;
 
     now = time( NULL );
-    tim = *( localtime( &now ) );
-    strftime( s, TIME_BUFF_SIZE, DATETIME, &tim );
+    struct tm result;
+    tim = *( localtime_r( &now, &result ) );
+    strftime( s, TIME_BUFF_SIZE, DATETIME, &result );
 
     return ( ( char* )&s );
 }
@@ -69,8 +70,9 @@ char* TIME_get_time( const char* format ) {
     time_t now;
 
     now = time( NULL );
-    tim = *( localtime( &now ) );
-    strftime( s, TIME_BUFF_SIZE, format, &tim );
+    struct tm result;
+    tim = *( localtime_r( &now, &result ) );
+    strftime( s, TIME_BUFF_SIZE, format, &result );
 
     return ( ( char* )&s );
 }
@@ -95,7 +97,9 @@ void TIME_epoch2time( const char* epoch, char* dst, const int dst_len ) {
     time_t c;
 
     c = strtoul( epoch, NULL, 0 );
-    strftime( dst, dst_len, "%Y-%m-%d %H:%M:%S", localtime( &c ) );
+    struct tm result;
+    struct tm tim = *( localtime_r( &c, &result ) );
+    strftime( dst, dst_len, "%Y-%m-%d %H:%M:%S", &result );
 }
 
 
@@ -104,8 +108,9 @@ void TIME_get_month_name( char* dst, const int dst_len ) {
     struct tm* tmp;
 
     now = time( NULL );
-    tmp = localtime( &now );
-    strftime( dst, dst_len, "%b", tmp );
+    struct tm result;
+    tmp = localtime_r( &now, &result );
+    strftime( dst, dst_len, "%b", &result );
 }
 
 
@@ -114,8 +119,9 @@ void TIME_get_year( char* dst, const int dst_len ) {
     struct tm* tmp;
 
     now = time( NULL );
-    tmp = localtime( &now );
-    strftime( dst, dst_len, "%Y", tmp );
+    struct tm result;
+    tmp = localtime_r( &now, &result );
+    strftime( dst, dst_len, "%Y", &result );
 }
 
 
