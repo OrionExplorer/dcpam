@@ -52,7 +52,7 @@ RUN rm ./oracle-instantclient19.6-devel-19.6.0.0.0-1.x86_64.rpm
 ENV LD_LIBRARY_PATH=/usr/lib/oracle/19.6/client64/lib/${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}
 ENV PATH=$PATH:$ORACLE_HOME/bin
 RUN ln -s /usr/include/oracle/19.6/client64/ $ORACLE_HOME/include
-RUN pip3 install xlrd pandas
+RUN pip3 install pandas
 COPY --from=build-env /opt/dcpam /opt/dcpam
 WORKDIR /opt/dcpam
 EXPOSE 8888/tcp

@@ -266,6 +266,7 @@ Under development.
 | 2020 | Q3      | :white_check_mark: DCPAM ETL connectivity tests              | Done (2020-09-25) |
 | 2021 | Q1      | :white_check_mark: Data source: APIs         | Done (2021-02-01) |
 | 2021 | Q1      | :white_check_mark: DCPAM WDS true Multi Parallel Processing     | Done (2021-02-02) |
+| 2021 | Q1      | DCPAM ETL: report workflow failures to DCPAM LCS | Not implemented   |
 | 2021 | Q2      | DCPAM Monitoring                             | Not implemented   |
 | 2021 | Q3      | DCPAM Access (BI web application)            | Not implemented   |
 | 2021 | Q4      | DCPAM Construct (admin web application)      | Not implemented   |

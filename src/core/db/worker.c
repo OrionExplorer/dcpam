@@ -405,12 +405,13 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
             /* Extract and store data in the Staging Area / target tables. */
             for( i = 0; i < DATA_SYSTEM->queries_len; i++ ) {
 
-                /* Init query structs */
-                qec extract_inserted_callback = DATA_SYSTEM->queries[ i ].etl_config.stage ? ( qec )&_ExtractInserted_callback : ( qec )&_LoadInserted_callback;
-                qec extract_deleted_callback = DATA_SYSTEM->queries[ i ].etl_config.stage ? ( qec )&_ExtractDeleted_callback : ( qec )&_LoadDeleted_callback;
-                qec extract_modified_callback = DATA_SYSTEM->queries[ i ].etl_config.stage ? ( qec )&_ExtractModified_callback : ( qec )&_LoadModified_callback;
-
                 LOG_print( log, "\t· [EXTRACT] Query #%d: %s\n", i + 1, DATA_SYSTEM->queries[ i ].name );
+                
+                /*
+                    Each extracted record is stored in the Staging Area (by _ExtractInserted/Deleted/Modified_callback), if configured.
+                    Otherwise record is loaded directly to the target table (by _LoadInserted/Deleted/Modified_callback).
+                */
+                qec extract_inserted_callback = DATA_SYSTEM->queries[ i ].etl_config.stage ? ( qec )&_ExtractInserted_callback : ( qec )&_LoadInserted_callback;
 
                 char* ei_descr = "[%s]: Extract Inserted: %s";
                 size_t ei_len = strlen( ei_descr );
@@ -442,6 +443,8 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
                     continue;
                 }
 
+                qec extract_deleted_callback = DATA_SYSTEM->queries[ i ].etl_config.stage ? ( qec )&_ExtractDeleted_callback : ( qec )&_LoadDeleted_callback;
+
                 char* ed_descr = "[%s]: Extract Deleted: %s";
                 size_t ed_len = strlen( ed_descr );
                 size_t ed_query_name_len = strlen( DATA_SYSTEM->queries[ i ].name );
@@ -471,6 +474,8 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
                     DATA_SYSTEM->failure = 1;
                     continue;
                 }
+
+                qec extract_modified_callback = DATA_SYSTEM->queries[ i ].etl_config.stage ? ( qec )&_ExtractModified_callback : ( qec )&_LoadModified_callback;
 
                 char* em_descr = "[%s]: Extract Modified: %s";
                 size_t em_len = strlen( em_descr );
@@ -511,6 +516,11 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
     }
 
     else {
+        /*
+            Perform data transformations:
+                - if workflow runs in ETL mode and current step is ETL_TRANSFORM
+                - if workflow runs in ELT mode and current step is ETL_LOAD 
+        */
         for( i = 0; i < DATA_SYSTEM->queries_len; i++ ) {
             if( 
                 ( DATA_SYSTEM->queries[ i ].mode == M_ETL && curr_etl_step == ETL_TRANSFORM ) ||
@@ -622,6 +632,12 @@ void* DB_WORKER_watcher( void* src_WORKER_DATA ) {
                 ( DATA_SYSTEM->queries[ i ].mode == M_ETL && curr_etl_step == ETL_LOAD ) ||
                 ( DATA_SYSTEM->queries[ i ].mode == M_ELT && curr_etl_step == ETL_TRANSFORM )
             ) {
+
+                /*
+                    Perform data load:
+                        - if workflow runs in ETL mode and current step is ETL_LOAD
+                        - if workflow runs in ELT mode and current step is ETL_TRANSFORM
+                */
 
                 char* lo_descr = "[%s]: Load";
                 size_t lo_len = strlen( lo_descr );
