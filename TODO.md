@@ -146,9 +146,12 @@
 	* [x] Init log files during `etl_config.json` load.
 	* [x] Rebuild `LOG_*` functions.
 	* [x] Modify every source file where logging ocurrs.
-* [ ] Parameter `max_memory` for DCPAM WDS must be slightly more user-friendly:
-	* [ ] Value is two-piece string: size and unit (eg. `"max_memory" : "100MB"` which stands for 100 MB of maximum cache size).
-	* [ ] Supported units are "KB", MB" and "GB".
+* [x] Parameter `max_memory` for DCPAM WDS must be slightly more user-friendly:
+	* [x] Value is two-piece string: size and unit (eg. `"max_memory" : "100MB"` which stands for 100 MB of maximum cache size).
+	* [x] Supported units are "KB", MB", "GB" and "TB".
+* [ ] Automatically refresh cached data in DCPAM WDS:
+	* [ ] TTL parameter in `wds_config.json`
+	* [ ] Clear and rebuild cache
 * [x] DCPAM Components reports to DCPAM LCS:
 	* [x] DCPAM ETL
 		* [x] Implement LCS_REPORT
@@ -218,4 +221,4 @@
 	* [x] ODS/ODT
 	* [x] XML
 	* [ ] LDAP
-	* [ ] API
+	* [x] API

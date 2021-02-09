@@ -21,6 +21,13 @@
 #include "../core/lcs_report.h"
 #include "../core/component.h"
 
+typedef enum MEM_UNIT {
+    MU_KB = 1,
+    MU_MB,
+    MU_GB,
+    MU_TB
+} MEM_UNIT;
+
 /*
     config.json => app.DATA[ i ]
 */
@@ -77,6 +84,8 @@ typedef struct P_DCPAM_APP {
     int                     CACHE_len;
     size_t                  CACHE_size;
     size_t                  CACHE_MAX_size;
+    MEM_UNIT                CACHE_size_unit;
+    int                     CACHE_size_multiplier;
     char                    **ALLOWED_HOSTS;
     DCPAM_ALLOWED_HOST      **ALLOWED_HOSTS_;
     int                     ALLOWED_HOSTS_len;

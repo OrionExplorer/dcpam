@@ -242,13 +242,44 @@ int DCPAM_WDS_load_configuration( const char* filename ) {
 
                 cfg_app_max_memory = cJSON_GetObjectItem( cfg_app, "max_memory" );
                 if( cfg_app_max_memory ) {
-                    P_APP.CACHE_MAX_size = ( size_t )cfg_app_max_memory->valueint;
-                    LOG_print( &dcpam_wds_log, "Maximum memory usage: %ld KB.\n", P_APP.CACHE_MAX_size );
-                } else {
-                    LOG_print( &dcpam_wds_log, "ERROR: \"app.max_memory\" key not found.\n" );
-                    cJSON_Delete( config_json );
-                    free( config_string ); config_string = NULL;
-                    return FALSE;
+                    int mem_value = 0;
+                    char mem_unit[3];
+                    P_APP.CACHE_size_multiplier = 1;
+                    if( cfg_app_max_memory->valuestring && strlen( cfg_app_max_memory->valuestring ) < 32 ) {
+                        if( 
+                            ( sscanf( cfg_app_max_memory->valuestring, "%6d%s", &mem_value, mem_unit ) == 2 ) 
+                            ||
+                            ( sscanf( cfg_app_max_memory->valuestring, "%6d %s", &mem_value, mem_unit ) == 2 )
+                        ) {
+                            LOG_print( &dcpam_wds_log, "Param \"max_memory\": %s (%d %s)\n", cfg_app_max_memory->valuestring, mem_value, mem_unit );
+                            if( strncmp( mem_unit, "KB", 2 ) == 0 ) {
+                                P_APP.CACHE_size_multiplier = 1024;
+                                P_APP.CACHE_size_unit = MU_KB;
+                            } else if( strncmp( mem_unit, "MB", 2 ) == 0 ) {
+                                P_APP.CACHE_size_multiplier = 1024 * 1024;
+                                P_APP.CACHE_size_unit = MU_MB;
+                            } else if( strncmp( mem_unit, "GB", 2 ) == 0 ) {
+                                P_APP.CACHE_size_multiplier = 1024 * 1024 * 1024;
+                                P_APP.CACHE_size_unit = MU_GB;
+                            } else if( strncmp( mem_unit, "TB", 2 ) == 0 ) {
+                                P_APP.CACHE_size_multiplier = 1024 * 1024 * 1024 * 1024;
+                                P_APP.CACHE_size_unit = MU_TB;
+                            }
+
+                            P_APP.CACHE_MAX_size = ( size_t )mem_value * P_APP.CACHE_size_multiplier;
+                            LOG_print( &dcpam_wds_log, "Maximum memory usage: %zu %s (bytes: %zu).\n", P_APP.CACHE_MAX_size / P_APP.CACHE_size_multiplier, mem_unit, P_APP.CACHE_MAX_size );
+                        } else {
+                            LOG_print( &dcpam_wds_log, "ERROR: \"app.max_memory\" value is invalid.\n" );
+                            cJSON_Delete( config_json );
+                            free( config_string ); config_string = NULL;
+                            return FALSE;
+                        }
+                    } else {
+                        LOG_print( &dcpam_wds_log, "ERROR: \"app.max_memory\" value is invalid.\n" );
+                        cJSON_Delete( config_json );
+                        free( config_string ); config_string = NULL;
+                        return FALSE;
+                    }
                 }
 
                 cfg_app_db_array = cJSON_GetObjectItem( cfg_app, "DB" );

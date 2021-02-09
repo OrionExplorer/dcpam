@@ -9,7 +9,7 @@
 				{"ip" : "127.0.0.1", "key" : "zxcasd321"}
 			]
 		},
-		"max_memory" : 5,
+		"max_memory" : "5MB",
 		"DB" : [{
 			"name" : "DCPAM Database NODE #1",
 			"ip" : "127.0.0.1",

@@ -26,12 +26,19 @@ extern P_DCPAM_APP      P_APP;
 
 char* DB_CACHE_get_usage_str( void ) {
     char *dst = SAFECALLOC( 64, sizeof( char ), __FILE__, __LINE__ );
-    snprintf( dst, 64, "%zu/%zu KB", P_APP.CACHE_size / 1024, P_APP.CACHE_MAX_size );
+    snprintf( dst, 64, "%zu/%zu %s (%zu bytes)",
+        P_APP.CACHE_size / P_APP.CACHE_size_multiplier,
+        P_APP.CACHE_MAX_size / P_APP.CACHE_size_multiplier,
+        P_APP.CACHE_size_unit == MU_KB ? "KB" : P_APP.CACHE_size_unit == MU_MB ? "MB" : P_APP.CACHE_size_unit == MU_GB ? "GB" : P_APP.CACHE_size_unit == MU_TB ? "TB" : "unknown",
+        P_APP.CACHE_size
+    );
     return dst;
 }
 
 static inline void _DB_CACHE_show_usage( LOG_OBJECT *log ) {
-    LOG_print( log, "[%s] Total cached data: %zu/%zu KB.\n", TIME_get_gmt(), P_APP.CACHE_size / 1024, P_APP.CACHE_MAX_size );
+    char *usage = DB_CACHE_get_usage_str();
+    LOG_print( log, "[%s] Total cached data: %s.\n", TIME_get_gmt(), usage );
+    free( usage ); usage = NULL;
 }
 
 void _DB_CACHE_add_size( D_CACHE *src ) {
@@ -85,8 +92,10 @@ int DB_CACHE_init( D_CACHE *dst, DATABASE_SYSTEM_DB *db, const char *sql, LOG_OB
         if( res == 1 ) {
             _DB_CACHE_calc_size( dst );
             _DB_CACHE_add_size( dst );
-            if( ( P_APP.CACHE_size / 1024 ) > P_APP.CACHE_MAX_size ) {
-                LOG_print( log, "\t- Fatal error: memory limit of %zu exceeded (%zu)!\n", P_APP.CACHE_MAX_size, P_APP.CACHE_size/1024 );
+            if( P_APP.CACHE_size > P_APP.CACHE_MAX_size ) {
+                char *usage = DB_CACHE_get_usage_str();
+                LOG_print( log, "\t- Fatal error: memory limit exceeded: %s!\n", usage );
+                free( usage ); usage = NULL;
                 LOG_print( log, "\t- Data would be removed from heap after completing this request.\n" );
                 _DB_CACHE_show_usage( log );
                 return 2;
