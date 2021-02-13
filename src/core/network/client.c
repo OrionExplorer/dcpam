@@ -187,21 +187,27 @@ int NET_CONN_send( NET_CONN *connection, const char *data, size_t data_len ) {
             }
         }
 
-        char* buffer = NULL;
-        unsigned long LEN = 8196;
-        unsigned long cur_size = LEN;
-        int status = 0;
 
-        buffer = ( char* )SAFECALLOC( LEN, sizeof( char ), __FILE__, __LINE__ );
-        do {
-            if( status >= LEN ) {
-                cur_size += status;
-                char *tmp = realloc( buffer, cur_size );
-                if( tmp ) {
-                    buffer = tmp;
-                } else {
-                    break;
+        char *buffer = NULL;
+        unsigned long LEN = 8192;
+        unsigned long bytes_received = 0;
+        unsigned long cur_size = 0;
+        int status = 1;
+
+        while (status > 0)
+        {
+            if (bytes_received >= cur_size)
+            {
+                char * tmp;
+                cur_size += LEN;
+                tmp = realloc(buffer, cur_size);
+                if (NULL == tmp)
+                {
+                  fprintf(stderr, "realloc error=%d\n", WSAGetLastError());
+                  break;
                 }
+
+                buffer = tmp;
             }
 
             if( connection->cSSL ) {
@@ -209,19 +215,20 @@ int NET_CONN_send( NET_CONN *connection, const char *data, size_t data_len ) {
             } else {
                 status = recv( connection->socket, buffer + cur_size - LEN, LEN, 0 );
             }
-            
-            if( status <= 0 ) {
-                break;
+
+            if (status > 0) {
+              bytes_received += status;
             }
-        } while( status > 0 );
+        }
 
         if( connection->response ) {
             free( connection->response ); connection->response = NULL;
         }
-        connection->response = SAFECALLOC( cur_size, sizeof( char ), __FILE__, __LINE__ );
-        connection->response_len = cur_size;
 
-        for( size_t i = 0; i < cur_size; i++ ) {
+        connection->response = SAFECALLOC( bytes_received + 1, sizeof( char ), __FILE__, __LINE__ );
+        connection->response_len = bytes_received;
+
+        for( size_t i = 0; i < bytes_received; i++ ) {
             connection->response[ i ] = buffer[ i ];
         }
 

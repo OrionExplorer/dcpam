@@ -19,17 +19,31 @@
 #include "../db/db.h"
 #include "../core/db/system_schema.h"
 #include "../utils/log.h"
+#include "../utils/time.h"
 
 typedef struct {
     DB_QUERY                *query;
     DATABASE_SYSTEM_DB      *db;
     size_t                  size;
+    double                  ttl;
+    long int                generate_time;
 } D_CACHE;
 
-int DB_CACHE_init( D_CACHE *dst, DATABASE_SYSTEM_DB *db, const char *sql, LOG_OBJECT *log );
+typedef struct {
+  D_CACHE                   *src;
+  char                      *sql;
+  size_t                    indices_len;
+  long                      *indices;
+  long int                  generate_time;
+} D_SUB_CACHE;
+
+int DB_CACHE_init( D_CACHE *dst, DATABASE_SYSTEM_DB *db, const char *sql, double cache_ttl, LOG_OBJECT *log );
 void DB_CACHE_free( D_CACHE* dst, LOG_OBJECT *log );
-void DB_CACHE_get( const char* sql, DB_QUERY** dst );
+void DB_CACHE_get( const char* sql, DB_QUERY** dst, D_SUB_CACHE** s_dst );
 void DB_CACHE_print( D_CACHE *dst, LOG_OBJECT *log );
 char* DB_CACHE_get_usage_str( void );
+
+int DB_SUB_CACHE_init( D_CACHE *cache, D_SUB_CACHE *sub_cache, const char *sql, LOG_OBJECT *log );
+void DB_SUB_CACHE_free( D_SUB_CACHE *dst, LOG_OBJECT *log );
 
 #endif

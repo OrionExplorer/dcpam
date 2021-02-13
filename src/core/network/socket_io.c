@@ -287,13 +287,13 @@ void SOCKET_disconnect_client( COMMUNICATION_SESSION *communication_session ) {
 
 void SOCKET_send( COMMUNICATION_SESSION *communication_session, CONNECTED_CLIENT *client, const char *data, unsigned int data_size ) {
     int _data_size = data_size;
-    char *data_to_send = ( char * )calloc( MAX_BUFFER, sizeof( char ) );
+    char *data_to_send = ( char * )calloc( data_size, sizeof( char ) );
 
     if( _data_size == -1 ) {
         _data_size = strlen( data );
     }
 
-    strlcpy( data_to_send, data, MAX_BUFFER );
+    memcpy( data_to_send, data, data_size );
 
     if( communication_session && communication_session->socket_descriptor ) {
         if( ( communication_session->data_length = send( client->socket_descriptor, data_to_send, _data_size, 0 ) ) <= 0 ) {

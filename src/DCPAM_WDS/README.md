@@ -27,6 +27,7 @@
 ## Technology
 ### Architecture Overview
 * Server application dedicated for the backends of client applications.
+* Snowflake schema with single or multiple access points.
 * Massively Parallel Processing architecture.
 * Connections accepted from allowed hosts with valid API key only.
 * JSON-based communication with client applications.

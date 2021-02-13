@@ -29,6 +29,7 @@
 #include "../include/core/cache.h"
 #include "../include/core/network/socket_io.h"
 #include "../include/core/lcs_report.h"
+#include "../include/DCPAM_WDS/wds_node.h"
 
 #define WDS_RESPONSE_ERROR( communication_session, client ) SOCKET_send( communication_session, client, "{\"success\":false,\"data\":[],\"length\":0}", 38 );
 
@@ -44,7 +45,7 @@ extern int              DATABASE_SYSTEMS_COUNT;
 extern P_DCPAM_APP      P_APP;
 
 void DCPAM_WDS_free_configuration( void );
-void DCPAM_WDS_get_db_data( const char *sql, const char *db, char **dst_json );
+void DCPAM_WDS_get_db_data( const char *sql, const char *db, char **dst_json, size_t *dst_json_len );
 
 
 void app_terminate( void ) {
@@ -71,6 +72,14 @@ void DCPAM_WDS_free_configuration( void ) {
     free( P_APP.CACHE ); P_APP.CACHE = NULL;
     P_APP.CACHE_len = 0;
 
+    for( int i = 0; i < P_APP.SUB_CACHE_len; i++ ) {
+        LOG_print( &dcpam_wds_log, "[%s] Removing sub-cache %d of %d...\n", TIME_get_gmt(), i + 1, P_APP.SUB_CACHE_len );
+        DB_SUB_CACHE_free( P_APP.SUB_CACHE[ i ], &dcpam_wds_log );
+        free( P_APP.SUB_CACHE[ i ] ); P_APP.SUB_CACHE[ i ] = NULL;
+    }
+    free( P_APP.SUB_CACHE ); P_APP.SUB_CACHE = NULL;
+    P_APP.CACHE_len = 0;
+
     for( int i = 0; i < P_APP.ALLOWED_HOSTS_len; i++ ) {
         free( P_APP.ALLOWED_HOSTS_[ i ]->ip ); P_APP.ALLOWED_HOSTS_[ i ]->ip = NULL;
         free( P_APP.ALLOWED_HOSTS_[ i ]->api_key ); P_APP.ALLOWED_HOSTS_[ i ]->api_key = NULL;
@@ -85,6 +94,13 @@ void DCPAM_WDS_free_configuration( void ) {
     }
     free( P_APP.DB ); P_APP.DB = NULL;
     P_APP.DB_len = 0;
+
+    for( int i = 0; i < P_APP.WDS_node_count; i++ ) {
+        WDS_NODE_free( P_APP.WDS_node[ i ], &dcpam_wds_log );
+        free( P_APP.WDS_node[ i ] ); P_APP.WDS_node[ i ] = NULL;
+    }
+    free( P_APP.WDS_node ); P_APP.WDS_node = NULL;
+    P_APP.WDS_node_count = 0;
 
     if( P_APP.version != NULL ) { free( P_APP.version ); P_APP.version = NULL; }
     if( P_APP.name != NULL ) { free( P_APP.name ); P_APP.name = NULL; }
@@ -101,6 +117,7 @@ void DCPAM_WDS_free_configuration( void ) {
             if( P_APP.DATA[ i ].actions[ j ].description != NULL ) { free( P_APP.DATA[ i ].actions[ j ].description ); P_APP.DATA[ i ].actions[ j ].description = NULL; }
             if( P_APP.DATA[ i ].actions[ j ].condition != NULL ) { free( P_APP.DATA[ i ].actions[ j ].condition ); P_APP.DATA[ i ].actions[ j ].condition = NULL; }
             if( P_APP.DATA[ i ].actions[ j ].sql != NULL ) { free( P_APP.DATA[ i ].actions[ j ].sql ); P_APP.DATA[ i ].actions[ j ].sql = NULL; }
+            P_APP.DATA[ i ].actions[ j ].cache_ttl = 0L;
         }
     }
 }
@@ -133,6 +150,14 @@ int DCPAM_WDS_load_configuration( const char* filename ) {
     cJSON* cfg_app_db_db = NULL;
     cJSON* cfg_app_db_name = NULL;
 
+    cJSON* cfg_app_wds_array = NULL;
+    cJSON* cfg_app_wds_item = NULL;
+    cJSON* cfg_app_wds_ip = NULL;
+    cJSON* cfg_app_wds_port = NULL;
+    cJSON* cfg_app_wds_key = NULL;
+    cJSON* cfg_app_wds_tables_array = NULL;
+    cJSON* cfg_app_wds_table_name = NULL;
+
     cJSON* cfg_app_data = NULL;
     cJSON* cfg_app_data_item = NULL;
     cJSON* cfg_app_data_item_id = NULL;
@@ -150,6 +175,7 @@ int DCPAM_WDS_load_configuration( const char* filename ) {
     cJSON* cfg_app_data_actions_item_internal = NULL;
     cJSON* cfg_app_data_actions_item_condition = NULL;
     cJSON* cfg_app_data_actions_item_sql = NULL;
+    cJSON* cfg_app_data_actions_item_cache_ttl = NULL;
 
     int                         result = 0;
     char*                       config_string = NULL;
@@ -243,15 +269,15 @@ int DCPAM_WDS_load_configuration( const char* filename ) {
                 cfg_app_max_memory = cJSON_GetObjectItem( cfg_app, "max_memory" );
                 if( cfg_app_max_memory ) {
                     int mem_value = 0;
-                    char mem_unit[3];
+                    
                     P_APP.CACHE_size_multiplier = 1;
                     if( cfg_app_max_memory->valuestring && strlen( cfg_app_max_memory->valuestring ) < 32 ) {
+                        char mem_unit[3];
                         if( 
-                            ( sscanf( cfg_app_max_memory->valuestring, "%6d%s", &mem_value, mem_unit ) == 2 ) 
+                            ( sscanf( cfg_app_max_memory->valuestring, "%6d%2s", &mem_value, mem_unit ) == 2 ) 
                             ||
-                            ( sscanf( cfg_app_max_memory->valuestring, "%6d %s", &mem_value, mem_unit ) == 2 )
+                            ( sscanf( cfg_app_max_memory->valuestring, "%6d %2s", &mem_value, mem_unit ) == 2 )
                         ) {
-                            LOG_print( &dcpam_wds_log, "Param \"max_memory\": %s (%d %s)\n", cfg_app_max_memory->valuestring, mem_value, mem_unit );
                             if( strncmp( mem_unit, "KB", 2 ) == 0 ) {
                                 P_APP.CACHE_size_multiplier = 1024;
                                 P_APP.CACHE_size_unit = MU_KB;
@@ -280,6 +306,64 @@ int DCPAM_WDS_load_configuration( const char* filename ) {
                         free( config_string ); config_string = NULL;
                         return FALSE;
                     }
+                }
+
+                cfg_app_wds_array = cJSON_GetObjectItem( cfg_app, "WDS" );
+                if( cfg_app_wds_array ) {
+                    P_APP.WDS_node_count = cJSON_GetArraySize( cfg_app_wds_array );
+                    P_APP.WDS_node = SAFEMALLOC( P_APP.WDS_node_count * sizeof * P_APP.WDS_node, __FILE__, __LINE__ );
+
+                    for( int i = 0; i < P_APP.WDS_node_count; i++ ) {
+                        LOG_print( &dcpam_wds_log, "Initialize DCPAM Warehouse Data Server node #%d:\n", i + 1 );
+                        P_APP.WDS_node[ i ] = SAFEMALLOC( sizeof( WDS_NODE ), __FILE__, __LINE__ );
+
+                        cfg_app_wds_item = cJSON_GetArrayItem( cfg_app_wds_array, i );
+
+                        cfg_app_wds_ip = cJSON_GetObjectItem( cfg_app_wds_item, "ip" );
+                        if( cfg_app_wds_ip == NULL ) {
+                            LOG_print( &dcpam_wds_log, "ERROR: \"app.WDS.ip\" key not found.\n" );
+                        } else {
+                            size_t str_len = strlen( cfg_app_wds_ip->valuestring );
+                            P_APP.WDS_node[ i ]->ip = SAFECALLOC( str_len  + 1, sizeof( char ), __FILE__, __LINE__ );
+                            snprintf( P_APP.WDS_node[ i ]->ip, str_len + 1, cfg_app_wds_ip->valuestring );
+                            LOG_print( &dcpam_wds_log, "\t· ip: %s\n", P_APP.WDS_node[ i ]->ip );
+                        }
+
+                        cfg_app_wds_port = cJSON_GetObjectItem( cfg_app_wds_item, "port" );
+                        if( cfg_app_wds_port == NULL ) {
+                            LOG_print( &dcpam_wds_log, "ERROR: \"app.WDS.port\" key not found.\n" );
+                        } else {
+                            P_APP.WDS_node[ i ]->port = cfg_app_wds_port->valueint;
+                            LOG_print( &dcpam_wds_log, "\t· port: %d\n", P_APP.WDS_node[ i ]->port );
+                        }
+
+                        cfg_app_wds_key = cJSON_GetObjectItem( cfg_app_wds_item, "key" );
+                        if( cfg_app_wds_key == NULL ) {
+                            LOG_print( &dcpam_wds_log, "ERROR: \"app.WDS.key\" key not found.\n" );
+                        } else {
+                            size_t str_len = strlen( cfg_app_wds_key->valuestring );
+                            P_APP.WDS_node[ i ]->key = SAFECALLOC( str_len  + 1, sizeof( char ), __FILE__, __LINE__ );
+                            snprintf( P_APP.WDS_node[ i ]->key, str_len + 1, cfg_app_wds_key->valuestring );
+                            LOG_print( &dcpam_wds_log, "\t· key: %s\n", P_APP.WDS_node[ i ]->key );
+                        }
+
+                        cfg_app_wds_tables_array = cJSON_GetObjectItem( cfg_app_wds_item, "tables" );
+                        if( cfg_app_wds_tables_array == NULL ) {
+                            LOG_print( &dcpam_wds_log, "ERROR: \"app.WDS.tables\" key not found.\n" );
+                        } else {
+                            P_APP.WDS_node[ i ]->tables_len = cJSON_GetArraySize( cfg_app_wds_tables_array );
+                            P_APP.WDS_node[ i ]->tables = SAFEMALLOC( P_APP.WDS_node[ i ]->tables_len * sizeof( char* ) , __FILE__, __LINE__ );
+                            LOG_print( &dcpam_wds_log, "\t· tables (%d):\n", P_APP.WDS_node[ i ]->tables_len );
+                            for( int j = 0; j < P_APP.WDS_node[ i ]->tables_len; j++ ) {
+                                cfg_app_wds_table_name = cJSON_GetArrayItem( cfg_app_wds_tables_array, j );
+                                P_APP.WDS_node[ i ]->tables[ j ] = SAFECALLOC( MAX_TABLE_NAME_LEN, sizeof( char ), __FILE__, __LINE__ );
+                                snprintf( P_APP.WDS_node[ i ]->tables[ j ], MAX_TABLE_NAME_LEN, cfg_app_wds_table_name->valuestring );
+                                LOG_print( &dcpam_wds_log, "\t\t- %s\n", P_APP.WDS_node[ i ]->tables[ j ] );
+                            }
+                        }
+                    }
+                } else {
+                    //TODO
                 }
 
                 cfg_app_db_array = cJSON_GetObjectItem( cfg_app, "DB" );
@@ -490,6 +574,16 @@ int DCPAM_WDS_load_configuration( const char* filename ) {
                                 P_APP.DATA[ i ].actions[ j ].internal = cfg_app_data_actions_item_internal->valueint;
                                 LOG_print( &dcpam_wds_log, "\t\t· internal=%s\n", P_APP.DATA[ i ].actions[ j ].internal == 1 ? "TRUE" : "FALSE" );
 
+
+                                cfg_app_data_actions_item_cache_ttl = cJSON_GetObjectItem( cfg_app_data_actions_item, "cache_ttl" );
+                                if( cfg_app_data_actions_item_cache_ttl == NULL ) {
+                                    LOG_print( &dcpam_wds_log, "NOTICE: \"app.DATA[%d].actions[%d].cache_ttl\" key not found. Set default value of 60 seconds.\n", i, j );
+                                    P_APP.DATA[ i ].actions[ j ].cache_ttl = 60;
+                                }
+                                P_APP.DATA[ i ].actions[ j ].cache_ttl = cfg_app_data_actions_item_cache_ttl->valueint;
+                                LOG_print( &dcpam_wds_log, "\t\t· cache_ttl=%0.f\n", P_APP.DATA[ i ].actions[ j ].cache_ttl );
+
+
                                 cfg_app_data_actions_item_condition = cJSON_GetObjectItem( cfg_app_data_actions_item, "condition" );
                                 if( cfg_app_data_actions_item_condition == NULL ) {
                                     LOG_print( &dcpam_wds_log, "ERROR: \"app.DATA[%d].actions[%d].condition\" key not found.\n", i, j );
@@ -593,6 +687,8 @@ int DCPAM_WDS_init_cache( void ) {
 
     LOG_print( &dcpam_wds_log, "ok.\n" );
 
+    P_APP.SUB_CACHE_len = 0;
+
     /* Initialize database connections */
     for( int i = 0; i < P_APP.DB_len; i++ ) {
         LOG_print( &dcpam_wds_log, "[%s] Connecting to \"%s\"...\n", TIME_get_gmt(), P_APP.DB[ i ]->name );
@@ -621,22 +717,24 @@ int DCPAM_WDS_init_cache( void ) {
                         P_APP.CACHE[ initialized ],
                         src,
                         P_APP.DATA[ i ].actions[ j ].sql,
+                        P_APP.DATA[ i ].actions[ j ].cache_ttl,
                         &dcpam_wds_log
                     );
 
-                    if( res == 1 ) {
+                    if( res == -1 ) {
+                        LOG_print( &dcpam_wds_log, "[%s] Data is sub-cached.\n", TIME_get_gmt() );
+                    } else if( res == 1 ) {
                         DB_CACHE_print( P_APP.CACHE[ initialized ], &dcpam_wds_log );
+                        initialized++;
                     } else {
                         LOG_print( &dcpam_wds_log, "[%s] Fatal error: DB_CACHE_init failed.\n", TIME_get_gmt() );
                     }
-
-                    initialized++;
 
                 } else {
                     LOG_print( &dcpam_wds_log, "[%s] Fatal error: database \"%s\" is not valid!\n", TIME_get_gmt(), P_APP.DATA[ i ].db_name );
                 }
             } else {
-                LOG_print( &dcpam_wds_log, "[%s] NOTICE: \"%s\" from \"%s\" is not static cache.\n", TIME_get_gmt(), P_APP.DATA[ i ].actions[ j ].description, P_APP.DATA[ i ].db_name );
+                LOG_print( &dcpam_wds_log, "[%s] NOTICE: \"%s\" from \"%s\" is not static data.\n", TIME_get_gmt(), P_APP.DATA[ i ].actions[ j ].description, P_APP.DATA[ i ].db_name );
             }
         }
     }
@@ -644,7 +742,47 @@ int DCPAM_WDS_init_cache( void ) {
     return 1;
 }
 
-void DCPAM_WDS_get_data( const char *sql, char **dst_json ) {
+
+void DCPAM_WDS_get_node_data( WDS_NODE* node, const char *sql, char **dst_json, size_t *dst_json_len ) {
+    if( node && sql && dst_json ) {
+        LOG_print( &dcpam_wds_log, "[%s] DCPAM_WDS_get_node_data( %s:%d, %30s(...) ).\n", TIME_get_gmt(), node->ip, node->port, sql );
+
+        NET_CONN *conn = SAFEMALLOC( sizeof( NET_CONN ), __FILE__, __LINE__ );
+
+        if( conn ) {
+            conn->log = &dcpam_wds_log;
+            if( NET_CONN_init( conn, node->ip, node->port, 0 ) == 1 ) {
+                if( NET_CONN_connect( conn, node->ip, node->port, 0 ) == 1 ) {
+                    const char* query_msg_tmp = "{\"key\": \"%s\", \"sql\": \"%s\"}";
+                    size_t tmp_msg_len = strlen( query_msg_tmp );
+                    size_t msg_len = tmp_msg_len + strlen( node->key ) + strlen( sql );
+                    char* query_msg = SAFECALLOC( msg_len + 1, sizeof( char ), __FILE__, __LINE__ );
+                    snprintf( query_msg, msg_len + 1, query_msg_tmp, node->key, sql );
+                    if( NET_CONN_send( conn, query_msg, strlen( query_msg ) ) == 1 ) {
+                        if( conn->response && conn->response_len > 0 ) {
+                            if( dst_json_len != NULL) {
+                                *dst_json_len = conn->response_len + 1;
+                            }
+                            *dst_json = SAFECALLOC( conn->response_len + 1, sizeof( char ), __FILE__, __LINE__ );
+                            memcpy( *dst_json, conn->response, conn->response_len + 1 );
+                        }
+                        //NET_CONN_disconnect( conn );
+                    }
+                    free( query_msg ); query_msg = NULL;
+                }
+            }
+            NET_CONN_disconnect( conn );
+            free( conn->host ); conn->host = NULL;
+            conn->log = NULL;
+            free( conn ); conn = NULL;
+        }
+
+    } else {
+        LOG_print( &dcpam_wds_log, "[%s] DCPAM_WDS_get_node_data: invalid input data.\n", TIME_get_gmt() );
+    }
+}
+
+void DCPAM_WDS_get_data( const char *sql, char **dst_json, size_t *dst_json_len ) {
 
     if( sql ) {
 
@@ -658,18 +796,36 @@ void DCPAM_WDS_get_data( const char *sql, char **dst_json ) {
                 - SELECT * FROM table_name
                 - SELECT * FROM table_name WHERE id = 1 ...
                 - SELECT * FROM table_name JOIN another_table ...
-                if( sscanf( address, "dcpam://%99[^:]:%99d", host, &port ) == 2 ) {
              */
 
             if( sscanf( pos, " FROM %128s", db_table_name ) == 1 ) {
                 LOG_print( &dcpam_wds_log, "[%s] Main table for query: %s\n", TIME_get_gmt(), db_table_name );
 
-                /* Find which DB node hosts requested data */
+                /* Find which DB node for current DCPAM WDS node hosts requested data */
                 for( int i = 0; i < P_APP.DATA_len; i++ ) {
                     if( strncmp( P_APP.DATA[ i ].db_table_name, db_table_name, MAX_TABLE_NAME_LEN ) == 0 ) {
                         LOG_print( &dcpam_wds_log, "\t- found %s in db %s\n", P_APP.DATA[ i ].db_table_name, P_APP.DATA[ i ].db_name );
-                        DCPAM_WDS_get_db_data( sql, P_APP.DATA[ i ].db_name, dst_json );
+                        DCPAM_WDS_get_db_data( sql, P_APP.DATA[ i ].db_name, dst_json, dst_json_len );
                         return;
+                    }
+                }
+
+                LOG_print( &dcpam_wds_log, "\t- table %s does not exist on any node for current WDS instance.\n", db_table_name );
+                LOG_print( &dcpam_wds_log, "[%s] Searching table %s on external WDS nodes:\n", TIME_get_gmt(), db_table_name );
+                /* Find which DB node for other DCPAM WDS nodes hosts requested data */
+                for( int i = 0; i < P_APP.WDS_node_count; i++ ) {
+                    if( P_APP.WDS_node ) {
+                        LOG_print( &dcpam_wds_log, "\t- node #%d...", i + 1 );
+                        for( int j = 0; j < P_APP.WDS_node[ i ]->tables_len; j++ ) {
+                            if( strncmp( P_APP.WDS_node[ i ]->tables[ j ], db_table_name, MAX_TABLE_NAME_LEN ) == 0 ) {
+                                LOG_print( &dcpam_wds_log, "found!\n" );
+                                DCPAM_WDS_get_node_data( P_APP.WDS_node[ i ], sql, dst_json, dst_json_len );
+                                return;
+                            }
+                        }
+                        LOG_print( &dcpam_wds_log, "not found.\n" );
+                    } else {
+                        LOG_print( &dcpam_wds_log, "\t- node #%d is invalid!\n", i + 1 );
                     }
                 }
                 LOG_print( &dcpam_wds_log, "\t- table %s does not exist on any node.\n", db_table_name );
@@ -685,10 +841,14 @@ void DCPAM_WDS_get_data( const char *sql, char **dst_json ) {
     return;
 }
 
-void DCPAM_WDS_get_db_data( const char *sql, const char *db, char **dst_json ) {
-    DB_QUERY *cached_result = NULL;
+
+void DCPAM_WDS_get_db_data( const char *sql, const char *db, char **dst_json, size_t *dst_json_len ) {
 
     if( sql && db ) {
+
+        DB_QUERY *cached_result = NULL;
+        D_SUB_CACHE *subset = NULL;
+
         LOG_print( &dcpam_wds_log, "[%s] DCPAM_WDS_get_db_data( %s, %s )...\n", TIME_get_gmt(), sql, db );
 
         char *action_description = NULL;
@@ -702,29 +862,55 @@ void DCPAM_WDS_get_db_data( const char *sql, const char *db, char **dst_json ) {
         LCS_REPORT_send( &P_APP.lcs_report, action_description, DCT_START );
         free( action_description ); action_description = NULL;
 
-        DB_CACHE_get( sql, &cached_result );
+        DB_CACHE_get( sql, &cached_result, &subset );
 
-        if( cached_result ) {
+        if( cached_result || subset ) {
             cJSON* record = NULL;
             cJSON* all_data = cJSON_CreateArray();
             cJSON* response = cJSON_CreateObject();
 
-            LOG_print( &dcpam_wds_log, "[%s] DCPAM_WDS_get_db_data( %s, %s ): Found records: %d.\n", TIME_get_gmt(), sql, db, cached_result->row_count );
-            for( int i = 0; i < cached_result->row_count; i++ ) {
-                record = cJSON_CreateObject();
-                for( int j = 0; j < cached_result->field_count; j++ ) {
-                    cJSON_AddStringToObject( record, cached_result->records[ i ].fields[ j ].label, cached_result->records[ i ].fields[ j ].value );
-                }
+            if( cached_result == NULL ) {
+                cached_result = subset->src->query;
+            }
 
-                cJSON_AddItemToArray( all_data, record );
+            if( subset ) {
+                LOG_print( &dcpam_wds_log, "[%s] DCPAM_WDS_get_db_data( %s, %s ): Found sub-cached records: %d.\n", TIME_get_gmt(), sql, db, subset->indices_len );
+            } else {
+                LOG_print( &dcpam_wds_log, "[%s] DCPAM_WDS_get_db_data( %s, %s ): Found cached records: %d.\n", TIME_get_gmt(), sql, db, cached_result->row_count );
+            }
+            
+            if( cached_result && subset == NULL ) {
+                /* No subset found, so We take all the cached data. */
+                for( int i = 0; i < cached_result->row_count; i++ ) {
+                    record = cJSON_CreateObject();
+                    for( int j = 0; j < cached_result->field_count; j++ ) {
+                        cJSON_AddStringToObject( record, cached_result->records[ i ].fields[ j ].label, cached_result->records[ i ].fields[ j ].value );
+                    }
+
+                    cJSON_AddItemToArray( all_data, record );
+                }
+                cJSON_AddNumberToObject( response, "length", cached_result->row_count );
+            } else {
+                /* We take only a subset of cached data */
+                for( int i = 0; i < subset->indices_len; i++ ) {
+                    record = cJSON_CreateObject();
+                    for( int j = 0; j < cached_result->field_count; j++ ) {
+                        cJSON_AddStringToObject( record, cached_result->records[ subset->indices[ i ] ].fields[ j ].label, cached_result->records[ subset->indices[ i ] ].fields[ j ].value );
+                    }
+
+                    cJSON_AddItemToArray( all_data, record );
+                }
+                cJSON_AddNumberToObject( response, "length", subset->indices_len );
             }
 
             cJSON_AddItemToObject( response, "data", all_data );
             cJSON_AddBoolToObject( response, "success", 1 );
-            cJSON_AddNumberToObject( response, "length", cached_result->row_count );
 
             char* _res = cJSON_Print( response );
             *dst_json = SAFECALLOC( strlen( _res ) + 1, sizeof( char ), __FILE__, __LINE__ );
+            if( dst_json_len != NULL) {
+                *dst_json_len = strlen( _res );
+            }
             strlcpy( *dst_json, _res, strlen( _res ) );
             cJSON_Delete( response );
             free( _res );
@@ -754,6 +940,7 @@ void DCPAM_WDS_get_db_data( const char *sql, const char *db, char **dst_json ) {
                         P_APP.CACHE[ P_APP.CACHE_len ],
                         src_db,
                         sql,
+                        60,
                         &dcpam_wds_log
                     );
 
@@ -762,15 +949,24 @@ void DCPAM_WDS_get_db_data( const char *sql, const char *db, char **dst_json ) {
                     LCS_REPORT_send( &P_APP.lcs_report, action_description, DCT_STOP );
                     free( action_description ); action_description = NULL;
 
-                    if( cache_res == 1 ) { /* OK */
+                    if( cache_res == -1 ) {
+                        LOG_print( &dcpam_wds_log, "[%s] Data for request sub-cached successfully.\n", TIME_get_gmt() );
+
+                        free( P_APP.CACHE[ P_APP.CACHE_len ] );
+                        P_APP.CACHE = realloc( P_APP.CACHE, (P_APP.CACHE_len ) * sizeof * P_APP.CACHE );
+                        DCPAM_WDS_get_db_data( sql, db, &( *dst_json ), &( *dst_json_len ) );
+                        //DB_CACHE_free( P_APP.CACHE[ P_APP.CACHE_len + 1 ], &dcpam_wds_log );
+
+                    }
+                    else if( cache_res == 1 ) { /* OK */
                         P_APP.CACHE_len++;
                         LOG_print( &dcpam_wds_log, "[%s] Data for request cached successfully.\n", TIME_get_gmt() );
-                        DCPAM_WDS_get_db_data( sql, db, &(*dst_json) );
+                        DCPAM_WDS_get_db_data( sql, db, &( *dst_json ), &( *dst_json_len ) );
                     } else {
                         LOG_print( &dcpam_wds_log, "[%s] Error: unable to cache data for request.\n", TIME_get_gmt() );
                         if( cache_res == 2 ) { /* Memory limit exceeded */
                             P_APP.CACHE_len++;
-                            DCPAM_WDS_get_db_data( sql, db, &( *dst_json ) );
+                            DCPAM_WDS_get_db_data( sql, db, &( *dst_json ), &( *dst_json_len ) );
                             P_APP.CACHE_len--;
                             DB_CACHE_free( P_APP.CACHE[ P_APP.CACHE_len ], &dcpam_wds_log );
                             free( P_APP.CACHE[ P_APP.CACHE_len ] );
@@ -817,6 +1013,7 @@ void DCPAM_WDS_query( COMMUNICATION_SESSION *communication_session, CONNECTED_CL
                     const char* pong_msg = "{\"msg\": \"pong\"}";
                     SOCKET_send( communication_session, client, pong_msg, strlen( pong_msg ) );
                     SOCKET_disconnect_client( communication_session );
+                    SOCKET_unregister_client( client->socket_descriptor, &dcpam_wds_log );
                     cJSON_Delete( json_request );
                     free( request ); request = NULL;
                     return;
@@ -828,6 +1025,7 @@ void DCPAM_WDS_query( COMMUNICATION_SESSION *communication_session, CONNECTED_CL
                 LOG_print( &dcpam_wds_log, "[%s] Error: no \"key\" in request is found.\n", TIME_get_gmt() );
                 WDS_RESPONSE_ERROR( communication_session, client );
                 SOCKET_disconnect_client( communication_session );
+                SOCKET_unregister_client( client->socket_descriptor, &dcpam_wds_log );
                 cJSON_Delete( json_request );
                 free( request ); request = NULL;
                 return;
@@ -839,6 +1037,7 @@ void DCPAM_WDS_query( COMMUNICATION_SESSION *communication_session, CONNECTED_CL
                             LOG_print( &dcpam_wds_log, "[%s] Error: \"key\" in request is invalid.\n", TIME_get_gmt() );
                             WDS_RESPONSE_ERROR( communication_session, client );
                             SOCKET_disconnect_client( communication_session );
+                            SOCKET_unregister_client( client->socket_descriptor, &dcpam_wds_log );
                             cJSON_Delete( json_request );
                             free( request ); request = NULL;
                             return;
@@ -864,6 +1063,7 @@ void DCPAM_WDS_query( COMMUNICATION_SESSION *communication_session, CONNECTED_CL
                     free( mem_size ); mem_size = NULL;
                     SOCKET_send( communication_session, client, dst_buf, dst_buf_len );
                     SOCKET_disconnect_client( communication_session );
+                    SOCKET_unregister_client( client->socket_descriptor, &dcpam_wds_log );
                     free( dst_buf ); dst_buf = NULL;
                     cJSON_Delete( json_request );
                     free( request ); request = NULL;
@@ -878,6 +1078,7 @@ void DCPAM_WDS_query( COMMUNICATION_SESSION *communication_session, CONNECTED_CL
                 LOG_print( &dcpam_wds_log, "[%s] Error: no SQL in request is found.\n", TIME_get_gmt() );
                 WDS_RESPONSE_ERROR( communication_session, client );
                 SOCKET_disconnect_client( communication_session );
+                SOCKET_unregister_client( client->socket_descriptor, &dcpam_wds_log );
                 cJSON_Delete( json_request );
                 free( request ); request = NULL;
                 return;
@@ -889,22 +1090,26 @@ void DCPAM_WDS_query( COMMUNICATION_SESSION *communication_session, CONNECTED_CL
             DB_QUERY_TYPE dqt = DB_QUERY_get_type( sql->valuestring );
             if(
                 dqt != DQT_SELECT
-                ) {
+            ) {
                 WDS_RESPONSE_ERROR( communication_session, client );
+                SOCKET_disconnect_client( communication_session );
+                SOCKET_unregister_client( client->socket_descriptor, &dcpam_wds_log );
             } else {
                 char* json_response = NULL;
+                size_t json_response_len = 0;
 
                 if( db ) {
                     /* Query data from specific DB */
-                    DCPAM_WDS_get_db_data( sql->valuestring, db->valuestring, &json_response );
+                    DCPAM_WDS_get_db_data( sql->valuestring, db->valuestring, &json_response, &json_response_len );
                 } else {
                     /* Query data from node that delivers requested data */
-                    DCPAM_WDS_get_data( sql->valuestring, &json_response );
+                    DCPAM_WDS_get_data( sql->valuestring, &json_response, &json_response_len );
                 }
 
                 if( json_response ) {
-                    SOCKET_send( communication_session, client, json_response, strlen( json_response ) );
+                    SOCKET_send( communication_session, client, json_response, json_response_len );
                     SOCKET_disconnect_client( communication_session );
+                    SOCKET_unregister_client( client->socket_descriptor, &dcpam_wds_log );
                     free( json_response ); json_response = NULL;
                 } else {
                     WDS_RESPONSE_ERROR( communication_session, client );
@@ -916,6 +1121,7 @@ void DCPAM_WDS_query( COMMUNICATION_SESSION *communication_session, CONNECTED_CL
             LOG_print( &dcpam_wds_log, "[%s] Error: request is not valid JSON.\n", TIME_get_gmt() );
             WDS_RESPONSE_ERROR( communication_session, client );
             SOCKET_disconnect_client( communication_session );
+            SOCKET_unregister_client( client->socket_descriptor, &dcpam_wds_log );
             free( request ); request = NULL;
             return;
         }
@@ -991,8 +1197,6 @@ int main( int argc, char** argv ) {
         } else {
             LOG_print( &dcpam_wds_log, "[%s] Warning: cache initialization failed.\n", TIME_get_gmt() );
         }
-
-        //DCPAM_WDS_free_configuration();
     }
 
     LOG_print( &dcpam_wds_log, "[%s] DCPAM Warehouse Data Server finished.\n", TIME_get_gmt() );

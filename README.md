@@ -158,7 +158,7 @@ Each component has unique log file, and DCPAM ETL - due to parallel execution - 
 [DCPAM ETL](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL/README.md) is the main ETL/ELT engine. Each running instance can handle many ETL/ELT processes simultaneously. Moreover, many instances of DCPAM ETL can work within single Data Warehouse.
 
 #### DCPAM WDS - Warehouse Data Server
-[DCPAM WDS](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_WDS/README.md) is dedicated [Massively Parallel Processing](https://pl.wikipedia.org/wiki/MPP) service for querying predefined and custom business data with in-memory caching system. DCPAM WDS encapsulates every node of DCPAM Database into single data access point.
+[DCPAM WDS](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_WDS/README.md) is dedicated [Massively Parallel Processing](https://pl.wikipedia.org/wiki/MPP) service for querying predefined and custom business data with in-memory caching system. DCPAM WDS is distributed mesh of nodes and encapsulates every database into single data access point. This component can be used without entire DCPAM Data Warehouse Solution and operate as stand-alone solution.
 
 #### DCPAM RDP - Remote Data Processor
 [DCPAM RDP](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_RDP/README.md) is used by DCPAM ETL to execute transform scripts/applications that must be run on separate machines when performance impact is significant. DCPAM ETL communicates with these remote scripts/applications through DCPAM RDP.
@@ -266,8 +266,11 @@ Under development.
 | 2020 | Q3      | :white_check_mark: DCPAM ETL connectivity tests              | Done (2020-09-25) |
 | 2021 | Q1      | :white_check_mark: Data source: APIs         | Done (2021-02-01) |
 | 2021 | Q1      | :white_check_mark: DCPAM WDS true Multi Parallel Processing     | Done (2021-02-02) |
+| 2021 | Q1      | :white_check_mark: DCPAM WDS: horizontal scaling                | Done (2021-02-11) |
+| 2021 | Q1      | DCPAM WDS: cache TTL                         | In progress       |
+| 2021 | Q1      | :white_check_mark: DCPAM WDS: Advanced Query Cache              | Done (2021-02-14) |
 | 2021 | Q1      | DCPAM ETL: report workflow failures to DCPAM LCS | Not implemented   |
-| 2021 | Q1      | DCPAM WDS: cache TTL                         | Not implemented   |
+| 2021 | Q1      | Read complex SQL queries from files          | Not implemented   |
 | 2021 | Q2      | DCPAM Monitoring                             | Not implemented   |
 | 2021 | Q3      | DCPAM Access (BI web application)            | Not implemented   |
 | 2021 | Q4      | DCPAM Construct (admin web application)      | Not implemented   |

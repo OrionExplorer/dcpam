@@ -150,8 +150,22 @@
 	* [x] Value is two-piece string: size and unit (eg. `"max_memory" : "100MB"` which stands for 100 MB of maximum cache size).
 	* [x] Supported units are "KB", MB", "GB" and "TB".
 * [ ] Automatically refresh cached data in DCPAM WDS:
-	* [ ] TTL parameter in `wds_config.json`
-	* [ ] Clear and rebuild cache
+	* [x] TTL parameter in `wds_config.json`.
+	* [x] Expand DCPAM_DATA_ACTION and P_DCPAM_APP.
+	* [x] Expand D_CACHE.
+	* [ ] Clear and rebuild cache thread.
+* [x] DCPAM Warehouse Data Server horizontal scaling:
+	* [x] New config: `"WDS"`  array in `wds_config.json`.
+	* [x] Search remote nodes for requested table.
+	* [x] Every DCPAM WDS node acts as proxy: perform query to remote WDS node, fetch data and response to connected client.
+* [x] DCPAM Warehouse Data Server Advanced Query Cache:
+	* [x] Cache predefined queries. Queries should not contain any `WHERE`-based conditions.
+	* [x] Recognize requested query result (with `WHERE`-based conditions) as a subset of already cached data:
+		* [x] Rebuild `CACHE_init` to recognize similar queries.
+	* [x] New cache is based on indices to already cached data.
+		* [x] New `D_SUB_CACHE` structure to keep indices for `D_CACHE->query->records`.
+		* [x] Store `D_CACHE` indices in `D_SUB_CACHE`.
+	* [ ] Switch `row_count` in `DB_QUERY` from `int` to `long`
 * [x] DCPAM Components reports to DCPAM LCS:
 	* [x] DCPAM ETL
 		* [x] Implement LCS_REPORT

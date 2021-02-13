@@ -20,6 +20,7 @@
 #include "../core/cache.h"
 #include "../core/lcs_report.h"
 #include "../core/component.h"
+#include "../DCPAM_WDS/wds_node.h"
 
 typedef enum MEM_UNIT {
     MU_KB = 1,
@@ -37,6 +38,7 @@ typedef struct DCPAM_DATA_ACTION {
     int                     type;
     short                   internal;
     char                    *condition;
+    double                  cache_ttl;
     char                    *sql;
 } DCPAM_DATA_ACTION;
 
@@ -80,16 +82,25 @@ typedef struct P_DCPAM_APP {
     int                     DB_len;
     DCPAM_DATA              DATA[ MAX_DCPAM_DATA_ITEMS ];
     int                     DATA_len;
+
+    /* Cache definition */
     D_CACHE                 **CACHE;
     int                     CACHE_len;
     size_t                  CACHE_size;
     size_t                  CACHE_MAX_size;
     MEM_UNIT                CACHE_size_unit;
-    int                     CACHE_size_multiplier;
+    size_t                  CACHE_size_multiplier;
+
+    /* Sub-cache definition */
+    D_SUB_CACHE             **SUB_CACHE;
+    int                     SUB_CACHE_len;
+
     char                    **ALLOWED_HOSTS;
     DCPAM_ALLOWED_HOST      **ALLOWED_HOSTS_;
     int                     ALLOWED_HOSTS_len;
     LCS_REPORT              lcs_report;
+    WDS_NODE                **WDS_node;
+    int                     WDS_node_count;
 } P_DCPAM_APP;
 
 #endif

@@ -1,0 +1,46 @@
+{
+	"app" : {
+		"name" : "DCPAM Warehouse Data Server",
+		"version" : "0.1",
+		"network" : {
+			"port" : 8881,
+			"allowed_hosts" : [
+				{"ip" : "192.168.0.1", "key" : "asdqwe123"},
+				{"ip" : "127.0.0.1", "key" : "zxcasd321"}
+			]
+		},
+		"max_memory" : "5MB",
+		"WDS" : [],
+		"DB" : [{
+			"name" : "OTRS",
+			"ip" : "172.17.0.199",
+			"port" : 5432,
+			"driver" : 1,
+			"driver_comment" : "Driver types: 1=PostgreSQL, 2=MySQL, 3=MariaDB, 4=ODBC, 5=Oracle Database, 6=SQLite",
+			"connection_string" : "dbname=%s host=%s port=%d user=%s password=%s",
+			"user" : "otrs",
+			"password" : "MTQ4YzE2N2FmYjA5MzdiOGQyNzk5MzQ0",
+			"db" : "otrs"
+		}],
+		"DATA" : [{
+			"id" : "SOURCE_DATA",
+			"name" : "OTRS history data",
+			"db_name" : "OTRS",
+			"db_table_name" : "ticket_history",
+			"columns" : ["id", "name", "history_type_id", "ticket_id", "article_id", "create_time", "create_by"],
+			"description" : "All history data",
+			"actions" : [{
+				"name" : "GET_DATA",
+				"description" : "Get all data",
+				"type" : 1,
+				"internal" : false,
+				"cache_ttl" : 60,
+				"condition" : "",
+				"sql" : "SELECT * FROM ticket_history"
+			}]
+		}]
+	},
+	"LCS" : {
+		"address" : "dcpam://127.0.0.1:7771"
+	}
+}
