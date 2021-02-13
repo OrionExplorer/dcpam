@@ -267,8 +267,8 @@ Under development.
 | 2021 | Q1      | :white_check_mark: Data source: APIs         | Done (2021-02-01) |
 | 2021 | Q1      | :white_check_mark: DCPAM WDS true Multi Parallel Processing     | Done (2021-02-02) |
 | 2021 | Q1      | :white_check_mark: DCPAM WDS: horizontal scaling                | Done (2021-02-11) |
-| 2021 | Q1      | DCPAM WDS: cache TTL                         | In progress       |
 | 2021 | Q1      | :white_check_mark: DCPAM WDS: Advanced Query Cache              | Done (2021-02-14) |
+| 2021 | Q1      | DCPAM WDS: cache TTL                         | In progress       |
 | 2021 | Q1      | DCPAM ETL: report workflow failures to DCPAM LCS | Not implemented   |
 | 2021 | Q1      | Read complex SQL queries from files          | Not implemented   |
 | 2021 | Q2      | DCPAM Monitoring                             | Not implemented   |
