@@ -874,7 +874,7 @@ void DCPAM_WDS_get_db_data( const char *sql, const char *db, char **dst_json, si
             }
 
             if( subset ) {
-                LOG_print( &dcpam_wds_log, "[%s] DCPAM_WDS_get_db_data( %s, %s ): Found sub-cached records: %d.\n", TIME_get_gmt(), sql, db, subset->indices_len );
+                LOG_print( &dcpam_wds_log, "[%s] DCPAM_WDS_get_db_data( %s, %s ): Found sub-cached records: %ld.\n", TIME_get_gmt(), sql, db, subset->indices_len );
             } else {
                 LOG_print( &dcpam_wds_log, "[%s] DCPAM_WDS_get_db_data( %s, %s ): Found cached records: %d.\n", TIME_get_gmt(), sql, db, cached_result->row_count );
             }
