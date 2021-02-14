@@ -131,7 +131,6 @@ void _DB_CACHE_on_db_record( DB_RECORD* record, void* data_ptr1, void* data_ptr2
                 sub_cache->indices[ sub_cache->indices_len ] = i;
             }
             sub_cache->indices_len++;
-            LOG_print( log, "[%s] Sub-cache index: %d\n", TIME_get_gmt(), i );
             DB_QUERY_record_free( record );
             return;
         }
@@ -196,7 +195,6 @@ int DB_CACHE_init( D_CACHE *dst, DATABASE_SYSTEM_DB *db, const char *sql, double
 
         /* Check, if requested query is subset of already cached data. */
         D_CACHE *cached_data = _DB_CACHE_subset_search( sql );
-        LOG_print( log, "#1\n");
         if( cached_data ) {
             LOG_print( log, "[%s] DB_CACHE_init: requested query is part of already cached data. \n", TIME_get_gmt() );
             /* Data already exists. Check if it's not int the SUB_CACHE already. */

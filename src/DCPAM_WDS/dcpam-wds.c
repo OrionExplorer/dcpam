@@ -1113,6 +1113,8 @@ void DCPAM_WDS_query( COMMUNICATION_SESSION *communication_session, CONNECTED_CL
                     free( json_response ); json_response = NULL;
                 } else {
                     WDS_RESPONSE_ERROR( communication_session, client );
+                    SOCKET_disconnect_client( communication_session );
+                    SOCKET_unregister_client( client->socket_descriptor, &dcpam_wds_log );
                 }
             }
             cJSON_Delete( json_request );
