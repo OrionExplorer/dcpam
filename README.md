@@ -228,7 +228,7 @@ Each DCPAM Component is provided with `Dockerfile` to build Docker image:
 * DCPAM LCS: `dcpam-lcs.dockerfile`
 
 ##### Currently under active development
-* [ ] DCPAM WDS: cache TTL.
+* [x] DCPAM WDS: cache TTL.
 
 ## Professional Services for DCPAM
 Under development.
