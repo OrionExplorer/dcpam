@@ -27,7 +27,6 @@
       * [DCPAM RDP - Remote Data Processor](#dcpam-rdp---remote-data-processor)
       * [DCPAM LCS - Live Component State](#dcpam-lcs---live-component-state)
       * [DCPAM Construct](#dcpam-construct)
-      * [DCPAM Access](#dcpam-access)
       * [DCPAM Monitoring](#dcpam-monitoring)
     * [Data Sources](#data-sources)
       * [Databases](#databases)
@@ -51,7 +50,7 @@
 
 * [x] **Process gigabytes of data within minutes** - benefit of parallel execution.
 
-* [x] **Flexible deployment** - use your own infrastructure or get the benefits from cloud platforms (Microsoft Azure, Amazon Web Services, Google Cloud Platform).
+* [x] **Flexible deployment** - use your own infrastructure or get the benefits from cloud platforms (Microsoft Azure, Amazon Web Services, Google Cloud Platform). DCPAM Data Warehouse Solution is hardware- and [database](#databases)-agnostic with component-based architecture.
 
 ![Main Overview](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/dwh.png)
 
@@ -109,21 +108,6 @@ As DCPAM is extremely modular and highly scalabe, it can serve both as Data Ware
 * Access DCPAM Database with any system for analytics (Power BI, Tableau, Redash etc.).
 
 ### Elements yet to be covered by DCPAM
-* DCPAM Access (BI web application):
-  * SQL query exeution with grid-based results view.
-  * Access to preconfigured queries.
-  * Charts:
-    * line
-    * bar
-    * pie
-    * column
-    * area
-    * bubble
-    * scatter
-    * tree map
-  * Manage custom reports:
-    * labels, charts and grids
-    * user access control
 * DCPAM Admin web application:
   * Manage data sources.
   * Configure ETL processes.
@@ -132,6 +116,9 @@ As DCPAM is extremely modular and highly scalabe, it can serve both as Data Ware
 * DCPAM LCS Notifications
 * Data sources:
   * LDAP
+  * Microsoft Access
+  * MongoDB
+  * Cassandra
 
 ### Other
 * Choose Data Warehouse DBMS, sufficient hardware and disk space.
@@ -158,7 +145,7 @@ Each component has unique log file, and DCPAM ETL - due to parallel execution - 
 [DCPAM ETL](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL/README.md) is the main ETL/ELT engine. Each running instance can handle many ETL/ELT processes simultaneously. Moreover, many instances of DCPAM ETL can work within single Data Warehouse.
 
 #### DCPAM WDS - Warehouse Data Server
-[DCPAM WDS](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_WDS/README.md) is dedicated [Massively Parallel Processing](https://pl.wikipedia.org/wiki/MPP) service for querying predefined and custom business data with in-memory caching system. DCPAM WDS is distributed mesh of nodes and encapsulates every database into single data access point. This component can be used without entire DCPAM Data Warehouse Solution and operate as stand-alone solution.
+[DCPAM WDS](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_WDS/README.md) is dedicated [Massively Parallel Processing](https://pl.wikipedia.org/wiki/MPP) service for querying predefined and custom business data with in-memory caching system. DCPAM WDS cluster encapsulates every database into a single data access point. This component can be used without entire DCPAM Data Warehouse Solution and operate as a stand-alone solution.
 
 #### DCPAM RDP - Remote Data Processor
 [DCPAM RDP](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_RDP/README.md) is used by DCPAM ETL to execute transform scripts/applications that must be run on separate machines when performance impact is significant. DCPAM ETL communicates with these remote scripts/applications through DCPAM RDP.
@@ -188,11 +175,8 @@ Following diagrams represents different configurations to deploy both Data Wareh
 #### DCPAM Construct
 DCPAM Construct is going to be the main system administration web application.
 
-#### DCPAM Access
-DCPAM Access is going to be dedicated Bussiness Inteligence web application.
-
 #### DCPAM Monitoring
-DCPAM Access is going to be web application for DCPAM LCS data presentation.
+DCPAM Monitoring is going to be web application for DCPAM LCS data presentation.
 
 ### Data sources
 DCPAM development is still in progress with following data sources available:
@@ -244,7 +228,7 @@ Each DCPAM Component is provided with `Dockerfile` to build Docker image:
 * DCPAM LCS: `dcpam-lcs.dockerfile`
 
 ##### Currently under active development
-* [ ] To be announced.
+* [ ] DCPAM WDS: cache TTL.
 
 ## Professional Services for DCPAM
 Under development.
@@ -272,7 +256,6 @@ Under development.
 | 2021 | Q1      | DCPAM ETL: report workflow failures to DCPAM LCS | Not implemented   |
 | 2021 | Q1      | Read complex SQL queries from files          | Not implemented   |
 | 2021 | Q2      | DCPAM Monitoring                             | Not implemented   |
-| 2021 | Q3      | DCPAM Access (BI web application)            | Not implemented   |
 | 2021 | Q4      | DCPAM Construct (admin web application)      | Not implemented   |
 | 2022 | Q1      | DCPAM AI Platform                            | Not implemented   |
 

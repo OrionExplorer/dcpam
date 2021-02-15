@@ -228,6 +228,7 @@
 	* [x] SQLite
 	* [x] IBM Db2
 	* [ ] MongoDB
+	* [ ] Cassandra
 	* [x] CSV/TSV/PSV
 	* [x] URL
 	* [x] JSON
@@ -236,3 +237,4 @@
 	* [x] XML
 	* [ ] LDAP
 	* [x] API
+	* [ ] Microsoft Access
