@@ -212,7 +212,7 @@ DCPAM development is still in progress with following data sources available:
 | XML                                | [script](https://github.com/OrionExplorer/dcpam/blob/master/src/DCPAM_ETL/data-processor/xml2csv.py) |
 
 #### API
-DCPAM can access files from local or remote locations. The latter are fetched via HTTP/HTTPS protocol and [Battery HTTP Server](https://github.com/OrionExplorer/battery-http-server) is recommended.
+DCPAM can access files and other resources from local or remote locations. The latter are fetched via HTTP/HTTPS protocol and [Battery HTTP Server](https://github.com/OrionExplorer/battery-http-server) is recommended.
 Parameters such as URL, method, headers and additional payload are supported.
 Files are loaded to temporary tables in DCPAM or external database to make SQL operations possible for this kind of data.
 
