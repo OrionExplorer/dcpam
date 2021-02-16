@@ -18,6 +18,7 @@
 #include "../include/utils/log.h"
 #include "../include/utils/memory.h"
 #include "../include/utils/strings.h"
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sql.h>
@@ -110,12 +111,15 @@ int ODBC_connect(
         return 0;
     }
 
+    SQLCHAR outstr[2048];
+    SQLSMALLINT outstrlen;
+
     retcode = SQLDriverConnect( db_connection->connection, NULL,
         ( SQLCHAR* )connection_string,
         SQL_NTS,
-        NULL,
-        0,
-        NULL,
+        outstr,
+        sizeof( outstr ),
+        &outstrlen,
         SQL_DRIVER_NOPROMPT
     );
     CHECK_ERROR( retcode, "SQLDriverConnect()", db_connection->connection, SQL_HANDLE_DBC, TRUE, log );
