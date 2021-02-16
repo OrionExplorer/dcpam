@@ -1,6 +1,6 @@
 {
 	"system" : [{
-		"enabled" : 0,
+		"enabled" : 1,
 		"name" : "OTRS",
 		"DB" : {
 			"name" : "OTRS-source",
@@ -114,19 +114,19 @@
 					"comment#24" : "# Running Transform subprocess is optional in DCPAM.",
 					"comment#25" : "##################################################################################################",
 					"inserted" : [{
-						"module" : "./src/DCPAM_RDP/whitespaces/trailing-spaces.py",
+						"module" : "./whitespaces/trailing-spaces.py",
 						"staged_data" : "SELECT * FROM stage_accounted_time",
 						"api_key" : "",
 						"source_system_update" : "UPDATE time_accounting SET %s WHERE %s"
 					}],
 					"deleted" : [{
-						"module" : "dcpam://127.0.0.1:9091/src/DCPAM_RDP/whitespaces/trailing-spaces.py",
+						"module" : "dcpam://127.0.0.1:9091/whitespaces/trailing-spaces.py",
 						"api_key" : "zxcasd321",
 						"staged_data" : "SELECT * FROM stage_accounted_time",
 						"source_system_update" : "UPDATE time_accounting SET %s WHERE %s"
 					}],
 					"modified" : [{
-						"module" : "./src/DCPAM_RDP/whitespaces/trailing-spaces.py",
+						"module" : "./whitespaces/trailing-spaces.py",
 						"staged_data" : "SELECT * FROM stage_accounted_time",
 						"api_key" : "",
 						"source_system_update" : "UPDATE time_accounting SET %s WHERE %s"
@@ -170,7 +170,7 @@
 			}
 		}]
 	}, {
-		"enabled" : 1,
+		"enabled" : 0,
 		"name" : "OTRS-History-Data-FILE-source",
 
 		"file_comment#00" : "##################################################################################################",
@@ -271,21 +271,21 @@
 
 				"transform" : {
 					"inserted" : [{
-						"module" : "./src/DCPAM_RDP/whitespaces/trailing-spaces.py",
+						"module" : "./whitespaces/trailing-spaces.py",
 						"staged_data" : "SELECT * FROM stage_accounted_time",
-						"api_key" : "aa",
+						"api_key" : "",
 						"source_system_update" : "UPDATE time_accounting SET %s WHERE %s"
 					}],
 					"deleted" : [{
-						"module" : "dcpam://127.0.0.1:9091/src/DCPAM_RDP/whitespaces/trailing-spaces.py",
+						"module" : "dcpam://127.0.0.1:9091/whitespaces/trailing-spaces.py",
 						"api_key" : "zxcasd321",
 						"staged_data" : "SELECT * FROM stage_accounted_time",
 						"source_system_update" : "UPDATE time_accounting SET %s WHERE %s"
 					}],
 					"modified" : [{
-						"module" : "./src/DCPAM_RDP/whitespaces/trailing-spaces.py",
+						"module" : "./whitespaces/trailing-spaces.py",
 						"staged_data" : "SELECT * FROM stage_accounted_time",
-						"api_key" : "aa",
+						"api_key" : "",
 						"source_system_update" : "UPDATE time_accounting SET %s WHERE %s"
 					}]
 				},

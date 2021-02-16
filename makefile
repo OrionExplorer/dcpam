@@ -135,3 +135,6 @@ dcpam-lcs: dcpam-lcs.o socket_io.o log.o time.o memory.o filesystem.o http.o cli
 	@ mkdir bin -p
 	$(CC) dcpam-lcs.o socket_io.o log.o time.o memory.o filesystem.o http.o client.o strings.o cJSON.o component.o lcs_worker.o -o bin/dcpam-lcs $(LIBS)
 	@ cp -R ./conf ./bin/
+	@ rm -rf ./bin/whitespaces
+	@ mkdir ./bin/whitespaces
+	@ cp -R ./src/DCPAM_RDP/whitespaces ./bin/

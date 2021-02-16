@@ -84,13 +84,13 @@ int CDC_TransformGeneric( DB_SYSTEM_ETL_TRANSFORM_QUERY *transform_element, DATA
 
         return 1;
 
-    } else {
+    } else if( strstr( transform_element->module, "dcpam://" ) ) {
         char    host[ 100 ];
         int     port = 9091;
         char    script[ 256 ];
         char    command[ 4096 ];
 
-        sscanf( transform_element->module, "dcpam://%99[^:]:%99d/%255[^\n]", host, &port, script );
+        sscanf( transform_element->module, "dcpam://%99[^:]:%99d%255[^\n]", host, &port, script );
 
         /* Prepare query*/
         snprintf( command, 4096, "m=./%s dhost=%s dport=%d duser=%s dpass=%s ddriver=%d dconn=\"%s\" shost=%s sport=%d suser=%s spass=%s sdriver=%d sconn=\"%s\" key=%s",
@@ -141,6 +141,9 @@ int CDC_TransformGeneric( DB_SYSTEM_ETL_TRANSFORM_QUERY *transform_element, DATA
         }
         transform_element->connection->log = NULL;
         free( transform_element->connection ); transform_element->connection = NULL;
+    } else {
+        LOG_print( log, "[%s] Error: transform script path is invalid!\n", TIME_get_gmt() );
+        return 0;
     }
 
     return 1;
