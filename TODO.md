@@ -165,6 +165,9 @@
 	* [x] New cache is based on indices to already cached data.
 		* [x] New `D_SUB_CACHE` structure to keep indices for `D_CACHE->query->records`.
 		* [x] Store `D_CACHE` indices in `D_SUB_CACHE`.
+	* [x] Prepare code to handle conditions locally:
+		* [x] LIMIT
+		* [ ] WHERE with one condition
 	* [ ] Switch `row_count` in `DB_QUERY` from `int` to `long`
 * [x] DCPAM Components reports to DCPAM LCS:
 	* [x] DCPAM ETL

@@ -970,6 +970,9 @@ void DCPAM_WDS_get_db_data( const char *sql, const char *db, char **dst_json, si
                             P_APP.CACHE_len--;
                             DB_CACHE_free( P_APP.CACHE[ P_APP.CACHE_len ], &dcpam_wds_log );
                             free( P_APP.CACHE[ P_APP.CACHE_len ] );
+                        } else {
+                            free( P_APP.CACHE[ P_APP.CACHE_len ] );
+                            P_APP.CACHE = realloc( P_APP.CACHE, (P_APP.CACHE_len ) * sizeof * P_APP.CACHE );
                         }
                     }
                 }

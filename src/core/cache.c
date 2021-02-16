@@ -21,6 +21,7 @@
 #include "../include/core/app_schema.h"
 #include "../include/core/cache.h"
 #include "../include/core/db/system.h"
+#include "../include/DCPAM_WDS/sql_parser.h"
 
 extern P_DCPAM_APP      P_APP;
 
@@ -152,24 +153,43 @@ int DB_SUB_CACHE_init( D_CACHE *cache, D_SUB_CACHE *sub_cache, const char *sql, 
         sub_cache->sql = SAFECALLOC( sql_len + 1, sizeof( char ), __FILE__, __LINE__ );
         strlcpy( sub_cache->sql, sql, sql_len );
 
-        qec on_db_record = ( qec )&_DB_CACHE_on_db_record;
-        int res =  DB_exec(
-            cache->db,
-            sql,
-            strlen( sql ),
-            NULL,
-            NULL,
-            0,
-            NULL, NULL, NULL, 
-            &on_db_record,
-            ( void* )cache, ( void* )sub_cache,
-            log
-        );
+        int local_data_collect = 0;
+        int action_result = 0;
+        /* Check, if we can handle data without need to send a request to the database. */
+        SQL_CONDITION sql_condition = SQL_PARSER_supported_conditions( sql );
+        if( sql_condition != SQL_COND_UNDEF ) {
+            LOG_print( log, "[%s] Query contains internally-supported conditions.\n", TIME_get_gmt() );
+            LOG_print( log, "[%s] Attempt to filter data...\n", TIME_get_gmt() );
+            
+            local_data_collect = SQL_PARSER_collect_data( cache, sub_cache, sql, sql_condition, log );
+            LOG_print( log, "[%s] Local data collect finished: %s.\n", TIME_get_gmt(), local_data_collect == 1 ? "success" : "failure" );
+        }
 
-        LOG_print( log, "[%s] DB_SUB_CACHE_init( %s, \"%.30s(...)\", %0.f ) finished (timestamp: %ld).\n", TIME_get_gmt(), cache->db->name, sql, cache->ttl, cache->generate_time );
+        if( local_data_collect == 0 ) {
+            /* Query conditions are to complex to handle for us. */
+            qec on_db_record = ( qec )&_DB_CACHE_on_db_record;
+            action_result =  DB_exec(
+                cache->db,
+                sql,
+                strlen( sql ),
+                NULL,
+                NULL,
+                0,
+                NULL, NULL, NULL, 
+                &on_db_record,
+                ( void* )cache, ( void* )sub_cache,
+                log
+            );    
+        } else {
+            action_result = local_data_collect;
+        }
+
+        LOG_print( log, "[%s] DB_SUB_CACHE_init( %s, \"%.30s(...)\", %0.f ) finished (timestamp: %ld): %s\n", TIME_get_gmt(), cache->db->name, sql, cache->ttl, cache->generate_time, action_result == 1 ? "success" : "failure" );
+        return action_result;
 
     } else {
         LOG_print( log, "[%s] DB_SUB_CACHE_init( \"%.30s(...)\" ) error: invalid arguments.\n", TIME_get_gmt(), sql );
+        return 0;
     }
 }
 
@@ -206,10 +226,16 @@ int DB_CACHE_init( D_CACHE *dst, DATABASE_SYSTEM_DB *db, const char *sql, double
                 if( P_APP.SUB_CACHE != NULL ) {
                     P_APP.SUB_CACHE[ P_APP.SUB_CACHE_len ] = SAFEMALLOC( sizeof( D_SUB_CACHE ), __FILE__, __LINE__ );
                     P_APP.SUB_CACHE[ P_APP.SUB_CACHE_len ]->indices_len = 0;
-                    DB_SUB_CACHE_init( cached_data, P_APP.SUB_CACHE[ P_APP.SUB_CACHE_len ], sql, log );
-                    LOG_print( log, "[%s] DB_CACHE_init: successfully created specific sub-cache object.\n", TIME_get_gmt() );
-                    P_APP.SUB_CACHE_len++;
-                    return -1;
+                    if( DB_SUB_CACHE_init( cached_data, P_APP.SUB_CACHE[ P_APP.SUB_CACHE_len ], sql, log ) == 1 ) {
+                        LOG_print( log, "[%s] DB_CACHE_init: successfully created specific sub-cache object.\n", TIME_get_gmt() );
+                        P_APP.SUB_CACHE_len++;
+                        return -1;
+                    } else {
+                        LOG_print( log, "[%s] DB_CACHE_init: failed to create specific sub-cache object.\n", TIME_get_gmt() );
+                        free( P_APP.CACHE[ P_APP.SUB_CACHE_len ] );
+                        P_APP.CACHE = realloc( P_APP.SUB_CACHE, (P_APP.SUB_CACHE_len ) * sizeof * P_APP.SUB_CACHE );
+                        return 0;
+                    }
                 }
             } else {
                 LOG_print( log, "[%s] DB_CACHE_init: specific sub-cache object already exists.\n", TIME_get_gmt() );
@@ -261,6 +287,8 @@ int DB_CACHE_init( D_CACHE *dst, DATABASE_SYSTEM_DB *db, const char *sql, double
             _DB_CACHE_show_usage( log );
         } else {
             LOG_print( log, "\t- DB_exec failed!\n" );
+            DB_QUERY_free( dst->query );
+            free( dst->query ); dst->query = NULL;
         }
         return res;
     } else {
@@ -277,7 +305,7 @@ void DB_CACHE_get( const char* sql, DB_QUERY** dst, D_SUB_CACHE** s_dst ) {
     *dst = NULL;
     *s_dst = NULL;
 
-    /* Find requested query result in generated data. */
+    /* Find requested query result in generated data (main cache). */
     for( int i = 0; i < P_APP.CACHE_len; i++ ) {
         if( P_APP.CACHE[ i ]  && P_APP.CACHE[ i ]->query && P_APP.CACHE[ i ]->query->sql ) {
             if( strcmp( sql, P_APP.CACHE[ i ]->query->sql ) == 0 ) {
