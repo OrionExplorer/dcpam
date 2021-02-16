@@ -240,4 +240,4 @@
 	* [x] XML
 	* [ ] LDAP
 	* [x] API
-	* [ ] Microsoft Access
+	* [x] Microsoft Access

@@ -116,7 +116,6 @@ As DCPAM is extremely modular and highly scalabe, it can serve both as Data Ware
 * DCPAM LCS Notifications
 * Data sources:
   * LDAP
-  * Microsoft Access
   * MongoDB
   * Cassandra
 
@@ -191,6 +190,7 @@ DCPAM development is still in progress with following data sources available:
 | Oracle Database                    | native           |
 | SQLite3                            | native           |
 | IBM Db2                            | ODBC             |
+| Microsoft Access                   | ODBC             |
 
 > \* SQL Server/Azure SQL Database: [ODBC is the primary native data access API for applications written in C and C++ for SQL Server](https://docs.microsoft.com/en-us/sql/connect/odbc/microsoft-odbc-driver-for-sql-server).
 
