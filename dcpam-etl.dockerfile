@@ -5,10 +5,14 @@ RUN apt-get update\
  "make"\
  "clang"\
  "libssl-dev"\
+ "libsasl2-dev"\
  "libaio-dev"\
  "libpq-dev"\
  "libmariadbclient-dev"\
  "unixodbc-dev"\
+ "libmongoc-1.0-0"\
+ "libbson-1.0-0"\
+ "libmongoc-dev"\
  "alien"\
  "wget"\
  && apt-get clean\
@@ -34,10 +38,14 @@ FROM ubuntu:18.04
 RUN apt-get update\
  && apt-get install -y --no-install-recommends\
  "libssl-dev"\
+ "libsasl2-dev"\
  "libaio-dev"\
  "libpq-dev"\
  "libmariadbclient-dev"\
  "unixodbc-dev"\
+ "libmongoc-1.0-0"\
+ "libbson-1.0-0"\
+ "libmongoc-dev"\
  "alien"\
  "python3-pip"\
  && apt-get clean\

@@ -229,35 +229,37 @@ Each DCPAM Component is provided with `Dockerfile` to build Docker image:
 
 ##### Currently under active development
 * [x] DCPAM WDS: cache TTL.
+* [x] DCPAM ETL: MongoDB support.
 
 ## Professional Services for DCPAM
 Under development.
 
 ## Roadmap
-| Year | Quarter | Feature                                      | Status            |
-|:----:|:-------:|:---------------------------------------------|:------------------|
-| 2020 | Q3      | :white_check_mark: Transform process         | Done (2020-08-07) |
-| 2020 | Q3      | :white_check_mark: DCPAM WDS                 | Done (2020-08-17) |
-| 2020 | Q3      | :white_check_mark: DCPAM auth keys           | Done (2020-08-19) |
-| 2020 | Q3      | :white_check_mark: Data source: CSV/TSV/PSV  | Done (2020-08-30) |
-| 2020 | Q3      | :white_check_mark: Remote files              | Done (2020-09-01) |
-| 2020 | Q3      | :white_check_mark: Data source: JSON         | Done (2020-09-03) |
-| 2020 | Q3      | :white_check_mark: DCPAM LCS                 | Done (2020-09-15) |
-| 2020 | Q3      | :white_check_mark: Docker images for all the DCPAM Components   | Done (2020-09-20) |
-| 2020 | Q3      | :white_check_mark: HTTPS support             | Done (2020-09-22) |
-| 2020 | Q3      | :white_check_mark: Data source: externally preprocessed         | Done (2020-09-24) |
-| 2020 | Q3      | :white_check_mark: Data source: XML          | Done (2020-09-24) |
-| 2020 | Q3      | :white_check_mark: DCPAM ETL connectivity tests              | Done (2020-09-25) |
-| 2021 | Q1      | :white_check_mark: Data source: APIs         | Done (2021-02-01) |
-| 2021 | Q1      | :white_check_mark: DCPAM WDS true Multi Parallel Processing     | Done (2021-02-02) |
-| 2021 | Q1      | :white_check_mark: DCPAM WDS: horizontal scaling                | Done (2021-02-11) |
-| 2021 | Q1      | :white_check_mark: DCPAM WDS: Advanced Query Cache              | Done (2021-02-14) |
-| 2021 | Q1      | DCPAM WDS: cache TTL                         | In progress       |
-| 2021 | Q1      | DCPAM ETL: report workflow failures to DCPAM LCS | Not implemented   |
-| 2021 | Q1      | Read complex SQL queries from files          | Not implemented   |
-| 2021 | Q2      | DCPAM Monitoring                             | Not implemented   |
-| 2021 | Q4      | DCPAM Construct (admin web application)      | Not implemented   |
-| 2022 | Q1      | DCPAM AI Platform                            | Not implemented   |
+| Year | Quarter | Feature                                                                 | Status            |
+|:----:|:-------:|:------------------------------------------------------------------------|:------------------|
+| 2020 | Q3      | :white_check_mark: Transform process                                    | Done (2020-08-07) |
+| 2020 | Q3      | :white_check_mark: DCPAM WDS                                            | Done (2020-08-17) |
+| 2020 | Q3      | :white_check_mark: DCPAM auth keys                                      | Done (2020-08-19) |
+| 2020 | Q3      | :white_check_mark: Data source: CSV/TSV/PSV                             | Done (2020-08-30) |
+| 2020 | Q3      | :white_check_mark: Remote files                                         | Done (2020-09-01) |
+| 2020 | Q3      | :white_check_mark: Data source: JSON                                    | Done (2020-09-03) |
+| 2020 | Q3      | :white_check_mark: DCPAM LCS                                            | Done (2020-09-15) |
+| 2020 | Q3      | :white_check_mark: Docker images for all the DCPAM Components           | Done (2020-09-20) |
+| 2020 | Q3      | :white_check_mark: HTTPS support                                        | Done (2020-09-22) |
+| 2020 | Q3      | :white_check_mark: Data source: externally preprocessed                 | Done (2020-09-24) |
+| 2020 | Q3      | :white_check_mark: Data source: XML                                     | Done (2020-09-24) |
+| 2020 | Q3      | :white_check_mark: DCPAM ETL connectivity tests                         | Done (2020-09-25) |
+| 2021 | Q1      | :white_check_mark: Data source: APIs                                    | Done (2021-02-01) |
+| 2021 | Q1      | :white_check_mark: DCPAM WDS true Multi Parallel Processing             | Done (2021-02-02) |
+| 2021 | Q1      | :white_check_mark: DCPAM WDS: horizontal scaling                        | Done (2021-02-11) |
+| 2021 | Q1      | :white_check_mark: DCPAM WDS: Advanced Query Cache                      | Done (2021-02-14) |
+| 2021 | Q1      | Data source: MongoDB                                                    | In progress       |
+| 2021 | Q1      | DCPAM WDS: cache TTL                                                    | In progress       |
+| 2021 | Q1      | DCPAM ETL: report workflow failures to DCPAM LCS                        | Not implemented   |
+| 2021 | Q1      | Read complex SQL queries from files                                     | Not implemented   |
+| 2021 | Q2      | DCPAM Monitoring                                                        | Not implemented   |
+| 2021 | Q4      | DCPAM Construct (admin web application)                                 | Not implemented   |
+| 2022 | Q1      | DCPAM AI Platform                                                       | Not implemented   |
 
 ---
 This software uses:

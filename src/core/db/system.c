@@ -79,6 +79,10 @@ int DB_exec(
         case D_SQLITE: {
             q_ret = SQLITE_exec( &db->db_conn.sqlite_conn, sql, *sql_len, dst_result, NULL, 0, NULL, NULL, query_exec_callback, data_ptr1, data_ptr2, log );
         }
+
+        case D_MONGODB: {
+            q_ret = MONGODB_exec( &db->db_conn.mongodb_conn, sql, *sql_len, dst_result, NULL, 0, NULL, NULL, NULL, query_exec_callback, data_ptr1, data_ptr2, log );
+        }
     }
 
     free( sql_bound ); sql_bound = NULL;

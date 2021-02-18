@@ -20,7 +20,9 @@
 #include "../../utils/log.h"
 #include "../../portable.h"
 
-#define FD_SETSIZE  1024
+#ifndef FD_SETSIZE
+  #define FD_SETSIZE  1024
+#endif
 
 #ifdef _WIN32
     #ifndef _WIN32_WINNT

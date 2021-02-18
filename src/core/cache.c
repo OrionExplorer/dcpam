@@ -20,6 +20,7 @@
 #include "../include/utils/time.h"
 #include "../include/core/app_schema.h"
 #include "../include/core/cache.h"
+#include "../include/db/db.h"
 #include "../include/core/db/system.h"
 #include "../include/DCPAM_WDS/sql_parser.h"
 
@@ -131,6 +132,7 @@ void _DB_CACHE_on_db_record( DB_RECORD* record, void* data_ptr1, void* data_ptr2
             if( sub_cache->indices ) {
                 sub_cache->indices[ sub_cache->indices_len ] = i;
             }
+
             sub_cache->indices_len++;
             DB_QUERY_record_free( record );
             return;

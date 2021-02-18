@@ -1781,6 +1781,7 @@ int main( int argc, char** argv ) {
 
     app_terminated = 0;
 
+    mongoc_init();
     SSL_load_error_strings();
     SSL_library_init();
     OpenSSL_add_all_algorithms();
@@ -1816,8 +1817,10 @@ int main( int argc, char** argv ) {
     LOG_free( &dcpam_etl_log );
     LOG_free( &dcpam_etl_lcs_log );
 
-    ERR_free_strings();
     EVP_cleanup();
+    CRYPTO_cleanup_all_ex_data();
+    ERR_free_strings();
+    mongoc_cleanup();
 
     return 0;
 }
