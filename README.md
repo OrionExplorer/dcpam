@@ -4,7 +4,8 @@
 ### Data Construct-Populate-Access-Manage
 * DCPAM goal is to deliver full range of Data Warehouse possibilities without need to include or hire more engineers for this task.
 * DCPAM architecture is [highly flexible](https://github.com/OrionExplorer/dcpam/tree/master/src/DCPAM_ETL#architecture-overview) and [provides unlimited scaling possibilities](#dcpam-rdp---remote-data-processor).
-* DCPAM is multiplatform solution: on-premise (Linux/Windows), cloud (Microsoft Azure, Amazon Web Services, Google Cloud Platform) and hybrid deployments are possible.
+* DCPAM is multiplatform solution: on-premise (Linux/Windows), cloud (Private, Microsoft Azure, Amazon Web Services, Google Cloud Platform) and hybrid deployments are possible.
+* DCPAM is hardware- and database-agnostic with component-based architecture.
 
 ### Supported databases
 ![PostgreSQL](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/postgresql102x100.png) ![MySQL](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/mysql159x100.png) ![MariaDB](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/mariadb100x100.png) ![Microsoft SQL Server](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/sqlserver134x100.png) ![Oracle Database](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/oracle100x100.png) ![SQLite3](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/sqlite171x100.png) ![IBM Db2](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/ibmdb2100x100.png) ![ODBC](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/odbc199x100.png)
@@ -50,7 +51,7 @@
 
 * [x] **Process gigabytes of data within minutes** - benefit of parallel execution.
 
-* [x] **Flexible deployment** - use your own infrastructure or get the benefits from cloud platforms (Microsoft Azure, Amazon Web Services, Google Cloud Platform). DCPAM Data Warehouse Solution is hardware- and [database](#databases)-agnostic with component-based architecture.
+* [x] **Flexible deployment** - use your own infrastructure or get the benefits from cloud platforms (Private, Microsoft Azure, Amazon Web Services, Google Cloud Platform). DCPAM Data Warehouse Solution is hardware- and [database](#databases)-agnostic with component-based architecture.
 
 ![Main Overview](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/dwh.png)
 
