@@ -16,7 +16,7 @@ jobs:
     - name: Update
       run: sudo apt-get update
     - name: Install PostgreSQL, MariaDB, UnixODBC
-      run: sudo apt-get -y install libpq-dev libmariadbclient-dev unixodbc-dev
+      run: sudo apt-get -y install libpq-dev libmariadbclient-dev unixodbc-dev libmongoc-1.0-0 libbson-1.0-0 libmongoc-dev
     - name: Install alien
       run: sudo apt-get -y install alien
     - name: Download Oracle Instant Client 19.6 Basic
