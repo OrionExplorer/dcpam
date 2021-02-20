@@ -93,7 +93,9 @@ void DB_CDC_StageGeneric( DB_SYSTEM_ETL_STAGE *stage, DB_SYSTEM_ETL_STAGE_QUERY 
 void DB_CDC_StageInserted( DB_SYSTEM_ETL_STAGE* stage, DATABASE_SYSTEM_DB* dcpam_db, DB_RECORD *record, LOG_OBJECT *log ) {
     if( stage && dcpam_db ) {
         LOG_print( log, "\t· [CDC - STAGE::INSERTED]:\n" );
-        DB_CDC_StageGeneric( stage, &stage->inserted, dcpam_db, record, log );
+        for( int i = 0; i < stage->inserted_count; i++ ) {
+            DB_CDC_StageGeneric( stage, stage->inserted[ i ], dcpam_db, record, log );
+        }
     } else {
         LOG_print( log, "\t· [CDC - STAGE::INSERTED] Fatal error: not all DB_CDC_StageInserted parameters are valid!\n" );
     }
@@ -103,7 +105,9 @@ void DB_CDC_StageInserted( DB_SYSTEM_ETL_STAGE* stage, DATABASE_SYSTEM_DB* dcpam
 void DB_CDC_StageDeleted( DB_SYSTEM_ETL_STAGE *stage, DATABASE_SYSTEM_DB *dcpam_db, DB_RECORD* record, LOG_OBJECT *log ) {
     if( stage && dcpam_db ) {
         LOG_print( log, "\t· [CDC - STAGE::DELETED]:\n" );
-        DB_CDC_StageGeneric( stage, &stage->deleted, dcpam_db, record, log );
+        for( int i = 0; i < stage->deleted_count; i++ ) {
+            DB_CDC_StageGeneric( stage, stage->deleted[ i ], dcpam_db, record, log );
+        }
     } else {
         LOG_print( log, "\t· [CDC - STAGE::DELETED] Fatal error: not all DB_CDC_StageDeleted parameters are valid!\n" );
     }
@@ -112,7 +116,9 @@ void DB_CDC_StageDeleted( DB_SYSTEM_ETL_STAGE *stage, DATABASE_SYSTEM_DB *dcpam_
 void DB_CDC_StageModified( DB_SYSTEM_ETL_STAGE *stage, DATABASE_SYSTEM_DB *dcpam_db, DB_RECORD* record, LOG_OBJECT *log ) {
     if( stage && dcpam_db ) {
         LOG_print( log, "\t· [CDC - STAGE::MODIFIED]:\n" );
-        DB_CDC_StageGeneric( stage, &stage->modified, dcpam_db, record, log );
+        for( int i = 0; i < stage->modified_count; i++ ) {
+            DB_CDC_StageGeneric( stage, stage->modified[ i ], dcpam_db, record, log );
+        }
     } else {
         LOG_print( log, "\t· [CDC - STAGE::MODIFIED] Fatal error: not all DB_CDC_StageModified parameters are valid!\n" );
     }

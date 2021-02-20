@@ -64,9 +64,12 @@ typedef struct DB_SYSTEM_ETL_STAGE_QUERY {
 } DB_SYSTEM_ETL_STAGE_QUERY;
 
 typedef struct DB_SYSTEM_ETL_STAGE {
-    DB_SYSTEM_ETL_STAGE_QUERY        inserted;
-    DB_SYSTEM_ETL_STAGE_QUERY        deleted;
-    DB_SYSTEM_ETL_STAGE_QUERY        modified;
+    DB_SYSTEM_ETL_STAGE_QUERY        **inserted;
+    int                              inserted_count;
+    DB_SYSTEM_ETL_STAGE_QUERY        **deleted;
+    int                              deleted_count;
+    DB_SYSTEM_ETL_STAGE_QUERY        **modified;
+    int                              modified_count;
 } DB_SYSTEM_ETL_STAGE;
 
 /******************************************************************************/
@@ -99,13 +102,18 @@ typedef struct DB_SYSTEM_ETL_TRANSFORM {
 /*
     config.json => system[].queries[].etl.load
 */
+typedef struct DB_SYSTEM_ETL_LOAD_QUERY_TARGET {
+    char                            *output_data_sql;
+    size_t                          output_data_sql_len;
+    char                            extracted_values[ MAX_ETL_COLUMNS ][ MAX_COLUMN_NAME_LEN ];
+    int                             extracted_values_len;
+} DB_SYSTEM_ETL_LOAD_QUERY_TARGET;
+
 typedef struct DB_SYSTEM_ETL_LOAD_QUERY {
-    char                    *input_data_sql;
-    size_t                  input_data_sql_len;
-    char                    *output_data_sql;
-    size_t                  output_data_sql_len;
-    char                    extracted_values[ MAX_ETL_COLUMNS ][ MAX_COLUMN_NAME_LEN ];
-    int                     extracted_values_len;
+    char                            *input_data_sql;
+    size_t                          input_data_sql_len;
+    DB_SYSTEM_ETL_LOAD_QUERY_TARGET **target;
+    int                             target_count;
 } DB_SYSTEM_ETL_LOAD_QUERY;
 
 typedef struct DB_SYSTEM_ETL_LOAD {

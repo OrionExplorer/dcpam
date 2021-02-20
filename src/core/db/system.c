@@ -180,15 +180,29 @@ void SYSTEM_ETL_CONFIG_free( DB_SYSTEM_ETL *dst ) {
     }
 
     if( dst->stage ) {
-        if( dst->stage->inserted.sql != NULL ) {
-            free( dst->stage->inserted.sql ); dst->stage->inserted.sql = NULL;
+        for( int i = 0; i < dst->stage->inserted_count; i++ ) {
+            if( dst->stage->inserted[ i ]->sql != NULL ) {
+                free( dst->stage->inserted[ i ]->sql ); dst->stage->inserted[ i ]->sql = NULL;
+            }
+            free( dst->stage->inserted[ i ] ); dst->stage->inserted[ i ] = NULL;
         }
-        if( dst->stage->deleted.sql != NULL ) {
-            free( dst->stage->deleted.sql ); dst->stage->deleted.sql = NULL;
+        free( dst->stage->inserted ); dst->stage->inserted = NULL;
+
+        for( int i = 0; i < dst->stage->deleted_count; i++ ) {
+            if( dst->stage->deleted[ i ]->sql != NULL ) {
+                free( dst->stage->deleted[ i ]->sql ); dst->stage->deleted[ i ]->sql = NULL;
+            }
+            free( dst->stage->deleted[ i ] ); dst->stage->deleted[ i ] = NULL;
         }
-        if( dst->stage->modified.sql != NULL ) {
-            free( dst->stage->modified.sql ); dst->stage->modified.sql = NULL;
+        free( dst->stage->deleted ); dst->stage->deleted = NULL;
+        
+        for( int i = 0; i < dst->stage->modified_count; i++ ) {
+            if( dst->stage->modified[ i ]->sql != NULL ) {
+                free( dst->stage->modified[ i ]->sql ); dst->stage->modified[ i ]->sql = NULL;
+            }
+            free( dst->stage->modified[ i ] ); dst->stage->modified[ i ] = NULL;
         }
+        free( dst->stage->modified ); dst->stage->modified = NULL;
 
         free( dst->stage ); dst->stage = NULL;
     }
@@ -196,21 +210,35 @@ void SYSTEM_ETL_CONFIG_free( DB_SYSTEM_ETL *dst ) {
     if( dst->load.inserted.input_data_sql != NULL ) {
         free( dst->load.inserted.input_data_sql ); dst->load.inserted.input_data_sql = NULL;
     }
-    if( dst->load.inserted.output_data_sql != NULL ) {
-        free( dst->load.inserted.output_data_sql ); dst->load.inserted.output_data_sql = NULL;
+    for( int i = 0; i < dst->load.inserted.target_count; i++ ) {
+        if( dst->load.inserted.target[ i ]->output_data_sql != NULL ) {
+            free( dst->load.inserted.target[ i ]->output_data_sql ); dst->load.inserted.target[ i ]->output_data_sql = NULL;
+        }
+        free( dst->load.inserted.target[ i ] ); dst->load.inserted.target[ i ] = NULL;
     }
+    free( dst->load.inserted.target ); dst->load.inserted.target = NULL;
+    
     if( dst->load.deleted.input_data_sql!= NULL ) {
         free( dst->load.deleted.input_data_sql ); dst->load.deleted.input_data_sql = NULL;
     }
-    if( dst->load.deleted.output_data_sql != NULL ) {
-        free( dst->load.deleted.output_data_sql ); dst->load.deleted.output_data_sql = NULL;
+    for( int i = 0; i < dst->load.deleted.target_count; i++ ) {
+        if( dst->load.deleted.target[ i ]->output_data_sql != NULL ) {
+            free( dst->load.deleted.target[ i ]->output_data_sql ); dst->load.deleted.target[ i ]->output_data_sql = NULL;
+        }
+        free( dst->load.deleted.target[ i ] ); dst->load.deleted.target[ i ] = NULL;
     }
+    free( dst->load.deleted.target ); dst->load.deleted.target = NULL;
+
     if( dst->load.modified.input_data_sql!= NULL ) {
         free( dst->load.modified.input_data_sql ); dst->load.modified.input_data_sql= NULL;
     }
-    if( dst->load.modified.output_data_sql != NULL ) {
-        free( dst->load.modified.output_data_sql ); dst->load.modified.output_data_sql = NULL;
-    }   
+    for( int i = 0; i < dst->load.modified.target_count; i++ ) {
+        if( dst->load.modified.target[ i ]->output_data_sql != NULL ) {
+            free( dst->load.modified.target[ i ]->output_data_sql ); dst->load.modified.target[ i ]->output_data_sql = NULL;
+        }
+        free( dst->load.modified.target[ i ] ); dst->load.modified.target[ i ] = NULL;
+    }
+    free( dst->load.modified.target ); dst->load.modified.target = NULL;
 }
 
 
@@ -395,23 +423,33 @@ void DATABASE_SYSTEM_QUERY_add(
     if( verbose > 0 ) LOG_print( log, "\t\t\t·secondary_db: \"%s\"\n", etl.extract.deleted.secondary_db );
     
     if( etl.stage ) {
-        if( verbose > 0 ) LOG_print( log, "\t· stage\n\t\t·inserted\n\t\t\t·sql: \"%.70s(...)\"\n", etl.stage->inserted.sql );
-        if( verbose > 0 ) LOG_print( log, "\t\t\t·extracted_values: " );
-        for( i = 0; i < etl.stage->inserted.extracted_values_len; i++ ) {
-            if( verbose > 0 ) LOG_print( log, "'%s', ", etl.stage->inserted.extracted_values[ i ] );
+        for( int i = 0; i < etl.stage->inserted_count; i++ ) {
+            if( verbose > 0 ) LOG_print( log, "\t· stage\n\t\t·inserted[%d]\n\t\t\t·sql: \"%.70s(...)\"\n", i, etl.stage->inserted[ i ]->sql );
+            if( verbose > 0 ) LOG_print( log, "\t\t\t·extracted_values: " );
+            for( int j = 0; j < etl.stage->inserted[ i ]->extracted_values_len; j++ ) {
+                if( verbose > 0 ) LOG_print( log, "'%s', ", etl.stage->inserted[ i ]->extracted_values[ j ] );
+            }
+            if( verbose > 0 ) LOG_print( log, "\n" );    
         }
-        if( verbose > 0 ) LOG_print( log, "\n" );
-        if( verbose > 0 ) LOG_print( log, "\t\t·deleted\n\t\t\t·sql: \"%.70s(...)\"\n", etl.stage->deleted.sql );
-        if( verbose > 0 ) LOG_print( log, "\t\t\t·extracted_values: " );
-        for( i = 0; i < etl.stage->deleted.extracted_values_len; i++ ) {
-            if( verbose > 0 ) LOG_print( log, "'%s', ", etl.stage->deleted.extracted_values[ i ] );
+        
+        for( int i = 0; i < etl.stage->deleted_count; i++ ) {
+            if( verbose > 0 ) LOG_print( log, "\t· stage\n\t\t·deleted[%d]\n\t\t\t·sql: \"%.70s(...)\"\n", i, etl.stage->deleted[ i ]->sql );
+            if( verbose > 0 ) LOG_print( log, "\t\t\t·extracted_values: " );
+            for( int j = 0; j < etl.stage->deleted[ i ]->extracted_values_len; j++ ) {
+                if( verbose > 0 ) LOG_print( log, "'%s', ", etl.stage->deleted[ i ]->extracted_values[ j ] );
+            }
+            if( verbose > 0 ) LOG_print( log, "\n" );    
         }
-        if( verbose > 0 ) LOG_print( log, "\n" );
-        if( verbose > 0 ) LOG_print( log, "\t\t·modified\n\t\t\t·sql: \"%.70s(...)\"\n", etl.stage->modified.sql );
-        if( verbose > 0 ) LOG_print( log, "\t\t\t·extracted_values: " );
-        for( i = 0; i < etl.stage->modified.extracted_values_len; i++ ) {
-            if( verbose > 0 ) LOG_print( log, "'%s', ", etl.stage->modified.extracted_values[ i ] );
+
+        for( int i = 0; i < etl.stage->modified_count; i++ ) {
+            if( verbose > 0 ) LOG_print( log, "\t· stage\n\t\t·modified[%d]\n\t\t\t·sql: \"%.70s(...)\"\n", i, etl.stage->modified[ i ]->sql );
+            if( verbose > 0 ) LOG_print( log, "\t\t\t·extracted_values: " );
+            for( int j = 0; j < etl.stage->modified[ i ]->extracted_values_len; j++ ) {
+                if( verbose > 0 ) LOG_print( log, "'%s', ", etl.stage->modified[ i ]->extracted_values[ j ] );
+            }
+            if( verbose > 0 ) LOG_print( log, "\n" );    
         }
+
 
         if( verbose > 0 ) LOG_print( log, "\n" );
     }
@@ -439,28 +477,38 @@ void DATABASE_SYSTEM_QUERY_add(
     
 
     if( verbose > 0 ) LOG_print( log, "\t· load\n\t\t·inserted\n\t\t\t·input_data_sql: \"%.70s(...)\"\n", etl.load.inserted.input_data_sql );
-    if( verbose > 0 ) LOG_print( log, "\t\t\t·extracted_values: " );
-    for( i = 0; i < etl.load.inserted.extracted_values_len; i++ ) {
-        if( verbose > 0 ) LOG_print( log, "'%s', ", etl.load.inserted.extracted_values[i]);
+
+    for( int i = 0; i < etl.load.inserted.target_count; i++ ) {
+        if( verbose > 0 ) LOG_print( log, "\t\t\t·target[%d]: ", i );
+        if( verbose > 0 ) LOG_print( log, "\t\t\t\t·extracted_values: " );
+        for( int j = 0; j < etl.load.inserted.target[ i ]->extracted_values_len; j++ ) {
+            if( verbose > 0 ) LOG_print( log, "'%s', ", etl.load.inserted.target[ i ]->extracted_values[ j ] );
+        }
+        if( verbose > 0 ) LOG_print( log, "\n" );
+        if( verbose > 0 ) LOG_print( log, "\t\t\t\t·output_data_sql: \"%.70s(...)\"\n", etl.load.inserted.target[ i ]->output_data_sql );
     }
-    if( verbose > 0 ) LOG_print( log, "\n" );
-    if( verbose > 0 ) LOG_print( log, "\t\t\t·output_data_sql: \"%.70s(...)\"\n", etl.load.inserted.output_data_sql );
 
     if( verbose > 0 ) LOG_print( log, "\t\t·deleted\n\t\t\t·input_data_sql: \"%.70s(...)\"\n", etl.load.deleted.input_data_sql );
-    if( verbose > 0 ) LOG_print( log, "\t\t\t·extracted_values: " );
-    for( i = 0; i < etl.load.deleted.extracted_values_len; i++ ) {
-        if( verbose > 0 ) LOG_print( log, "'%s', ", etl.load.deleted.extracted_values[i]);
+    for( int i = 0; i < etl.load.deleted.target_count; i++ ) {
+        if( verbose > 0 ) LOG_print( log, "\t\t\t·target[%d]: ", i );
+        if( verbose > 0 ) LOG_print( log, "\t\t\t\t·extracted_values: " );
+        for( int j = 0; j < etl.load.deleted.target[ i ]->extracted_values_len; j++ ) {
+            if( verbose > 0 ) LOG_print( log, "'%s', ", etl.load.deleted.target[ i ]->extracted_values[i]);
+        }
+        if( verbose > 0 ) LOG_print( log, "\n" );
+        if( verbose > 0 ) LOG_print( log, "\t\t\t\t·output_data_sql: \"%.70s(...)\"\n", etl.load.inserted.target[ i ]->output_data_sql );
     }
-    if( verbose > 0 ) LOG_print( log, "\n" );
-    if( verbose > 0 ) LOG_print( log, "\t\t\t·output_data_sql: \"%.70s(...)\"\n", etl.load.deleted.output_data_sql );
 
     if( verbose > 0 ) LOG_print( log, "\t\t·modified\n\t\t\t·input_data_sql: \"%.70s(...)\"\n", etl.load.modified.input_data_sql );
-    if( verbose > 0 ) LOG_print( log, "\t\t\t·extracted_values: " );
-    for( i = 0; i < etl.load.modified.extracted_values_len; i++ ) {
-        if( verbose > 0 ) LOG_print( log, "'%s', ", etl.load.modified.extracted_values[i]);
+    for( int i = 0; i < etl.load.modified.target_count; i++ ) {
+        if( verbose > 0 ) LOG_print( log, "\t\t\t·target[%d]: ", i );
+        if( verbose > 0 ) LOG_print( log, "\t\t\t\t·extracted_values: " );
+        for( int j = 0; j < etl.load.modified.target[ i ]->extracted_values_len; j++ ) {
+            if( verbose > 0 ) LOG_print( log, "'%s', ", etl.load.modified.target[ i ]->extracted_values[i]);
+        }
+        if( verbose > 0 ) LOG_print( log, "\n" );
+        if( verbose > 0 ) LOG_print( log, "\t\t\t\t·output_data_sql: \"%.70s(...)\"\n", etl.load.modified.target[ i ]->output_data_sql );
     }
-    if( verbose > 0 ) LOG_print( log, "\n");
-    if( verbose > 0 ) LOG_print( log, "\t\t\t·output_data_sql: \"%.70s(...)\"\n", etl.load.modified.output_data_sql );
 
     if( etl.post_actions_count > 0 ) {
         if( verbose > 0 ) LOG_print( log, "\t· PostETL Actions:\n" );

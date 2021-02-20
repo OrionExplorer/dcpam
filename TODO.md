@@ -216,6 +216,7 @@
 		* [x] Dockerfile with mapping to `wds_config.json`
 	* [x] DCPAM LCS
 		* [x] Dockerfile with mapping to `lcs_config.json`
+* [x] DCPAM ETL: "extracted", "deleted" and "modified" actions for staging and loading data must support any number of commands.
 * [ ] DCPAM ETL must not know about P_DCPAM_APP and DPCAM WDS about DCPAM_APP.
 * [ ] ETL process interval can vary between system[].queries[].
 * [ ] Move DCPAM ETL configuration to database:

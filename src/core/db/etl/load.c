@@ -28,10 +28,10 @@ int CDC_LoadGeneric( DB_SYSTEM_ETL_LOAD *load, DB_SYSTEM_ETL_LOAD_QUERY *load_el
 
 
 void _LoadGeneric_callback( DB_RECORD *record, void *data_ptr1, void *data_ptr2, LOG_OBJECT *log ) {
-    DB_SYSTEM_ETL_LOAD_QUERY* load_element = ( DB_SYSTEM_ETL_LOAD_QUERY* )data_ptr1;
+    DB_SYSTEM_ETL_LOAD_QUERY_TARGET* load_element_target = ( DB_SYSTEM_ETL_LOAD_QUERY_TARGET* )data_ptr1;
     DATABASE_SYSTEM_DB* dcpam_db = ( DATABASE_SYSTEM_DB* )data_ptr2;
 
-    if( load_element && dcpam_db && record ) {
+    if( load_element_target && dcpam_db && record ) {
 
         /* Each extracted record is loaded separatedly */
         char** q_values = NULL;
@@ -39,17 +39,17 @@ void _LoadGeneric_callback( DB_RECORD *record, void *data_ptr1, void *data_ptr2,
         int* q_formats;
 
         /* Prepare query data. */
-        q_values = SAFEMALLOC( ( load_element->extracted_values_len ) * sizeof * q_values, __FILE__, __LINE__ );
+        q_values = SAFEMALLOC( ( load_element_target->extracted_values_len ) * sizeof * q_values, __FILE__, __LINE__ );
         int q_values_len = 0;
 
-        q_lengths = SAFEMALLOC( ( load_element->extracted_values_len ) * sizeof( int ), __FILE__, __LINE__ );
-        q_formats = SAFEMALLOC( ( load_element->extracted_values_len ) * sizeof( int ), __FILE__, __LINE__ );
+        q_lengths = SAFEMALLOC( ( load_element_target->extracted_values_len ) * sizeof( int ), __FILE__, __LINE__ );
+        q_formats = SAFEMALLOC( ( load_element_target->extracted_values_len ) * sizeof( int ), __FILE__, __LINE__ );
 
         /* Get defined values only based on "extracted_values" in config.json */
-        for( int k = 0; k < load_element->extracted_values_len; k++ ) {
+        for( int k = 0; k < load_element_target->extracted_values_len; k++ ) {
             for( int j = 0; j < record->field_count; j++ ) {
 
-                if( strncmp( load_element->extracted_values[ k ], record->fields[ j ].label, MAX_COLUMN_NAME_LEN ) == 0 ) {
+                if( strncmp( load_element_target->extracted_values[ k ], record->fields[ j ].label, MAX_COLUMN_NAME_LEN ) == 0 ) {
                     if( record->fields[ j ].size > 0 ) {
                         q_values[ q_values_len ] = SAFECALLOC( ( record->fields[ j ].size + 1 ), sizeof * *q_values, __FILE__, __LINE__ );
                         memcpy( q_values[ q_values_len ], record->fields[ j ].value, record->fields[ j ].size + 1 );
@@ -71,7 +71,7 @@ void _LoadGeneric_callback( DB_RECORD *record, void *data_ptr1, void *data_ptr2,
 
         if( q_values_len > 0 ) {
             /* Perform DB query */
-            int query_ret = DB_exec( dcpam_db, load_element->output_data_sql, load_element->output_data_sql_len, NULL, ( const char* const* )q_values, q_values_len, q_lengths, q_formats, NULL, NULL, NULL, NULL, log );
+            int query_ret = DB_exec( dcpam_db, load_element_target->output_data_sql, load_element_target->output_data_sql_len, NULL, ( const char* const* )q_values, q_values_len, q_lengths, q_formats, NULL, NULL, NULL, NULL, log );
 
             if( query_ret == FALSE ) {
                 LOG_print( log, "[%s] DB_exec error.\n", TIME_get_gmt() );
@@ -89,28 +89,43 @@ void _LoadGeneric_callback( DB_RECORD *record, void *data_ptr1, void *data_ptr2,
         free( q_values ); q_values = NULL;
         free( q_lengths ); q_lengths = NULL;
         free( q_formats ); q_formats = NULL;
-
-        DB_QUERY_record_free( record );
-
     }
 }
 
 void _LoadInserted_callback( DB_RECORD* record, void* data_ptr1, void* data_ptr2, LOG_OBJECT *log ) {
     DB_SYSTEM_ETL_LOAD* load = ( DB_SYSTEM_ETL_LOAD* )data_ptr1;
 
-    _LoadGeneric_callback( record, load, &load->inserted, log );
+    for( int i = 0; i < load->inserted.target_count; i++ ) {
+        _LoadGeneric_callback( record, load->inserted.target[ i ], data_ptr2, log );
+    }
+    DB_QUERY_record_free( record );
 }
 
 void _LoadDeleted_callback( DB_RECORD* record, void* data_ptr1, void* data_ptr2, LOG_OBJECT *log ) {
     DB_SYSTEM_ETL_LOAD* load = ( DB_SYSTEM_ETL_LOAD* )data_ptr1;
 
-    _LoadGeneric_callback( record, load, &load->deleted, log );
+    for( int i = 0; i < load->deleted.target_count; i++ ) {
+        _LoadGeneric_callback( record, load->deleted.target[ i ], data_ptr2, log );
+    }
+    DB_QUERY_record_free( record );
 }
 
 void _LoadModified_callback( DB_RECORD* record, void* data_ptr1, void* data_ptr2, LOG_OBJECT *log ) {
     DB_SYSTEM_ETL_LOAD* load = ( DB_SYSTEM_ETL_LOAD* )data_ptr1;
 
-    _LoadGeneric_callback( record, load, &load->modified, log );
+    for( int i = 0; i < load->modified.target_count; i++ ) {
+        _LoadGeneric_callback( record, load->modified.target[ i ], data_ptr2, log );
+    }
+    DB_QUERY_record_free( record );
+}
+
+void _CDC_LoadGeneric_callback( DB_RECORD* record, void* data_ptr1, void* data_ptr2, LOG_OBJECT *log ) {
+    DB_SYSTEM_ETL_LOAD_QUERY* load_element = ( DB_SYSTEM_ETL_LOAD_QUERY* )data_ptr1;
+
+    for( int i = 0; i < load_element->target_count; i++ ) {
+        _LoadGeneric_callback( record, load_element->target[ i ], data_ptr2, log );
+    }
+    DB_QUERY_record_free( record );
 }
 
 
@@ -119,7 +134,7 @@ int CDC_LoadGeneric( DB_SYSTEM_ETL_LOAD *load, DB_SYSTEM_ETL_LOAD_QUERY *load_el
     if( load && source_db && dcpam_db ) {
 
         /* Load data from Staging Area, after finished Transform process. */
-        qec load_generic_callback = ( qec )&_LoadGeneric_callback;
+        qec load_generic_callback = ( qec )&_CDC_LoadGeneric_callback;
 
         int query_ret = DB_exec( source_db, load_element->input_data_sql, load_element->input_data_sql_len, NULL, NULL, 0, NULL, NULL, NULL, &load_generic_callback, ( void* )load_element, ( void* )dcpam_db, log );
 

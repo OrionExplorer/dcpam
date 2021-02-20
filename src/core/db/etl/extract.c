@@ -29,29 +29,37 @@ void _ExtractGeneric_callback( DB_RECORD* record, DB_SYSTEM_ETL_STAGE* stage, DB
     if( stage ) {
         DB_CDC_StageGeneric( stage, stage_element, db, record, log );
     }
-
-    DB_QUERY_record_free( record );
 }
 
 void _ExtractInserted_callback( DB_RECORD* record, void* data_ptr1, void* data_ptr2, LOG_OBJECT *log ) {
     DB_SYSTEM_ETL_STAGE* stage = ( DB_SYSTEM_ETL_STAGE* )data_ptr1;
     DATABASE_SYSTEM_DB* db = ( DATABASE_SYSTEM_DB* )data_ptr2;
 
-    _ExtractGeneric_callback( record, stage, &stage->inserted, db, log );
+    for( int i = 0; i < stage->inserted_count; i++ ) {
+        _ExtractGeneric_callback( record, stage, stage->inserted[ i ], db, log );
+    }
+
+    DB_QUERY_record_free( record );
 }
 
 void _ExtractDeleted_callback( DB_RECORD* record, void* data_ptr1, void* data_ptr2, LOG_OBJECT *log ) {
     DB_SYSTEM_ETL_STAGE* stage = ( DB_SYSTEM_ETL_STAGE* )data_ptr1;
     DATABASE_SYSTEM_DB* db = ( DATABASE_SYSTEM_DB* )data_ptr2;
 
-    _ExtractGeneric_callback( record, stage, &stage->deleted, db, log );
+    for( int i = 0; i < stage->deleted_count; i++ ) {
+        _ExtractGeneric_callback( record, stage, stage->deleted[ i ], db, log );
+    }
+    DB_QUERY_record_free( record );
 }
 
 void _ExtractModified_callback( DB_RECORD* record, void* data_ptr1, void* data_ptr2, LOG_OBJECT *log ) {
     DB_SYSTEM_ETL_STAGE* stage = ( DB_SYSTEM_ETL_STAGE* )data_ptr1;
     DATABASE_SYSTEM_DB* db = ( DATABASE_SYSTEM_DB* )data_ptr2;
 
-    _ExtractGeneric_callback( record, stage, &stage->modified, db, log );
+    for( int i = 0; i < stage->modified_count; i++ ) {
+        _ExtractGeneric_callback( record, stage, stage->modified[ i ], db, log );
+    }
+    DB_QUERY_record_free( record );
 }
 
 int CDC_ExtractQueryTypeValid( const char *sql ) {

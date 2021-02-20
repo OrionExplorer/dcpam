@@ -184,14 +184,17 @@ int DCPAM_load_configuration( const char* filename ) {
 
     cJSON* cfg_system_query_item_etl_stage = NULL;
     cJSON* cfg_system_query_item_etl_stage_inserted = NULL;
+    cJSON* cfg_system_query_item_etl_stage_inserted_item = NULL;
     cJSON* cfg_system_query_item_etl_stage_inserted_sql = NULL;
     cJSON* cfg_system_query_item_etl_stage_inserted_extracted_values_array = NULL;
     cJSON* cfg_system_query_item_etl_stage_inserted_extracted_values_item = NULL;
     cJSON* cfg_system_query_item_etl_stage_deleted = NULL;
+    cJSON* cfg_system_query_item_etl_stage_deleted_item = NULL;
     cJSON* cfg_system_query_item_etl_stage_deleted_sql = NULL;
     cJSON* cfg_system_query_item_etl_stage_deleted_extracted_values_array = NULL;
     cJSON* cfg_system_query_item_etl_stage_deleted_extracted_values_item = NULL;
     cJSON* cfg_system_query_item_etl_stage_modified = NULL;
+    cJSON* cfg_system_query_item_etl_stage_modified_item = NULL;
     cJSON* cfg_system_query_item_etl_stage_modified_sql = NULL;
     cJSON* cfg_system_query_item_etl_stage_modified_extracted_values_array = NULL;
     cJSON* cfg_system_query_item_etl_stage_modified_extracted_values_item = NULL;
@@ -220,16 +223,22 @@ int DCPAM_load_configuration( const char* filename ) {
     cJSON* cfg_system_query_item_etl_load = NULL;
     cJSON* cfg_system_query_item_etl_load_inserted = NULL;
     cJSON* cfg_system_query_item_etl_load_inserted_input_data_sql = NULL;
+    cJSON* cfg_system_query_item_etl_load_inserted_target_array = NULL;
+    cJSON* cfg_system_query_item_etl_load_inserted_target_item = NULL;
     cJSON* cfg_system_query_item_etl_load_inserted_output_data_sql = NULL;
     cJSON* cfg_system_query_item_etl_load_inserted_extracted_values_array = NULL;
     cJSON* cfg_system_query_item_etl_load_inserted_extracted_values_item = NULL;
     cJSON* cfg_system_query_item_etl_load_deleted = NULL;
     cJSON* cfg_system_query_item_etl_load_deleted_input_data_sql = NULL;
+    cJSON* cfg_system_query_item_etl_load_deleted_target_array = NULL;
+    cJSON* cfg_system_query_item_etl_load_deleted_target_item = NULL;
     cJSON* cfg_system_query_item_etl_load_deleted_output_data_sql = NULL;
     cJSON* cfg_system_query_item_etl_load_deleted_extracted_values_array = NULL;
     cJSON* cfg_system_query_item_etl_load_deleted_extracted_values_item = NULL;
     cJSON* cfg_system_query_item_etl_load_modified = NULL;
     cJSON* cfg_system_query_item_etl_load_modified_input_data_sql = NULL;
+    cJSON* cfg_system_query_item_etl_load_modified_target_array = NULL;
+    cJSON* cfg_system_query_item_etl_load_modified_target_item = NULL;
     cJSON* cfg_system_query_item_etl_load_modified_output_data_sql = NULL;
     cJSON* cfg_system_query_item_etl_load_modified_extracted_values_array = NULL;
     cJSON* cfg_system_query_item_etl_load_modified_extracted_values_item = NULL;
@@ -948,41 +957,49 @@ int DCPAM_load_configuration( const char* filename ) {
                             /*
                                 etl.stage.inserted.sql
                             */
-                            cfg_system_query_item_etl_stage_inserted_sql = cJSON_GetObjectItem( cfg_system_query_item_etl_stage_inserted, "sql" );
-                            if( cfg_system_query_item_etl_stage_inserted_sql == NULL ) {
-                                LOG_print( &dcpam_etl_log, "ERROR: \"system[%d].queries[%d].etl.stage.inserted.sql\" key not found.\n", i, j );
-                                cJSON_Delete( config_json );
-                                free( config_string ); config_string = NULL;
-                                return FALSE;
-                            }
-                            size_t str_len14 = strlen( cfg_system_query_item_etl_stage_inserted_sql->valuestring );
-                            tmp_cdc->stage->inserted.sql_len = str_len14;
-                            tmp_cdc->stage->inserted.sql = SAFECALLOC( str_len14 + 1, sizeof( char ), __FILE__, __LINE__ );
-                            strlcpy(
-                                tmp_cdc->stage->inserted.sql,
-                                cfg_system_query_item_etl_stage_inserted_sql->valuestring,
-                                str_len14
-                            );
-                            /*
-                                etl.stage.inserted.extracted_values
-                            */
+                            tmp_cdc->stage->inserted_count = cJSON_GetArraySize( cfg_system_query_item_etl_stage_inserted );
+                            tmp_cdc->stage->inserted = SAFEMALLOC( tmp_cdc->stage->inserted_count * sizeof * tmp_cdc->stage->inserted, __FILE__, __LINE__ );
+                            for( int ic = 0; ic < tmp_cdc->stage->inserted_count; ic++ ) {
+                                cfg_system_query_item_etl_stage_inserted_item = cJSON_GetArrayItem( cfg_system_query_item_etl_stage_inserted, ic );
+                                tmp_cdc->stage->inserted[ ic ] = SAFEMALLOC( sizeof( DB_SYSTEM_ETL_STAGE_QUERY), __FILE__, __LINE__ );
 
-                            for( int k = 0; k < MAX_ETL_COLUMNS; k++ ) {
-                                memset( tmp_cdc->stage->inserted.extracted_values[ k ], 0, MAX_COLUMN_NAME_LEN );
+                                cfg_system_query_item_etl_stage_inserted_sql = cJSON_GetObjectItem( cfg_system_query_item_etl_stage_inserted_item, "sql" );
+                                if( cfg_system_query_item_etl_stage_inserted_sql == NULL ) {
+                                    LOG_print( &dcpam_etl_log, "ERROR: \"system[%d].queries[%d].etl.stage.inserted[%d].sql\" key not found.\n", i, j, ic );
+                                    cJSON_Delete( config_json );
+                                    free( config_string ); config_string = NULL;
+                                    return FALSE;
+                                }
+                                size_t str_len14 = strlen( cfg_system_query_item_etl_stage_inserted_sql->valuestring );
+                                tmp_cdc->stage->inserted[ ic ]->sql_len = str_len14;
+                                tmp_cdc->stage->inserted[ ic ]->sql = SAFECALLOC( str_len14 + 1, sizeof( char ), __FILE__, __LINE__ );
+                                strlcpy(
+                                    tmp_cdc->stage->inserted[ ic ]->sql,
+                                    cfg_system_query_item_etl_stage_inserted_sql->valuestring,
+                                    str_len14
+                                );
+                                /*
+                                    etl.stage.inserted.extracted_values
+                                */
+
+                                for( int k = 0; k < MAX_ETL_COLUMNS; k++ ) {
+                                    memset( tmp_cdc->stage->inserted[ ic ]->extracted_values[ k ], 0, MAX_COLUMN_NAME_LEN );
+                                }
+                                tmp_cdc->stage->inserted[ ic ]->extracted_values_len = 0;
+                                cfg_system_query_item_etl_stage_inserted_extracted_values_array = cJSON_GetObjectItem( cfg_system_query_item_etl_stage_inserted_item, "extracted_values" );
+                                if( cfg_system_query_item_etl_stage_inserted_extracted_values_array == NULL ) {
+                                    LOG_print( &dcpam_etl_log, "ERROR: \"system[%d].queries[%d].etl.stage.inserted[ %d ].extracted_values\" key not found.\n", i, j, ic );
+                                    cJSON_Delete( config_json );
+                                    free( config_string ); config_string = NULL;
+                                    return FALSE;
+                                }
+                                for( int k = 0; k < cJSON_GetArraySize( cfg_system_query_item_etl_stage_inserted_extracted_values_array ); k++ ) {
+                                    cfg_system_query_item_etl_stage_inserted_extracted_values_item = cJSON_GetArrayItem( cfg_system_query_item_etl_stage_inserted_extracted_values_array, k );
+                                    snprintf( tmp_cdc->stage->inserted[ ic ]->extracted_values[ k ], MAX_COLUMN_NAME_LEN, "%s", cfg_system_query_item_etl_stage_inserted_extracted_values_item->valuestring );
+                                    tmp_cdc->stage->inserted[ ic ]->extracted_values_len++;
+                                }
                             }
-                            tmp_cdc->stage->inserted.extracted_values_len = 0;
-                            cfg_system_query_item_etl_stage_inserted_extracted_values_array = cJSON_GetObjectItem( cfg_system_query_item_etl_stage_inserted, "extracted_values" );
-                            if( cfg_system_query_item_etl_stage_inserted_extracted_values_array == NULL ) {
-                                LOG_print( &dcpam_etl_log, "ERROR: \"system[%d].queries[%d].etl.stage.inserted.extracted_values\" key not found.\n", i, j );
-                                cJSON_Delete( config_json );
-                                free( config_string ); config_string = NULL;
-                                return FALSE;
-                            }
-                            for( int k = 0; k < cJSON_GetArraySize( cfg_system_query_item_etl_stage_inserted_extracted_values_array ); k++ ) {
-                                cfg_system_query_item_etl_stage_inserted_extracted_values_item = cJSON_GetArrayItem( cfg_system_query_item_etl_stage_inserted_extracted_values_array, k );
-                                snprintf( tmp_cdc->stage->inserted.extracted_values[ k ], MAX_COLUMN_NAME_LEN, "%s", cfg_system_query_item_etl_stage_inserted_extracted_values_item->valuestring );
-                                tmp_cdc->stage->inserted.extracted_values_len++;
-                            }
+
                             /*
                                 etl.stage.deleted
                             */
@@ -996,40 +1013,48 @@ int DCPAM_load_configuration( const char* filename ) {
                             /*
                                 etl.stage.deleted.sql
                             */
-                            cfg_system_query_item_etl_stage_deleted_sql = cJSON_GetObjectItem( cfg_system_query_item_etl_stage_deleted, "sql" );
-                            if( cfg_system_query_item_etl_stage_deleted_sql == NULL ) {
-                                LOG_print( &dcpam_etl_log, "ERROR: \"system[%d].queries[%d].etl.stage.deleted.sql\" key not found.\n", i, j );
-                                cJSON_Delete( config_json );
-                                free( config_string ); config_string = NULL;
-                                return FALSE;
+                            tmp_cdc->stage->deleted_count = cJSON_GetArraySize( cfg_system_query_item_etl_stage_deleted );
+                            tmp_cdc->stage->deleted = SAFEMALLOC( tmp_cdc->stage->deleted_count * sizeof * tmp_cdc->stage->deleted, __FILE__, __LINE__ );
+                            for( int dc = 0; dc < tmp_cdc->stage->deleted_count; dc++ ) {
+                                cfg_system_query_item_etl_stage_deleted_item = cJSON_GetArrayItem( cfg_system_query_item_etl_stage_deleted, dc );
+                                tmp_cdc->stage->deleted[ dc ] = SAFEMALLOC( sizeof( DB_SYSTEM_ETL_STAGE_QUERY), __FILE__, __LINE__ );
+
+                                cfg_system_query_item_etl_stage_deleted_sql = cJSON_GetObjectItem( cfg_system_query_item_etl_stage_deleted_item, "sql" );
+                                if( cfg_system_query_item_etl_stage_deleted_sql == NULL ) {
+                                    LOG_print( &dcpam_etl_log, "ERROR: \"system[%d].queries[%d].etl.stage.deleted.sql\" key not found.\n", i, j );
+                                    cJSON_Delete( config_json );
+                                    free( config_string ); config_string = NULL;
+                                    return FALSE;
+                                }
+                                size_t str_len = strlen( cfg_system_query_item_etl_stage_deleted_sql->valuestring );
+                                tmp_cdc->stage->deleted[ dc ]->sql_len = str_len;
+                                tmp_cdc->stage->deleted[ dc ]->sql = SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
+                                strlcpy(
+                                    tmp_cdc->stage->deleted[ dc ]->sql,
+                                    cfg_system_query_item_etl_stage_deleted_sql->valuestring,
+                                    str_len
+                                );
+                                /*
+                                    etl.stage.deleted.extracted_values
+                                */
+                                cfg_system_query_item_etl_stage_deleted_extracted_values_array = cJSON_GetObjectItem( cfg_system_query_item_etl_stage_deleted_item, "extracted_values" );
+                                if( cfg_system_query_item_etl_stage_deleted_extracted_values_array == NULL ) {
+                                    LOG_print( &dcpam_etl_log, "ERROR: \"system[%d].queries[%d].etl.stage.deleted.extracted_values\" key not found.\n", i, j );
+                                    cJSON_Delete( config_json );
+                                    free( config_string ); config_string = NULL;
+                                    return FALSE;
+                                }
+                                for( int k = 0; k < MAX_ETL_COLUMNS; k++ ) {
+                                    memset( tmp_cdc->stage->deleted[ dc ]->extracted_values[ k ], 0, MAX_COLUMN_NAME_LEN );
+                                }
+                                tmp_cdc->stage->deleted[ dc ]->extracted_values_len = 0;
+                                for( int k = 0; k < cJSON_GetArraySize( cfg_system_query_item_etl_stage_deleted_extracted_values_array ); k++ ) {
+                                    cfg_system_query_item_etl_stage_deleted_extracted_values_item = cJSON_GetArrayItem( cfg_system_query_item_etl_stage_deleted_extracted_values_array, k );
+                                    snprintf( tmp_cdc->stage->deleted[ dc ]->extracted_values[ k ], MAX_COLUMN_NAME_LEN, "%s", cfg_system_query_item_etl_stage_deleted_extracted_values_item->valuestring );
+                                    tmp_cdc->stage->deleted[ dc ]->extracted_values_len++;
+                                }
                             }
-                            size_t str_len = strlen( cfg_system_query_item_etl_stage_deleted_sql->valuestring );
-                            tmp_cdc->stage->deleted.sql_len = str_len;
-                            tmp_cdc->stage->deleted.sql = SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
-                            strlcpy(
-                                tmp_cdc->stage->deleted.sql,
-                                cfg_system_query_item_etl_stage_deleted_sql->valuestring,
-                                str_len
-                            );
-                            /*
-                                etl.stage.deleted.extracted_values
-                            */
-                            cfg_system_query_item_etl_stage_deleted_extracted_values_array = cJSON_GetObjectItem( cfg_system_query_item_etl_stage_deleted, "extracted_values" );
-                            if( cfg_system_query_item_etl_stage_deleted_extracted_values_array == NULL ) {
-                                LOG_print( &dcpam_etl_log, "ERROR: \"system[%d].queries[%d].etl.stage.deleted.extracted_values\" key not found.\n", i, j );
-                                cJSON_Delete( config_json );
-                                free( config_string ); config_string = NULL;
-                                return FALSE;
-                            }
-                            for( int k = 0; k < MAX_ETL_COLUMNS; k++ ) {
-                                memset( tmp_cdc->stage->deleted.extracted_values[ k ], 0, MAX_COLUMN_NAME_LEN );
-                            }
-                            tmp_cdc->stage->deleted.extracted_values_len = 0;
-                            for( int k = 0; k < cJSON_GetArraySize( cfg_system_query_item_etl_stage_deleted_extracted_values_array ); k++ ) {
-                                cfg_system_query_item_etl_stage_deleted_extracted_values_item = cJSON_GetArrayItem( cfg_system_query_item_etl_stage_deleted_extracted_values_array, k );
-                                snprintf( tmp_cdc->stage->deleted.extracted_values[ k ], MAX_COLUMN_NAME_LEN, "%s", cfg_system_query_item_etl_stage_deleted_extracted_values_item->valuestring );
-                                tmp_cdc->stage->deleted.extracted_values_len++;
-                            }
+
                             /*
                                 etl.stage.modified
                             */
@@ -1043,39 +1068,46 @@ int DCPAM_load_configuration( const char* filename ) {
                             /*
                                 etl.stage.modified.sql
                             */
-                            cfg_system_query_item_etl_stage_modified_sql = cJSON_GetObjectItem( cfg_system_query_item_etl_stage_modified, "sql" );
-                            if( cfg_system_query_item_etl_stage_modified_sql == NULL ) {
-                                LOG_print( &dcpam_etl_log, "ERROR: \"system[%d].queries[%d].etl.stage.modified.sql\" key not found.\n", i, j );
-                                cJSON_Delete( config_json );
-                                free( config_string ); config_string = NULL;
-                                return FALSE;
-                            }
-                            size_t str_len2 = strlen( cfg_system_query_item_etl_stage_modified_sql->valuestring );
-                            tmp_cdc->stage->modified.sql_len = str_len2;
-                            tmp_cdc->stage->modified.sql = SAFECALLOC( str_len2 + 1, sizeof( char ), __FILE__, __LINE__ );
-                            strlcpy(
-                                tmp_cdc->stage->modified.sql,
-                                cfg_system_query_item_etl_stage_modified_sql->valuestring,
-                                str_len2
-                            );
-                            /*
-                                etl.stage.modified.extracted_values
-                            */
-                            cfg_system_query_item_etl_stage_modified_extracted_values_array = cJSON_GetObjectItem( cfg_system_query_item_etl_stage_modified, "extracted_values" );
-                            if( cfg_system_query_item_etl_stage_modified_extracted_values_array == NULL ) {
-                                LOG_print( &dcpam_etl_log, "ERROR: \"system[%d].queries[%d].etl.stage.modified.extracted_values\" key not found.\n", i, j );
-                                cJSON_Delete( config_json );
-                                free( config_string ); config_string = NULL;
-                                return FALSE;
-                            }
-                            for( int k = 0; k < MAX_ETL_COLUMNS; k++ ) {
-                                memset( tmp_cdc->stage->modified.extracted_values[ k ], 0, MAX_COLUMN_NAME_LEN );
-                            }
-                            tmp_cdc->stage->modified.extracted_values_len = 0;
-                            for( int k = 0; k < cJSON_GetArraySize( cfg_system_query_item_etl_stage_modified_extracted_values_array ); k++ ) {
-                                cfg_system_query_item_etl_stage_modified_extracted_values_item = cJSON_GetArrayItem( cfg_system_query_item_etl_stage_modified_extracted_values_array, k );
-                                snprintf( tmp_cdc->stage->modified.extracted_values[ k ], MAX_COLUMN_NAME_LEN, "%s", cfg_system_query_item_etl_stage_modified_extracted_values_item->valuestring );
-                                tmp_cdc->stage->modified.extracted_values_len++;
+                            tmp_cdc->stage->modified_count = cJSON_GetArraySize( cfg_system_query_item_etl_stage_modified );
+                            tmp_cdc->stage->modified = SAFEMALLOC( tmp_cdc->stage->modified_count * sizeof * tmp_cdc->stage->modified, __FILE__, __LINE__ );
+                            for( int mc = 0; mc < tmp_cdc->stage->modified_count; mc++ ) {
+                                cfg_system_query_item_etl_stage_modified_item = cJSON_GetArrayItem( cfg_system_query_item_etl_stage_modified, mc );
+                                tmp_cdc->stage->modified[ mc ] = SAFEMALLOC( sizeof( DB_SYSTEM_ETL_STAGE_QUERY), __FILE__, __LINE__ );
+
+                                cfg_system_query_item_etl_stage_modified_sql = cJSON_GetObjectItem( cfg_system_query_item_etl_stage_modified_item, "sql" );
+                                if( cfg_system_query_item_etl_stage_modified_sql == NULL ) {
+                                    LOG_print( &dcpam_etl_log, "ERROR: \"system[%d].queries[%d].etl.stage.modified.sql\" key not found.\n", i, j );
+                                    cJSON_Delete( config_json );
+                                    free( config_string ); config_string = NULL;
+                                    return FALSE;
+                                }
+                                size_t str_len2 = strlen( cfg_system_query_item_etl_stage_modified_sql->valuestring );
+                                tmp_cdc->stage->modified[ mc ]->sql_len = str_len2;
+                                tmp_cdc->stage->modified[ mc ]->sql = SAFECALLOC( str_len2 + 1, sizeof( char ), __FILE__, __LINE__ );
+                                strlcpy(
+                                    tmp_cdc->stage->modified[ mc ]->sql,
+                                    cfg_system_query_item_etl_stage_modified_sql->valuestring,
+                                    str_len2
+                                );
+                                /*
+                                    etl.stage.modified.extracted_values
+                                */
+                                cfg_system_query_item_etl_stage_modified_extracted_values_array = cJSON_GetObjectItem( cfg_system_query_item_etl_stage_modified_item, "extracted_values" );
+                                if( cfg_system_query_item_etl_stage_modified_extracted_values_array == NULL ) {
+                                    LOG_print( &dcpam_etl_log, "ERROR: \"system[%d].queries[%d].etl.stage.modified.extracted_values\" key not found.\n", i, j );
+                                    cJSON_Delete( config_json );
+                                    free( config_string ); config_string = NULL;
+                                    return FALSE;
+                                }
+                                for( int k = 0; k < MAX_ETL_COLUMNS; k++ ) {
+                                    memset( tmp_cdc->stage->modified[ mc ]->extracted_values[ k ], 0, MAX_COLUMN_NAME_LEN );
+                                }
+                                tmp_cdc->stage->modified[ mc ]->extracted_values_len = 0;
+                                for( int k = 0; k < cJSON_GetArraySize( cfg_system_query_item_etl_stage_modified_extracted_values_array ); k++ ) {
+                                    cfg_system_query_item_etl_stage_modified_extracted_values_item = cJSON_GetArrayItem( cfg_system_query_item_etl_stage_modified_extracted_values_array, k );
+                                    snprintf( tmp_cdc->stage->modified[ mc ]->extracted_values[ k ], MAX_COLUMN_NAME_LEN, "%s", cfg_system_query_item_etl_stage_modified_extracted_values_item->valuestring );
+                                    tmp_cdc->stage->modified[ mc ]->extracted_values_len++;
+                                }
                             }
                         }
                         
@@ -1297,44 +1329,62 @@ int DCPAM_load_configuration( const char* filename ) {
                         );
 
                         /*
-                            etl.load.inserted.output_data_sql
+                            etl.load.inserted.target
                         */
-                        cfg_system_query_item_etl_load_inserted_output_data_sql = cJSON_GetObjectItem( cfg_system_query_item_etl_load_inserted, "output_data_sql" );
-                        if( cfg_system_query_item_etl_load_inserted_output_data_sql == NULL ) {
-                            LOG_print( &dcpam_etl_log, "ERROR: \"system[%d].queries[%d].etl.load.inserted.output_data_sql\" key not found.\n", i, j );
+                        cfg_system_query_item_etl_load_inserted_target_array = cJSON_GetObjectItem( cfg_system_query_item_etl_load_inserted, "target" );
+                        if( cfg_system_query_item_etl_load_inserted_target_array == NULL ) {
+                            LOG_print( &dcpam_etl_log, "ERROR: \"system[%d].queries[%d].etl.load.inserted.target\" key not found.\n", i, j );
                             cJSON_Delete( config_json );
                             free( config_string ); config_string = NULL;
                             return FALSE;
                         }
-                        size_t str_len15 = strlen( cfg_system_query_item_etl_load_inserted_output_data_sql->valuestring );
-                        tmp_cdc->load.inserted.output_data_sql_len = str_len15;
-                        tmp_cdc->load.inserted.output_data_sql = SAFECALLOC( str_len15 + 1, sizeof( char ), __FILE__, __LINE__ );
-                        strlcpy(
-                            tmp_cdc->load.inserted.output_data_sql,
-                            cfg_system_query_item_etl_load_inserted_output_data_sql->valuestring,
-                            str_len15
-                        );
 
-                        /*
-                            etl.load.inserted.extracted_values
-                        */
+                        tmp_cdc->load.inserted.target_count = cJSON_GetArraySize( cfg_system_query_item_etl_load_inserted_target_array );
+                        tmp_cdc->load.inserted.target = SAFEMALLOC( tmp_cdc->load.inserted.target_count * sizeof * tmp_cdc->load.inserted.target, __FILE__, __LINE__ );
+                        for( int itc = 0; itc < tmp_cdc->load.inserted.target_count; itc++ ) {
+                            cfg_system_query_item_etl_load_inserted_target_item = cJSON_GetArrayItem( cfg_system_query_item_etl_load_inserted_target_array, itc );
+                            tmp_cdc->load.inserted.target[ itc ] = SAFEMALLOC( sizeof( DB_SYSTEM_ETL_LOAD_QUERY_TARGET ), __FILE__, __LINE__ );
+                            /*
+                                etl.load.inserted.output_data_sql
+                            */
+                            cfg_system_query_item_etl_load_inserted_output_data_sql = cJSON_GetObjectItem( cfg_system_query_item_etl_load_inserted_target_item, "output_data_sql" );
+                            if( cfg_system_query_item_etl_load_inserted_output_data_sql == NULL ) {
+                                LOG_print( &dcpam_etl_log, "ERROR: \"system[%d].queries[%d].etl.load.target[%d].inserted.output_data_sql\" key not found.\n", i, j, itc );
+                                cJSON_Delete( config_json );
+                                free( config_string ); config_string = NULL;
+                                return FALSE;
+                            }
+                            size_t str_len15 = strlen( cfg_system_query_item_etl_load_inserted_output_data_sql->valuestring );
+                            tmp_cdc->load.inserted.target[ itc ]->output_data_sql_len = str_len15;
+                            tmp_cdc->load.inserted.target[ itc ]->output_data_sql = SAFECALLOC( str_len15 + 1, sizeof( char ), __FILE__, __LINE__ );
+                            strlcpy(
+                                tmp_cdc->load.inserted.target[ itc ]->output_data_sql,
+                                cfg_system_query_item_etl_load_inserted_output_data_sql->valuestring,
+                                str_len15
+                            );
 
-                        for( int k = 0; k < MAX_ETL_COLUMNS; k++ ) {
-                            memset( tmp_cdc->load.inserted.extracted_values[ k ], 0, MAX_COLUMN_NAME_LEN );
+                            /*
+                                etl.load.inserted.extracted_values
+                            */
+
+                            for( int k = 0; k < MAX_ETL_COLUMNS; k++ ) {
+                                memset( tmp_cdc->load.inserted.target[ itc ]->extracted_values[ k ], 0, MAX_COLUMN_NAME_LEN );
+                            }
+                            tmp_cdc->load.inserted.target[ itc ]->extracted_values_len = 0;
+                            cfg_system_query_item_etl_load_inserted_extracted_values_array = cJSON_GetObjectItem( cfg_system_query_item_etl_load_inserted_target_item, "extracted_values" );
+                            if( cfg_system_query_item_etl_load_inserted_extracted_values_array == NULL ) {
+                                LOG_print( &dcpam_etl_log, "ERROR: \"system[%d].queries[%d].etl.load.inserted.target[%d].extracted_values\" key not found.\n", i, j, itc );
+                                cJSON_Delete( config_json );
+                                free( config_string ); config_string = NULL;
+                                return FALSE;
+                            }
+                            for( int k = 0; k < cJSON_GetArraySize( cfg_system_query_item_etl_load_inserted_extracted_values_array ); k++ ) {
+                                cfg_system_query_item_etl_load_inserted_extracted_values_item = cJSON_GetArrayItem( cfg_system_query_item_etl_load_inserted_extracted_values_array, k );
+                                snprintf( tmp_cdc->load.inserted.target[ itc ]->extracted_values[ k ], MAX_COLUMN_NAME_LEN, "%s", cfg_system_query_item_etl_load_inserted_extracted_values_item->valuestring );
+                                tmp_cdc->load.inserted.target[ itc ]->extracted_values_len++;
+                            }
                         }
-                        tmp_cdc->load.inserted.extracted_values_len = 0;
-                        cfg_system_query_item_etl_load_inserted_extracted_values_array = cJSON_GetObjectItem( cfg_system_query_item_etl_load_inserted, "extracted_values" );
-                        if( cfg_system_query_item_etl_load_inserted_extracted_values_array == NULL ) {
-                            LOG_print( &dcpam_etl_log, "ERROR: \"system[%d].queries[%d].etl.load.inserted.extracted_values\" key not found.\n", i, j );
-                            cJSON_Delete( config_json );
-                            free( config_string ); config_string = NULL;
-                            return FALSE;
-                        }
-                        for( int k = 0; k < cJSON_GetArraySize( cfg_system_query_item_etl_load_inserted_extracted_values_array ); k++ ) {
-                            cfg_system_query_item_etl_load_inserted_extracted_values_item = cJSON_GetArrayItem( cfg_system_query_item_etl_load_inserted_extracted_values_array, k );
-                            snprintf( tmp_cdc->load.inserted.extracted_values[ k ], MAX_COLUMN_NAME_LEN, "%s", cfg_system_query_item_etl_load_inserted_extracted_values_item->valuestring );
-                            tmp_cdc->load.inserted.extracted_values_len++;
-                        }
+
                         /*
                             etl.load.deleted
                         */
@@ -1363,43 +1413,64 @@ int DCPAM_load_configuration( const char* filename ) {
                             cfg_system_query_item_etl_load_deleted_input_data_sql->valuestring,
                             str_len16
                         );
+                        ////////////////////////////////////////////////////////////////////
                         /*
-                            etl.load.deleted.output_data_sql
+                            etl.load.deleted.target
                         */
-                        cfg_system_query_item_etl_load_deleted_output_data_sql = cJSON_GetObjectItem( cfg_system_query_item_etl_load_deleted, "output_data_sql" );
-                        if( cfg_system_query_item_etl_load_deleted_output_data_sql == NULL ) {
-                            LOG_print( &dcpam_etl_log, "ERROR: \"system[%d].queries[%d].etl.load.deleted.output_data_sql\" key not found.\n", i, j );
+                        cfg_system_query_item_etl_load_deleted_target_array = cJSON_GetObjectItem( cfg_system_query_item_etl_load_deleted, "target" );
+                        if( cfg_system_query_item_etl_load_deleted_target_array == NULL ) {
+                            LOG_print( &dcpam_etl_log, "ERROR: \"system[%d].queries[%d].etl.load.deleted.target\" key not found.\n", i, j );
                             cJSON_Delete( config_json );
                             free( config_string ); config_string = NULL;
                             return FALSE;
                         }
-                        size_t str_len17 = strlen( cfg_system_query_item_etl_load_deleted_output_data_sql->valuestring );
-                        tmp_cdc->load.deleted.output_data_sql_len = str_len17;
-                        tmp_cdc->load.deleted.output_data_sql = SAFECALLOC( str_len17 + 1, sizeof( char ), __FILE__, __LINE__ );
-                        strlcpy(
-                            tmp_cdc->load.deleted.output_data_sql,
-                            cfg_system_query_item_etl_load_deleted_output_data_sql->valuestring,
-                            str_len17
-                        );
-                        /*
-                            etl.load.deleted.extracted_values
-                        */
-                        cfg_system_query_item_etl_load_deleted_extracted_values_array = cJSON_GetObjectItem( cfg_system_query_item_etl_load_deleted, "extracted_values" );
-                        if( cfg_system_query_item_etl_load_deleted_extracted_values_array == NULL ) {
-                            LOG_print( &dcpam_etl_log, "ERROR: \"system[%d].queries[%d].etl.load.deleted.extracted_values\" key not found.\n", i, j );
-                            cJSON_Delete( config_json );
-                            free( config_string ); config_string = NULL;
-                            return FALSE;
+
+                        tmp_cdc->load.deleted.target_count = cJSON_GetArraySize( cfg_system_query_item_etl_load_deleted_target_array );
+                        tmp_cdc->load.deleted.target = SAFEMALLOC( tmp_cdc->load.deleted.target_count * sizeof * tmp_cdc->load.deleted.target, __FILE__, __LINE__ );
+                        for( int dtc = 0; dtc < tmp_cdc->load.deleted.target_count; dtc++ ) {
+                            cfg_system_query_item_etl_load_deleted_target_item = cJSON_GetArrayItem( cfg_system_query_item_etl_load_deleted_target_array, dtc );
+                            tmp_cdc->load.deleted.target[ dtc ] = SAFEMALLOC( sizeof( DB_SYSTEM_ETL_LOAD_QUERY_TARGET), __FILE__, __LINE__ );
+                            /*
+                                etl.load.deleted.output_data_sql
+                            */
+                            cfg_system_query_item_etl_load_deleted_output_data_sql = cJSON_GetObjectItem( cfg_system_query_item_etl_load_deleted_target_item, "output_data_sql" );
+                            if( cfg_system_query_item_etl_load_deleted_output_data_sql == NULL ) {
+                                LOG_print( &dcpam_etl_log, "ERROR: \"system[%d].queries[%d].etl.load.target[%d].deleted.output_data_sql\" key not found.\n", i, j, dtc );
+                                cJSON_Delete( config_json );
+                                free( config_string ); config_string = NULL;
+                                return FALSE;
+                            }
+                            size_t str_len15 = strlen( cfg_system_query_item_etl_load_deleted_output_data_sql->valuestring );
+                            tmp_cdc->load.deleted.target[ dtc ]->output_data_sql_len = str_len15;
+                            tmp_cdc->load.deleted.target[ dtc ]->output_data_sql = SAFECALLOC( str_len15 + 1, sizeof( char ), __FILE__, __LINE__ );
+                            strlcpy(
+                                tmp_cdc->load.deleted.target[ dtc ]->output_data_sql,
+                                cfg_system_query_item_etl_load_deleted_output_data_sql->valuestring,
+                                str_len15
+                            );
+
+                            /*
+                                etl.load.deleted.extracted_values
+                            */
+
+                            for( int k = 0; k < MAX_ETL_COLUMNS; k++ ) {
+                                memset( tmp_cdc->load.deleted.target[ dtc ]->extracted_values[ k ], 0, MAX_COLUMN_NAME_LEN );
+                            }
+                            tmp_cdc->load.deleted.target[ dtc ]->extracted_values_len = 0;
+                            cfg_system_query_item_etl_load_deleted_extracted_values_array = cJSON_GetObjectItem( cfg_system_query_item_etl_load_deleted_target_item, "extracted_values" );
+                            if( cfg_system_query_item_etl_load_deleted_extracted_values_array == NULL ) {
+                                LOG_print( &dcpam_etl_log, "ERROR: \"system[%d].queries[%d].etl.load.deleted.target[%d].extracted_values\" key not found.\n", i, j, dtc );
+                                cJSON_Delete( config_json );
+                                free( config_string ); config_string = NULL;
+                                return FALSE;
+                            }
+                            for( int k = 0; k < cJSON_GetArraySize( cfg_system_query_item_etl_load_deleted_extracted_values_array ); k++ ) {
+                                cfg_system_query_item_etl_load_deleted_extracted_values_item = cJSON_GetArrayItem( cfg_system_query_item_etl_load_deleted_extracted_values_array, k );
+                                snprintf( tmp_cdc->load.deleted.target[ dtc ]->extracted_values[ k ], MAX_COLUMN_NAME_LEN, "%s", cfg_system_query_item_etl_load_deleted_extracted_values_item->valuestring );
+                                tmp_cdc->load.deleted.target[ dtc ]->extracted_values_len++;
+                            }
                         }
-                        for( int k = 0; k < MAX_ETL_COLUMNS; k++ ) {
-                            memset( tmp_cdc->load.deleted.extracted_values[ k ], 0, MAX_COLUMN_NAME_LEN );
-                        }
-                        tmp_cdc->load.deleted.extracted_values_len = 0;
-                        for( int k = 0; k < cJSON_GetArraySize( cfg_system_query_item_etl_load_deleted_extracted_values_array ); k++ ) {
-                            cfg_system_query_item_etl_load_deleted_extracted_values_item = cJSON_GetArrayItem( cfg_system_query_item_etl_load_deleted_extracted_values_array, k );
-                            snprintf( tmp_cdc->load.deleted.extracted_values[ k ], MAX_COLUMN_NAME_LEN, "%s", cfg_system_query_item_etl_load_deleted_extracted_values_item->valuestring );
-                            tmp_cdc->load.deleted.extracted_values_len++;
-                        }
+                        ////////////////////////////////////////////////////////////////////
                         /*
                             etl.load.modified
                         */
@@ -1429,41 +1500,60 @@ int DCPAM_load_configuration( const char* filename ) {
                             str_len18
                         );
                         /*
-                            etl.load.modified.output_data_sql
+                            etl.load.modified.target
                         */
-                        cfg_system_query_item_etl_load_modified_output_data_sql = cJSON_GetObjectItem( cfg_system_query_item_etl_load_modified, "output_data_sql" );
-                        if( cfg_system_query_item_etl_load_modified_output_data_sql == NULL ) {
-                            LOG_print( &dcpam_etl_log, "ERROR: \"system[%d].queries[%d].etl.load.modified.output_data_sql\" key not found.\n", i, j );
+                        cfg_system_query_item_etl_load_modified_target_array = cJSON_GetObjectItem( cfg_system_query_item_etl_load_modified, "target" );
+                        if( cfg_system_query_item_etl_load_modified_target_array == NULL ) {
+                            LOG_print( &dcpam_etl_log, "ERROR: \"system[%d].queries[%d].etl.load.modified.target\" key not found.\n", i, j );
                             cJSON_Delete( config_json );
                             free( config_string ); config_string = NULL;
                             return FALSE;
                         }
-                        size_t str_len19 = strlen( cfg_system_query_item_etl_load_modified_output_data_sql->valuestring );
-                        tmp_cdc->load.modified.output_data_sql_len = str_len19;
-                        tmp_cdc->load.modified.output_data_sql = SAFECALLOC( str_len19 + 1, sizeof( char ), __FILE__, __LINE__ );
-                        strlcpy(
-                            tmp_cdc->load.modified.output_data_sql,
-                            cfg_system_query_item_etl_load_modified_output_data_sql->valuestring,
-                            str_len19
-                        );
-                        /*
-                            etl.load.modified.extracted_values
-                        */
-                        cfg_system_query_item_etl_load_modified_extracted_values_array = cJSON_GetObjectItem( cfg_system_query_item_etl_load_modified, "extracted_values" );
-                        if( cfg_system_query_item_etl_load_modified_extracted_values_array == NULL ) {
-                            LOG_print( &dcpam_etl_log, "ERROR: \"system[%d].queries[%d].etl.load.modified.extracted_values\" key not found.\n", i, j );
-                            cJSON_Delete( config_json );
-                            free( config_string ); config_string = NULL;
-                            return FALSE;
-                        }
-                        for( int k = 0; k < MAX_ETL_COLUMNS; k++ ) {
-                            memset( tmp_cdc->load.modified.extracted_values[ k ], 0, MAX_COLUMN_NAME_LEN );
-                        }
-                        tmp_cdc->load.modified.extracted_values_len = 0;
-                        for( int k = 0; k < cJSON_GetArraySize( cfg_system_query_item_etl_load_modified_extracted_values_array ); k++ ) {
-                            cfg_system_query_item_etl_load_modified_extracted_values_item = cJSON_GetArrayItem( cfg_system_query_item_etl_load_modified_extracted_values_array, k );
-                            snprintf( tmp_cdc->load.modified.extracted_values[ k ], MAX_COLUMN_NAME_LEN, "%s", cfg_system_query_item_etl_load_modified_extracted_values_item->valuestring );
-                            tmp_cdc->load.modified.extracted_values_len++;
+
+                        tmp_cdc->load.modified.target_count = cJSON_GetArraySize( cfg_system_query_item_etl_load_modified_target_array );
+                        tmp_cdc->load.modified.target = SAFEMALLOC( tmp_cdc->load.modified.target_count * sizeof * tmp_cdc->load.modified.target, __FILE__, __LINE__ );
+                        for( int mtc = 0; mtc < tmp_cdc->load.modified.target_count; mtc++ ) {
+                            cfg_system_query_item_etl_load_modified_target_item = cJSON_GetArrayItem( cfg_system_query_item_etl_load_modified_target_array, mtc );
+                            tmp_cdc->load.modified.target[ mtc ] = SAFEMALLOC( sizeof( DB_SYSTEM_ETL_LOAD_QUERY_TARGET), __FILE__, __LINE__ );
+                            /*
+                                etl.load.modified.output_data_sql
+                            */
+                            cfg_system_query_item_etl_load_modified_output_data_sql = cJSON_GetObjectItem( cfg_system_query_item_etl_load_modified_target_item, "output_data_sql" );
+                            if( cfg_system_query_item_etl_load_modified_output_data_sql == NULL ) {
+                                LOG_print( &dcpam_etl_log, "ERROR: \"system[%d].queries[%d].etl.load.target[%d].modified.output_data_sql\" key not found.\n", i, j, mtc );
+                                cJSON_Delete( config_json );
+                                free( config_string ); config_string = NULL;
+                                return FALSE;
+                            }
+                            size_t str_len15 = strlen( cfg_system_query_item_etl_load_modified_output_data_sql->valuestring );
+                            tmp_cdc->load.modified.target[ mtc ]->output_data_sql_len = str_len15;
+                            tmp_cdc->load.modified.target[ mtc ]->output_data_sql = SAFECALLOC( str_len15 + 1, sizeof( char ), __FILE__, __LINE__ );
+                            strlcpy(
+                                tmp_cdc->load.modified.target[ mtc ]->output_data_sql,
+                                cfg_system_query_item_etl_load_modified_output_data_sql->valuestring,
+                                str_len15
+                            );
+
+                            /*
+                                etl.load.modified.extracted_values
+                            */
+
+                            for( int k = 0; k < MAX_ETL_COLUMNS; k++ ) {
+                                memset( tmp_cdc->load.modified.target[ mtc ]->extracted_values[ k ], 0, MAX_COLUMN_NAME_LEN );
+                            }
+                            tmp_cdc->load.modified.target[ mtc ]->extracted_values_len = 0;
+                            cfg_system_query_item_etl_load_modified_extracted_values_array = cJSON_GetObjectItem( cfg_system_query_item_etl_load_modified_target_item, "extracted_values" );
+                            if( cfg_system_query_item_etl_load_modified_extracted_values_array == NULL ) {
+                                LOG_print( &dcpam_etl_log, "ERROR: \"system[%d].queries[%d].etl.load.modified.target[%d].extracted_values\" key not found.\n", i, j, mtc );
+                                cJSON_Delete( config_json );
+                                free( config_string ); config_string = NULL;
+                                return FALSE;
+                            }
+                            for( int k = 0; k < cJSON_GetArraySize( cfg_system_query_item_etl_load_modified_extracted_values_array ); k++ ) {
+                                cfg_system_query_item_etl_load_modified_extracted_values_item = cJSON_GetArrayItem( cfg_system_query_item_etl_load_modified_extracted_values_array, k );
+                                snprintf( tmp_cdc->load.modified.target[ mtc ]->extracted_values[ k ], MAX_COLUMN_NAME_LEN, "%s", cfg_system_query_item_etl_load_modified_extracted_values_item->valuestring );
+                                tmp_cdc->load.modified.target[ mtc ]->extracted_values_len++;
+                            }
                         }
 
                         tmp_queries[ tmp_queries_count ] = SAFEMALLOC( sizeof( DATABASE_SYSTEM_QUERY ), __FILE__, __LINE__ );
