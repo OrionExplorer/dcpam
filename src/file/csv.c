@@ -20,6 +20,7 @@
 #include "../include/file/csv.h"
 #include "../include/utils/time.h"
 #include "../include/utils/memory.h"
+#include "../include/utils/strings.h"
 
 char** _CSV_parse_line( const char* line, const char* delimiter, int *dst_count, LOG_OBJECT *log ) {
     int     i = 0;

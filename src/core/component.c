@@ -135,7 +135,9 @@ cJSON *LCS_COMPONENT_process_report( cJSON* json_request, DCPAM_COMPONENT** comp
                 return NULL;
             }
         }
+        return NULL;
     }
+    return NULL;
 }
 
 

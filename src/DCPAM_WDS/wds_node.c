@@ -16,6 +16,7 @@
 #include "../include/DCPAM_WDS/wds_node.h"
 #include "../include/utils/log.h"
 #include "../include/utils/time.h"
+#include <stdlib.h>
 
 
 extern LOG_OBJECT              dcpam_wds_log;

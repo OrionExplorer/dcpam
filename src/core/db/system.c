@@ -569,7 +569,8 @@ void DATABASE_SYSTEM_DB_add(
         : driver == D_MARIADB ? "MariaDB" 
         : driver == D_ODBC ? "ODBC" 
         : driver == D_ORACLE ? "ORACLE"
-        : "SQLite3"
+        : driver == D_SQLITE ? "SQLite3"
+        : "MongoDB"
     );
     dst->driver = ( DB_DRIVER )driver;
 
@@ -596,7 +597,11 @@ void DATABASE_SYSTEM_DB_add(
 
         case D_SQLITE: {
             dst->db_conn.sqlite_conn.active = 0;
-        }
+        } break;
+
+        case D_MONGODB: {
+            dst->db_conn.mongodb_conn.active = 0;
+        } break;
     }
 
     if( verbose > 0 ) LOG_print( log, "\t· user=\"%s\"\n", user );
@@ -694,7 +699,14 @@ void DATABASE_SYSTEM_DB_close( DATABASE_SYSTEM_DB* db, LOG_OBJECT *log ) {
                 LOG_print( log, "\t· Driver: \"SQLite3\". Disconnecting...\n" );
                 SQLITE_disconnect( &db->db_conn.sqlite_conn, log );
             }
-        }
+        } break;
+        case D_MONGODB :
+        {
+            if( db->db_conn.mongodb_conn.active == 1 ) {
+                LOG_print( log, "\t· Driver: \"MongoDB\". Disconnecting...\n" );
+                MONGODB_disconnect( &db->db_conn.mongodb_conn, log );   
+            }
+        } break;
         default:
         {
         }
@@ -760,6 +772,12 @@ void DATABASE_SYSTEM_DB_free( DATABASE_SYSTEM_DB *db, LOG_OBJECT *log ) {
                 LOG_print( log, "\t· Driver: \"SQLite3\". Disconnecting...\n" );
                 SQLITE_disconnect( &db->db_conn.sqlite_conn, log );
             }
+        } break;
+        case D_MONGODB : {
+            if( db->db_conn.mongodb_conn.active == 1 ) {
+                LOG_print( log, "\t· Driver: \"MongoDB\". Disconnecting...\n" );
+                MONGODB_disconnect( &db->db_conn.mongodb_conn, log );
+            }
         }
         default : {
         }
@@ -796,6 +814,10 @@ int DATABASE_SYSTEM_DB_init( DATABASE_SYSTEM_DB *db, LOG_OBJECT *log ) {
         case D_SQLITE : {
             LOG_print( log, "\t· Driver: \"SQLite3\". Connecting..." );
             ret = SQLITE_connect( &db->db_conn.sqlite_conn, db->connection_string /* As filename for now. DCPAM would download DB file in future. */, db->name, log );
+        } break;
+        case D_MONGODB : {
+            LOG_print( log, "\t· Driver: \"MongoDB\". Connecting..." );
+            ret = MONGODB_connect( &db->db_conn.mongodb_conn, db->ip, db->port, db->db, db->user, db->password, db->connection_string, db->name, log );
         } break;
         default : {
             LOG_print( log, "Error: unknown driver: \"%d (%s)\".\n", db->driver, db->name );

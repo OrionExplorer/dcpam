@@ -47,6 +47,7 @@ Before Extract process begin, it is possible to run set of SQL queries to perfor
 
 #### Staging
 Depending on the configuration, extracted data is stored instantly either in the Staging Area or target tables directly. That means inserted, deleted and modified records from all source systems coexist in the transitional tables at the same time and must be properly marked. But this is another big performance boost: DCPAM ETL can execute a number of simple SELECT queries instead of one complex SQL with many joins and other conditions, so impact on the source system is minimal.
+
 Data from one extracted record can be the source of multiple new records in the Staging Area.
 
 Staging Area is a separate area in Data Warehouse, and DCPAM ETL **does not require** it to be located in the same database or even on the same server.
@@ -99,7 +100,7 @@ Data transformation in DCPAM ETL pipeline is not enforced.
 ### Loading
 When all transformations in the Staging Area are completed or during the Extract subprocess, DCPAM ETL loads the data directly into target tables. Dimensions are first to load, followed by Facts. Then Staging Area is cleared and ready for the next occurence of data extraction.
 
-Data from one extracted and transformed record can be the source of multiple new records in target tables.
+Data from one extracted and transformed record can be the source of multiple new records in the target tables.
 
 After Loading process is finished, it is possible to run set of SQL queries to perform on the DCPAM Database (ie. to clear Staging Area).
 

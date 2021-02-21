@@ -25,9 +25,10 @@
 				"comment#00" : "##################################################################################################",
 				"comment#01" : "# PreETL Actions configuration. Use it to perform any set of queries in DCPAM Database before ETL",
 				"comment#02" : "# process is started (ie. to clear the Staging Area).",
-				"comment#03" : "##################################################################################################",
+				"comment#03" : "# MongoDB commands: https://docs.mongodb.com/manual/reference/command/nav-crud/",
+				"comment#04" : "##################################################################################################",
 				"pre_actions" : [
-					"db.testData.remove({})"
+					"{ \"delete\": \"stagedData\", \"deletes\": [ { \"q\": {}, \"limit\": 0 } ] }"
 				],
 
 
@@ -37,14 +38,14 @@
 					"comment#02" : "# Another example is \"SELECT id FROM secondary_db WHERE created > SELECT MAX(chaned) FROM primary_db\" for deleted records.",
 					"comment#03" : "# In Extract subprocess, only one field name (column) is allowed in \"SELECT ... FROM primary_db\" query.",
 					"comment#04" : "# In Extract subprocess, query may finish with 0, 1 or many result rows.",
-					"comment#05" : "# The \"%%s\" format specifier is used by DCPAM to insert results from primary_db query into secondary_db query SQL.",
+					"comment#05" : "# The \"%s\" format specifier is used by DCPAM to insert results from primary_db query into secondary_db query SQL.",
 					"comment#06" : "# Only SELECT queries are allowed in \"*_sql\" commands.",
 					"comment#07" : "##################################################################################################",
 					"inserted" : {
 						"primary_db" : "dcpam",
-						"primary_db_sql" : "SELECT system_worklog_id FROM accounted_time WHERE system = 'OTRS'",
+						"primary_db_sql" : "{ \"find\": \"testData\", \"projection\": { \"id\": 1, \"_id\": 0 } }",
 						"secondary_db" : "this",
-						"secondary_db_sql" : "SELECT t.id AS system_object_id, ta.id AS system_worklog_id, t.customer_id AS system_customer, ta.create_by AS system_agent_id, ta.time_unit AS system_accounted_time, ta.create_time AS system_created FROM time_accounting ta LEFT JOIN ticket t ON t.id = ta.ticket_id WHERE ta.id NOT IN (%s)"
+						"secondary_db_sql" : "{ \"find\": \"testData\", \"filter\": { \"id\" : { \"$nin\" : \"%s\"} } }"
 					},
 					"deleted" : {
 						"primary_db" : "this",
@@ -70,18 +71,18 @@
 				"comment#10" : "# There is no restriction on the query type in \"sql\" commands.",
 				"comment#11" : "##################################################################################################",
 				"stage" : {
-					"inserted" : {
+					"inserted" : [{
 						"sql" : "INSERT INTO stage_accounted_time (system_object_id, system_worklog_id, system_customer, system_agent_id, system_accounted_time, system_created, is_valid, system, e_type) VALUES (?, ?, '?', '?', ?, '?', 1, 'OTRS', 1)",
 						"extracted_values" : ["system_object_id", "system_worklog_id", "system_customer", "system_agent_id", "system_accounted_time", "system_created"]
-					},
-					"deleted" : {
+					}],
+					"deleted" : [{
 						"sql" : "INSERT INTO stage_accounted_time (system_object_id, system_worklog_id, system_customer, system_agent_id, system_accounted_time, system_created, is_valid, system, e_type) VALUES (?, ?, '?', '?', ?, '?', 0, 'OTRS', 2)",
 						"extracted_values" : ["system_object_id", "system_worklog_id", "system_customer", "system_agent_id", "system_accounted_time", "system_created"]
-					},
-					"modified" : {
+					}],
+					"modified" : [{
 						"sql" : "INSERT INTO stage_accounted_time (system_object_id, system_worklog_id, system_customer, system_agent_id, system_accounted_time, system_created, is_valid, system, e_type) VALUES (?, ?, '?', '?', ?, '?', 1, 'OTRS', 3)",
 						"extracted_values" : ["system_object_id", "system_worklog_id", "system_customer", "system_agent_id", "system_accounted_time", "system_created"]
-					}
+					}]
 				},
 
 
@@ -144,18 +145,33 @@
 					"comment#06" : "##################################################################################################",
 					"inserted" : {
 						"input_data_sql" : "SELECT system_object_id, system_worklog_id, system_customer, system_agent_id, system_accounted_time, system_created FROM stage_accounted_time WHERE e_type = 1",
-						"extracted_values" : ["system_object_id", "system_worklog_id", "system_customer", "system_agent_id", "system_accounted_time", "system_created"],
-						"output_data_sql" : "INSERT INTO accounted_time (system_object_id, system_worklog_id, system_customer, system_agent_id, system_accounted_time, system_created, is_valid, system) VALUES (?, ?, '?', '?', ?, '?', 1, 'OTRS')"
+						"target" : [{
+							"extracted_values" : ["system_object_id", "system_worklog_id", "system_customer", "system_agent_id", "system_accounted_time", "system_created"],
+							"output_data_sql" : "INSERT INTO accounted_time (system_object_id, system_worklog_id, system_customer, system_agent_id, system_accounted_time, system_created, is_valid, system) VALUES (?, ?, '?', '?', ?, '?', 1, 'OTRS')"
+						}, {
+							"extracted_values" : ["system_object_id", "system_worklog_id", "system_customer", "system_agent_id", "system_accounted_time", "system_created"],
+							"output_data_sql" : "INSERT INTO accounted_time (system_object_id, system_worklog_id, system_customer, system_agent_id, system_accounted_time, system_created, is_valid, system) VALUES (?, ?, '?', '?', ?, '?', 1, 'OTRS')"
+						}]
 					},
 					"deleted" : {
 						"input_data_sql" : "SELECT system_worklog_id FROM stage_accounted_time WHERE e_type = 2",
-						"extracted_values" : ["system_worklog_id"],
-						"output_data_sql" : "UPDATE accounted_time SET is_valid = 0 WHERE system_worklog_id = '?'"
+						"target" : [{
+							"extracted_values" : ["system_worklog_id"],
+							"output_data_sql" : "UPDATE accounted_time SET is_valid = 0 WHERE system_worklog_id = '?'"
+						}, {
+							"extracted_values" : ["system_worklog_id"],
+							"output_data_sql" : "UPDATE accounted_time SET is_valid = 0 WHERE system_worklog_id = '?'"
+						}]
 					},
 					"modified" : {
 						"input_data_sql" : "SELECT system_object_id, system_worklog_id, system_customer, system_agent_id, system_accounted_time, system_created, is_valid FROM stage_accounted_time WHERE e_type = 3",
-						"extracted_values" : ["system_object_id", "system_worklog_id", "system_customer", "system_agent_id", "system_accounted_time", "system_created", "is_valid", "system_worklog_id"],
-						"output_data_sql" : "UPDATE accounted_time SET system_object_id = ?, system_worklog_id = ?, system_customer = '?', system_agent_id = '?', system_accounted_time = ?, system_created = '?', is_valid = ? WHERE system_worklog_id = ?"
+						"target" : [{
+							"extracted_values" : ["system_object_id", "system_worklog_id", "system_customer", "system_agent_id", "system_accounted_time", "system_created", "is_valid", "system_worklog_id"],
+							"output_data_sql" : "UPDATE accounted_time SET system_object_id = ?, system_worklog_id = ?, system_customer = '?', system_agent_id = '?', system_accounted_time = ?, system_created = '?', is_valid = ? WHERE system_worklog_id = ?"
+						}, {
+							"extracted_values" : ["system_object_id", "system_worklog_id", "system_customer", "system_agent_id", "system_accounted_time", "system_created", "is_valid", "system_worklog_id"],
+							"output_data_sql" : "UPDATE accounted_time SET system_object_id = ?, system_worklog_id = ?, system_customer = '?', system_agent_id = '?', system_accounted_time = ?, system_created = '?', is_valid = ? WHERE system_worklog_id = ?"
+						}]
 					}
 				},
 
@@ -164,7 +180,7 @@
 				"comment#14" : "# process finished (ie. to clear the Staging Area).",
 				"comment#15" : "##################################################################################################",
 				"post_actions" : [
-					"DELETE FROM stage_accounted_time"
+					"{ \"delete\": \"stagedData\", \"deletes\": [ { \"q\": {}, \"limit\": 0 } ] }"
 				]
 
 			}
@@ -179,15 +195,15 @@
 		"run_once_comment#02" : "# Remove this param or set with \"false\" value to run DCPAM in \"Persistent\" mode (daemon-like).",
 		"run_once_comment#03" : "##################################################################################################",
 		"DB" : {
-			"name" : "DCPAM Database",
+			"name" : "Target Test Database",
 			"ip" : "127.0.0.1",
-			"port" : 5432,
-			"driver" : 1,
-			"driver_comment" : "Driver types: 1=PostgreSQL, 2=MySQL, 3=MariaDB, 4=ODBC, 5=Oracle Database, 6=SQLite",
-			"connection_string" : "dbname=%s host=%s port=%d user=%s password=%s",
-			"user" : "dcpam",
-			"password" : "tantive-4",
-			"db" : "dcpam"
+			"port" : 27017,
+			"driver" : 7,
+			"driver_comment" : "Driver types: 1=PostgreSQL, 2=MySQL, 3=MariaDB, 4=ODBC, 5=Oracle Database, 6=SQLite, 7=MongoDB",
+			"user" : "none",
+			"db" : "TargetTables",
+			"connection_string" : "mongodb://localhost:27017",
+			"password" : "none"
 		},
 		"STAGING" : {
 			"comment#00" : "##################################################################################################",

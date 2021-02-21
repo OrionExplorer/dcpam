@@ -17,10 +17,12 @@
 #include <signal.h>
 #include <pthread.h>
 #include <stdint.h>
+#include <stdio.h>
 #include "../include/core/network/socket_io.h"
 #include "../include/utils/log.h"
 #include "../include/utils/time.h"
 #include "../include/utils/memory.h"
+#include "../include/utils/strings.h"
 #include "../include/utils/filesystem.h"
 #include "../include/third-party/cJSON.h"
 #include "../include/core/lcs_report.h"
@@ -344,6 +346,7 @@ void* DCPAM_RDP_worker( void* LCS_worker_data ) {
     free( allowed_hosts_ip ); allowed_hosts_ip = NULL;
 
     pthread_exit( NULL );
+    return 0;
 }
 
 int main( int argc, char** argv ) {

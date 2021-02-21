@@ -18,6 +18,7 @@
 #include "../include/utils/time.h"
 #include "../include/utils/filesystem.h"
 #include "../include/utils/memory.h"
+#include "../include/utils/strings.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>

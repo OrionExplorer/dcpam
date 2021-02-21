@@ -16,6 +16,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "../include/utils/memory.h"
+#include "../include/utils/strings.h"
 #include "../include/utils/time.h"
 #include "../include/core/lcs_report.h"
 #include "../include/utils/log.h"
@@ -80,7 +81,10 @@ int LCS_REPORT_free( LCS_REPORT* connection ) {
             connection->conn->log = NULL;
             free( connection->conn ); connection->conn = NULL;
         }
+
+        return 1;
     }
+    return 0;
 }
 
 int LCS_REPORT_send( LCS_REPORT* connection, const char* action, COMPONENT_ACTION_TYPE action_type ) {

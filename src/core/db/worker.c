@@ -108,6 +108,7 @@ int DB_WORKER_init( LOG_OBJECT *log ) {
     if( DB_WORKER_check_all( log ) == FALSE ) {
         LOG_print( log, "[%s] General verification failed.\n", TIME_get_gmt() );
         mysql_library_end();
+        mongoc_cleanup();
         return 0;
     }
 
@@ -146,6 +147,7 @@ int DB_WORKER_init( LOG_OBJECT *log ) {
                 if( thread_s[ i ] != 0 ) {
                     LOG_print( log, "[%s] DB_WORKER_init( ) failed to create DB_WORKER_watcher thread for \"%s\". Error: %d.\n", TIME_get_gmt(), DATABASE_SYSTEMS[ i ].name, thread_s[ i ] );
                     mysql_library_end();
+                    mongoc_cleanup();
                     return 0;
                 }
                 Sleep( 10 );
@@ -177,6 +179,7 @@ int DB_WORKER_init( LOG_OBJECT *log ) {
                 if( thread_s[ i ] != 0 ) {
                     LOG_print( log, "[%s] WORKER_init( ) failed to create DB_WORKER_watcher thread for \"%s\". Error: %d.\n", TIME_get_gmt(), DATABASE_SYSTEMS[ i ].name, thread_s[ i ] );
                     mysql_library_end();
+                    mongoc_cleanup();
                     return 0;
                 }
                 Sleep( 10 );
@@ -207,6 +210,7 @@ int DB_WORKER_init( LOG_OBJECT *log ) {
                 if( thread_s[ i ] != 0 ) {
                     LOG_print( log, "[%s] WORKER_init( ) failed to create DB_WORKER_watcher thread for \"%s\". Error: %d.\n", TIME_get_gmt(), DATABASE_SYSTEMS[ i ].name, thread_s[ i ] );
                     mysql_library_end();
+                    mongoc_cleanup();
                     return 0;
                 }
                 Sleep( 10 );
@@ -234,6 +238,7 @@ int DB_WORKER_init( LOG_OBJECT *log ) {
     }
 
     mysql_library_end();
+    mongoc_cleanup();
 
     for( i = 0; i < DATABASE_SYSTEMS_COUNT; i++ ) {
         LOG_free( log_object[ i ] );

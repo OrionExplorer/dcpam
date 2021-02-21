@@ -17,6 +17,8 @@
 #define MONGODB_H
 
 #include <mongoc.h>
+#include <bson.h>
+
 #include "db.h"
 
 

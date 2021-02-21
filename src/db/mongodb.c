@@ -29,9 +29,14 @@ void MONGODB_disconnect( MONGODB_CONNECTION* db_connection, LOG_OBJECT *log ) {
     if( db_connection != NULL ) {
         LOG_print( log, "[%s]\tMONGODB_disconnect( <'%s'> ).\n", TIME_get_gmt(), db_connection->id != NULL ? db_connection->id : "x" );
 
-        if( db_connection->connection != NULL ) {
-            mongoc_uri_destroy(db_connection->uri);
-            db_connection->connection = NULL;
+        if( db_connection->database ) {
+            mongoc_database_destroy( db_connection->database );
+        }
+        if( db_connection->connection ) {
+            mongoc_uri_destroy( db_connection->uri );
+        }
+        if( db_connection->connection ) {
+            mongoc_client_destroy( db_connection->connection );
         }
         if( db_connection->id != NULL ) {
             free( db_connection->id );
@@ -111,7 +116,11 @@ int MONGODB_exec(
     void                *data_ptr2,
     LOG_OBJECT          *log
 ) {
-    //PGresult        *pg_result = NULL;
+    bson_error_t        error;
+    bson_t              *command;
+    const bson_t        *reply;
+    mongoc_cursor_t     *cursor;
+    char                *str;
 
     LOG_print( log, "[%s]\tMONGODB_exec( <'%s'>, \"%s\", ... ).\n", TIME_get_gmt(), db_connection->id, sql );
     pthread_mutex_lock( &db_exec_mutex );
@@ -124,6 +133,32 @@ int MONGODB_exec(
         for( size_t l = 0; l < sql_length; l++ ) {
             *( dst_result->sql + l ) = sql[ l ];
         }
+    }
+
+    if( db_connection->connection && db_connection->database) {
+        command = bson_new_from_json( ( const uint8_t* )sql, sql_length, &error);
+        if( command ) {
+            cursor = mongoc_database_command( db_connection->database, MONGOC_QUERY_NONE, 0, 0, 0, command, NULL, NULL);
+            while( mongoc_cursor_next( cursor, &reply ) ) {
+              str = bson_as_json(reply, NULL);
+              LOG_print( log, "%s\n", str);
+              bson_free(str);
+              bson_destroy( command );
+           }
+
+           if (mongoc_cursor_error(cursor, &error)) {
+              LOG_print( log, "Fetch failure: %s\n", error.message);
+              mongoc_cursor_destroy( cursor );
+              return 0;
+           }
+           mongoc_cursor_destroy( cursor );
+        } else {
+            LOG_print( log, "Command error: %s\n", error.message);
+            return 0;
+        }
+    } else {
+        bson_free(str);
+        return 0;
     }
 
     /*if( db_connection->connection ) {

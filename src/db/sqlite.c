@@ -17,6 +17,7 @@
 #include "../include/utils/time.h"
 #include "../include/utils/log.h"
 #include "../include/utils/memory.h"
+#include "../include/utils/strings.h"
 #include <stdlib.h>
 #include <string.h>
 #include <pthread.h>

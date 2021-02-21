@@ -14,6 +14,7 @@
    along with this program; if not, write to the Free Software
    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1335 USA */
 
+#include "../../include/core/network/socket_io.h"
 #include "../../include/core/network/client.h"
 #include "../../include/utils/time.h"
 #include "../../include/utils/memory.h"

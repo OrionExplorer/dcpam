@@ -17,6 +17,7 @@
 #include <stdlib.h>
 #include <pthread.h>
 #include "../include/utils/memory.h"
+#include "../include/utils/strings.h"
 #include "../include/DCPAM_LCS/dcpam-lcs.h"
 #include "../include/DCPAM_LCS/lcs_worker.h"
 #include "../include/core/component.h"
@@ -63,4 +64,6 @@ void* LCS_WORKER_watcher( void* p ) {
     LOG_free( &log );
 
     pthread_exit( NULL );
+
+    return 0;
 }

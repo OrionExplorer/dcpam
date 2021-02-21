@@ -16,6 +16,7 @@
 #include "../../include/core/network/http.h"
 #include "../../include/utils/time.h"
 #include "../../include/utils/memory.h"
+#include "../../include/utils/strings.h"
 
 size_t _HTTP_CLIENT_get_ContentLength( HTTP_CLIENT* client ) {
     size_t result = 0;
