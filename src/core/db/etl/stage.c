@@ -36,6 +36,8 @@ void DB_CDC_StageGeneric( DB_SYSTEM_ETL_STAGE *stage, DB_SYSTEM_ETL_STAGE_QUERY 
         int* q_lengths;
         int* q_formats;
 
+        printf("STAGE: %d\n", (int)record->field_count);
+
         /* Prepare query data. */
         q_values = SAFEMALLOC( ( stage_element->extracted_values_len ) * sizeof * q_values, __FILE__, __LINE__ );
         int q_values_len = 0;

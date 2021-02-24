@@ -36,7 +36,6 @@ void _ExtractInserted_callback( DB_RECORD* record, void* data_ptr1, void* data_p
     DATABASE_SYSTEM_DB* db = ( DATABASE_SYSTEM_DB* )data_ptr2;
 
     for( int i = 0; i < stage->inserted_count; i++ ) {
-        printf("---RECORD: %s\n", record->fields[ 0 ].value );
         _ExtractGeneric_callback( record, stage, stage->inserted[ i ], db, log );
     }
 

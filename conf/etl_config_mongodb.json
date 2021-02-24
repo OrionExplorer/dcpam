@@ -3,7 +3,7 @@
 		"enabled" : 1,
 		"name" : "MongoDB Test Database",
 		"DB" : {
-			"name" : "Test Database",
+			"name" : "Source Data",
 			"ip" : "127.0.0.1",
 			"port" : 27017,
 			"driver" : 7,
@@ -38,14 +38,15 @@
 					"comment#02" : "# Another example is \"SELECT id FROM secondary_db WHERE created > SELECT MAX(chaned) FROM primary_db\" for deleted records.",
 					"comment#03" : "# In Extract subprocess, only one field name (column) is allowed in \"SELECT ... FROM primary_db\" query.",
 					"comment#04" : "# In Extract subprocess, query may finish with 0, 1 or many result rows.",
-					"comment#05" : "# The \"%s\" format specifier is used by DCPAM to insert results from primary_db query into secondary_db query SQL.",
+					"comment#05" : "# The \"%s\" format specifier is used by DCPAM to insert comma-separated results from primary_db query into secondary_db query SQL.",
 					"comment#06" : "# Only SELECT queries are allowed in \"*_sql\" commands.",
 					"comment#07" : "##################################################################################################",
 					"inserted" : {
 						"primary_db" : "dcpam",
-						"primary_db_sql" : "{ \"find\": \"testData\", \"projection\": { \"id\": 1, \"_id\": 0 } }",
+						"primary_db_sql" : "{ \"find\": \"testData\", \"sort\" : { \"id\": -1 }, \"limit\": 1, \"projection\": { \"id\": 1, \"_id\": 0 } }",
+						"primary_db_record_regex" : "\\{\\s\\\"id\\\"\\s\\:\\s(\\d+).+}",
 						"secondary_db" : "this",
-						"secondary_db_sql" : "{ \"find\": \"testData\", \"filter\": { \"id\" : { \"$nin\" : [%s] } } }"
+						"secondary_db_sql" : "{ \"find\": \"testData\", \"filter\": { \"id\" : {  \"$lt\": %s } } }"
 					},
 					"deleted" : {
 						"primary_db" : "this",
@@ -72,8 +73,8 @@
 				"comment#11" : "##################################################################################################",
 				"stage" : {
 					"inserted" : [{
-						"sql" : "INSERT INTO stage_accounted_time (system_object_id, system_worklog_id, system_customer, system_agent_id, system_accounted_time, system_created, is_valid, system, e_type) VALUES (?, ?, '?', '?', ?, '?', 1, 'OTRS', 1)",
-						"extracted_values" : ["system_object_id", "system_worklog_id", "system_customer", "system_agent_id", "system_accounted_time", "system_created"]
+						"sql" : "{ \"insert\": \"testData\", \"documents\" : [?] }",
+						"extracted_values" : ["_bson"]
 					}],
 					"deleted" : [{
 						"sql" : "INSERT INTO stage_accounted_time (system_object_id, system_worklog_id, system_customer, system_agent_id, system_accounted_time, system_created, is_valid, system, e_type) VALUES (?, ?, '?', '?', ?, '?', 0, 'OTRS', 2)",

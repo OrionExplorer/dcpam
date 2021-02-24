@@ -139,7 +139,7 @@ int MONGODB_exec(
     }
 
     if( db_connection->connection && db_connection->database) {
-        command = bson_new_from_json( ( const uint8_t* )sql, sql_length, &error );
+        command = bson_new_from_json( ( const uint8_t* )sql, -1, &error );
         if( command ) {
 
             cursor = mongoc_database_command( db_connection->database, MONGOC_QUERY_NONE, 0, 0, 0, command, NULL, NULL );
@@ -161,13 +161,16 @@ int MONGODB_exec(
 
                           if( strcmp( bson_iter_key( &sub_iter ), "firstBatch" ) == 0 || strcmp( bson_iter_key( &sub_iter ), "nextBatch" ) == 0 ) {
 
-                                uint32_t records_len = 0;
+                                uint32_t records_size = 0;
                                 const uint8_t *data = NULL;
-                                bson_iter_array( &sub_iter, &records_len, &data );
+                                bson_iter_array( &sub_iter, &records_size, &data );
 
-                                bson_t *array = bson_new_from_data( data, records_len );
+                                bson_t *array = bson_new_from_data( data, records_size );
                                 //char *str = bson_as_json (array, NULL);
                                 bson_iter_t array_item;
+                                size_t records_len = bson_count_keys( array );
+                                size_t record_index = 0;
+                                DB_RECORD *record = NULL;
 
                                 if( bson_iter_init( &array_item, array ) ) {
                                     while( bson_iter_next( &array_item ) ) {
@@ -177,41 +180,35 @@ int MONGODB_exec(
                                             const uint8_t *document = NULL;
                                             bson_iter_document( &array_item, &document_len, &document );
 
-                                            bson_t *record = bson_new_from_data( document, document_len );
+                                            bson_t *bson_record = bson_new_from_data( document, document_len );
                                             size_t record_size = 0;
-                                            char *record_str = bson_as_json( record, &record_size );
+                                            char *record_str = bson_as_json( bson_record, &record_size );
 
-                                            if( bson_empty( record ) ) {
+                                            if( bson_empty( bson_record ) ) {
                                                 free( record_str );
-                                                bson_destroy( record );
+                                                bson_destroy( bson_record );
                                                 continue;
                                             }
 
                                             if( query_exec_callback ) {
-                                                DB_RECORD *record = SAFEMALLOC( ( size_t )records_len * sizeof( DB_RECORD ), __FILE__, __LINE__ );
-                                                if( record ) {
-                                                    for( uint32_t i = 0; i < records_len; i++ ) {
-                                                        /* We store entire BSON document as one column in DB_RECORD structure. */
-                                                        record[ i ].field_count = 1;
-                                                        record[ i ].fields = SAFEMALLOC( record[ i ].field_count * sizeof( DB_FIELD ), __FILE__, __LINE__ );
-                                                        strlcpy( record[ i ].fields[ 0 ].label, "_BSON", MAX_COLUMN_NAME_LEN );
-                                                        record[ i ].fields[ 0 ].size = record_size;
-                                                        if( record[ i ].fields[ 0 ].size > 0 ) {
-                                                            record[ i ].fields[ 0 ].value = SAFECALLOC( ( size_t )record_size, sizeof( char ), __FILE__, __LINE__ );
-                                                            for( uint32_t j = 0; j < record_size; j++ ) {
-                                                                record[ i ].fields[ 0 ].value[ j ] = record_str[ j ];
-                                                            }
-                                                        } else {
-                                                            record[ i ].fields[ 0 ].value = NULL;
-                                                        }
-
-                                                        pthread_mutex_unlock( &db_exec_mutex );
-                                                        ( *query_exec_callback )( &record[ i ], data_ptr1, data_ptr2, log );
+                                                record = ( DB_RECORD* )SAFEMALLOC( sizeof( DB_RECORD ), __FILE__, __LINE__ );
+                                                /* We store entire BSON document as one column in DB_RECORD structure. */
+                                                record->field_count = 1;
+                                                record->fields = SAFEMALLOC( record->field_count * sizeof( DB_FIELD ), __FILE__, __LINE__ );
+                                                strlcpy( record->fields[ 0 ].label, "_bson", MAX_COLUMN_NAME_LEN );
+                                                record->fields[ 0 ].size = record_size;
+                                                if( record->fields[ 0 ].size > 0 ) {
+                                                    record->fields[ 0 ].value = SAFECALLOC( ( size_t )record_size + 1, sizeof( char ), __FILE__, __LINE__ );
+                                                    for( uint32_t j = 0; j < record_size; j++ ) {
+                                                        record->fields[ 0 ].value[ j ] = record_str[ j ];
                                                     }
                                                 } else {
-                                                    LOG_print( log, "[%s] Fatal error: unable to SAFEMALLOC.\n", TIME_get_gmt() );
-                                                    return 0;
+                                                    record->fields[ 0 ].value = NULL;
                                                 }
+
+                                                pthread_mutex_unlock( &db_exec_mutex );
+                                                ( *query_exec_callback )( record, data_ptr1, data_ptr2, log );
+
                                             }
 
                                             if( dst_result ) {
@@ -223,7 +220,7 @@ int MONGODB_exec(
                                                     dst_result->records[ row_count ].fields = ( DB_FIELD* )SAFEMALLOC( dst_result->records[ row_count ].field_count * sizeof( DB_FIELD ), __FILE__, __LINE__ );
 
                                                     for( int i = 0; i < dst_result->records[ row_count ].field_count; i++ ) {
-                                                        strlcpy( dst_result->records[ row_count ].fields[ i ].label, "_BSON", MAX_COLUMN_NAME_LEN );
+                                                        strlcpy( dst_result->records[ row_count ].fields[ i ].label, "_bson", MAX_COLUMN_NAME_LEN );
 
                                                         dst_result->records[ row_count ].fields[ i ].size = ( size_t )record_size;
                                                         if( dst_result->records[ row_count ].fields[ i ].size > 0 ) {
@@ -236,12 +233,14 @@ int MONGODB_exec(
                                                         }
                                                     }
                                                 }
-                                                row_count++;
-                                                dst_result->row_count = row_count;
                                             }
 
+                                            row_count++;
+                                            if( dst_result ) {
+                                                dst_result->row_count = row_count;
+                                            }
                                             free( record_str );
-                                            bson_destroy( record );
+                                            bson_destroy( bson_record );
 
                                         }
                                     }
