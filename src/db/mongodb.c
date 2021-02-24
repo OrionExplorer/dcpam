@@ -119,6 +119,9 @@ int MONGODB_exec(
     bson_error_t        error;
     bson_t              *command;
     const bson_t        *reply;
+    bson_iter_t         iter;
+    bson_type_t         type;
+    const bson_value_t *value;
     mongoc_cursor_t     *cursor;
     char                *str;
 
@@ -136,28 +139,143 @@ int MONGODB_exec(
     }
 
     if( db_connection->connection && db_connection->database) {
-        command = bson_new_from_json( ( const uint8_t* )sql, sql_length, &error);
+        command = bson_new_from_json( ( const uint8_t* )sql, sql_length, &error );
         if( command ) {
-            cursor = mongoc_database_command( db_connection->database, MONGOC_QUERY_NONE, 0, 0, 0, command, NULL, NULL);
-            while( mongoc_cursor_next( cursor, &reply ) ) {
-              str = bson_as_json(reply, NULL);
-              LOG_print( log, "%s\n", str);
-              bson_free(str);
-              bson_destroy( command );
-           }
 
-           if (mongoc_cursor_error(cursor, &error)) {
-              LOG_print( log, "Fetch failure: %s\n", error.message);
+            cursor = mongoc_database_command( db_connection->database, MONGOC_QUERY_NONE, 0, 0, 0, command, NULL, NULL );
+            if( cursor ) {
+
+                DB_RECORD *tmp_records = NULL;
+                size_t    row_count = 0;
+
+                while( mongoc_cursor_next( cursor, &reply ) ) {
+
+                    bson_iter_t iter;
+                    bson_iter_t sub_iter;
+
+                    if( bson_iter_init_find( &iter, reply, "cursor" ) &&
+                        ( BSON_ITER_HOLDS_DOCUMENT( &iter ) || BSON_ITER_HOLDS_ARRAY( &iter ) ) &&
+                        bson_iter_recurse( &iter, &sub_iter ) 
+                    ) {
+                       while( bson_iter_next( &sub_iter ) ) {
+
+                          if( strcmp( bson_iter_key( &sub_iter ), "firstBatch" ) == 0 || strcmp( bson_iter_key( &sub_iter ), "nextBatch" ) == 0 ) {
+
+                                uint32_t records_len = 0;
+                                const uint8_t *data = NULL;
+                                bson_iter_array( &sub_iter, &records_len, &data );
+
+                                bson_t *array = bson_new_from_data( data, records_len );
+                                //char *str = bson_as_json (array, NULL);
+                                bson_iter_t array_item;
+
+                                if( bson_iter_init( &array_item, array ) ) {
+                                    while( bson_iter_next( &array_item ) ) {
+                                        if( BSON_ITER_HOLDS_DOCUMENT( &array_item ) ) {
+
+                                            uint32_t document_len = 0;
+                                            const uint8_t *document = NULL;
+                                            bson_iter_document( &array_item, &document_len, &document );
+
+                                            bson_t *record = bson_new_from_data( document, document_len );
+                                            size_t record_size = 0;
+                                            char *record_str = bson_as_json( record, &record_size );
+
+                                            if( bson_empty( record ) ) {
+                                                free( record_str );
+                                                bson_destroy( record );
+                                                continue;
+                                            }
+
+                                            if( query_exec_callback ) {
+                                                DB_RECORD *record = SAFEMALLOC( ( size_t )records_len * sizeof( DB_RECORD ), __FILE__, __LINE__ );
+                                                if( record ) {
+                                                    for( uint32_t i = 0; i < records_len; i++ ) {
+                                                        /* We store entire BSON document as one column in DB_RECORD structure. */
+                                                        record[ i ].field_count = 1;
+                                                        record[ i ].fields = SAFEMALLOC( record[ i ].field_count * sizeof( DB_FIELD ), __FILE__, __LINE__ );
+                                                        strlcpy( record[ i ].fields[ 0 ].label, "_BSON", MAX_COLUMN_NAME_LEN );
+                                                        record[ i ].fields[ 0 ].size = record_size;
+                                                        if( record[ i ].fields[ 0 ].size > 0 ) {
+                                                            record[ i ].fields[ 0 ].value = SAFECALLOC( ( size_t )record_size, sizeof( char ), __FILE__, __LINE__ );
+                                                            for( uint32_t j = 0; j < record_size; j++ ) {
+                                                                record[ i ].fields[ 0 ].value[ j ] = record_str[ j ];
+                                                            }
+                                                        } else {
+                                                            record[ i ].fields[ 0 ].value = NULL;
+                                                        }
+
+                                                        pthread_mutex_unlock( &db_exec_mutex );
+                                                        ( *query_exec_callback )( &record[ i ], data_ptr1, data_ptr2, log );
+                                                    }
+                                                } else {
+                                                    LOG_print( log, "[%s] Fatal error: unable to SAFEMALLOC.\n", TIME_get_gmt() );
+                                                    return 0;
+                                                }
+                                            }
+
+                                            if( dst_result ) {
+                                                dst_result->field_count = 1;
+                                                dst_result->records = ( DB_RECORD* )realloc( tmp_records, ( row_count + 1 ) * sizeof( DB_RECORD ) );
+                                                if( dst_result->records ) {
+                                                    tmp_records = dst_result->records;
+                                                    dst_result->records[ row_count ].field_count = 1;
+                                                    dst_result->records[ row_count ].fields = ( DB_FIELD* )SAFEMALLOC( dst_result->records[ row_count ].field_count * sizeof( DB_FIELD ), __FILE__, __LINE__ );
+
+                                                    for( int i = 0; i < dst_result->records[ row_count ].field_count; i++ ) {
+                                                        strlcpy( dst_result->records[ row_count ].fields[ i ].label, "_BSON", MAX_COLUMN_NAME_LEN );
+
+                                                        dst_result->records[ row_count ].fields[ i ].size = ( size_t )record_size;
+                                                        if( dst_result->records[ row_count ].fields[ i ].size > 0 ) {
+                                                            dst_result->records[ row_count ].fields[ i ].value = SAFECALLOC( dst_result->records[ row_count ].fields[ i ].size + 1, sizeof( char ), __FILE__, __LINE__ );
+                                                            for( uint32_t j = 0; j < record_size; j++ ) {
+                                                                dst_result->records[ row_count ].fields[ i ].value[ j ] = record_str[ j ];
+                                                            }
+                                                        } else {
+                                                            dst_result->records[ row_count ].fields[ i ].value = NULL;
+                                                        }
+                                                    }
+                                                }
+                                                row_count++;
+                                                dst_result->row_count = row_count;
+                                            }
+
+                                            free( record_str );
+                                            bson_destroy( record );
+
+                                        }
+                                    }
+                                }
+                                //free( str );
+                                bson_destroy( array );
+                            }
+                        }
+                    }
+                }
+
+                if( dst_result ) {
+                    dst_result->row_count = row_count;
+                    dst_result->field_count = 1;
+                }
+            }
+            bson_destroy( command );
+
+           if( mongoc_cursor_error( cursor, &error ) ) {
+              LOG_print( log, "[%s] Fetch failure details: %s\n", TIME_get_gmt(), error.message);
               mongoc_cursor_destroy( cursor );
               return 0;
            }
+
+           pthread_mutex_unlock( &db_exec_mutex );
            mongoc_cursor_destroy( cursor );
+           LOG_print( log, "[%s]\tMONGODB_exec.\n", TIME_get_gmt() );
+           return 1;
         } else {
             LOG_print( log, "Command error: %s\n", error.message);
             return 0;
         }
     } else {
-        bson_free(str);
+        //bson_free(str);
         return 0;
     }
 

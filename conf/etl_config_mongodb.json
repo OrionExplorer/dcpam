@@ -45,7 +45,7 @@
 						"primary_db" : "dcpam",
 						"primary_db_sql" : "{ \"find\": \"testData\", \"projection\": { \"id\": 1, \"_id\": 0 } }",
 						"secondary_db" : "this",
-						"secondary_db_sql" : "{ \"find\": \"testData\", \"filter\": { \"id\" : { \"$nin\" : \"%s\"} } }"
+						"secondary_db_sql" : "{ \"find\": \"testData\", \"filter\": { \"id\" : { \"$nin\" : [%s] } } }"
 					},
 					"deleted" : {
 						"primary_db" : "this",

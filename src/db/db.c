@@ -194,6 +194,7 @@ int _DB_QUERY_internal_replace_str_( char* src, const char* search, const char*r
 }
 
 DB_QUERY_TYPE DB_QUERY_get_type( const char* sql ) {
+    /* SQL */
     if( strstr( sql, "SELECT" ) ) {
         return DQT_SELECT;
     } else if( strstr( sql, "INSERT" ) ) {
@@ -212,9 +213,21 @@ DB_QUERY_TYPE DB_QUERY_get_type( const char* sql ) {
         return DQT_USE;
     } else if( strstr( sql, "SHOW" ) ) {
         return DQT_SHOW;
-    } else {
-        return DQT_UNKNOWN;
     }
+
+    /* NoSQL - MongoDB */
+    if( strstr( sql, "\"find\"" ) ) {
+        return DQT_SELECT;
+    } else if( strstr( sql, "\"insert\"" ) ) {
+        return DQT_INSERT;
+    } else if( strstr( sql, "\"update\"" ) ) {
+        return DQT_UPDATE;
+    } else if( strstr( sql, "\"delete\"" ) ) {
+        return DQT_DELETE;
+    }
+
+
+    return DQT_UNKNOWN;
 }
 
 int DB_QUERY_format( const char* src, char **dst, size_t *dst_length, const char* const* param_values, const int params_count, const int *param_lengths, LOG_OBJECT *log ) {

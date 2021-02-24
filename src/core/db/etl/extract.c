@@ -36,6 +36,7 @@ void _ExtractInserted_callback( DB_RECORD* record, void* data_ptr1, void* data_p
     DATABASE_SYSTEM_DB* db = ( DATABASE_SYSTEM_DB* )data_ptr2;
 
     for( int i = 0; i < stage->inserted_count; i++ ) {
+        printf("---RECORD: %s\n", record->fields[ 0 ].value );
         _ExtractGeneric_callback( record, stage, stage->inserted[ i ], db, log );
     }
 
@@ -108,7 +109,7 @@ int CDC_ExtractGeneric( DB_SYSTEM_ETL_EXTRACT *extract, DB_SYSTEM_ETL_EXTRACT_QU
         if( primary_ret == TRUE ) {
 
             /* Check if query resulted with any data */
-            if( primary_db_sql_res.row_count > 0 ) {
+            if( primary_db_sql_res.row_count >= 0 ) {
 
                 if( primary_db_sql_res.field_count == 1 ) {
 
@@ -202,13 +203,14 @@ int CDC_ExtractGeneric( DB_SYSTEM_ETL_EXTRACT *extract, DB_SYSTEM_ETL_EXTRACT_QU
                 } else {
                     DB_QUERY_free( &primary_db_sql_res );
                     /*DB_QUERY_free( data );*/
-                    LOG_print( log, "Fatal error: query returned more than one column.\n" );
+                    LOG_print( log, "Fatal error: query did not return one column (%d).\n", primary_db_sql_res.field_count );
                     return 0;
                 }
             } else {
                 DB_QUERY_free( &primary_db_sql_res );
             }
         } else {
+            LOG_print( log, "[%s] Error: database query failed.\n", TIME_get_gmt() );
             /* In case of error, free query result struct */
             DB_QUERY_free( &primary_db_sql_res );
             return 0;

@@ -141,13 +141,13 @@ typedef struct DB_SYSTEM_ETL_POST {
     config.json => system[].queries[].etl
 */
 typedef struct DB_SYSTEM_ETL {
-    DB_SYSTEM_ETL_PRE       **pre_actions;      /* PreCDC actions are optional */
+    DB_SYSTEM_ETL_PRE       **pre_actions;      /* PreETL actions are optional */
     int                     pre_actions_count;
     DB_SYSTEM_ETL_EXTRACT   extract;
     DB_SYSTEM_ETL_STAGE     *stage;             /* Staging is optional */
     DB_SYSTEM_ETL_TRANSFORM *transform;         /* Transformation is optional */
     DB_SYSTEM_ETL_LOAD      load;
-    DB_SYSTEM_ETL_POST      **post_actions;     /* PostCDC actions are optional */
+    DB_SYSTEM_ETL_POST      **post_actions;     /* PostETL actions are optional */
     int                     post_actions_count;
 } DB_SYSTEM_ETL;
 
