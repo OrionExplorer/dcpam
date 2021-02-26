@@ -166,7 +166,6 @@ int MONGODB_exec(
                                 bson_iter_array( &sub_iter, &records_size, &data );
 
                                 bson_t *array = bson_new_from_data( data, records_size );
-                                //char *str = bson_as_json (array, NULL);
                                 bson_iter_t array_item;
                                 size_t records_len = bson_count_keys( array );
                                 size_t record_index = 0;
@@ -245,7 +244,6 @@ int MONGODB_exec(
                                         }
                                     }
                                 }
-                                //free( str );
                                 bson_destroy( array );
                             }
                         }
@@ -280,6 +278,5 @@ int MONGODB_exec(
     }
 
     pthread_mutex_unlock( &db_exec_mutex );
-
     return 1;
 }

@@ -232,7 +232,7 @@
 	* [x] Oracle Database
 	* [x] SQLite
 	* [x] IBM Db2
-	* [ ] MongoDB
+	* [x] MongoDB
 	* [ ] Cassandra
 	* [x] CSV/TSV/PSV
 	* [x] URL
