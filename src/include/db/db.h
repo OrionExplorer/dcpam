@@ -59,5 +59,6 @@ void            DB_QUERY_free( DB_QUERY *db_query );
 void            DB_QUERY_record_free( DB_RECORD *record );
 int             DB_QUERY_format( const char *src, char **dst, size_t *dst_length, const char* const* param_values, const int params_count, const int *param_lengths, LOG_OBJECT *log );
 DB_QUERY_TYPE   DB_QUERY_get_type( const char *sql );
+int             DB_QUERY_internal_replace_str_( char* src, const char* search, const char*replace, size_t *dst_len );
 
 #endif

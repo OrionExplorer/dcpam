@@ -8,7 +8,7 @@
 * DCPAM is hardware- and database-agnostic with component-based architecture.
 
 ### Supported databases
-![PostgreSQL](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/postgresql102x100.png) ![MySQL](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/mysql159x100.png) ![MariaDB](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/mariadb100x100.png) ![Microsoft SQL Server](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/sqlserver134x100.png) ![Oracle Database](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/oracle100x100.png) ![SQLite3](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/sqlite171x100.png) ![IBM Db2](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/ibmdb2100x100.png) ![ODBC](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/odbc199x100.png)
+![PostgreSQL](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/postgresql102x100.png) ![MySQL](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/mysql159x100.png) ![MariaDB](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/mariadb100x100.png) ![Microsoft SQL Server](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/sqlserver134x100.png) ![Oracle Database](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/oracle100x100.png) ![SQLite3](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/sqlite171x100.png) ![IBM Db2](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/ibmdb2100x100.png) ![ODBC](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/odbc199x100.png) ![MongoDB](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/mongodb105x100.png) ![ODBC](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/odbc199x100.png)
 ### Other supported sources
 ![XLSX](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/xlsx100x100.png) ![MSACCESS](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/msaccess100x100.png) ![XML](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/xml100x100.png) ![ODS](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/ods100x100.png) ![CSV](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/csv100x100.png) ![TSV](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/tsv100x100.png) ![PSV](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/psv100x100.png) ![JSON](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/json100x100.png) ![API](https://raw.githubusercontent.com/OrionExplorer/dcpam/master/docs/api100x100.png)
 ### Deployment
@@ -117,7 +117,6 @@ As DCPAM is extremely modular and highly scalabe, it can serve both as Data Ware
 * DCPAM LCS Notifications
 * Data sources:
   * LDAP
-  * MongoDB
   * Cassandra
 
 ### Other
@@ -192,6 +191,7 @@ DCPAM development is still in progress with following data sources available:
 | SQLite3                            | native           |
 | IBM Db2                            | ODBC             |
 | Microsoft Access                   | ODBC             |
+| MongoDB                            | native           |
 
 > \* SQL Server/Azure SQL Database: [ODBC is the primary native data access API for applications written in C and C++ for SQL Server](https://docs.microsoft.com/en-us/sql/connect/odbc/microsoft-odbc-driver-for-sql-server).
 
@@ -230,7 +230,6 @@ Each DCPAM Component is provided with `Dockerfile` to build Docker image:
 
 ##### Currently under active development
 * [x] DCPAM WDS: cache TTL.
-* [x] DCPAM ETL: MongoDB support.
 
 ## Professional Services for DCPAM
 Under development.
@@ -254,7 +253,7 @@ Under development.
 | 2021 | Q1      | :white_check_mark: DCPAM WDS true Multi Parallel Processing             | Done (2021-02-02) |
 | 2021 | Q1      | :white_check_mark: DCPAM WDS: horizontal scaling                        | Done (2021-02-11) |
 | 2021 | Q1      | :white_check_mark: DCPAM WDS: Advanced Query Cache                      | Done (2021-02-14) |
-| 2021 | Q1      | Data source: MongoDB                                                    | In progress       |
+| 2021 | Q1      | :white_check_mark: Data source: MongoDB                                 | Done (2021-02-27) |
 | 2021 | Q1      | DCPAM WDS: cache TTL                                                    | In progress       |
 | 2021 | Q1      | DCPAM ETL: report workflow failures to DCPAM LCS                        | Not implemented   |
 | 2021 | Q1      | Read complex SQL queries from files                                     | Not implemented   |

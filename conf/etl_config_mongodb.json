@@ -44,20 +44,63 @@
 					"inserted" : {
 						"primary_db" : "dcpam",
 						"primary_db_sql" : "{ \"find\": \"testData\", \"sort\" : { \"id\": -1 }, \"limit\": 1, \"projection\": { \"id\": 1, \"_id\": 0 } }",
-						"primary_db_record_regex" : "\\{\\s\\\"id\\\"\\s\\:\\s(\\d+).+}",
+						"primary_regex_replace" : [{
+							"search" : ": ([0-9]+).+",
+							"replace" : "\\1",
+							"_search" : "\"(id)\" : ([0-9]+).+",
+							"_replace" : "asd\\1qwe\\2"
+						}, {
+							"search" : ": ([0-9]+).+",
+							"replace" : "\\1"
+						}],
 						"secondary_db" : "this",
+						"secondary_regex_replace" : [{
+							"search" : ": ([0-9]+).+",
+							"replace" : "\\1"
+						}, {
+							"search" : ": ([0-9]+).+",
+							"replace" : "\\1"
+						}],
 						"secondary_db_sql" : "{ \"find\": \"testData\", \"filter\": { \"id\" : {  \"$lt\": %s } } }"
 					},
 					"deleted" : {
 						"primary_db" : "this",
 						"primary_db_sql" : "SELECT id AS system_worklog_id FROM time_accounting",
+						"primary_regex_replace" : [{
+							"search" : ": ([0-9]+).+",
+							"replace" : "\\1"
+						}, {
+							"search" : ": ([0-9]+).+",
+							"replace" : "\\1"
+						}],
 						"secondary_db" : "dcpam",
+						"secondary_regex_replace" : [{
+							"search" : ": ([0-9]+).+",
+							"replace" : "\\1"
+						}, {
+							"search" : ": ([0-9]+).+",
+							"replace" : "\\1"
+						}],
 						"secondary_db_sql" : "SELECT system_object_id, system_worklog_id, system_customer, system_agent_id, system_accounted_time, system_created, system FROM accounted_time WHERE is_valid = 1 AND system_worklog_id NOT IN (%s)"
 					},
 					"modified" : {
 						"primary_db" : "dcpam",
 						"primary_db_sql" : "SELECT MAX(changed) AS changed FROM accounted_time WHERE is_valid = 1 AND SYSTEM = 'OTRS'",
+						"primary_regex_replace" : [{
+							"search" : ": ([0-9]+).+",
+							"replace" : "\\1"
+						}, {
+							"search" : ": ([0-9]+).+",
+							"replace" : "\\1"
+						}],
 						"secondary_db" : "this",
+						"secondary_regex_replace" : [{
+							"search" : ": ([0-9]+).+",
+							"replace" : "\\1"
+						}, {
+							"search" : ": ([0-9]+).+",
+							"replace" : "\\1"
+						}],
 						"secondary_db_sql" : "SELECT t.id AS system_object_id, ta.id AS system_worklog_id, t.customer_id AS system_customer, ta.create_by AS system_agent_id, ta.time_unit AS system_accounted_time, ta.create_time AS system_created FROM time_accounting ta LEFT JOIN ticket t ON t.id = ta.ticket_id WHERE ta.change_time > '%s'"
 					}
 				},

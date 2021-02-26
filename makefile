@@ -120,6 +120,9 @@ misc.o: src/utils/misc.c
 memory.o: src/utils/memory.c
 	$(CC) -c src/utils/memory.c $(CFLAGS)
 
+regex.o: src/utils/regex.c
+	$(CC) -c src/utils/regex.c $(CFLAGS)
+
 strings.o: src/utils/strings.c
 	$(CC) -c src/utils/strings.c $(CFLAGS)
 
@@ -127,9 +130,9 @@ dcpam-rdp: dcpam-rdp.o socket_io.o log.o time.o strings.o client.o http.o filesy
 	@ mkdir bin -p
 	$(CC) socket_io.o dcpam-rdp.o log.o time.o strings.o client.o http.o filesystem.o memory.o cJSON.o lcs_report.o -o bin/dcpam-rdp -lpthread -lssl -lcrypto
 
-dcpam-etl: dcpam-etl.o mysql.o mariadb.o odbc.o postgresql.o mongodb.o log.o time.o filesystem.o cJSON.o sqlite3.o memory.o http.o preload.o csv.o json.o db.o worker.o system.o extract.o stage.o transform.o load.o strings.o oracle.o sqlite.o client.o lcs_report.o socket_io.o
+dcpam-etl: dcpam-etl.o mysql.o mariadb.o odbc.o postgresql.o mongodb.o log.o time.o filesystem.o cJSON.o sqlite3.o memory.o regex.o http.o preload.o csv.o json.o db.o worker.o system.o extract.o stage.o transform.o load.o strings.o oracle.o sqlite.o client.o lcs_report.o socket_io.o
 	@ mkdir bin -p
-	$(CC) mysql.o mariadb.o odbc.o postgresql.o mongodb.o dcpam-etl.o log.o time.o filesystem.o cJSON.o sqlite3.o memory.o http.o preload.o csv.o json.o db.o worker.o system.o extract.o stage.o transform.o load.o strings.o oracle.o sqlite.o client.o lcs_report.o socket_io.o -o bin/dcpam-etl $(LIBS)
+	$(CC) mysql.o mariadb.o odbc.o postgresql.o mongodb.o dcpam-etl.o log.o time.o filesystem.o cJSON.o sqlite3.o memory.o regex.o http.o preload.o csv.o json.o db.o worker.o system.o extract.o stage.o transform.o load.o strings.o oracle.o sqlite.o client.o lcs_report.o socket_io.o -o bin/dcpam-etl $(LIBS)
 
 dcpam-wds: dcpam-wds.o socket_io.o cache.o mysql.o mariadb.o odbc.o postgresql.o log.o time.o http.o filesystem.o cJSON.o sqlite3.o memory.o db.o system.o strings.o oracle.o sqlite.o client.o lcs_report.o wds_node.o sql_parser.o
 	@ mkdir bin -p

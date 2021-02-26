@@ -35,12 +35,21 @@ typedef enum DB_SYSTEM_MODE {
 /*
     config.json => system[].queries[].etl.extract
 */
+typedef struct EXTRACT_RESULT_REPLACE {
+    char                    search[ 512 ];
+    char                    replace[ 512 ];
+} EXTRACT_RESULT_REPLACE;
+
 typedef struct DB_SYSTEM_ETL_EXTRACT_QUERY {
     char                    *primary_db;
     char                    *primary_db_sql;
+    EXTRACT_RESULT_REPLACE  *primary_db_result_replace;
+    int                     primary_db_result_replace_len;
     size_t                  primary_db_sql_len;
     char                    *secondary_db;
     char                    *secondary_db_sql;
+    EXTRACT_RESULT_REPLACE  *secondary_db_result_replace;
+    int                     secondary_db_result_replace_len;
     size_t                  secondary_db_sql_len;
 } DB_SYSTEM_ETL_EXTRACT_QUERY;
 
@@ -49,7 +58,6 @@ typedef struct DB_SYSTEM_ETL_EXTRACT {
     DB_SYSTEM_ETL_EXTRACT_QUERY deleted;
     DB_SYSTEM_ETL_EXTRACT_QUERY modified;
 } DB_SYSTEM_ETL_EXTRACT;
-
 
 /******************************************************************************/
 

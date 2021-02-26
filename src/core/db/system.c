@@ -117,8 +117,20 @@ void SYSTEM_ETL_CONFIG_free( DB_SYSTEM_ETL *dst ) {
     if( dst->extract.inserted.primary_db != NULL ) {
         free( dst->extract.inserted.primary_db ); dst->extract.inserted.primary_db = NULL;
     }
+    if( dst->extract.inserted.primary_db_result_replace_len > 0 ) {
+        if( dst->extract.inserted.primary_db_result_replace != NULL ) {
+            free( dst->extract.inserted.primary_db_result_replace ); dst->extract.inserted.primary_db_result_replace = NULL;
+        }
+        dst->extract.inserted.primary_db_result_replace_len = 0;
+    }
     if( dst->extract.inserted.secondary_db != NULL ) {
         free( dst->extract.inserted.secondary_db ); dst->extract.inserted.secondary_db = NULL;
+    }
+    if( dst->extract.inserted.secondary_db_result_replace_len > 0 ) {
+        if( dst->extract.inserted.secondary_db_result_replace != NULL ) {
+            free( dst->extract.inserted.secondary_db_result_replace ); dst->extract.inserted.secondary_db_result_replace = NULL;
+        }
+        dst->extract.inserted.secondary_db_result_replace_len = 0;
     }
 
     if( dst->extract.deleted.primary_db_sql != NULL ) {
@@ -130,8 +142,20 @@ void SYSTEM_ETL_CONFIG_free( DB_SYSTEM_ETL *dst ) {
     if( dst->extract.deleted.primary_db != NULL ) {
         free( dst->extract.deleted.primary_db ); dst->extract.deleted.primary_db = NULL;
     }
+    if( dst->extract.deleted.primary_db_result_replace_len > 0 ) {
+        if( dst->extract.deleted.primary_db_result_replace != NULL ) {
+            free( dst->extract.deleted.primary_db_result_replace ); dst->extract.deleted.primary_db_result_replace = NULL;
+        }
+        dst->extract.deleted.primary_db_result_replace_len = 0;
+    }
     if( dst->extract.deleted.secondary_db != NULL ) {
         free( dst->extract.deleted.secondary_db ); dst->extract.deleted.secondary_db = NULL;
+    }
+    if( dst->extract.deleted.secondary_db_result_replace_len > 0 ) {
+        if( dst->extract.deleted.secondary_db_result_replace != NULL ) {
+            free( dst->extract.deleted.secondary_db_result_replace ); dst->extract.deleted.secondary_db_result_replace = NULL;
+        }
+        dst->extract.deleted.secondary_db_result_replace_len = 0;
     }
 
     if( dst->extract.modified.primary_db_sql != NULL ) {
@@ -143,8 +167,20 @@ void SYSTEM_ETL_CONFIG_free( DB_SYSTEM_ETL *dst ) {
     if( dst->extract.modified.primary_db != NULL ) {
         free( dst->extract.modified.primary_db ); dst->extract.modified.primary_db = NULL;
     }
+    if( dst->extract.modified.primary_db_result_replace_len > 0 ) {
+        if( dst->extract.modified.primary_db_result_replace != NULL ) {
+            free( dst->extract.modified.primary_db_result_replace ); dst->extract.modified.primary_db_result_replace = NULL;
+        }
+        dst->extract.modified.primary_db_result_replace_len = 0;
+    }
     if( dst->extract.modified.secondary_db != NULL ) {
         free( dst->extract.modified.secondary_db ); dst->extract.modified.secondary_db = NULL;
+    }
+    if( dst->extract.modified.secondary_db_result_replace_len > 0 ) {
+        if( dst->extract.modified.secondary_db_result_replace != NULL ) {
+            free( dst->extract.modified.secondary_db_result_replace ); dst->extract.modified.secondary_db_result_replace = NULL;
+        }
+        dst->extract.modified.secondary_db_result_replace_len = 0;
     }
 
     if( dst->transform ) {
@@ -411,16 +447,64 @@ void DATABASE_SYSTEM_QUERY_add(
 
     if( verbose > 0 ) LOG_print( log, "\t· extract\n\t\t·inserted\n\t\t\t·primary_db_sql: \"%.70s(...)\"\n", etl.extract.inserted.primary_db_sql );
     if( verbose > 0 ) LOG_print( log, "\t\t\t·primary_db: \"%s\"\n", etl.extract.inserted.primary_db );
+    if( verbose > 0 ) {
+        if( etl.extract.inserted.primary_db_result_replace_len > 0 ) {
+            LOG_print( log, "\t\t\t·primary_db_regex_replace (%d):\n", etl.extract.inserted.primary_db_result_replace_len );
+            for( int i = 0; i < etl.extract.inserted.primary_db_result_replace_len; i++ ) {
+                LOG_print( log, "\t\t\t\t· search: [%s], replace: [%s]\n", etl.extract.inserted.primary_db_result_replace[ i ].search, etl.extract.inserted.primary_db_result_replace[ i ].replace );
+            }
+        }
+    }
     if( verbose > 0 ) LOG_print( log, "\t\t\t·secondary_db_sql: \"%.70s(...)\"\n", etl.extract.inserted.secondary_db_sql );
     if( verbose > 0 ) LOG_print( log, "\t\t\t·secondary_db: \"%s\"\n", etl.extract.inserted.secondary_db );
+    if( verbose > 0 ) {
+        if( etl.extract.inserted.secondary_db_result_replace_len > 0 ) {
+            LOG_print( log, "\t\t\t·secondary_db_regex_replace (%d):\n", etl.extract.inserted.secondary_db_result_replace_len );
+            for( int i = 0; i < etl.extract.inserted.secondary_db_result_replace_len; i++ ) {
+                LOG_print( log, "\t\t\t\t· search: [%s], replace: [%s]\n", etl.extract.inserted.secondary_db_result_replace[ i ].search, etl.extract.inserted.secondary_db_result_replace[ i ].replace );
+            }
+        }
+    }
     if( verbose > 0 ) LOG_print( log, "\t\t·modified\n\t\t\t·primary_db_sql: \"%.70s(...)\"\n", etl.extract.modified.primary_db_sql );
     if( verbose > 0 ) LOG_print( log, "\t\t\t·primary_db: \"%s\"\n", etl.extract.modified.primary_db );
+    if( verbose > 0 ) {
+        if( etl.extract.modified.primary_db_result_replace_len > 0 ) {
+            LOG_print( log, "\t\t\t·primary_db_regex_replace (%d):\n", etl.extract.modified.primary_db_result_replace_len );
+            for( int i = 0; i < etl.extract.modified.primary_db_result_replace_len; i++ ) {
+                LOG_print( log, "\t\t\t\t· search: [%s], replace: [%s]\n", etl.extract.modified.primary_db_result_replace[ i ].search, etl.extract.modified.primary_db_result_replace[ i ].replace );
+            }
+        }
+    }
     if( verbose > 0 ) LOG_print( log, "\t\t\t·secondary_db_sql: \"%.70s(...)\"\n", etl.extract.modified.secondary_db_sql );
     if( verbose > 0 ) LOG_print( log, "\t\t\t·secondary_db: \"%s\"\n", etl.extract.modified.secondary_db );
+    if( verbose > 0 ) {
+        if( etl.extract.modified.secondary_db_result_replace_len > 0 ) {
+            LOG_print( log, "\t\t\t·secondary_db_regex_replace (%d):\n", etl.extract.modified.secondary_db_result_replace_len );
+            for( int i = 0; i < etl.extract.modified.secondary_db_result_replace_len; i++ ) {
+                LOG_print( log, "\t\t\t\t· search: [%s], replace: [%s]\n", etl.extract.modified.secondary_db_result_replace[ i ].search, etl.extract.modified.secondary_db_result_replace[ i ].replace );
+            }
+        }
+    }
     if( verbose > 0 ) LOG_print( log, "\t\t·deleted\n\t\t\t·primary_db_sql: \"%.70s(...)\"\n", etl.extract.deleted.primary_db_sql );
     if( verbose > 0 ) LOG_print( log, "\t\t\t·primary_db: \"%s\"\n", etl.extract.deleted.primary_db );
+    if( verbose > 0 ) {
+        if( etl.extract.deleted.primary_db_result_replace_len > 0 ) {
+            LOG_print( log, "\t\t\t·primary_db_regex_replace (%d):\n", etl.extract.deleted.primary_db_result_replace_len );
+            for( int i = 0; i < etl.extract.deleted.primary_db_result_replace_len; i++ ) {
+                LOG_print( log, "\t\t\t\t· search: [%s], replace: [%s]\n", etl.extract.deleted.primary_db_result_replace[ i ].search, etl.extract.deleted.primary_db_result_replace[ i ].replace );
+            }
+        }
+    }
     if( verbose > 0 ) LOG_print( log, "\t\t\t·secondary_db_sql: \"%.70s(...)\"\n", etl.extract.deleted.secondary_db_sql );
     if( verbose > 0 ) LOG_print( log, "\t\t\t·secondary_db: \"%s\"\n", etl.extract.deleted.secondary_db );
+    if( verbose > 0 ) {
+        if( etl.extract.deleted.secondary_db_result_replace_len > 0 ) {
+            LOG_print( log, "\t\t\t·secondary_db_regex_replace (%d):\n", etl.extract.deleted.secondary_db_result_replace_len );
+            for( int i = 0; i < etl.extract.deleted.secondary_db_result_replace_len; i++ ) {
+                LOG_print( log, "\t\t\t\t· search: [%s], replace: [%s]\n", etl.extract.deleted.secondary_db_result_replace[ i ].search, etl.extract.deleted.secondary_db_result_replace[ i ].replace );
+            }
+        }
+    }
     
     if( etl.stage ) {
         for( int i = 0; i < etl.stage->inserted_count; i++ ) {

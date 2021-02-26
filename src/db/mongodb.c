@@ -271,113 +271,14 @@ int MONGODB_exec(
            return 1;
         } else {
             LOG_print( log, "Command error: %s\n", error.message);
+            pthread_mutex_unlock( &db_exec_mutex );
             return 0;
         }
     } else {
-        //bson_free(str);
-        return 0;
-    }
-
-    /*if( db_connection->connection ) {
-        if( param_values == NULL || params_count == 0) {
-            pg_result = PQexec( db_connection->connection, sql );
-        } else {
-            pg_result = PQexecParams( db_connection->connection,
-                sql,
-                params_count,
-                param_types,
-                (const char * const *)param_values,
-                param_lengths,
-                param_formats,
-                1
-            );
-        }
-    } else {
-        PQclear( pg_result );
-    }
-
-    if ( PQresultStatus( pg_result ) != PGRES_TUPLES_OK && PQresultStatus( pg_result ) != PGRES_COMMAND_OK ) {
-        PQclear( pg_result );
-        LOG_print( log, "[%s][fail] MONGODB_exec. Message: \"%s\"\n", TIME_get_gmt(), PQerrorMessage( db_connection->connection ) );
         pthread_mutex_unlock( &db_exec_mutex );
         return 0;
     }
-    
-    int row_count = PQntuples( pg_result );
- 
-    if( dst_result ) {
-        dst_result->row_count = row_count;
-    }
 
-    if( row_count > 0 ) {
-
-        int field_count = PQnfields( pg_result );
-
-        if( query_exec_callback ) {
-
-            for( int i = 0; i < row_count; i++ ) {
-
-                DB_RECORD   *record = SAFEMALLOC( 1 * sizeof( DB_RECORD ), __FILE__, __LINE__ );
-
-                record->field_count = field_count;
-                record->fields = ( DB_FIELD* )SAFEMALLOC( field_count * sizeof( DB_FIELD ), __FILE__, __LINE__ );
-
-                for( int j = 0; j < field_count; j++ ) {
-                    strlcpy( record->fields[ j ].label, PQfname( pg_result, j ), MAX_COLUMN_NAME_LEN );
-
-                    int val_length = PQgetlength( pg_result, i, j );
-
-                    if( val_length > 0 ) {
-
-                        record->fields[ j ].value = SAFECALLOC( ( val_length + 1 ), sizeof( char ), __FILE__, __LINE__ );
-                        char* tmp_res = PQgetvalue( pg_result, i, j );
-
-                        record->fields[ j ].size = val_length;
-
-                        for( int l = 0; l < val_length; l++ ) {
-                            record->fields[ j ].value[ l ] = tmp_res[ l ];
-                        }
-                    } else {
-                        record->fields[ j ].size = 0;
-                        record->fields[ j ].value = NULL;
-                    }
-                }
-                pthread_mutex_unlock( &db_exec_mutex );
-                ( *query_exec_callback )( record, data_ptr1, data_ptr2, log );
-            }
-        }
-
-        if( dst_result ) {
-
-            dst_result->records = ( DB_RECORD* )SAFEMALLOC( row_count * sizeof( DB_RECORD ), __FILE__, __LINE__ );
-
-            dst_result->field_count = field_count;
-
-            for( int i = 0; i < row_count; i++ ) {
-                dst_result->records[ i ].fields = ( DB_FIELD* )SAFEMALLOC( field_count * sizeof( DB_FIELD ), __FILE__, __LINE__ );
-                dst_result->records[ i ].field_count = field_count;
-
-                for( int j = 0; j < field_count; j++ ) {
-                    strlcpy( dst_result->records[ i ].fields[ j ].label, PQfname( pg_result, j ), MAX_COLUMN_NAME_LEN );
-                    int val_length = PQgetlength( pg_result, i, j );
-                    if( val_length > 0 ) {
-                        dst_result->records[ i ].fields[ j ].value = SAFECALLOC( ( val_length + 1 ), sizeof( char ), __FILE__, __LINE__ );
-                        char* tmp_res = PQgetvalue( pg_result, i, j );
-
-                        dst_result->records[ i ].fields[ j ].size = val_length;
-                        for( int l = 0; l < val_length; l++ ) {
-                            dst_result->records[ i ].fields[ j ].value[ l ] = tmp_res[ l ];
-                        }
-                    } else {
-                        dst_result->records[ i ].fields[ j ].size = 0;
-                        dst_result->records[ i ].fields[ j ].value = NULL;
-                    }
-                }
-            }
-        }
-    }
-    LOG_print( log, "[%s]\tMONGODB_exec.\n", TIME_get_gmt() );
-    PQclear( pg_result );*/
     pthread_mutex_unlock( &db_exec_mutex );
 
     return 1;

@@ -17,6 +17,7 @@
 #include <stdlib.h>
 #include "../../../include/core/db/system.h"
 #include "../../../include/utils/time.h"
+#include "../../../include/utils/regex.h"
 #include "../../../include/utils/memory.h"
 #include "../../../include/core/schema.h"
 #include "../../../include/utils/log.h"
@@ -122,8 +123,39 @@ int CDC_ExtractGeneric( DB_SYSTEM_ETL_EXTRACT *extract, DB_SYSTEM_ETL_EXTRACT_QU
                     /* Allocate memory for each row value and copy data */
                     for( int i = 0; i < primary_db_sql_res.row_count; i++ ) {
                         if( primary_db_sql_res.records[ i ].fields[ 0 ].size > 0 ) {
+
                             ret_values[ i ] = SAFEMALLOC( ( primary_db_sql_res.records[ i ].fields[ 0 ].size + 1 ) * sizeof * *ret_values, __FILE__, __LINE__ );
                             memcpy( ret_values[ i ], primary_db_sql_res.records[ i ].fields[ 0 ].value, primary_db_sql_res.records[ i ].fields[ 0 ].size + 1 );
+
+                            if( extract_element->primary_db_result_replace_len > 0 ) {
+                                for( int j = 0; j < extract_element->primary_db_result_replace_len; j++ ) {
+
+                                    LOG_print( log, "[%s] [%d/%d] Perform replace %s with %s on value %s (%d/%d)...\n",
+                                        TIME_get_gmt(),
+                                        j+1, extract_element->primary_db_result_replace_len,
+                                        extract_element->primary_db_result_replace[ j ].search,
+                                        extract_element->primary_db_result_replace[ j ].replace,
+                                        ret_values[ i ],
+                                        i+1, primary_db_sql_res.row_count
+                                    );
+
+                                    REGEX_replace(
+                                        &ret_values[ i ],
+                                        extract_element->primary_db_result_replace[ j ].search,
+                                        extract_element->primary_db_result_replace[ j ].replace,
+                                        &primary_db_sql_res.records[ i ].fields[ 0 ].size,
+                                        log
+                                    );
+                                    LOG_print( log, "[%s] [%d/%d] Perform replace %s with %s done. Result %s.\n",
+                                        TIME_get_gmt(),
+                                        j+1, extract_element->primary_db_result_replace_len,
+                                        extract_element->primary_db_result_replace[ j ].search,
+                                        extract_element->primary_db_result_replace[ j ].replace,
+                                        ret_values[ i ]
+                                    );
+                                }
+                            }
+
                             /* Track summary length for future memory allocation */
                             ret_values_len += primary_db_sql_res.records[ i ].fields[ 0 ].size;
                         } else {
@@ -148,6 +180,26 @@ int CDC_ExtractGeneric( DB_SYSTEM_ETL_EXTRACT *extract, DB_SYSTEM_ETL_EXTRACT_QU
                             ret_values = NULL;
                             return 0;
                         }
+
+                        /* Perform data replacement */
+                        /*if( extract_element->primary_db_result_replace_len > 0 ) {
+                            for( int i = 0; i < extract_element->primary_db_result_replace_len; i++ ) {
+                                for( int j = 0; j < primary_db_sql_res.row_count; j++ ) {
+                                    LOG_print( log, "[%s] [%d/%d] Perform replace %s with %s on value %s (%d/%d)...",
+                                        TIME_get_gmt(),
+                                        i+1, extract_element->primary_db_result_replace_len,
+                                        extract_element->primary_db_result_replace[ i ].search,
+                                        extract_element->primary_db_result_replace[ i ].replace,
+                                        ret_values[ j ],
+                                        j+1, primary_db_sql_res.row_count
+                                    );
+
+                                    REGEX_replace( &ret_values[ j ], extract_element->primary_db_result_replace[ i ].search, extract_element->primary_db_result_replace[ i ].replace, log );
+                                    LOG_print( log, "ok. Result: %s\n", ret_values[ j ] );
+
+                                }
+                            }
+                        }*/
 
                         /* Join ret_values with commas */
                         for( i = 0; i < primary_db_sql_res.row_count; i++ ) {
