@@ -97,7 +97,7 @@ preload.o: src/core/file/preload.c
 	$(CC) -c src/core/file/preload.c $(CFLAGS) $(ORACLE_DEP) $(MONGODB_DEP)
 
 cache.o: src/core/cache.c
-	$(CC) -c src/core/cache.c $(CFLAGS) $(MONGODB_DEP)
+	$(CC) -c src/core/cache.c $(CFLAGS) $(ORACLE_DEP) $(MONGODB_DEP)
 
 lcs_report.o: src/core/lcs_report.c
 	$(CC) -c src/core/lcs_report.c $(CFLAGS)
