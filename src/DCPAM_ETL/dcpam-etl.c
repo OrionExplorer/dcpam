@@ -731,10 +731,12 @@ int DCPAM_load_configuration( const char* filename ) {
                         /*
                             etl.extract.inserted.primary_db_record_regex_replace
                         */
+                        tmp_etl->extract.inserted.primary_db_result_replace_len = 0;
+                        tmp_etl->extract.inserted.primary_db_result_replace = NULL;
                         cfg_system_query_item_etl_extract_db_regexrep_array = cJSON_GetObjectItem( cfg_system_query_item_etl_extract_inserted, "primary_regex_replace" );
                         if( cfg_system_query_item_etl_extract_db_regexrep_array ) {
                             tmp_etl->extract.inserted.primary_db_result_replace_len = cJSON_GetArraySize( cfg_system_query_item_etl_extract_db_regexrep_array );
-                            if( tmp_etl->extract.inserted.primary_db_result_replace_len ) {
+                            if( tmp_etl->extract.inserted.primary_db_result_replace_len > 0 ) {
                                 LOG_print( &dcpam_etl_log, "[%s] Found %d primary DB RegEx replacements:\n", TIME_get_gmt(), tmp_etl->extract.inserted.primary_db_result_replace_len );
                                 tmp_etl->extract.inserted.primary_db_result_replace = SAFEMALLOC( tmp_etl->extract.inserted.primary_db_result_replace_len * sizeof( EXTRACT_RESULT_REPLACE ), __FILE__, __LINE__ );
                                 for( int pr_c = 0; pr_c < tmp_etl->extract.inserted.primary_db_result_replace_len; pr_c++ ) {
@@ -777,10 +779,12 @@ int DCPAM_load_configuration( const char* filename ) {
                         /*
                             etl.extract.inserted.secondary_db_record_regex_replace
                         */
+                        tmp_etl->extract.inserted.secondary_db_result_replace_len = 0;
+                        tmp_etl->extract.inserted.secondary_db_result_replace = NULL;
                         cfg_system_query_item_etl_extract_db_regexrep_array = cJSON_GetObjectItem( cfg_system_query_item_etl_extract_inserted, "secondary_regex_replace" );
                         if( cfg_system_query_item_etl_extract_db_regexrep_array ) {
                             tmp_etl->extract.inserted.secondary_db_result_replace_len = cJSON_GetArraySize( cfg_system_query_item_etl_extract_db_regexrep_array );
-                            if( tmp_etl->extract.inserted.secondary_db_result_replace_len ) {
+                            if( tmp_etl->extract.inserted.secondary_db_result_replace_len > 0 ) {
                                 LOG_print( &dcpam_etl_log, "[%s] Found %d secondary DB RegEx replacements:\n", TIME_get_gmt(), tmp_etl->extract.inserted.secondary_db_result_replace_len );
                                 tmp_etl->extract.inserted.secondary_db_result_replace = SAFEMALLOC( tmp_etl->extract.inserted.secondary_db_result_replace_len * sizeof( EXTRACT_RESULT_REPLACE ), __FILE__, __LINE__ );
                                 for( int pr_c = 0; pr_c < tmp_etl->extract.inserted.secondary_db_result_replace_len; pr_c++ ) {
@@ -871,10 +875,12 @@ int DCPAM_load_configuration( const char* filename ) {
                         /*
                             etl.extract.modified.primary_db_record_regex_replace
                         */
+                        tmp_etl->extract.modified.primary_db_result_replace_len = 0;
+                        tmp_etl->extract.modified.primary_db_result_replace = NULL;
                         cfg_system_query_item_etl_extract_db_regexrep_array = cJSON_GetObjectItem( cfg_system_query_item_etl_extract_modified, "primary_regex_replace" );
                         if( cfg_system_query_item_etl_extract_db_regexrep_array ) {
                             tmp_etl->extract.modified.primary_db_result_replace_len = cJSON_GetArraySize( cfg_system_query_item_etl_extract_db_regexrep_array );
-                            if( tmp_etl->extract.modified.primary_db_result_replace_len ) {
+                            if( tmp_etl->extract.modified.primary_db_result_replace_len > 0 ) {
                                 LOG_print( &dcpam_etl_log, "[%s] Found %d primary DB RegEx replacements:\n", TIME_get_gmt(), tmp_etl->extract.modified.primary_db_result_replace_len );
                                 tmp_etl->extract.modified.primary_db_result_replace = SAFEMALLOC( tmp_etl->extract.modified.primary_db_result_replace_len * sizeof( EXTRACT_RESULT_REPLACE ), __FILE__, __LINE__ );
                                 for( int pr_c = 0; pr_c < tmp_etl->extract.modified.primary_db_result_replace_len; pr_c++ ) {
@@ -917,10 +923,12 @@ int DCPAM_load_configuration( const char* filename ) {
                         /*
                             etl.extract.modified.secondary_db_record_regex_replace
                         */
+                        tmp_etl->extract.modified.secondary_db_result_replace_len = 0;
+                        tmp_etl->extract.modified.secondary_db_result_replace = NULL;
                         cfg_system_query_item_etl_extract_db_regexrep_array = cJSON_GetObjectItem( cfg_system_query_item_etl_extract_modified, "secondary_regex_replace" );
                         if( cfg_system_query_item_etl_extract_db_regexrep_array ) {
                             tmp_etl->extract.modified.secondary_db_result_replace_len = cJSON_GetArraySize( cfg_system_query_item_etl_extract_db_regexrep_array );
-                            if( tmp_etl->extract.modified.secondary_db_result_replace_len ) {
+                            if( tmp_etl->extract.modified.secondary_db_result_replace_len > 0 ) {
                                 LOG_print( &dcpam_etl_log, "[%s] Found %d secondary DB RegEx replacements:\n", TIME_get_gmt(), tmp_etl->extract.modified.secondary_db_result_replace_len );
                                 tmp_etl->extract.modified.secondary_db_result_replace = SAFEMALLOC( tmp_etl->extract.modified.secondary_db_result_replace_len * sizeof( EXTRACT_RESULT_REPLACE ), __FILE__, __LINE__ );
                                 for( int pr_c = 0; pr_c < tmp_etl->extract.modified.secondary_db_result_replace_len; pr_c++ ) {
@@ -1011,10 +1019,12 @@ int DCPAM_load_configuration( const char* filename ) {
                         /*
                             etl.extract.deleted.primary_db_record_regex_replace
                         */
+                        tmp_etl->extract.deleted.primary_db_result_replace_len = 0;
+                        tmp_etl->extract.deleted.primary_db_result_replace = NULL;
                         cfg_system_query_item_etl_extract_db_regexrep_array = cJSON_GetObjectItem( cfg_system_query_item_etl_extract_deleted, "primary_regex_replace" );
                         if( cfg_system_query_item_etl_extract_db_regexrep_array ) {
                             tmp_etl->extract.deleted.primary_db_result_replace_len = cJSON_GetArraySize( cfg_system_query_item_etl_extract_db_regexrep_array );
-                            if( tmp_etl->extract.deleted.primary_db_result_replace_len ) {
+                            if( tmp_etl->extract.deleted.primary_db_result_replace_len > 0 ) {
                                 LOG_print( &dcpam_etl_log, "[%s] Found %d primary DB RegEx replacements:\n", TIME_get_gmt(), tmp_etl->extract.deleted.primary_db_result_replace_len );
                                 tmp_etl->extract.deleted.primary_db_result_replace = SAFEMALLOC( tmp_etl->extract.deleted.primary_db_result_replace_len * sizeof( EXTRACT_RESULT_REPLACE ), __FILE__, __LINE__ );
                                 for( int pr_c = 0; pr_c < tmp_etl->extract.deleted.primary_db_result_replace_len; pr_c++ ) {
@@ -1057,10 +1067,12 @@ int DCPAM_load_configuration( const char* filename ) {
                         /*
                             etl.extract.deleted.secondary_db_record_regex_replace
                         */
+                        tmp_etl->extract.deleted.secondary_db_result_replace_len = 0;
+                        tmp_etl->extract.deleted.secondary_db_result_replace = NULL;
                         cfg_system_query_item_etl_extract_db_regexrep_array = cJSON_GetObjectItem( cfg_system_query_item_etl_extract_deleted, "secondary_regex_replace" );
                         if( cfg_system_query_item_etl_extract_db_regexrep_array ) {
                             tmp_etl->extract.deleted.secondary_db_result_replace_len = cJSON_GetArraySize( cfg_system_query_item_etl_extract_db_regexrep_array );
-                            if( tmp_etl->extract.deleted.secondary_db_result_replace_len ) {
+                            if( tmp_etl->extract.deleted.secondary_db_result_replace_len > 0 ) {
                                 LOG_print( &dcpam_etl_log, "[%s] Found %d secondary DB RegEx replacements:\n", TIME_get_gmt(), tmp_etl->extract.deleted.secondary_db_result_replace_len );
                                 tmp_etl->extract.deleted.secondary_db_result_replace = SAFEMALLOC( tmp_etl->extract.deleted.secondary_db_result_replace_len * sizeof( EXTRACT_RESULT_REPLACE ), __FILE__, __LINE__ );
                                 for( int pr_c = 0; pr_c < tmp_etl->extract.deleted.secondary_db_result_replace_len; pr_c++ ) {

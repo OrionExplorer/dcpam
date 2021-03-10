@@ -23,6 +23,7 @@
 #include "../../db/oracle.h"
 #include "../../db/sqlite.h"
 #include "../../db/mongodb.h"
+#include "../../db/ldap.h"
 #include "../../file/csv.h"
 #include "../../file/json.h"
 #include "etl_schema.h"
@@ -38,6 +39,7 @@ typedef union {
     ORACLE_CONNECTION           oracle_conn;
     SQLITE_CONNECTION           sqlite_conn;
     MONGODB_CONNECTION          mongodb_conn;
+    LDAP_CONNECTION             ldap_conn;
 } DB_CONN;
 
 
@@ -48,7 +50,8 @@ typedef enum {
     D_ODBC,
     D_ORACLE,
     D_SQLITE,
-    D_MONGODB
+    D_MONGODB,
+    D_LDAP
 } DB_DRIVER;
 
 typedef enum {

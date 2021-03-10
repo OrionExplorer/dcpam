@@ -1,17 +1,17 @@
 {
 	"system" : [{
 		"enabled" : 1,
-		"name" : "MongoDB Test Database",
+		"name" : "Test LDAP",
 		"DB" : {
 			"name" : "Source Data",
-			"ip" : "127.0.0.1",
-			"port" : 27017,
-			"driver" : 7,
-			"driver_comment" : "Driver types: 1=PostgreSQL, 2=MySQL, 3=MariaDB, 4=ODBC, 5=Oracle Database, 6=SQLite, 7=MongoDB",
-			"user" : "none",
-			"db" : "SourceData",
-			"connection_string" : "mongodb://localhost:27017",
-			"password" : "none"
+			"ip" : "10.16.0.50",
+			"port" : 389,
+			"driver" : 8,
+			"driver_comment" : "Driver types: 1=PostgreSQL, 2=MySQL, 3=MariaDB, 4=ODBC, 5=Oracle Database, 6=SQLite, 7=MongoDB, 8=LDAP",
+			"user" : "Administrator@intalio.local",
+			"db" : "dc=intalio,dc=local",
+			"connection_string" : "ldap://",
+			"password" : "FakePassw0rd"
 		},
 		"queries" : [{
 			"name" : "GET_TEST_DATA",
@@ -28,7 +28,9 @@
 				"comment#03" : "# MongoDB commands: https://docs.mongodb.com/manual/reference/command/nav-crud/",
 				"comment#04" : "##################################################################################################",
 				"pre_actions" : [
-					"{ \"delete\": \"stagedData\", \"deletes\": [ { \"q\": {}, \"limit\": 0 } ] }"
+					"DELETE FROM stage_accounted_time",
+					"DELETE FROM accounted_time WHERE id > 1078",
+					"UPDATE accounted_time SET is_valid = 1 WHERE is_valid = 0"
 				],
 
 
@@ -43,28 +45,19 @@
 					"comment#07" : "##################################################################################################",
 					"inserted" : {
 						"primary_db" : "dcpam",
-						"primary_db_sql" : "{ \"find\": \"testData\", \"sort\" : { \"id\": -1 }, \"limit\": 1, \"projection\": { \"id\": 1, \"_id\": 0 } }",
+						"primary_db_sql" : "SELECT MAX(when_created) FROM user_accounts",
 						"primary_regex_replace" : [{
-							"search" : ": ([0-9]+).+",
-							"replace" : "\\1"
-						}, {
-							"search" : ": ([0-9]+).+",
-							"replace" : "\\1"
+							"search" : "([0-9]+)-([0-9]+)-([0-9]+) ([0-9]+):([0-9]+):([0-9]+)",
+							"replace" : "\\1\\2\\3\\4\\5\\6.0-0400"
 						}],
 						"secondary_db" : "this",
-						"secondary_regex_replace" : [{
-							"search" : ": ([0-9]+).+",
-							"replace" : "\\1"
-						}, {
-							"search" : ": ([0-9]+).+",
-							"replace" : "\\1"
-						}],
-						"secondary_db_sql" : "{ \"find\": \"testData\", \"filter\": { \"id\" : {  \"$lt\": %s } } }"
+						"asd_secondary_regex_replace" : [],
+						"secondary_db_sql" : "(&(whenCreated>=%s)(objectClass=user))"
 					},
 					"deleted" : {
 						"primary_db" : "this",
 						"primary_db_sql" : "SELECT id AS system_worklog_id FROM time_accounting",
-						"primary_regex_replace" : [{
+						"asd_primary_regex_replace" : [{
 							"search" : ": ([0-9]+).+",
 							"replace" : "\\1"
 						}, {
@@ -72,7 +65,7 @@
 							"replace" : "\\1"
 						}],
 						"secondary_db" : "dcpam",
-						"secondary_regex_replace" : [{
+						"asd_secondary_regex_replace" : [{
 							"search" : ": ([0-9]+).+",
 							"replace" : "\\1"
 						}, {
@@ -222,7 +215,7 @@
 				"comment#14" : "# process finished (ie. to clear the Staging Area).",
 				"comment#15" : "##################################################################################################",
 				"post_actions" : [
-					"{ \"delete\": \"stagedData\", \"deletes\": [ { \"q\": {}, \"limit\": 0 } ] }"
+					"DELETE FROM stage_accounted_time"
 				]
 
 			}
@@ -237,15 +230,15 @@
 		"run_once_comment#02" : "# Remove this param or set with \"false\" value to run DCPAM in \"Persistent\" mode (daemon-like).",
 		"run_once_comment#03" : "##################################################################################################",
 		"DB" : {
-			"name" : "Target Test Database",
+			"name" : "DCPAM Database",
 			"ip" : "127.0.0.1",
-			"port" : 27017,
-			"driver" : 7,
-			"driver_comment" : "Driver types: 1=PostgreSQL, 2=MySQL, 3=MariaDB, 4=ODBC, 5=Oracle Database, 6=SQLite, 7=MongoDB",
-			"user" : "none",
-			"db" : "TargetTables",
-			"connection_string" : "mongodb://localhost:27017",
-			"password" : "none"
+			"port" : 5432,
+			"driver" : 1,
+			"driver_comment" : "Driver types: 1=PostgreSQL, 2=MySQL, 3=MariaDB, 4=ODBC, 5=Oracle Database, 6=SQLite",
+			"connection_string" : "dbname=%s host=%s port=%d user=%s password=%s",
+			"user" : "dcpam",
+			"password" : "tantive-4",
+			"db" : "dcpam"
 		},
 		"STAGING" : {
 			"comment#00" : "##################################################################################################",
@@ -255,13 +248,13 @@
 			"comment#04" : "##################################################################################################",
 			"name" : "Staging Area",
 			"ip" : "127.0.0.1",
-			"port" : 27017,
-			"driver" : 7,
-			"driver_comment" : "Driver types: 1=PostgreSQL, 2=MySQL, 3=MariaDB, 4=ODBC, 5=Oracle Database, 6=SQLite, 7=MongoDB",
-			"user" : "none",
-			"db" : "StagingArea",
-			"connection_string" : "mongodb://localhost:27017",
-			"password" : "none"
+			"port" : 5432,
+			"driver" : 1,
+			"driver_comment" : "Driver types: 1=PostgreSQL, 2=MySQL, 3=MariaDB, 4=ODBC, 5=Oracle Database, 6=SQLite",
+			"connection_string" : "dbname=%s host=%s port=%d user=%s password=%s",
+			"user" : "dcpam",
+			"password" : "tantive-4",
+			"db" : "dcpam"
 		}
 	},
 	"LCS" : {

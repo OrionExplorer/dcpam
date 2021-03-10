@@ -3,7 +3,7 @@ dist: bionic
 compiler: gcc
 script: make
 before_install:
-  - sudo apt-get -y install libpq-dev libmariadbclient-dev unixodbc-dev libmongoc-1.0-0 libbson-1.0-0 libmongoc-dev
+  - sudo apt-get -y install libpq-dev libmariadbclient-dev unixodbc-dev libmongoc-1.0-0 libbson-1.0-0 libmongoc-dev libldap-2.4-2 libldap-common libldap2-dev
   - sudo apt-get -y install alien
   - wget https://download.oracle.com/otn_software/linux/instantclient/19600/oracle-instantclient19.6-basic-19.6.0.0.0-1.x86_64.rpm
   - sudo alien -i oracle-instantclient19.6-basic-19.6.0.0.0-1.x86_64.rpm

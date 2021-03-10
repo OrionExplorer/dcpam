@@ -4,7 +4,8 @@ CC=clang
 CFLAGS=-std=c11 -D_XOPEN_SOURCE=600 -fexpensive-optimizations -Wshadow -Winit-self -Wredundant-decls -Wcast-align -Wundef -Wfloat-equal -Winline -Wunreachable-code -Wmissing-declarations -Wmissing-include-dirs -Wswitch-enum -Wswitch-default -Wmain -pedantic-errors -pedantic -w -Wfatal-errors -Wextra -Wall -g3 -O0
 ORACLE_DEP=-I/usr/include/oracle/19.6/client64/ -L/usr/lib/oracle/19.6/client64/lib/
 MONGODB_DEP=-I/usr/include/libmongoc-1.0/ -I/usr/include/libbson-1.0/
-LIBS=-lm -lpthread -lpq -lodbc -lmariadbclient $(ORACLE_DEP) -ldl -lclntsh -lssl -lcrypto $(MONGODB_DEP) -lmongoc-1.0 -lbson-1.0
+OPENLDAP_DEP=-I/usr/include/ 
+LIBS=-lm -lpthread -lpq -lodbc -lmariadbclient $(OPENLDAP_DEP) -lldap -llber $(ORACLE_DEP) -ldl -lclntsh -lssl -lcrypto $(MONGODB_DEP) -lmongoc-1.0 -lbson-1.0
 
 
 all: dcpam-etl dcpam-wds dcpam-rdp dcpam-lcs
@@ -17,6 +18,9 @@ postgresql.o: src/db/postgresql.c
 
 mongodb.o: src/db/mongodb.c
 	$(CC) -c src/db/mongodb.c $(CFLAGS) $(MONGODB_DEP)
+
+ldap.o: src/db/ldap.c
+	$(CC) -c src/db/ldap.c $(CFLAGS) $(OPENLDAP_DEP)
 
 mysql.o: src/db/mysql.c
 	$(CC) -c src/db/mysql.c $(CFLAGS)
@@ -130,13 +134,13 @@ dcpam-rdp: dcpam-rdp.o socket_io.o log.o time.o strings.o client.o http.o filesy
 	@ mkdir bin -p
 	$(CC) socket_io.o dcpam-rdp.o log.o time.o strings.o client.o http.o filesystem.o memory.o cJSON.o lcs_report.o -o bin/dcpam-rdp -lpthread -lssl -lcrypto
 
-dcpam-etl: dcpam-etl.o mysql.o mariadb.o odbc.o postgresql.o mongodb.o log.o time.o filesystem.o cJSON.o sqlite3.o memory.o regex.o http.o preload.o csv.o json.o db.o worker.o system.o extract.o stage.o transform.o load.o strings.o oracle.o sqlite.o client.o lcs_report.o socket_io.o
+dcpam-etl: dcpam-etl.o mysql.o mariadb.o odbc.o postgresql.o mongodb.o ldap.o log.o time.o filesystem.o cJSON.o sqlite3.o memory.o regex.o http.o preload.o csv.o json.o db.o worker.o system.o extract.o stage.o transform.o load.o strings.o oracle.o sqlite.o client.o lcs_report.o socket_io.o
 	@ mkdir bin -p
-	$(CC) mysql.o mariadb.o odbc.o postgresql.o mongodb.o dcpam-etl.o log.o time.o filesystem.o cJSON.o sqlite3.o memory.o regex.o http.o preload.o csv.o json.o db.o worker.o system.o extract.o stage.o transform.o load.o strings.o oracle.o sqlite.o client.o lcs_report.o socket_io.o -o bin/dcpam-etl $(LIBS)
+	$(CC) mysql.o mariadb.o odbc.o postgresql.o mongodb.o dcpam-etl.o log.o time.o filesystem.o cJSON.o sqlite3.o memory.o regex.o http.o preload.o csv.o json.o db.o worker.o system.o extract.o stage.o transform.o load.o ldap.o strings.o oracle.o sqlite.o client.o lcs_report.o socket_io.o -o bin/dcpam-etl $(LIBS)
 
-dcpam-wds: dcpam-wds.o socket_io.o cache.o mysql.o mariadb.o odbc.o postgresql.o log.o time.o http.o filesystem.o cJSON.o sqlite3.o memory.o db.o system.o strings.o oracle.o sqlite.o client.o lcs_report.o wds_node.o sql_parser.o
+dcpam-wds: dcpam-wds.o socket_io.o cache.o mysql.o mariadb.o odbc.o postgresql.o mongodb.o ldap.o log.o time.o http.o filesystem.o cJSON.o sqlite3.o memory.o db.o system.o strings.o oracle.o sqlite.o client.o lcs_report.o wds_node.o sql_parser.o
 	@ mkdir bin -p
-	$(CC) cache.o mysql.o socket_io.o mariadb.o odbc.o postgresql.o mongodb.o dcpam-wds.o log.o time.o http.o filesystem.o cJSON.o sqlite3.o memory.o db.o system.o strings.o oracle.o sqlite.o client.o lcs_report.o wds_node.o sql_parser.o -o bin/dcpam-wds $(LIBS)
+	$(CC) cache.o mysql.o socket_io.o mariadb.o odbc.o postgresql.o mongodb.o ldap.o dcpam-wds.o log.o time.o http.o filesystem.o cJSON.o sqlite3.o memory.o db.o system.o strings.o oracle.o sqlite.o client.o lcs_report.o wds_node.o sql_parser.o -o bin/dcpam-wds $(LIBS)
 
 dcpam-lcs: dcpam-lcs.o socket_io.o log.o time.o memory.o filesystem.o http.o client.o strings.o cJSON.o component.o lcs_worker.o
 	@ mkdir bin -p

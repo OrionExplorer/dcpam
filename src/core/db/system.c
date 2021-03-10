@@ -78,11 +78,15 @@ int DB_exec(
 
         case D_SQLITE: {
             q_ret = SQLITE_exec( &db->db_conn.sqlite_conn, sql, *sql_len, dst_result, NULL, 0, NULL, NULL, query_exec_callback, data_ptr1, data_ptr2, log );
-        }
+        } break;
 
         case D_MONGODB: {
             q_ret = MONGODB_exec( &db->db_conn.mongodb_conn, sql, *sql_len, dst_result, NULL, 0, NULL, NULL, NULL, query_exec_callback, data_ptr1, data_ptr2, log );
-        }
+        } break;
+
+        case D_LDAP: {
+            q_ret = LDAP_exec( &db->db_conn.ldap_conn, sql, *sql_len, dst_result, NULL, 0, NULL, NULL, NULL, query_exec_callback, data_ptr1, data_ptr2, log );
+        } break;
     }
 
     free( sql_bound ); sql_bound = NULL;
@@ -635,12 +639,13 @@ void DATABASE_SYSTEM_DB_add(
         );
     }
 
-    dst->ip = SAFECALLOC( TINY_BUFF_SIZE, sizeof( char ), __FILE__, __LINE__ );
+    str_len = strlen( ip );
+    dst->ip = SAFECALLOC( str_len + 1, sizeof( char ), __FILE__, __LINE__ );
     if( dst->ip ) {
         strlcpy(
             dst->ip,
             ip,
-            TINY_BUFF_SIZE
+            str_len
         );
     }
 
@@ -654,7 +659,8 @@ void DATABASE_SYSTEM_DB_add(
         : driver == D_ODBC ? "ODBC" 
         : driver == D_ORACLE ? "ORACLE"
         : driver == D_SQLITE ? "SQLite3"
-        : "MongoDB"
+        : driver == D_MONGODB ? "MongoDB"
+        : "LDAP"
     );
     dst->driver = ( DB_DRIVER )driver;
 
@@ -685,6 +691,10 @@ void DATABASE_SYSTEM_DB_add(
 
         case D_MONGODB: {
             dst->db_conn.mongodb_conn.active = 0;
+        } break;
+
+        case D_LDAP: {
+            dst->db_conn.ldap_conn.active = 0;
         } break;
     }
 
@@ -784,11 +794,18 @@ void DATABASE_SYSTEM_DB_close( DATABASE_SYSTEM_DB* db, LOG_OBJECT *log ) {
                 SQLITE_disconnect( &db->db_conn.sqlite_conn, log );
             }
         } break;
-        case D_MONGODB :
+        case D_MONGODB:
         {
             if( db->db_conn.mongodb_conn.active == 1 ) {
                 LOG_print( log, "\t· Driver: \"MongoDB\". Disconnecting...\n" );
                 MONGODB_disconnect( &db->db_conn.mongodb_conn, log );   
+            }
+        } break;
+        case D_LDAP:
+        {
+            if( db->db_conn.ldap_conn.active == 1 ) {
+                LOG_print( log, "\t· Driver: \"LDAP\". Disconnecting...\n" );
+                LDAP_disconnect( &db->db_conn.ldap_conn, log );
             }
         } break;
         default:
@@ -862,7 +879,13 @@ void DATABASE_SYSTEM_DB_free( DATABASE_SYSTEM_DB *db, LOG_OBJECT *log ) {
                 LOG_print( log, "\t· Driver: \"MongoDB\". Disconnecting...\n" );
                 MONGODB_disconnect( &db->db_conn.mongodb_conn, log );
             }
-        }
+        } break;
+        case D_LDAP : {
+            if( db->db_conn.ldap_conn.active == 1 ) {
+                LOG_print( log, "\t· Driver: \"LDAP\". Disconnecting...\n" );
+                LDAP_disconnect( &db->db_conn.ldap_conn, log );
+            }
+        } break;
         default : {
         }
     }
@@ -902,6 +925,10 @@ int DATABASE_SYSTEM_DB_init( DATABASE_SYSTEM_DB *db, LOG_OBJECT *log ) {
         case D_MONGODB : {
             LOG_print( log, "\t· Driver: \"MongoDB\". Connecting..." );
             ret = MONGODB_connect( &db->db_conn.mongodb_conn, db->ip, db->port, db->db, db->user, db->password, db->connection_string, db->name, log );
+        } break;
+        case D_LDAP : {
+            LOG_print( log, "\t· Driver: \"LDAP\". Connecting..." );
+            ret = LDAP_connect( &db->db_conn.ldap_conn, db->ip, db->port, db->db, db->user, db->password, db->connection_string, db->name, log );
         } break;
         default : {
             LOG_print( log, "Error: unknown driver: \"%d (%s)\".\n", db->driver, db->name );

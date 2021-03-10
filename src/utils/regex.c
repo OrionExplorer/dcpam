@@ -75,14 +75,14 @@ void REGEX_replace(char **str, const char *pattern, const char *replace, size_t 
          memcpy( value, cursorCopy + groupArray[ g ].rm_so, value_len );
 
          /* Prepare group identifier for the replace string */
-         char group_id[ 3 ] = { 0 };
-         snprintf( group_id, 3, "\\%d", g );
+         char group_id[ 4 ] = { 0 };
+         snprintf( group_id, 4, "\\%d", g );
 
          /* Get current replace length. */
          size_t str_len = strlen( result );
 
          /* Decrease size by group identifier length */
-         str_len -= strlen( group_id );
+         //str_len -= strlen( group_id );
 
          /* Increase size by value length */
          str_len += value_len;
@@ -94,10 +94,11 @@ void REGEX_replace(char **str, const char *pattern, const char *replace, size_t 
             strlcpy( new_value, result, str_len );
          }
          new_value_len = str_len;
-         LOG_print( log, "\t- looking for \"%s\" in \"%s\" to replace with \"%s\"...\n", group_id, new_value, value );
+         LOG_print( log, "\t- looking for \"%s\" in \"%s\" to replace with \"%s\"...", group_id, new_value, value );
 
          DB_QUERY_internal_replace_str_( new_value, group_id, value, &str_len );
          free( value ); value = NULL;
+         LOG_print( log, "done.\n" );
 
       }
       cursor += offset;
