@@ -29,7 +29,5 @@ jobs:
       run: sudo alien -i oracle-instantclient19.6-devel-19.6.0.0.0-1.x86_64.rpm
     - name: Set paths
       run: export LD_LIBRARY_PATH=/usr/lib/oracle/19.6/client64/lib/${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH} && export PATH=$PATH:$ORACLE_HOME/bin
-    - name: Link Oracle headers
-      run: sudo ln -s /usr/include/oracle/19.6/client64/ $ORACLE_HOME/include
     - name: make
       run: make
