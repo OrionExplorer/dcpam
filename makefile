@@ -4,7 +4,6 @@ CC=clang
 CFLAGS=-std=c11 -D_XOPEN_SOURCE=600 -fexpensive-optimizations -Wshadow -Winit-self -Wredundant-decls -Wcast-align -Wundef -Wfloat-equal -Winline -Wunreachable-code -Wmissing-declarations -Wmissing-include-dirs -Wswitch-enum -Wswitch-default -Wmain -pedantic-errors -pedantic -w -Wfatal-errors -Wextra -Wall -g3 -O0
 ORACLE_DEP=-I/usr/include/oracle/19.6/client64/ -L/usr/lib/oracle/19.6/client64/lib/
 MONGODB_DEP=-I/usr/include/libmongoc-1.0/ -I/usr/include/libbson-1.0/
-OPENLDAP_DEP=-I/usr/include/ 
 LIBS=-lm -lpthread -lpq -lodbc -lmariadbclient -lldap -llber $(ORACLE_DEP) -ldl -lclntsh -lssl -lcrypto $(MONGODB_DEP) -lmongoc-1.0 -lbson-1.0
 
 
@@ -20,7 +19,7 @@ mongodb.o: src/db/mongodb.c
 	$(CC) -c src/db/mongodb.c $(CFLAGS) $(MONGODB_DEP)
 
 ldap.o: src/db/ldap.c
-	$(CC) -c src/db/ldap.c $(CFLAGS) $(OPENLDAP_DEP)
+	$(CC) -c src/db/ldap.c $(CFLAGS)
 
 mysql.o: src/db/mysql.c
 	$(CC) -c src/db/mysql.c $(CFLAGS)
