@@ -5,7 +5,7 @@ CFLAGS=-std=c11 -D_XOPEN_SOURCE=600 -fexpensive-optimizations -Wshadow -Winit-se
 ORACLE_DEP=-I/usr/include/oracle/19.6/client64/ -L/usr/lib/oracle/19.6/client64/lib/
 MONGODB_DEP=-I/usr/include/libmongoc-1.0/ -I/usr/include/libbson-1.0/
 OPENLDAP_DEP=-I/usr/include/ 
-LIBS=-lm -lpthread -lpq -lodbc -lmariadbclient $(OPENLDAP_DEP) -lldap -llber $(ORACLE_DEP) -ldl -lclntsh -lssl -lcrypto $(MONGODB_DEP) -lmongoc-1.0 -lbson-1.0
+LIBS=-lm -lpthread -lpq -lodbc -lmariadbclient -lldap -llber $(ORACLE_DEP) -ldl -lclntsh -lssl -lcrypto $(MONGODB_DEP) -lmongoc-1.0 -lbson-1.0
 
 
 all: dcpam-etl dcpam-wds dcpam-rdp dcpam-lcs
