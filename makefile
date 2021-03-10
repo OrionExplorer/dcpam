@@ -94,7 +94,7 @@ json.o: src/file/json.c
 	$(CC) -c src/file/json.c $(CFLAGS)
 
 preload.o: src/core/file/preload.c
-	$(CC) -c src/core/file/preload.c $(CFLAGS) $(MONGODB_DEP)
+	$(CC) -c src/core/file/preload.c $(CFLAGS) $(ORACLE_DEP) $(MONGODB_DEP)
 
 cache.o: src/core/cache.c
 	$(CC) -c src/core/cache.c $(CFLAGS) $(MONGODB_DEP)
