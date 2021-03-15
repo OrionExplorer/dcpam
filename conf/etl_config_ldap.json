@@ -11,7 +11,7 @@
 			"user" : "Administrator@intalio.local",
 			"db" : "dc=intalio,dc=local",
 			"connection_string" : "ldap://",
-			"password" : "FakePassw0rd"
+			"password" : "Passw0rd"
 		},
 		"queries" : [{
 			"name" : "GET_TEST_DATA",
